@@ -18,6 +18,6 @@ public class CardData
     public string rarity; // e.g., "Common", "Rare", "Epic", "Legendary"
 
     public string description;
-    public AbilityType abilityType1, abilityType2;
+    public string abilityName, abilityDescription;
 
 }

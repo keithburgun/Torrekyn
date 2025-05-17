@@ -1,8 +1,9 @@
-Tier,Faction,Name,$,ManaCost,ATK,HP,Description,Property 1,Property 2
-1,,Swordsman,3,,150,1000,,Shields Up. Take 25% less damage from Ranged.,
-1,,Knight,4,,300,1500,,,
-1,,Hero,6,,500,3000,,"Whirlwind. Every 10 seconds when adjacent to a unit, deals 200 damage to all nearby enemy units.",
-1,,Assassin,3,,400,450,,"Hidden Movement. If there are empty Jungles, will move through those.",Hunt the Weak. Tries to attack units with less health than me.
-1,,Builder,3,,80,250,,"Build Turrets. Every 8 seconds, builds a small turret.",
-1,,Jungler,5,,250,500,,"Jungler. Goes and fights jungle monsters if there are any,",
-1,,Catapult,5,,25,150,,Siege Attack. Deals 800 damage to a tower within range every 4 seconds.,
+Tier,Faction,Name,$,ManaCost,ATK,HP,Description,Ability Name,Ability Description
+1,1,swordsman,3,0,150,1000,"""A cool guy""",sheilds_up,"""I will block 25% of ranged attacks."""
+1,1,knight,4,0,300,1500,"""A cool guy""",none,
+1,1,archer,3,0,200,500,"""A cool guy""",arrow_attack,"""I fire arrows every second from a range."""
+1,1,hero,6,0,500,3000,"""A cool guy""",whirlwind,"""Every 6 seconds in combat I will deal 200 damage to all nearby units."""
+1,1,assassin,3,0,400,450,"""A cool guy""",cull_the_weak,"""I look for units that have less health than me. When I reach one I deal double damage to it, once every 10 seconds."""
+1,1,builder,3,0,80,250,"""A cool guy""",build_turret,"""Every 8 seconds, I will build a small turret."""
+1,1,jungler,5,0,250,500,"""A cool guy""",jungler,"""I hunt Jungle monsters."""
+1,1,catapult,5,0,200,150,"""A cool guy""",siege_attack,"""I damage towers from a distance."""

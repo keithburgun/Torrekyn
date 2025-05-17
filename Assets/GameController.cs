@@ -1,4 +1,6 @@
+using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.EventSystems;
 
 public class GameController : MonoBehaviour
 {
@@ -7,6 +9,7 @@ public class GameController : MonoBehaviour
     public Card currentlyDraggingCard;
     public DeckManager deckManager;
     public CardDatabase cardDatabase;
+    public UIManager ui;
 
     public void Awake()
     {
@@ -43,6 +46,17 @@ public class GameController : MonoBehaviour
 
         ChangeGameState(GameState.PlayerTurnState);
 
+        DrawUpTo(3);
+
+    }
+
+    void DrawUpTo(int totalCards)
+    {
+        while (deckManager.hand.Count < totalCards && deckManager.deck.Count > 0)
+        {
+            Card newCard = deckManager.DrawCardToHand();
+            ui.hand.PlaceCardInHand(newCard);
+        }
     }
 
     void ChangeGameState(GameState newState)
@@ -67,16 +81,9 @@ public class GameController : MonoBehaviour
 
     public void DragCard(Card cardDragging)
     {
+        // Remove this card from the player's hand.
+        ui.hand.RemoveCardFromHand(cardDragging);
+
         currentlyDraggingCard = cardDragging;
-    }
-
-    public void DropCard(Vector2 position)
-    {
-
-    }
-
-    public void FixedUpdate()
-    {
-        
     }
 }

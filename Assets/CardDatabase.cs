@@ -11,6 +11,8 @@ public class CardDatabase : MonoBehaviour
 
     public void InitializeAllCardDataFromCSV()
     {
+        allData = new List<CardData>();
+
         if (cardCSV != null)
         {
             StringReader reader = new StringReader(cardCSV.text);
@@ -25,8 +27,9 @@ public class CardDatabase : MonoBehaviour
                     continue; // Skip the header row
                 }
 
-                string[] values = line.Split(',');
-                if (values.Length == 10) // Ensure we have the correct number of columns
+                List<string> values = ParseCsvLine(line);
+
+                if (values.Count == 10)
                 {
                     CardData newCard = new CardData();
                     try
@@ -38,10 +41,12 @@ public class CardDatabase : MonoBehaviour
                         newCard.manaCost = int.Parse(values[4]);
                         newCard.attackDamage = int.Parse(values[5]);
                         newCard.health = int.Parse(values[6]);
-                        newCard.rarity = values[7];
-                        newCard.description = values[8];
-                        newCard.abilityType1 = (AbilityType)Enum.Parse(typeof(AbilityType), values[9]);
-                        newCard.abilityType2 = AbilityType.None; // Assuming no value means None, adjust as needed
+                        newCard.description = values[7];
+                        newCard.abilityName = values[8];
+                        if (values[8] == "none")
+                            newCard.abilityDescription = "";
+                        else 
+                            newCard.abilityDescription = values[9];
 
                         allData.Add(newCard);
                     }
@@ -56,7 +61,7 @@ public class CardDatabase : MonoBehaviour
                 }
                 else
                 {
-                    Debug.LogError($"Incorrect number of columns in CSV line: {line}. Expected 10, found {values.Length}.");
+                    Debug.LogError($"Incorrect number of columns in CSV line: {line}. Expected 11, found {values.Count}.");
                 }
             }
         }
@@ -64,6 +69,36 @@ public class CardDatabase : MonoBehaviour
         {
             Debug.LogError("cardCSV TextAsset is not assigned in the Inspector!");
         }
+    }
+
+    // Helper function to parse a CSV line, handling quoted strings
+    private List<string> ParseCsvLine(string line)
+    {
+        List<string> values = new List<string>();
+        bool insideQuotes = false;
+        string currentValue = "";
+
+        for (int i = 0; i < line.Length; i++)
+        {
+            char currentChar = line[i];
+
+            if (currentChar == '"')
+            {
+                insideQuotes = !insideQuotes;
+                // If we encounter a closing quote, don't add it to the current value
+            }
+            else if (currentChar == ',' && !insideQuotes)
+            {
+                values.Add(currentValue);
+                currentValue = "";
+            }
+            else
+            {
+                currentValue += currentChar;
+            }
+        }
+        values.Add(currentValue); // Add the last value
+        return values;
     }
 
 

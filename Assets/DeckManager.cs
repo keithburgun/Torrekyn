@@ -32,6 +32,7 @@ public class DeckManager : MonoBehaviour
         GameObject newCardObject = Instantiate(cardPrefab, deckHolder);
         Card newCard = newCardObject.GetComponent<Card>();
         newCard.Populate(newCardData);
+        newCard.SetSizeForHand();
         return newCard;
     }
 
@@ -57,7 +58,7 @@ public class DeckManager : MonoBehaviour
         Shuffle();
     }
 
-    public Card DrawCard()
+    public Card DrawCardToHand()
     {
         if (deck.Count == 0)
         {
@@ -72,8 +73,14 @@ public class DeckManager : MonoBehaviour
         }
         Card card = deck[0];
         deck.RemoveAt(0);
-        hand.Add(card);
+        AddCardToHand(card);
         return card;
+    }
+
+    public void AddCardToHand(Card c)
+    {
+        hand.Add(c);
+        c.myLastDropZone = GameController.game.ui.hand.dropZone;
     }
 
     public void DiscardCard(Card card)
