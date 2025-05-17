@@ -1,0 +1,8 @@
+Tier,Faction,Name,$,ManaCost,ATK,HP,Description,Property 1,Property 2
+1,,Swordsman,3,,150,1000,,Shields Up. Take 25% less damage from Ranged.,
+1,,Knight,4,,300,1500,,,
+1,,Hero,6,,500,3000,,"Whirlwind. Every 10 seconds when adjacent to a unit, deals 200 damage to all nearby enemy units.",
+1,,Assassin,3,,400,450,,"Hidden Movement. If there are empty Jungles, will move through those.",Hunt the Weak. Tries to attack units with less health than me.
+1,,Builder,3,,80,250,,"Build Turrets. Every 8 seconds, builds a small turret.",
+1,,Jungler,5,,250,500,,"Jungler. Goes and fights jungle monsters if there are any,",
+1,,Catapult,5,,25,150,,Siege Attack. Deals 800 damage to a tower within range every 4 seconds.,
