@@ -1,6 +1,5 @@
 using System.Collections.Generic;
 using TMPro;
-using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
@@ -13,6 +12,10 @@ public class Card : MonoBehaviour, IDragHandler, IBeginDragHandler, IEndDragHand
     public CanvasGroup canvasGroup;
 
     public DropZone myLastDropZone;
+
+    public LayerMask worldDropZoneLayer;
+
+    public Unit myUnit;
 
     public void Select()
     {
@@ -48,36 +51,104 @@ public class Card : MonoBehaviour, IDragHandler, IBeginDragHandler, IEndDragHand
 
     public void Drop(PointerEventData eventData)
     {
+        // Get the GameObject that was actually being dragged.
+        // If this script is on the card itself, eventData.pointerDrag will be this.gameObject.
+        GameObject droppedObject = this.gameObject; // 'this' refers to the GameObject this script is on
 
-        // Perform raycast to check for Drop Zones
-        List<RaycastResult> results = new List<RaycastResult>();
-        EventSystem.current.RaycastAll(eventData, results);
-
-        GameObject dropZone = null;
-        foreach (RaycastResult result in results)
+        if (droppedObject == null)
         {
-            DropZone dz = result.gameObject.GetComponent<DropZone>();
-            if (dz != null)
+            Debug.LogWarning("OnDrop: No object was being dragged. Exiting.");
+            if (canvasGroup != null) canvasGroup.blocksRaycasts = true;
+            return;
+        }
+
+        bool dropHandledByZone = false; // Flag to track if any DropZone handled the drop
+
+        // --- 1. Check for UI DropZones (on the Canvas layer) ---
+        List<RaycastResult> uiRaycastResults = new List<RaycastResult>();
+        EventSystem.current.RaycastAll(eventData, uiRaycastResults);
+
+        foreach (RaycastResult result in uiRaycastResults)
+        {
+            DropZone dropZone = result.gameObject.GetComponent<DropZone>();
+
+            if (dropZone != null)
             {
-                dropZone = result.gameObject;
-                dz.HandleDrop(this); // Pass the dragged card's GameObject
-                return; // Exit after a successful drop
+                Debug.Log($"Card '{name}' dropped over UI DropZone: {result.gameObject.name}");
+                dropZone.HandleDrop(this); // Pass the dropped GameObject
+                dropHandledByZone = true;
+                myLastDropZone = dropZone; // Update last drop zone if it's a valid one
+                break; // Assuming only one UI DropZone should handle the drop
             }
         }
 
-        // If no valid drop zone was hit, return the card to its original position
-
-        if (myLastDropZone == GameController.game.ui.hand.dropZone)
+        // If a UI DropZone already handled it, we can stop here.
+        if (dropHandledByZone)
         {
-            GameController.game.deckManager.AddCardToHand(this);
-            GameController.game.ui.hand.PlaceCardInHand(this);
-            Debug.Log("placing card back in hand...");
+            if (canvasGroup != null) canvasGroup.blocksRaycasts = true; // Re-enable raycasts
+            return;
         }
 
-        canvasGroup.blocksRaycasts = true; // Re-enable raycasts on the card
+        // --- 2. Check for World Space DropZones (using Physics2D) ---
+        if (Camera.main != null)
+        {
+            // Convert the UI pointer position to a world point
+            // This is crucial for checking against world colliders
+            Vector2 worldPointerPosition = Camera.main.ScreenToWorldPoint(eventData.position);
 
+            Debug.Log($"Checking world position: {worldPointerPosition}");
+
+            // Use a specific layer mask to only check relevant colliders
+            Collider2D[] hitColliders = Physics2D.OverlapPointAll(worldPointerPosition, worldDropZoneLayer);
+
+            foreach (Collider2D hitCollider in hitColliders)
+            {
+                DropZone dropZone = hitCollider.gameObject.GetComponent<DropZone>();
+
+                if (dropZone != null)
+                {
+                    if (dropZone.isHand)
+                    {
+                        GameController.game.ReturnCardToHand(this);
+                        break;
+                    }
+                    else
+                    {
+                        Debug.Log($"Card '{name}' dropped into World DropZone: {hitCollider.gameObject.name}");
+                        dropZone.HandleDrop(this); // Pass the dropped GameObject
+                        dropHandledByZone = true;
+                        myLastDropZone = dropZone; // Update last drop zone
+                        break; // Assuming only one world DropZone should handle the drop
+                    }
+                }
+            }
+        }
+        else
+        {
+            Debug.LogWarning("Main Camera not assigned or found. Cannot perform world-space drop zone check.");
+        }
+
+
+        // If no valid drop zone (either UI or World) was hit, return the card to its original position
+        if (!dropHandledByZone)
+        {
+            if (myLastDropZone == GameController.game.ui.hand.dropZone)
+            {
+                GameController.game.ReturnCardToHand(this);
+            }
+            else
+            {
+                Debug.Log($"Card '{droppedObject.name}' dropped, but no valid DropZone was hit. No specific return to hand logic for non-hand drop zones.");
+                // Optionally revert position to original drag start position if desired
+                // if (rectTransform != null) rectTransform.position = originalPosition;
+            }
+        }
+
+        if (canvasGroup != null)
+        {
+            canvasGroup.blocksRaycasts = true; // Re-enable raycasts on the card
+        }
     }
-
 
 
     // EVENT HANDLERS:

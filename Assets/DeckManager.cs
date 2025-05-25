@@ -88,11 +88,8 @@ public class DeckManager : MonoBehaviour
         if (hand.Contains(card))
         {
             hand.Remove(card);
-            discardPile.Add(card);
         }
-        else
-        {
-            throw new InvalidOperationException("Card not in hand.");
-        }
+        discardPile.Add(card);
+
     }
 }

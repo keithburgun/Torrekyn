@@ -11,6 +11,8 @@ public class GameController : MonoBehaviour
     public CardDatabase cardDatabase;
     public UIManager ui;
 
+    public DropZone[] worldDropZones;
+
     public void Awake()
     {
         instance = this; 
@@ -57,6 +59,39 @@ public class GameController : MonoBehaviour
             Card newCard = deckManager.DrawCardToHand();
             ui.hand.PlaceCardInHand(newCard);
         }
+    }
+
+    public void AttemptToPlayCardOnDropZone(Card cardDropping, DropZone dropZone)
+    {
+        if (!CardCanBePlayedHere(cardDropping, dropZone))
+        {
+            ReturnCardToHand(cardDropping);
+            return; 
+        }
+
+        // Create the creature
+
+
+
+        // Move the card to the discard.
+        deckManager.DiscardCard(cardDropping);
+
+
+    }
+
+    bool CardCanBePlayedHere(Card cardDropping, DropZone dropZone)
+    {
+        // todo: check mana, gold, cooldowns etc.
+
+
+        return true;
+    }
+
+    public void ReturnCardToHand(Card c)
+    {
+        deckManager.AddCardToHand(c);
+        ui.hand.PlaceCardInHand(c);
+        Debug.Log("placing card back in hand...");
     }
 
     void ChangeGameState(GameState newState)

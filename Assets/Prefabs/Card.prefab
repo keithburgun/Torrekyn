@@ -230,6 +230,9 @@ MonoBehaviour:
   glow: {fileID: 0}
   canvasGroup: {fileID: 5384419359523143633}
   myLastDropZone: {fileID: 0}
+  worldDropZoneLayer:
+    serializedVersion: 2
+    m_Bits: 1
 --- !u!225 &5384419359523143633
 CanvasGroup:
   m_ObjectHideFlags: 0
