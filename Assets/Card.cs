@@ -15,7 +15,7 @@ public class Card : MonoBehaviour, IDragHandler, IBeginDragHandler, IEndDragHand
 
     public LayerMask worldDropZoneLayer;
 
-    public Unit myUnit;
+    public GameObject myUnitToSpawnPrefab;
 
     public void Select()
     {
@@ -75,7 +75,7 @@ public class Card : MonoBehaviour, IDragHandler, IBeginDragHandler, IEndDragHand
             if (dropZone != null)
             {
                 Debug.Log($"Card '{name}' dropped over UI DropZone: {result.gameObject.name}");
-                dropZone.HandleDrop(this); // Pass the dropped GameObject
+                GameController.game.AttemptToPlayCardOnDropZone(this, dropZone);
                 dropHandledByZone = true;
                 myLastDropZone = dropZone; // Update last drop zone if it's a valid one
                 break; // Assuming only one UI DropZone should handle the drop
@@ -115,7 +115,7 @@ public class Card : MonoBehaviour, IDragHandler, IBeginDragHandler, IEndDragHand
                     else
                     {
                         Debug.Log($"Card '{name}' dropped into World DropZone: {hitCollider.gameObject.name}");
-                        dropZone.HandleDrop(this); // Pass the dropped GameObject
+                        GameController.game.AttemptToPlayCardOnDropZone(this, dropZone);
                         dropHandledByZone = true;
                         myLastDropZone = dropZone; // Update last drop zone
                         break; // Assuming only one world DropZone should handle the drop

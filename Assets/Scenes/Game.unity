@@ -255,7 +255,10 @@ MonoBehaviour:
   deckManager: {fileID: 1566817775}
   cardDatabase: {fileID: 2081739952}
   ui: {fileID: 1784661572}
-  worldDropZones: []
+  worldDropZones:
+  - {fileID: 1103859847}
+  - {fileID: 1300445294}
+  - {fileID: 1755389514}
   gameState: 0
 --- !u!4 &94259860
 Transform:
@@ -729,7 +732,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   isHand: 1
-  isField: 0
 --- !u!114 &1081375274
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -807,7 +809,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   isHand: 0
-  isField: 1
 --- !u!58 &1103859848
 CircleCollider2D:
   m_ObjectHideFlags: 0
@@ -946,7 +947,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   isHand: 0
-  isField: 1
 --- !u!58 &1300445295
 CircleCollider2D:
   m_ObjectHideFlags: 0
@@ -1133,7 +1133,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   isHand: 0
-  isField: 1
 --- !u!58 &1755389515
 CircleCollider2D:
   m_ObjectHideFlags: 0

@@ -69,6 +69,14 @@ public class GameController : MonoBehaviour
             return; 
         }
 
+        if (IsSummon(cardDropping))
+        {
+
+        }
+        else if (IsSpell())
+        {
+
+        }
         // Create the creature
 
 
