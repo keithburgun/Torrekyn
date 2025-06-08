@@ -105,17 +105,17 @@ public class CardDatabase : MonoBehaviour
     public List<CardData> GetStartingDeck()
     {
         List<CardData> startingDeck = new List<CardData>();
-        startingDeck.Add(GetCard("swordsman"));
-        startingDeck.Add(GetCard("swordsman"));
-        startingDeck.Add(GetCard("knight"));
-        startingDeck.Add(GetCard("knight"));
-        startingDeck.Add(GetCard("archer"));
-        startingDeck.Add(GetCard("archer"));
+        startingDeck.Add(GetCardData("swordsman"));
+        startingDeck.Add(GetCardData("swordsman"));
+        startingDeck.Add(GetCardData("knight"));
+        startingDeck.Add(GetCardData("knight"));
+        startingDeck.Add(GetCardData("archer"));
+        startingDeck.Add(GetCardData("archer"));
 
         return startingDeck;
     }
 
-    public CardData GetCard(string s)
+    public CardData GetCardData(string s)
     {
         foreach (CardData card in allData)
         {

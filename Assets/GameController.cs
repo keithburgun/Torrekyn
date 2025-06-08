@@ -67,11 +67,12 @@ public class GameController : MonoBehaviour
     {
         if (!CardCanBePlayedHere(cardDropping, dropZone))
         {
+            // todo play a NO sfx
             ReturnCardToHand(cardDropping);
             return; 
         }
 
-        cardLogic.PlayCardAtDropZone(cardDropping, dropZone);
+        cardLogic.PlayCard(cardDropping, dropZone);
 
 
 

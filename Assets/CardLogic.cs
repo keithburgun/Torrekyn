@@ -2,17 +2,22 @@ using UnityEngine;
 
 public class CardLogic : MonoBehaviour
 {
-    public void PlayCardAtDropZone(Card card, DropZone zone)
+    public void PlayCard(Card card, DropZone zone)
     {
-        switch (card.cardName)
-        {
-            default:
-                break;
-        }
-    }
+        CardData newData = GameController.game.cardDatabase.GetCardData(card.myCardData.properName);
 
-    public void CreateUnitAt(string unitName, DropZone zone)
-    {
-        GameController.game.cardDatabase.GetCard("unitName");
+        if (newData == null)
+        {
+            Debug.LogError("COULDNT FIND THAT CARD: " + card.cardName);
+            return; 
+        }
+
+        if (newData.health <= 0) // is it a SPELL?
+        {
+            if (newData.properName == "Build")
+            {
+                // Build Card Played
+            }
+        }
     }
 }

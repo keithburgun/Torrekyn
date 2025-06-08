@@ -15,7 +15,7 @@ public class Card : MonoBehaviour, IDragHandler, IBeginDragHandler, IEndDragHand
 
     public LayerMask worldDropZoneLayer;
 
-    public GameObject myUnitToSpawnPrefab;
+    public CardData myCardData;
 
     public void Select()
     {
@@ -29,6 +29,7 @@ public class Card : MonoBehaviour, IDragHandler, IBeginDragHandler, IEndDragHand
 
     public void Populate(CardData newCardData)
     {
+        myCardData = newCardData;
         cardName.text = newCardData.properName;
     }
 
