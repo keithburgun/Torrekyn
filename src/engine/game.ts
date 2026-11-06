@@ -19,7 +19,7 @@ export function newPlayer(id: number, name: string, human: boolean, avatar: numb
   return {
     id, name, human, avatar,
     health: CONFIG.startHealth, alive: true, placement: 0,
-    tier: 1, upgradeCost: CONFIG.upgradeCost[2] + 1, gold: 0, maxGoldBonus: 0, goldNextTurn: 0,
+    tier: 1, upgradeCost: CONFIG.upgradeCost[2], gold: 0, maxGoldBonus: 0, goldNextTurn: 0,
     board: [], hand: [], shop: [], slots: emptySlots(), frozen: false,
     tribeAtk: {}, alcoveAtkThisTier: 0, tinkerThisTier: 0, bannerBonus: 0, redGemBonus: 0,
     battlecriesThisTurn: 0, battlecriesLastTurn: 0, battlecriesGame: 0,

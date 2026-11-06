@@ -10,7 +10,10 @@
     "art": "node tools/gen-art.mjs",
     "test": "vitest run",
     "cards": "python3 tools/import_cards.py",
-    "tauri": "tauri"
+    "tauri": "tauri",
+    "release": "node tools/release.mjs",
+    "tauri:dev": "tauri dev",
+    "tauri:build": "tauri build"
   },
   "devDependencies": {
     "@tauri-apps/cli": "^2.12.4",

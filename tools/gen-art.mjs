@@ -322,7 +322,7 @@ function menuSvg() {
 <rect width="${W}" height="${H}" fill="url(#s)"/>${stars}
 <circle cx="800" cy="430" r="260" fill="url(#m)"/><circle cx="800" cy="430" r="70" fill="#fff6dc"/>
 <path d="${ridge1}L${W} ${H}z" fill="#140d20"/>
-<path d="M740 640v-200l20-30 20 30v-60l20-40 20 40v60l20-30 20 30v200z" fill="#0c0814"/>
+<path d="M1220 700v-120l12-18 12 18v-36l12-24 12 24v36l12-18 12 18v120z" fill="#0c0814"/>
 <path d="${ridge2}L${W} ${H}z" fill="#08050d"/>
 </svg>`;
 }
