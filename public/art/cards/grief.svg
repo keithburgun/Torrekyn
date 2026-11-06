@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256">
+<defs>
+<linearGradient id="sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#0e1116"/><stop offset=".55" stop-color="#2c3440"/><stop offset="1" stop-color="#7d8796"/></linearGradient>
+<radialGradient id="halo" cx=".5" cy=".5" r=".5"><stop offset="0" stop-color="#f3e3b5" stop-opacity=".55"/><stop offset="1" stop-color="#f3e3b5" stop-opacity="0"/></radialGradient>
+<linearGradient id="gl" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fffdf5"/><stop offset="1" stop-color="#e0c88f"/></linearGradient>
+<radialGradient id="vig" cx=".5" cy=".45" r=".75"><stop offset=".6" stop-color="#000" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity=".7"/></radialGradient>
+<filter id="blur" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur stdDeviation="9"/></filter>
+<style>.k{fill:#0e1116;opacity:.85}.ks{fill:none;stroke:#0e1116;stroke-width:6;stroke-linecap:round;opacity:.8}.s{fill:none;stroke:url(#gl);stroke-linecap:round;stroke-linejoin:round}</style>
+</defs>
+<rect width="256" height="256" fill="url(#sky)"/>
+<path d="M0 256L0 190L0 154.2618314549327L40 172.03821999486536L80 184.5350348809734L120 130.9811950707808L160 173.3789852866903L200 167.78364843688905L240 145.86124080233276L256 256z" fill="#1b2028"/><path d="M0 256L0 215L0 204.76697149919346L24 195.99333066493273L48 201.3406970689539L72 200.1375601894688L96 203.13217435381375L120 206.29194049164653L144 194.88869430264458L168 199.17006341624074L192 210.90099403285421L216 199.02521161478944L240 212.24677071208134L256 256z" fill="#12161c"/>
+<circle cx="128.61593910912052" cy="124" r="96" fill="url(#halo)"/>
+<g transform="translate(128.61593910912052 128) rotate(0.8146505779586732) scale(0.8217920571751893) translate(-128 -128)">
+<g filter="url(#blur)" opacity=".9" fill="#f3e3b5" stroke="#f3e3b5"><path d="M128 36c30 50 62 82 62 120 0 36-28 62-62 62s-62-26-62-62c0-38 32-70 62-120z"/><path d="M104 150c0 18 10 30 24 34" opacity="0"/></g>
+<g fill="url(#gl)" stroke="#0e1116" stroke-width="2"><path d="M128 36c30 50 62 82 62 120 0 36-28 62-62 62s-62-26-62-62c0-38 32-70 62-120z"/><path d="M104 150c0 18 10 30 24 34" class="ks"/></g>
+</g>
+<rect width="256" height="256" fill="url(#vig)"/>
+</svg>

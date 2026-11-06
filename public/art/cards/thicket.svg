@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256">
+<defs>
+<linearGradient id="sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#140a24"/><stop offset=".55" stop-color="#3b1d5c"/><stop offset="1" stop-color="#6a3f8f"/></linearGradient>
+<radialGradient id="halo" cx=".5" cy=".5" r=".5"><stop offset="0" stop-color="#9dff9a" stop-opacity=".55"/><stop offset="1" stop-color="#9dff9a" stop-opacity="0"/></radialGradient>
+<linearGradient id="gl" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#e9ffe0"/><stop offset="1" stop-color="#7fd88a"/></linearGradient>
+<radialGradient id="vig" cx=".5" cy=".45" r=".75"><stop offset=".6" stop-color="#000" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity=".7"/></radialGradient>
+<filter id="blur" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur stdDeviation="9"/></filter>
+<style>.k{fill:#140a24;opacity:.85}.ks{fill:none;stroke:#140a24;stroke-width:6;stroke-linecap:round;opacity:.8}.s{fill:none;stroke:url(#gl);stroke-linecap:round;stroke-linejoin:round}</style>
+</defs>
+<rect width="256" height="256" fill="url(#sky)"/>
+<circle cx="198.3363714395091" cy="54.5383265777491" r="28.081114436965436" fill="#9dff9a" opacity=".35"/><path d="M0 256L0 200L0 192.43226767517626L32 189.34318783693016L64 188.9835588634014L96 189.568124669604L128 187.84774786327034L160 190.5178570235148L192 187.37986796535552L224 189.64490137528628L256 184.22355815768242L256 256z" fill="#1d0f33"/><path d="M155.07646311074495 230v-18.99234483204782a10 10 0 0 1 20 0v18.99234483204782z" fill="#120a20"/><path d="M182.00301457196474 230v-22.117416329681873a10 10 0 0 1 20 0v22.117416329681873z" fill="#120a20"/><path d="M134.25522096455097 230v-31.365863772574812a10 10 0 0 1 20 0v31.365863772574812z" fill="#120a20"/><path d="M101.50317471474409 230v-18.74647506279871a10 10 0 0 1 20 0v18.74647506279871z" fill="#120a20"/><path d="M138.6106943897903 230v-32.42593582579866a10 10 0 0 1 20 0v32.42593582579866z" fill="#120a20"/><path d="M180.00616991892457 230v-25.048813719302416a10 10 0 0 1 20 0v25.048813719302416z" fill="#120a20"/><path d="M30 230c4-60-10-90-20-110M30 170l20-20M24 140l-14-14" stroke="#120a20" stroke-width="7" fill="none"/>
+<circle cx="132.181092325598" cy="124" r="96" fill="url(#halo)"/>
+<g transform="translate(132.181092325598 128) rotate(-4.936346623580903) scale(0.8461315748468041) translate(-128 -128)">
+<g filter="url(#blur)" opacity=".9" fill="#9dff9a" stroke="#9dff9a"><path d="M118 210h20v-60l30-30-10-6-20 20V90h-20v44l-20-20-10 6 30 30z"/><circle cx="128" cy="78" r="40"/><circle cx="88" cy="104" r="28"/><circle cx="168" cy="104" r="28"/></g>
+<g fill="url(#gl)" stroke="#140a24" stroke-width="2"><path d="M118 210h20v-60l30-30-10-6-20 20V90h-20v44l-20-20-10 6 30 30z"/><circle cx="128" cy="78" r="40"/><circle cx="88" cy="104" r="28"/><circle cx="168" cy="104" r="28"/></g>
+</g>
+<rect width="256" height="256" fill="url(#vig)"/>
+</svg>

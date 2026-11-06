@@ -1,0 +1,27 @@
+{
+  "name": "torrekin",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "npm run art && tsc --noEmit && vite build",
+    "preview": "vite preview",
+    "art": "node tools/gen-art.mjs",
+    "test": "vitest run",
+    "cards": "python3 tools/import_cards.py",
+    "tauri": "tauri"
+  },
+  "devDependencies": {
+    "@tauri-apps/cli": "^2.12.4",
+    "typescript": "^5.9.3",
+    "vite": "^6.4.5",
+    "vite-plugin-pwa": "^0.21.2",
+    "vitest": "^3.2.7"
+  },
+  "dependencies": {
+    "@fontsource/alegreya-sans": "^5.3.0",
+    "@fontsource/cinzel": "^5.3.0",
+    "@tauri-apps/api": "^2.12.4"
+  }
+}

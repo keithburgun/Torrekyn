@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256">
+<defs>
+<linearGradient id="sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#0e1116"/><stop offset=".55" stop-color="#2c3440"/><stop offset="1" stop-color="#7d8796"/></linearGradient>
+<radialGradient id="halo" cx=".5" cy=".5" r=".5"><stop offset="0" stop-color="#f3e3b5" stop-opacity=".55"/><stop offset="1" stop-color="#f3e3b5" stop-opacity="0"/></radialGradient>
+<linearGradient id="gl" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fffdf5"/><stop offset="1" stop-color="#e0c88f"/></linearGradient>
+<radialGradient id="vig" cx=".5" cy=".45" r=".75"><stop offset=".6" stop-color="#000" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity=".7"/></radialGradient>
+<filter id="blur" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur stdDeviation="9"/></filter>
+<style>.k{fill:#0e1116;opacity:.85}.ks{fill:none;stroke:#0e1116;stroke-width:6;stroke-linecap:round;opacity:.8}.s{fill:none;stroke:url(#gl);stroke-linecap:round;stroke-linejoin:round}</style>
+</defs>
+<rect width="256" height="256" fill="url(#sky)"/>
+<path d="M0 256L0 190L0 137.28395611047745L40 133.55055039282888L80 139.87207256257534L120 185.1523826830089L160 155.15801108907908L200 184.2115459172055L240 131.92166519816965L256 256z" fill="#1b2028"/><path d="M0 256L0 215L0 212.5785591173917L24 206.81224239291623L48 204.0259504027199L72 212.75948458118364L96 195.19336501602083L120 200.8477195026353L144 203.9825806953013L168 191.3749060453847L192 190.93200834817253L216 207.45962682762183L240 210.95191766275093L256 256z" fill="#12161c"/>
+<circle cx="132.9562103068456" cy="124" r="96" fill="url(#halo)"/>
+<g transform="translate(132.9562103068456 128) rotate(0.7336264452897012) scale(0.8263273805007338) translate(-128 -128)">
+<g filter="url(#blur)" opacity=".9" fill="#f3e3b5" stroke="#f3e3b5"><path d="M30 128c30-50 66-70 98-70s68 20 98 70c-30 50-66 70-98 70s-68-20-98-70z"/><circle cx="128" cy="128" r="36" opacity="0"/><circle cx="128" cy="128" r="16"/></g>
+<g fill="url(#gl)" stroke="#0e1116" stroke-width="2"><path d="M30 128c30-50 66-70 98-70s68 20 98 70c-30 50-66 70-98 70s-68-20-98-70z"/><circle cx="128" cy="128" r="36" class="k"/><circle cx="128" cy="128" r="16"/></g>
+</g>
+<rect width="256" height="256" fill="url(#vig)"/>
+</svg>

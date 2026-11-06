@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256">
+<defs>
+<linearGradient id="sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#0e1116"/><stop offset=".55" stop-color="#2c3440"/><stop offset="1" stop-color="#7d8796"/></linearGradient>
+<radialGradient id="halo" cx=".5" cy=".5" r=".5"><stop offset="0" stop-color="#f3e3b5" stop-opacity=".55"/><stop offset="1" stop-color="#f3e3b5" stop-opacity="0"/></radialGradient>
+<linearGradient id="gl" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fffdf5"/><stop offset="1" stop-color="#e0c88f"/></linearGradient>
+<radialGradient id="vig" cx=".5" cy=".45" r=".75"><stop offset=".6" stop-color="#000" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity=".7"/></radialGradient>
+<filter id="blur" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur stdDeviation="9"/></filter>
+<style>.k{fill:#0e1116;opacity:.85}.ks{fill:none;stroke:#0e1116;stroke-width:6;stroke-linecap:round;opacity:.8}.s{fill:none;stroke:url(#gl);stroke-linecap:round;stroke-linejoin:round}</style>
+</defs>
+<rect width="256" height="256" fill="url(#sky)"/>
+<path d="M0 256L0 190L0 167.3248443333432L40 139.85442759469151L80 158.61890248488635L120 166.65481738746166L160 160.7058030879125L200 152.682488784194L240 185.6929465243593L256 256z" fill="#1b2028"/><path d="M0 256L0 215L0 210.70034431526437L24 199.36264069168828L48 207.79170290683396L72 197.04300725483336L96 202.32868122169748L120 199.47897571022622L144 202.80090175569057L168 212.27535637794062L192 203.686174020404L216 204.67128580552526L240 214.09508851123974L256 256z" fill="#12161c"/>
+<circle cx="125.51680135261267" cy="124" r="96" fill="url(#halo)"/>
+<g transform="translate(125.51680135261267 128) rotate(0.14077599858865142) scale(0.8053270543739199) translate(-128 -128)">
+<g filter="url(#blur)" opacity=".9" fill="#f3e3b5" stroke="#f3e3b5"><ellipse cx="128" cy="80" rx="36" ry="48"/><rect x="120" y="120" width="16" height="104" rx="8"/></g>
+<g fill="url(#gl)" stroke="#0e1116" stroke-width="2"><ellipse cx="128" cy="80" rx="36" ry="48"/><rect x="120" y="120" width="16" height="104" rx="8"/></g>
+</g>
+<rect width="256" height="256" fill="url(#vig)"/>
+</svg>

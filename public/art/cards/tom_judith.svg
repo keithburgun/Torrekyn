@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256">
+<defs>
+<linearGradient id="sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#0e1116"/><stop offset=".55" stop-color="#2c3440"/><stop offset="1" stop-color="#7d8796"/></linearGradient>
+<radialGradient id="halo" cx=".5" cy=".5" r=".5"><stop offset="0" stop-color="#f3e3b5" stop-opacity=".55"/><stop offset="1" stop-color="#f3e3b5" stop-opacity="0"/></radialGradient>
+<linearGradient id="gl" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fffdf5"/><stop offset="1" stop-color="#e0c88f"/></linearGradient>
+<radialGradient id="vig" cx=".5" cy=".45" r=".75"><stop offset=".6" stop-color="#000" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity=".7"/></radialGradient>
+<filter id="blur" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur stdDeviation="9"/></filter>
+<style>.k{fill:#0e1116;opacity:.85}.ks{fill:none;stroke:#0e1116;stroke-width:6;stroke-linecap:round;opacity:.8}.s{fill:none;stroke:url(#gl);stroke-linecap:round;stroke-linejoin:round}</style>
+</defs>
+<rect width="256" height="256" fill="url(#sky)"/>
+<path d="M0 256L0 190L0 163.8977436721325L40 187.79346853028983L80 175.43020373675972L120 146.40800448600203L160 161.68743778951466L200 179.3923421483487L240 167.48625985346735L256 256z" fill="#1b2028"/><path d="M0 256L0 215L0 204.44386350922287L24 204.484936586814L48 214.6383415767923L72 207.6198082685005L96 199.07181842485443L120 196.81687370524742L144 203.49152368493378L168 193.2395157380961L192 195.64939800533466L216 191.94012435968034L240 202.87389409262687L256 256z" fill="#12161c"/>
+<circle cx="127.80093878461048" cy="124" r="96" fill="url(#halo)"/>
+<g transform="translate(127.80093878461048 128) rotate(-3.061099066399038) scale(0.7993620802089573) translate(-128 -128)">
+<g filter="url(#blur)" opacity=".9" fill="#f3e3b5" stroke="#f3e3b5"><path d="M128 42c-36 0-56 30-56 70v48l-18 26h148l-18-26v-48c0-40-20-70-56-70z"/><circle cx="128" cy="204" r="16"/><path d="M128 42V28" class="s" stroke-width="8"/></g>
+<g fill="url(#gl)" stroke="#0e1116" stroke-width="2"><path d="M128 42c-36 0-56 30-56 70v48l-18 26h148l-18-26v-48c0-40-20-70-56-70z"/><circle cx="128" cy="204" r="16"/><path d="M128 42V28" class="s" stroke-width="8"/></g>
+</g>
+<rect width="256" height="256" fill="url(#vig)"/>
+</svg>
