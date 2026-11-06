@@ -36,6 +36,7 @@ const PAL = {
 
 // ---------------- glyphs (drawn in a 256 box, centred at 128,128) ----------------
 const G = {
+  bunny: `<ellipse cx="100" cy="74" rx="20" ry="50" transform="rotate(-12 100 74)"/><ellipse cx="156" cy="74" rx="20" ry="50" transform="rotate(12 156 74)"/><circle cx="128" cy="150" r="62"/><ellipse cx="100" cy="76" rx="8" ry="32" transform="rotate(-12 100 76)" fill="#ffc6e0"/><ellipse cx="156" cy="76" rx="8" ry="32" transform="rotate(12 156 76)" fill="#ffc6e0"/><circle cx="106" cy="146" r="8" class="k"/><circle cx="150" cy="146" r="8" class="k"/><path d="M120 164l8 7 8-7" class="ks"/><circle cx="92" cy="166" r="9" fill="#ffb6d5" opacity=".8"/><circle cx="164" cy="166" r="9" fill="#ffb6d5" opacity=".8"/>`,
   skull: `<path d="M128 52c-38 0-64 26-64 62 0 20 9 34 22 42v22c0 6 5 10 10 10h64c5 0 10-4 10-10v-22c13-8 22-22 22-42 0-36-26-62-64-62z"/><circle cx="104" cy="118" r="15" class="k"/><circle cx="152" cy="118" r="15" class="k"/><path d="M128 136l-9 18h18z" class="k"/><path d="M108 172v16M128 172v16M148 172v16" class="ks"/>`,
   flame: `<path d="M128 40c10 34 52 50 52 100 0 34-24 62-52 62s-52-28-52-62c0-26 14-40 24-52 2 18 8 26 16 30-4-30 2-56 12-78z"/><path d="M128 120c6 16 24 24 24 46 0 16-11 26-24 26s-24-10-24-26c0-14 10-20 14-30 2 10 6 12 10 14z" class="k"/>`,
   hourglass: `<path d="M84 50h88v12c0 30-28 46-28 66s28 36 28 66v12H84v-12c0-30 28-46 28-66S84 92 84 62z"/><path d="M102 74h52c-4 18-26 28-26 40-1-12-22-22-26-40zM128 160c10 10 26 20 28 34h-56c2-14 18-24 28-34z" class="k"/>`,
@@ -331,19 +332,33 @@ ${clouds}
 }
 fs.writeFileSync(path.join(root, 'public/art/menu.svg'), menuSvg());
 
-// ---------------- hero portraits ----------------
-const HERO_COLORS = [['#b89cff', '#5a3f9e'], ['#8fd8f0', '#2a7f9e'], ['#ffa3c4', '#b2406e'], ['#9fe0bd', '#3a8a62'], ['#ffd78a', '#b07a1a'], ['#a9c9ff', '#3c64b0'], ['#ffb3d9', '#a83a78'], ['#d6cdf0', '#5e5290'], ['#9ee6dc', '#2d8579'], ['#ffbf9e', '#b85a36'], ['#c8b0ff', '#5a42a8'], ['#fff0a0', '#a0861a']];
-const HERO_GLYPHS = ['crown', 'eye', 'flame', 'tree', 'coin', 'helm', 'heart', 'hood', 'gear', 'sun', 'moon', 'star'];
-for (let i = 0; i < 12; i++) {
-  const [bg, ink] = HERO_COLORS[i];
-  const glyph = G[HERO_GLYPHS[i]];
-  const r = rng('hero' + i);
+// ---------------- hero portraits (file name = hero id) ----------------
+const HERO_ART = {
+  andromeda_robin: ['#9fe0bd', '#3a7f5c', 'hat'],
+  gelf_lanz: ['#a9c9ff', '#3c64b0', 'spear'],
+  derby_pocket: ['#ffbf9e', '#b85a36', 'briefcase'],
+  bunny_wizard: ['#ffc6e0', '#b0457c', 'bunny'],
+  croh_vosh: ['#8fd8f0', '#2a5f8e', 'sword'],
+  may_danaris: ['#ff9fb8', '#a8304f', 'chip'],
+  locas_clare: ['#d6cdf0', '#5e5290', 'keyhole'],
+  venice_gorn: ['#ffe39a', '#a07a1a', 'wheat'],
+  omar_evans: ['#b8eb9a', '#4a8a2a', 'shuriken'],
+  eve_williams: ['#e4d2ff', '#6a3fa8', 'skull'],
+  abragail: ['#c8d8ff', '#4a54a8', 'book'],
+  bill_milton: ['#ffb39a', '#8f2f2a', 'tophat'],
+  unknown: ['#e9e0ff', '#7d5bd0', 'star'],
+};
+fs.rmSync(outHeroes, { recursive: true, force: true });
+fs.mkdirSync(outHeroes, { recursive: true });
+for (const [id, [bg, ink, gname]] of Object.entries(HERO_ART)) {
+  const glyph = G[gname];
+  const r = rng('hero' + id);
   const sp = Array.from({ length: 7 }, () => sparkle(30 + r() * 196, 30 + r() * 196, 4 + r() * 6, '#ffffff', 0.8)).join('');
-  fs.writeFileSync(path.join(outHeroes, `${i}.svg`), `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256">
+  fs.writeFileSync(path.join(outHeroes, `${id}.svg`), `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256">
 <defs><radialGradient id="b" cx=".5" cy=".38" r=".7"><stop offset="0" stop-color="#ffffff"/><stop offset=".55" stop-color="${bg}"/><stop offset="1" stop-color="${ink}" stop-opacity=".75"/></radialGradient>
-<filter id="blur"><feGaussianBlur stdDeviation="6"/></filter><style>.k{fill:${ink}}.ks{fill:none;stroke:${ink};stroke-width:6}.s{fill:none;stroke:#fff}</style></defs>
+<filter id="blur"><feGaussianBlur stdDeviation="6"/></filter><style>.k{fill:${ink}}.ks{fill:none;stroke:${ink};stroke-width:6;stroke-linecap:round}.s{fill:none;stroke:#fff}</style></defs>
 <rect width="256" height="256" fill="url(#b)"/>${sp}
-<g transform="translate(128 132) scale(.66) translate(-128 -128)"><g filter="url(#blur)" fill="#fff" stroke="#fff" stroke-width="12">${glyph.replace(/class="(k|ks)"/g, 'opacity="0"')}</g><g fill="#ffffff" stroke="${ink}" stroke-width="6" stroke-linejoin="round">${glyph}</g></g>
+<g transform="translate(128 132) scale(.66) translate(-128 -128)"><g filter="url(#blur)" fill="#fff" stroke="#fff" stroke-width="14">${outlineOf(glyph, 14, '#ffffff')}</g><g fill="${ink}" stroke="${ink}" stroke-width="12" stroke-linejoin="round">${outlineOf(glyph, 12, ink)}</g><g fill="#ffffff">${glyph}</g></g>
 </svg>`);
 }
 
@@ -353,4 +368,4 @@ let manifest = {};
 if (fs.existsSync(manifestPath)) manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf8'));
 for (const c of data.cards) if (!manifest[c.id]) manifest[c.id] = `art/cards/${c.id}.svg`;
 fs.writeFileSync(manifestPath, JSON.stringify(manifest, null, 1));
-console.log(`art: ${data.cards.length} cards, board, menu, 12 heroes`);
+console.log(`art: ${data.cards.length} cards, board, menu, ${Object.keys(HERO_ART).length} hero portraits`);

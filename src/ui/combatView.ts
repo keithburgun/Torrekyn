@@ -25,9 +25,9 @@ export class CombatPlayer {
     const oppId = me === 0 ? (r.b === -1 ? r.ghostOf! : r.b) : r.a;
     const opp = g.players[oppId];
     stage.innerHTML = `
-      <div class="combat-name" style="left:40px;top:40px"><div class="avatar" style="background-image:url('${heroArt(opp.avatar)}')"></div>
-        <div>${r.b === -1 ? 'Ghost of ' : ''}${esc(opp.name)}<div class="hint" style="padding:0;text-align:left">${esc(heroDef(opp.hero)?.name ?? '')}</div></div></div>
-      <div class="combat-name" style="left:40px;bottom:40px"><div class="avatar" style="background-image:url('${heroArt(meP.avatar)}')"></div><div>${esc(meP.name)}</div></div>
+      <div class="combat-name" style="left:40px;top:40px"><div class="avatar" style="background-image:url('${heroArt(opp.hero)}')"></div>
+        <div>${r.b === -1 ? 'Ghost of ' : ''}${esc(opp.name)}<div class="hint" style="padding:0;text-align:left">${esc(heroDef(opp.hero)?.title ?? '')}</div></div></div>
+      <div class="combat-name" style="left:40px;bottom:40px"><div class="avatar" style="background-image:url('${heroArt(meP.hero)}')"></div><div>${esc(meP.name)}</div></div>
       <div class="vs-banner">ROUND ${round} · BATTLE</div>
       <div class="abs" style="right:30px;bottom:30px;display:flex;gap:10px">
         <button class="btn" data-cact="speed">Speed ×${this.speed}</button>

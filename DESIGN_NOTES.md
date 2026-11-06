@@ -72,11 +72,28 @@ When the card text was ambiguous, Hearthstone: Battlegrounds conventions were us
 ## Golden versions
 Golden text was written for every card (see the updated spreadsheet's Golden Ability column and `tools/import_cards.py`). The convention: double stats and double the effect's numbers. "Trigger twice" is used where doubling a number doesn't make sense, and "Avenge (N)" is halved for some keyword-granting effects. Tribe-wide auras like Sarinee, Tom Judith and Gem Wizard go from 2× to 3×.
 
-## Heroes and trinkets
-The heroes and trinkets in `src/engine/heroes.ts` are **placeholders** until the real list arrives.
-- You choose 1 of 4 heroes at the start (as with HS Battlegrounds Perks).
-- Hero powers are either active (cost gold, once per turn) or passive.
-- A lesser trinket offer (4 options) arrives on turn 6 and a greater one on turn 9. You buy one with gold or skip.
+## Heroes
+Twelve Torrekin champions; you choose 1 of 4 at the start. Powers are either active (cost gold, once per turn) or passive.
+
+| Hero | Power | Type | Effect |
+|---|---|---|---|
+| Andromeda Robin | Elemental Weave | 1 gold, target | Random Element on a friendly unit: Fire +3 Attack, Water +4 Health, Earth +1/+2 & Taunt, Wind +2/+2 |
+| Gelf Lanz | Lance Charge | Passive | Start of Combat: your left-most unit deals half its Attack to the enemy across from it |
+| Derby Pocket | Team Spirit | Passive | End of turn: a random friendly unit gets +1/+1 per different tribe in your army (max +3/+3) |
+| Bunny Wizard | Cuddle Spell | 1 gold, target | A friendly unit gets +1/+3; your hero heals 1 |
+| Croh Vosh | Abyssal Sweep | Passive | Start of Combat: deal damage equal to your Tavern Tier to 2 random enemies |
+| May Danaris | Root Access | 2 gold | Copy the strongest unit in your next opponent's army |
+| Locas Clare | Five-Finger Discount | Passive | Your first unit bought each turn costs 1 less |
+| Venice Gorn | Sow Seeds | 2 gold | Plant a seed; 2 turns later it becomes a random unit from 1 Tier above your Tavern |
+| Omar Evans | Leaf Cloak | Passive | Start of Combat: your right-most unit gets Stealth and +1/+1 per Tavern Tier |
+| Eve Williams | Wild Card | 1 gold, target | Transform a friendly unit into a random unit of the same Tier, then +3/+3 |
+| Abragail | Pop Quiz | 2 gold | Discover a unit from your Tavern Tier |
+| Bill Milton | Golden Parachute | Passive | Your units sell for 2 gold |
+
+In 600 simulated bot-only games, average placements ranged from 3.15 to 3.82 (3.5 is even).
+
+## Trinkets
+The trinkets are still **placeholders**. A lesser trinket offer (4 options) arrives on turn 6 and a greater one on turn 9. You buy one with gold or skip.
 
 ## Opponents
 Bots use the same shop rules as you. They level on a curve, prefer their main tribe, chase triples, use hero powers and buy trinkets. Personas and Elo are planned for later.

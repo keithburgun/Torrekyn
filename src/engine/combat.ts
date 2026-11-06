@@ -324,6 +324,7 @@ export class Combat {
       heroSoc(this, s);
     }
     this.snap('trigger', { note: 'Start of Combat' });
+    this.resolveDeaths();
     for (const s of [this.sides[this.attacking], this.sides[1 - this.attacking]]) {
       for (const u of [...s.units]) {
         const soc = EFFECTS[u.cardId]?.soc;

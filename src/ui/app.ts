@@ -2,7 +2,7 @@ import { CONFIG, def, TRIBE_NAMES } from '../engine/core';
 import {
   buy, chooseDiscover, endTurn, move, needsTarget, newGame, play, reroll, selectHero, sell, sellValue, toggleFreeze, upgrade, validTargets,
 } from '../engine/game';
-import { HEROES, canUseHeroPower, heroDef, pickTrinket, trinketDef, useHeroPower } from '../engine/heroes';
+import { HEROES, buyCost, canUseHeroPower, heroDef, pickTrinket, trinketDef, useHeroPower } from '../engine/heroes';
 import type { CombatResult, GameState, Player } from '../engine/types';
 import { CombatPlayer } from './combatView';
 import { art, bigCardHtml, cardHtml, esc, heroArt, unitView, KEYWORD_HELP } from './view';
@@ -132,13 +132,13 @@ export class App {
       <div class="choices">${offer.map((id) => {
         const h = heroDef(id)!;
         return `<div class="choice herocard" data-act="hero-pick" data-id="${id}">
-          <div class="hero-portrait" style="background-image:url('${heroArt(h.avatar)}')"></div>
+          <div class="hero-portrait" style="background-image:url('${heroArt(h.id)}')"></div>
           <div class="hn">${esc(h.name)}</div>
+          <div class="pc" style="font-size:14px;margin-top:-8px;text-align:center">${esc(h.title)}</div>
           <div class="pw">${esc(h.power)} ${h.passive ? '<span class="pc">(Passive)</span>' : `<span class="pc">(${h.cost} gold)</span>`}</div>
           <div class="pt">${esc(h.text)}</div>
         </div>`;
       }).join('')}</div>
-      <div class="hint">Placeholder heroes until the real hero list arrives.</div>
     </div>`;
   }
 
@@ -150,10 +150,10 @@ export class App {
       const next = this.me.nextOpponent === p.id;
       const pct = Math.max(0, Math.min(100, (p.health / CONFIG.startHealth) * 100));
       return `<div class="row ${p.human ? 'me' : ''} ${next ? 'next' : ''} ${p.alive ? '' : 'dead'}" data-act="inspect" data-id="${p.id}">
-        <div class="avatar" style="background-image:url('${heroArt(p.avatar)}')"></div>
+        <div class="avatar" style="background-image:url('${heroArt(p.hero)}')"></div>
         <div class="meta">
           <div class="nm">${esc(p.name)}</div>
-          <div class="hero-nm">${esc(h?.name ?? '')}</div>
+          <div class="hero-nm">${esc((p.human ? h?.name : h?.title) ?? '')}</div>
           <div class="hpbar"><div style="width:${pct}%"></div></div>
           <div class="nums"><span>❤ ${p.health}</span><span>★ ${p.tier}</span></div>
         </div>
@@ -185,7 +185,7 @@ export class App {
     p.shop.forEach((u, i) => {
       const sel = this.sel?.zone === 'shop' && this.sel.idx === i ? 'selected' : '';
       const v = unitView(p, u, 'shop', i);
-      h += cardHtml(v, { zone: 'shop', idx: i, x: shopX(i, p.shop.length), y: SHOP_Y, extraClass: `${sel} ${p.gold < CONFIG.buyCost ? 'unaffordable' : ''} ${p.frozen ? 'frozen' : ''}` });
+      h += cardHtml(v, { zone: 'shop', idx: i, x: shopX(i, p.shop.length), y: SHOP_Y, extraClass: `${sel} ${p.gold < buyCost(p) ? 'unaffordable' : ''} ${p.frozen ? 'frozen' : ''}` });
     });
     if (!p.shop.length) h += `<div class="hint abs" style="left:560px;top:170px;width:480px">The Tavern is empty. Refresh for new units.</div>`;
     // army slots
@@ -226,10 +226,10 @@ export class App {
   rightPanelHtml() {
     const p = this.me;
     const hd = heroDef(p.hero);
-    const canPower = hd && canUseHeroPower(p);
+    const canPower = hd && canUseHeroPower(this.g!, p);
     const trink = p.trinkets.map((t) => `<span class="trinket-chip" title="${esc(trinketDef(t).text)}">${esc(trinketDef(t).name)}</span>`).join('');
     return `<div class="abs panel hero-box" style="left:1356px;top:14px;width:230px;height:872px">
-      <div class="hero-portrait" style="background-image:url('${heroArt(p.avatar)}')"><div class="hp">${p.health}</div></div>
+      <div class="hero-portrait" style="background-image:url('${heroArt(p.hero)}')"><div class="hp">${p.health}</div></div>
       <div style="font-family:var(--display);font-weight:700;font-size:16px;text-align:center">${esc(hd?.name ?? p.name)}</div>
       ${hd ? `<div class="power ${hd.passive ? 'passive' : ''} ${p.heroUsed ? 'used' : ''} ${!hd.passive && !canPower ? 'disabled' : ''}" data-act="hero-power">
         <div class="pn">${esc(hd.power)} ${hd.passive ? '' : `<span class="cost">${hd.cost}<span class="coin"></span></span>`}</div>
@@ -259,10 +259,10 @@ export class App {
     const v = unitView(p, u, s.zone, s.idx);
     let actions = '';
     if (this.sel) {
-      if (s.zone === 'shop') actions = `<button class="btn primary" data-act="buy" ${p.gold < CONFIG.buyCost ? 'disabled' : ''}>Buy <span class="cost">${CONFIG.buyCost}<span class="coin"></span></span></button>`;
+      if (s.zone === 'shop') actions = `<button class="btn primary" data-act="buy" ${p.gold < buyCost(p) ? 'disabled' : ''}>Buy <span class="cost">${buyCost(p)}<span class="coin"></span></span></button>`;
       if (s.zone === 'hand') actions = `<button class="btn primary" data-act="play" ${p.board.length >= CONFIG.boardSize ? 'disabled' : ''}>Play</button>`;
       if (s.zone === 'board') actions = `<button class="btn" data-act="left" ${s.idx === 0 || u.mem.locked ? 'disabled' : ''}>◀</button>
-        <button class="btn primary" data-act="sell" ${u.mem.locked ? 'disabled' : ''}>Sell <span class="cost">+${sellValue(u)}<span class="coin"></span></span></button>
+        <button class="btn primary" data-act="sell" ${u.mem.locked ? 'disabled' : ''}>Sell <span class="cost">+${sellValue(u, p)}<span class="coin"></span></span></button>
         <button class="btn" data-act="right" ${s.idx >= p.board.length - 1 || u.mem.locked ? 'disabled' : ''}>▶</button>`;
     }
     return `<div style="transform:scale(.88);transform-origin:top center;margin-bottom:-36px">${bigCardHtml(v)}</div><div class="actions">${actions}</div>`;
@@ -302,9 +302,9 @@ export class App {
     return `<div class="modal" data-act="close-inspect">
       <div class="panel" style="padding:24px 30px;display:flex;flex-direction:column;gap:14px;align-items:center;min-width:700px">
         <div style="display:flex;gap:18px;align-items:center">
-          <div class="hero-portrait" style="width:96px;height:96px;background-image:url('${heroArt(p.avatar)}')"><div class="hp">${p.health}</div></div>
+          <div class="hero-portrait" style="width:96px;height:96px;background-image:url('${heroArt(p.hero)}')"><div class="hp">${p.health}</div></div>
           <div><div style="font-family:var(--display);font-size:26px">${esc(p.name)}</div>
-          <div class="hint" style="padding:0;text-align:left">${esc(h?.name ?? '')}: ${esc(h?.text ?? '')}<br>Tavern Tier ${p.tier}${p.trinkets.length ? ' · Trinkets: ' + p.trinkets.map((t) => trinketDef(t).name).join(', ') : ''}</div></div>
+          <div class="hint" style="padding:0;text-align:left">${esc(h?.title ?? '')}<br>${esc(h?.power ?? '')}: ${esc(h?.text ?? '')}<br>Tavern Tier ${p.tier}${p.trinkets.length ? ' · Trinkets: ' + p.trinkets.map((t) => trinketDef(t).name).join(', ') : ''}</div></div>
         </div>
         <div class="hint">Army when you last fought:</div>
         <div style="display:flex;gap:10px;flex-wrap:wrap;justify-content:center">${cards}</div>
@@ -446,7 +446,7 @@ export class App {
       case 'hero-power': {
         const h = heroDef(p!.hero);
         if (!h || h.passive) break;
-        if (!canUseHeroPower(p!)) { this.toast(p!.heroUsed ? 'Already used this turn' : 'Not enough gold'); break; }
+        if (!canUseHeroPower(g!, p!)) { this.toast(p!.heroUsed ? 'Already used this turn' : 'Not enough gold'); break; }
         if (h.target) {
           if (!p!.board.length) { this.toast('You need a unit in your army'); break; }
           this.targeting = { kind: 'hero' };

@@ -4,12 +4,11 @@ import {
 import { EFFECTS, battlecryTimes, hasBattlecry } from './effects';
 import { runCombat } from './combat';
 import { aiTakeTurn, aiChooseDiscover } from './ai';
-import { HEROES, heroDef, heroEndTurn, hasTrinket, offerTrinkets, shopBonus, GREATER_TRINKET_TURN, LESSER_TRINKET_TURN } from './heroes';
+import { HEROES, buyCost, heroDef, heroEndTurn, hasTrinket, offerTrinkets, shopBonus, GREATER_TRINKET_TURN, LESSER_TRINKET_TURN } from './heroes';
 import type { Discover, GameState, Player, Slot, Tribe, Unit } from './types';
 
-export const SAVE_VERSION = 1;
+export const SAVE_VERSION = 2;
 
-const BOT_NAMES = ['Vessa the Pale', 'Orrin Gale', 'Mother Quill', 'Kael Ashborne', 'The Ledger', 'Sister Thorn', 'Brakk', 'Ilyra Moonwake'];
 
 function emptySlots(): Slot[] {
   return Array.from({ length: CONFIG.boardSize }, () => ({ atk: 0, hp: 0, kw: [] }));
@@ -23,7 +22,7 @@ export function newPlayer(id: number, name: string, human: boolean, avatar: numb
     board: [], hand: [], shop: [], slots: emptySlots(), frozen: false,
     tribeAtk: {}, alcoveAtkThisTier: 0, tinkerThisTier: 0, bannerBonus: 0, redGemBonus: 0,
     battlecriesThisTurn: 0, battlecriesLastTurn: 0, battlecriesGame: 0,
-    quests: [], discovers: [], heroUsed: false, trinkets: [], trinketOffer: null, lastOpponent: null, lastOpponentBoard: [], nextOpponent: null, log: [],
+    quests: [], discovers: [], heroUsed: false, heroMem: {}, heroSeeds: [], trinkets: [], trinketOffer: null, lastOpponent: null, lastOpponentBoard: [], nextOpponent: null, log: [],
   };
 }
 
@@ -33,9 +32,8 @@ export function newGame(seed: number, humanName = 'You', tribes?: Tribe[]): Game
     tribes: [], nextUid: 1, lastCombats: [], deadOrder: [],
   };
   g.tribes = tribes ?? sample(g, ALL_TRIBES, CONFIG.tribesPerGame);
-  const names = sample(g, BOT_NAMES, CONFIG.players - 1);
   g.players.push(newPlayer(0, humanName, true, 0));
-  for (let i = 1; i < CONFIG.players; i++) g.players.push(newPlayer(i, names[i - 1], false, i));
+  for (let i = 1; i < CONFIG.players; i++) g.players.push(newPlayer(i, `Rival ${i}`, false, i));
   for (const c of CARDS) {
     if (c.token) continue;
     if (c.tribe !== 'neutral' && !g.tribes.includes(c.tribe)) continue;
@@ -49,6 +47,7 @@ export function newGame(seed: number, humanName = 'You', tribes?: Tribe[]): Game
     const p = g.players[i];
     p.hero = rest.length ? rest.shift()! : pick(g, heroIds)!;
     p.avatar = heroDef(p.hero)!.avatar;
+    p.name = heroDef(p.hero)!.name;
   }
   g.phase = 'hero';
   return g;
@@ -284,9 +283,11 @@ export function buy(g: GameState, p: Player, shopIdx: number): ActionResult {
   if (busy(p)) return fail('Choose a card first');
   const u = p.shop[shopIdx];
   if (!u) return fail('Nothing there');
-  if (p.gold < CONFIG.buyCost) return fail('Not enough gold');
+  const cost = buyCost(p);
+  if (p.gold < cost) return fail('Not enough gold');
   if (p.hand.length >= CONFIG.handSize) return fail('Your hand is full');
-  p.gold -= CONFIG.buyCost;
+  p.gold -= cost;
+  heroDef(p.hero)?.onBuy?.(g, p);
   p.shop.splice(shopIdx, 1);
   if (tribeOf(u) === 'alcove' && p.tinkerThisTier) {
     u.atk += p.tinkerThisTier;
@@ -297,8 +298,9 @@ export function buy(g: GameState, p: Player, shopIdx: number): ActionResult {
   return OK;
 }
 
-export function sellValue(u: Unit) {
-  return u.cardId === 'treasure' ? 6 * mult(u) : CONFIG.sellValue;
+export function sellValue(u: Unit, p?: Player) {
+  if (u.cardId === 'treasure') return 6 * mult(u);
+  return p?.hero === 'bill_milton' ? 2 : CONFIG.sellValue;
 }
 
 export function sell(g: GameState, p: Player, boardIdx: number): ActionResult {
@@ -314,7 +316,7 @@ export function sellUnit(g: GameState, p: Player, u: Unit) {
   const i = p.board.indexOf(u);
   if (i < 0) return;
   p.board.splice(i, 1);
-  p.gold += sellValue(u);
+  p.gold += sellValue(u, p);
   returnToPool(g, u);
   EFFECTS[u.cardId]?.onSell?.({ g, p, self: u, m: mult(u), board: p.board });
   for (const b of [...p.board]) EFFECTS[b.cardId]?.onSellOther?.({ g, p, self: b, m: mult(b), board: p.board }, u);
@@ -434,7 +436,7 @@ export function endTurnEffects(g: GameState, p: Player) {
 /** Human pressed End Turn: bots take their turns, combats are fought, next round starts. */
 export function endTurn(g: GameState): CombatResult[] {
   for (const p of alivePlayers(g)) {
-    if (!p.human) aiTakeTurn(g, p);
+    if (!p.human || g.simulateAll) aiTakeTurn(g, p);
     if (p.trinketOffer) p.trinketOffer = null;
     while (p.discovers.length) chooseDiscover(g, p, 0);
     endTurnEffects(g, p);
@@ -476,7 +478,7 @@ export function endTurn(g: GameState): CombatResult[] {
   }
   g.lastCombats = results;
   const alive = alivePlayers(g);
-  if (alive.length <= 1 || !human(g).alive) {
+  if (alive.length <= 1 || (!human(g).alive && !g.simulateAll)) {
     g.phase = 'over';
     if (alive.length === 1) alive[0].placement = 1;
     if (human(g).alive) human(g).placement = 1;

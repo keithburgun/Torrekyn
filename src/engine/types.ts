@@ -86,6 +86,8 @@ export interface Player {
   favoriteTribe?: Tribe;
   hero?: string;
   heroUsed: boolean;
+  heroMem: Record<string, number>;
+  heroSeeds: number[];
   heroOffer?: string[];
   trinkets: string[];
   trinketOffer: string[] | null;
@@ -133,4 +135,6 @@ export interface GameState {
   nextUid: number;
   lastCombats: CombatResult[];
   deadOrder: number[];
+  /** testing only: bots play every seat and the game runs until one player is left */
+  simulateAll?: boolean;
 }

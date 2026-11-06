@@ -317,7 +317,7 @@ export const EFFECTS: Record<string, Effect> = {
   builder: {
     avenge: [5, 5],
     avengeFn: (c) => {
-      if (c.side.persistent) c.p.slots[c.self.slot].hp += 10 * c.m;
+      if (c.side.persistent && c.p.slots[c.self.slot]) c.p.slots[c.self.slot].hp += 10 * c.m;
       c.self.hp += 10 * c.m;
     },
   },
@@ -391,7 +391,7 @@ export const EFFECTS: Record<string, Effect> = {
   },
   cursed_vines: {
     rally: (c) => {
-      if (c.side.persistent) { c.p.slots[c.self.slot].atk += c.m; c.p.slots[c.self.slot].hp += 2 * c.m; }
+      if (c.side.persistent && c.p.slots[c.self.slot]) { c.p.slots[c.self.slot].atk += c.m; c.p.slots[c.self.slot].hp += 2 * c.m; }
       buff(c.self, c.m, 2 * c.m);
     },
   },

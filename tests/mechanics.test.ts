@@ -8,6 +8,7 @@ import type { GameState, Player, Unit } from '../src/engine/types';
 function fight(g: GameState, a: Unit[], b: Unit[]) {
   const pa = g.players[0], pb = g.players[1];
   pa.board = a; pb.board = b;
+  pa.hero = undefined; pb.hero = undefined;
   const c = new Combat(g, { p: pa, board: a, slots: pa.slots, tier: 1, persistent: true },
     { p: pb, board: b, slots: pb.slots, tier: 1, persistent: true });
   return { c, winner: c.run() };
@@ -73,5 +74,23 @@ describe('mechanics', () => {
     const g = newGame(6);
     const { winner } = fight(g, [makeUnit(g, 'orange_ninja')], [makeUnit(g, 'honeysuckle_kindred')]);
     expect(winner).not.toBe(1);
+  });
+});
+
+describe('heroes', () => {
+  it('every hero power can be used without errors', async () => {
+    const { HEROES, useHeroPower, canUseHeroPower } = await import('../src/engine/heroes');
+    for (const h of HEROES) {
+      const g = newGame(11);
+      const p = human(g);
+      p.hero = h.id;
+      p.gold = 10;
+      p.board = [makeUnit(g, 'ash'), makeUnit(g, 'lich')];
+      g.players[p.nextOpponent ?? 1].board = [makeUnit(g, 'skeleton')];
+      if (!h.passive) {
+        expect(canUseHeroPower(g, p)).toBe(true);
+        expect(useHeroPower(g, p, h.target ? p.board[0] : undefined)).toBe(true);
+      }
+    }
   });
 });

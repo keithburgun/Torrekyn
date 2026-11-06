@@ -1,7 +1,7 @@
 import { CONFIG, def, effStats, tribeOf } from './core';
 import { EFFECTS } from './effects';
 import { buy, play, reroll, sell, upgrade, chooseDiscover, validTargets, move } from './game';
-import { canUseHeroPower, heroDef, pickTrinket, trinketDef, useHeroPower } from './heroes';
+import { buyCost, canUseHeroPower, heroDef, pickTrinket, trinketDef, useHeroPower } from './heroes';
 import type { Discover, GameState, Player, Unit, Tribe } from './types';
 
 /** Rough value of a unit for a bot. */
@@ -120,7 +120,7 @@ export function aiTakeTurn(g: GameState, p: Player) {
   for (let guard = 0; guard < 30; guard++) {
     chooseFavorite(g, p);
     playHand(g, p);
-    if (p.gold >= CONFIG.buyCost && p.shop.length) {
+    if (p.gold >= buyCost(p) && p.shop.length) {
       let bi = -1;
       let bs = -Infinity;
       p.shop.forEach((u, i) => {
@@ -145,8 +145,9 @@ export function aiTakeTurn(g: GameState, p: Player) {
   }
   // hero power with leftover gold
   const h = heroDef(p.hero);
-  if (h && canUseHeroPower(p) && (h.id !== 'bloodletter' || p.health > 25)) {
-    const target = h.target ? p.board[0] : undefined;
+  if (h && canUseHeroPower(g, p)) {
+    const weakest = [...p.board].filter((u) => !u.mem.locked).sort((a, b) => unitScore(p, a, 'board') - unitScore(p, b, 'board'))[0];
+    const target = h.target ? (h.id === 'eve_williams' ? weakest : p.board[0]) : undefined;
     if (!h.target || target) useHeroPower(g, p, target);
     while (p.discovers.length) chooseDiscover(g, p, 0);
   }

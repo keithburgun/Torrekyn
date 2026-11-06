@@ -6,7 +6,7 @@ import type { Keyword, Player, Unit, CombatFrameUnit } from '../engine/types';
 export const BASE = import.meta.env.BASE_URL;
 export const art = (path: string) => BASE + path;
 export const cardArt = (id: string) => art((artManifest as Record<string, string>)[id] ?? `art/cards/${id}.svg`);
-export const heroArt = (n: number) => art(`art/heroes/${n % 12}.svg`);
+export const heroArt = (id: string | undefined) => art(`art/heroes/${id ?? 'unknown'}.svg`);
 
 export const esc = (s: string) => s.replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]!);
 
