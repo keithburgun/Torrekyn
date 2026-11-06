@@ -10,6 +10,9 @@ npm install
 npm run dev          # http://localhost:5173
 ```
 
+## Playing inside Claude
+`npm run build:artifact && node tools/make-artifact.mjs` builds a copy for Claude in `dist-artifact/`. It has no service worker and no update checks. Claude publishes `torrekin.html` with the files next to it.
+
 ## Project layout
 | Path | What it is |
 |---|---|

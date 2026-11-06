@@ -9,6 +9,8 @@ import { art, bigCardHtml, cardHtml, esc, heroArt, unitView, KEYWORD_HELP } from
 import { clearSave, loadSave, save } from './save';
 import { APP_VERSION, checkForUpdates } from './update';
 
+declare const __ARTIFACT__: boolean;
+
 type Zone = 'shop' | 'hand' | 'board';
 interface Sel { zone: Zone; idx: number }
 interface Press { zone: Zone; idx: number; x: number; y: number; el: HTMLElement; pointerId: number }
@@ -93,7 +95,7 @@ export class App {
         <button class="btn big" data-act="rules">How to Play</button>
       </div>
     </div>
-    <div class="version">v${APP_VERSION} · <a href="#" data-act="check-update" style="color:inherit">Check for updates</a></div>`;
+    <div class="version">v${APP_VERSION}${__ARTIFACT__ ? '' : ' · <a href="#" data-act="check-update" style="color:inherit">Check for updates</a>'}</div>`;
   }
 
   rulesHtml() {
@@ -124,7 +126,7 @@ export class App {
   heroSelectHtml() {
     const offer = this.me.heroOffer ?? HEROES.slice(0, 4).map((h) => h.id);
     const tribes = this.g!.tribes.map((t) => TRIBE_NAMES[t]).join(' · ');
-    return `<div class="modal" style="background:rgba(5,3,8,.35)">
+    return `<div class="modal" style="background:rgba(255,255,255,.08)">
       <h2>Choose Your Hero</h2>
       <div class="hint" style="font-size:17px">Tribes this game: ${esc(tribes)}</div>
       <div class="choices">${offer.map((id) => {
@@ -187,7 +189,6 @@ export class App {
     });
     if (!p.shop.length) h += `<div class="hint abs" style="left:560px;top:170px;width:480px">The Tavern is empty. Refresh for new units.</div>`;
     // army slots
-    h += `<div class="zone-label" style="left:282px;top:${BOARD_TOP + 2}px">Army</div>`;
     for (let i = 0; i < CONFIG.boardSize; i++) {
       const s = p.slots[i];
       const bonus = [s.atk || s.hp ? `${s.atk >= 0 ? '+' : ''}${s.atk}/${s.hp >= 0 ? '+' : ''}${s.hp}` : '', ...s.kw.map((k) => ({ taunt: 'Taunt', divineShield: 'Shield', reborn: 'Reborn', venomous: 'Venom', stealth: 'Stealth', windfury: 'Windfury' })[k])].filter(Boolean).join(' · ');
@@ -234,8 +235,8 @@ export class App {
         <div class="pn">${esc(hd.power)} ${hd.passive ? '' : `<span class="cost">${hd.cost}<span class="coin"></span></span>`}</div>
         <div class="pt">${esc(hd.text)}</div></div>` : ''}
       ${trink ? `<div class="trinkets">${trink}</div>` : ''}
-      <div class="gold-display"><span class="coin"></span>${p.gold}<span style="font-size:16px;color:var(--ink-dim)">/ ${Math.min(CONFIG.maxGold, 2 + this.g!.round) + p.maxGoldBonus}</span></div>
-      <div style="font-size:14px;color:var(--ink-dim)">Round ${this.g!.round}${p.goldNextTurn ? ` · +${p.goldNextTurn} gold next turn` : ''}</div>
+      <div class="gold-display"><span class="coin"></span>${p.gold}<span style="font-size:16px;color:var(--plum-soft)">/ ${Math.min(CONFIG.maxGold, 2 + this.g!.round) + p.maxGoldBonus}</span></div>
+      <div style="font-size:14px;color:var(--plum-soft)">Round ${this.g!.round}${p.goldNextTurn ? ` · +${p.goldNextTurn} gold next turn` : ''}</div>
       <button class="btn big primary" data-act="end-turn" style="width:100%">End Turn</button>
       <div id="detail" class="detail">${this.detailHtml()}</div>
       <div style="position:absolute;bottom:10px;display:flex;gap:8px"><button class="btn" data-act="menu" style="font-size:13px;padding:5px 10px">Menu</button></div>
@@ -248,7 +249,7 @@ export class App {
     if (!s) {
       const next = p.nextOpponent === -1 ? 'a ghost' : p.nextOpponent !== null ? this.g!.players[p.nextOpponent].name : '?';
       const quests = p.quests.filter((q) => q.have < q.need).map((q) => `<div class="hint">Quest: ${q.kind === 'bill' ? 'Buy Business Demons' : 'Buy Kindred'} ${q.have}/${q.need}</div>`).join('');
-      return `<div class="hint" style="margin-top:20px">Next opponent:<br><b style="color:var(--ink);font-size:17px">${esc(next)}</b></div>
+      return `<div class="hint" style="margin-top:20px">Next opponent:<br><b style="color:var(--plum);font-size:17px">${esc(next)}</b></div>
         ${quests}
         <div class="hint" style="margin-top:16px">Drag a Tavern unit down to buy it. Drag from your hand into your army to play it. Drag an army unit up to the Tavern to sell it.<br><br>Or tap a card to see it and act.</div>`;
     }
@@ -286,7 +287,7 @@ export class App {
         const t = trinketDef(id);
         return `<div class="choice trinketcard ${t.greater ? 'greater' : ''} ${t.cost > p.gold ? 'cant' : ''}" data-act="trinket" data-id="${id}">
           <div class="gem"></div><div class="tn">${esc(t.name)}</div><div class="tt">${esc(t.text)}</div>
-          <div class="pc" style="font-family:var(--display);color:#ffe28a;font-size:18px">${t.cost} <span class="coin"></span></div></div>`;
+          <div class="pc" style="font-family:var(--display);color:#e6a10f;font-size:18px">${t.cost} <span class="coin"></span></div></div>`;
       }).join('')}</div>
       <button class="btn" data-act="trinket-skip">Skip</button></div>`;
   }
@@ -349,6 +350,13 @@ export class App {
     this.seenBoards.clear();
     this.screen = 'hero';
     this.commit();
+  }
+
+  /** Pick up a game handed over by a live page update (Claude artifact). */
+  resume(g: GameState) {
+    this.g = g;
+    this.screen = g.phase === 'hero' ? 'hero' : g.phase === 'over' ? 'over' : 'shop';
+    this.render();
   }
 
   continueGame() {

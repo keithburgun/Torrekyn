@@ -22,15 +22,16 @@ function rng(seed) {
   };
 }
 
+// Pastel palettes per tribe: sky gradient (top -> bottom), glow, glyph fill, outline, far/near scenery
 const PAL = {
-  neverending: { sky: ['#140a24', '#3b1d5c', '#6a3f8f'], glow: '#9dff9a', glyph: ['#e9ffe0', '#7fd88a'], ground: '#0c0716', accent: '#b48cff' },
-  azure: { sky: ['#06142e', '#0f3a78', '#4f94d8'], glow: '#bfe6ff', glyph: ['#ffffff', '#8fc8ff'], ground: '#06122a', accent: '#ffd76a' },
-  kindred: { sky: ['#2a0d18', '#7a2b45', '#e48b7a'], glow: '#ffd2b0', glyph: ['#fff3e6', '#ffb38a'], ground: '#1d0a10', accent: '#ffb3c8' },
-  brambor: { sky: ['#07160b', '#1d4a25', '#6f9a45'], glow: '#d8ff9e', glyph: ['#f4ffe0', '#a7d86a'], ground: '#061008', accent: '#e0c27a' },
-  cloister: { sky: ['#120406', '#4a0d14', '#a3262e'], glow: '#ff9a7a', glyph: ['#fff0ea', '#ff7a6a'], ground: '#0b0204', accent: '#f2c14e' },
-  alcove: { sky: ['#03121a', '#0b3b4a', '#2fa3b0'], glow: '#9ff6ff', glyph: ['#f0feff', '#6ee6f2'], ground: '#020b10', accent: '#c0d4dd' },
-  demons: { sky: ['#1a0602', '#5c1406', '#d3501b'], glow: '#ffd36a', glyph: ['#fff8e0', '#ffb43a'], ground: '#120301', accent: '#ffcf4a' },
-  neutral: { sky: ['#0e1116', '#2c3440', '#7d8796'], glow: '#f3e3b5', glyph: ['#fffdf5', '#e0c88f'], ground: '#0a0c10', accent: '#d9b56a' },
+  neverending: { sky: ['#6b5aa8', '#a690de', '#e4d6ff'], glow: '#d4fff0', glyph: ['#ffffff', '#b9a4f0'], stroke: '#523a8a', far: '#9b86d6', near: '#7f69bf', spark: '#e9fff6' },
+  azure: { sky: ['#82b4ff', '#b9d6ff', '#f0f6ff'], glow: '#ffffff', glyph: ['#ffffff', '#9cc4ff'], stroke: '#3c68b8', far: '#a8c7f6', near: '#8bb2ea', spark: '#ffffff' },
+  kindred: { sky: ['#ff9cc0', '#ffc4d9', '#fff0f6'], glow: '#fff6cf', glyph: ['#ffffff', '#ffa9c8'], stroke: '#bf4a7b', far: '#f6aec9', near: '#ea91b4', spark: '#fff6cf' },
+  brambor: { sky: ['#7ccfa6', '#b6ebcf', '#eefff5'], glow: '#fffbd6', glyph: ['#ffffff', '#93dcb5'], stroke: '#357f5c', far: '#a2dcbe', near: '#7fc8a3', spark: '#fffbd6' },
+  cloister: { sky: ['#e56e9b', '#f6aac6', '#ffe6ef'], glow: '#ffffff', glyph: ['#ffffff', '#f59ab9'], stroke: '#9e2f5b', far: '#ec98b8', near: '#db779f', spark: '#ffffff' },
+  alcove: { sky: ['#5ecbe0', '#a9e8f3', '#ecfcff'], glow: '#ffffff', glyph: ['#ffffff', '#8fe0ee'], stroke: '#2a85a0', far: '#93dbe9', near: '#71c7da', spark: '#ffffff' },
+  demons: { sky: ['#ff9a80', '#ffc6aa', '#fff3e6'], glow: '#fff7cc', glyph: ['#ffffff', '#ffb798'], stroke: '#bb5236', far: '#f8b597', near: '#ee987a', spark: '#fff7cc' },
+  neutral: { sky: ['#a99cd2', '#d1c8ee', '#f7f3ff'], glow: '#ffffff', glyph: ['#ffffff', '#c8bdf0'], stroke: '#625392', far: '#c5bae8', near: '#ab9ed8', spark: '#ffffff' },
 };
 
 // ---------------- glyphs (drawn in a 256 box, centred at 128,128) ----------------
@@ -142,81 +143,96 @@ const GLYPH_OF = {
   sarinee: 'moon', broken_land: 'mountains', tom_judith: 'bell', omni_gem: 'gem', skel: 'skull', rootling: 'roots', phoenix: 'bird',
 };
 
+
+// outline copy of a glyph: detail shapes hidden, stroked lines thickened
+function outlineOf(glyph, extra, color) {
+  return glyph
+    .replace(/class="(k|ks)"/g, 'opacity="0"')
+    .replace(/class="s"/g, `fill="none" stroke="${color}" stroke-linecap="round" stroke-linejoin="round" data-o="1"`)
+    .replace(/stroke-width="(\d+)"/g, (m, w) => `stroke-width="${Number(w) + extra}"`);
+}
+
+// ---------------- little decorations ----------------
+const sparkle = (x, y, s, c, o = 0.9) =>
+  `<path d="M${x} ${y - s}Q${x + s * 0.18} ${y - s * 0.18} ${x + s} ${y}Q${x + s * 0.18} ${y + s * 0.18} ${x} ${y + s}Q${x - s * 0.18} ${y + s * 0.18} ${x - s} ${y}Q${x - s * 0.18} ${y - s * 0.18} ${x} ${y - s}z" fill="${c}" opacity="${o}"/>`;
+const heart = (x, y, s, c, o = 0.8) =>
+  `<path d="M${x} ${y + s * 0.9}C${x - s * 1.4} ${y}${' '}${x - s * 0.9} ${y - s}${' '}${x} ${y - s * 0.35}C${x + s * 0.9} ${y - s} ${x + s * 1.4} ${y} ${x} ${y + s * 0.9}z" fill="${c}" opacity="${o}"/>`;
+const cloud = (x, y, w, c, o = 0.85) =>
+  `<g fill="${c}" opacity="${o}"><ellipse cx="${x}" cy="${y}" rx="${w * 0.5}" ry="${w * 0.17}"/><circle cx="${x - w * 0.18}" cy="${y - w * 0.1}" r="${w * 0.17}"/><circle cx="${x + w * 0.1}" cy="${y - w * 0.16}" r="${w * 0.22}"/></g>`;
+
 // ---------------- tribe scenery ----------------
 function scenery(tribe, r, pal) {
   const parts = [];
   const H = 256;
-  const ridge = (y0, amp, color, step = 32) => {
+  const hills = (y0, amp, color, step = 64) => {
     let d = `M0 ${H}L0 ${y0}`;
-    for (let x = 0; x <= 256; x += step) d += `L${x} ${y0 - r() * amp}`;
+    let px = 0, py = y0;
+    for (let x = step; x <= 256 + step; x += step) {
+      const ny = y0 - r() * amp;
+      d += `Q${px + step / 2} ${Math.min(py, ny) - amp * 0.6} ${x} ${ny}`;
+      px = x; py = ny;
+    }
     return `<path d="${d}L256 ${H}z" fill="${color}"/>`;
   };
+  for (let i = 0; i < 2; i++) parts.push(cloud(20 + r() * 220, 30 + r() * 60, 70 + r() * 50, '#ffffff', 0.55 + r() * 0.3));
   switch (tribe) {
-    case 'neverending': {
-      parts.push(`<circle cx="${60 + r() * 140}" cy="${50 + r() * 30}" r="${22 + r() * 10}" fill="${pal.glow}" opacity=".35"/>`);
-      parts.push(ridge(200, 20, '#1d0f33'));
-      for (let i = 0; i < 6; i++) {
-        const x = r() * 240, h = 18 + r() * 22;
-        parts.push(`<path d="M${x} 230v-${h}a10 10 0 0 1 20 0v${h}z" fill="#120a20"/>`);
-      }
-      parts.push(`<path d="M30 230c4-60-10-90-20-110M30 170l20-20M24 140l-14-14" stroke="#120a20" stroke-width="7" fill="none"/>`);
-      break;
-    }
-    case 'azure': {
-      for (let i = 0; i < 4; i++) parts.push(`<ellipse cx="${r() * 256}" cy="${30 + r() * 60}" rx="${40 + r() * 30}" ry="${8 + r() * 6}" fill="#cfe8ff" opacity=".18"/>`);
-      parts.push(ridge(205, 25, '#0a2550'));
-      const x = r() * 160 + 20;
-      parts.push(`<path d="M${x} 230v-70h10v-12h8v12h12v-30h14v30h12v-12h8v12h10v70z" fill="#071a3a"/>`);
-      break;
-    }
-    case 'kindred': {
-      parts.push(ridge(210, 18, '#3a1424'));
+    case 'neverending':
+      parts.push(`<circle cx="${50 + r() * 150}" cy="${46 + r() * 20}" r="22" fill="#fffbe8" opacity=".9"/><circle cx="${62 + r() * 150}" cy="40" r="20" fill="${pal.sky[0]}" opacity=".0"/>`);
+      parts.push(hills(205, 18, pal.far));
       for (let i = 0; i < 5; i++) {
-        const x = i * 54 + r() * 20, h = 26 + r() * 20;
-        parts.push(`<path d="M${x} 230v-${h}l20-16 20 16v${h}z" fill="#2a0d18"/><rect x="${x + 14}" y="${226 - h + 8}" width="12" height="10" fill="${pal.glow}" opacity=".6"/>`);
+        const x = r() * 230, h = 16 + r() * 16;
+        parts.push(`<path d="M${x} 236v-${h}a11 11 0 0 1 22 0v${h}z" fill="${pal.near}"/><path d="M${x + 11} ${232 - h}v8M${x + 7} ${236 - h}h8" stroke="#fff" stroke-width="2" opacity=".6"/>`);
       }
-      for (let i = 0; i < 6; i++) parts.push(`<circle cx="${r() * 256}" cy="${r() * 120}" r="${2 + r() * 3}" fill="${pal.glow}" opacity=".5"/>`);
+      break;
+    case 'azure': {
+      parts.push(hills(212, 16, pal.far));
+      const x = r() * 150 + 30;
+      parts.push(`<path d="M${x} 236v-56h10v-10h8v10h12v-26h14v26h12v-10h8v10h10v56z" fill="${pal.near}"/><path d="M${x + 33} 154v-16l12 5-12 5" fill="#ffd1e8"/>`);
       break;
     }
-    case 'brambor': {
-      for (let i = 0; i < 7; i++) {
-        const x = r() * 256, w = 8 + r() * 14;
-        parts.push(`<rect x="${x}" y="0" width="${w}" height="256" fill="#0a1f0e" opacity="${0.5 + r() * 0.4}"/>`);
+    case 'kindred':
+      parts.push(hills(214, 14, pal.far));
+      for (let i = 0; i < 5; i++) {
+        const x = i * 54 + r() * 16, h = 22 + r() * 16;
+        parts.push(`<path d="M${x} 236v-${h}l20-15 20 15v${h}z" fill="${pal.near}"/><rect x="${x + 14}" y="${236 - h + 8}" width="12" height="10" rx="3" fill="#fff6cf" opacity=".9"/>`);
       }
-      parts.push(ridge(215, 14, '#0b2410', 16));
-      for (let i = 0; i < 10; i++) parts.push(`<circle cx="${r() * 256}" cy="${r() * 200}" r="${1.5 + r() * 2}" fill="${pal.glow}" opacity=".6"/>`);
+      for (let i = 0; i < 5; i++) parts.push(heart(r() * 256, 20 + r() * 110, 4 + r() * 4, '#ffffff', 0.7));
       break;
-    }
+    case 'brambor':
+      parts.push(hills(200, 26, pal.far));
+      for (let i = 0; i < 5; i++) {
+        const x = r() * 256, s = 14 + r() * 12;
+        parts.push(`<circle cx="${x}" cy="${222 - s}" r="${s}" fill="${pal.near}"/><rect x="${x - 3}" y="${222 - s}" width="6" height="${s + 14}" rx="3" fill="${pal.stroke}" opacity=".45"/>`);
+      }
+      parts.push(hills(226, 8, pal.near, 32));
+      break;
     case 'cloister': {
-      parts.push(`<circle cx="${80 + r() * 100}" cy="70" r="40" fill="#ff5a3a" opacity=".25"/>`);
-      parts.push(ridge(200, 30, '#2a0509'));
+      parts.push(hills(206, 22, pal.far));
       const x = 20 + r() * 150;
-      parts.push(`<path d="M${x} 230v-40h-10l30-16 30 16h-10v40zM${x - 4} 190l34-22 34 22" fill="#1a0306"/>`);
-      for (let i = 0; i < 8; i++) parts.push(`<ellipse cx="${r() * 256}" cy="${r() * 220}" rx="3" ry="1.6" fill="#ffb0a0" opacity=".55" transform="rotate(${r() * 180})"/>`);
+      parts.push(`<path d="M${x} 236v-36h-8l28-14 28 14h-8v36zM${x - 6} 194l34-20 34 20" fill="${pal.near}"/>`);
+      for (let i = 0; i < 9; i++) parts.push(`<ellipse cx="${r() * 256}" cy="${r() * 220}" rx="4" ry="2.4" fill="#ffffff" opacity=".8" transform="rotate(${r() * 180})"/>`);
       break;
     }
-    case 'alcove': {
-      for (let i = 0; i < 9; i++) {
-        const y = r() * 256, x = r() * 256;
-        parts.push(`<path d="M0 ${y}H${x}v${(r() - 0.5) * 60}H256" stroke="${pal.glow}" stroke-width="1.5" fill="none" opacity=".25"/><circle cx="${x}" cy="${y}" r="3" fill="${pal.glow}" opacity=".5"/>`);
-      }
-      parts.push(`<path d="M0 220H256" stroke="${pal.glow}" stroke-width="1" opacity=".3"/>`);
-      break;
-    }
-    case 'demons': {
-      parts.push(ridge(205, 40, '#2a0702', 20));
+    case 'alcove':
       for (let i = 0; i < 7; i++) {
-        const x = i * 38 + r() * 10, h = 30 + r() * 50;
-        parts.push(`<rect x="${x}" y="${230 - h}" width="26" height="${h}" fill="#1a0401"/><rect x="${x + 6}" y="${236 - h}" width="5" height="5" fill="${pal.glow}" opacity=".7"/>`);
+        const y = 40 + r() * 190, x = r() * 256;
+        parts.push(`<path d="M0 ${y}H${x}v${(r() - 0.5) * 50}H256" stroke="#ffffff" stroke-width="2" fill="none" opacity=".45"/><circle cx="${x}" cy="${y}" r="3.5" fill="#ffffff" opacity=".8"/>`);
       }
-      for (let i = 0; i < 10; i++) parts.push(`<circle cx="${r() * 256}" cy="${120 + r() * 120}" r="${1 + r() * 2.5}" fill="#ffb43a" opacity=".7"/>`);
+      parts.push(hills(222, 6, pal.far, 32));
       break;
-    }
-    default: {
-      parts.push(ridge(190, 60, '#1b2028', 40));
-      parts.push(ridge(215, 25, '#12161c', 24));
-    }
+    case 'demons':
+      parts.push(hills(210, 20, pal.far));
+      for (let i = 0; i < 6; i++) {
+        const x = i * 44 + r() * 10, h = 26 + r() * 40;
+        parts.push(`<rect x="${x}" y="${236 - h}" width="30" height="${h}" rx="4" fill="${pal.near}"/><rect x="${x + 8}" y="${242 - h}" width="6" height="6" rx="2" fill="#fff7cc"/>`);
+      }
+      for (let i = 0; i < 4; i++) parts.push(`<circle cx="${r() * 256}" cy="${30 + r() * 100}" r="${3 + r() * 3}" fill="#ffe08a" stroke="#fff" stroke-width="1.5"/>`);
+      break;
+    default:
+      parts.push(hills(196, 40, pal.far));
+      parts.push(hills(220, 16, pal.near));
   }
+  for (let i = 0; i < 6; i++) parts.push(sparkle(r() * 256, r() * 170, 3 + r() * 5, pal.spark, 0.6 + r() * 0.4));
   return parts.join('');
 }
 
@@ -225,85 +241,70 @@ function cardSvg(card) {
   const r = rng(card.id);
   const glyph = G[GLYPH_OF[card.id] ?? 'star'];
   const rot = (r() - 0.5) * 10;
-  const scale = 0.78 + r() * 0.08;
+  const scale = 0.74 + r() * 0.08;
   const cx = 128 + (r() - 0.5) * 10;
   return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256">
 <defs>
 <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${pal.sky[0]}"/><stop offset=".55" stop-color="${pal.sky[1]}"/><stop offset="1" stop-color="${pal.sky[2]}"/></linearGradient>
-<radialGradient id="halo" cx=".5" cy=".5" r=".5"><stop offset="0" stop-color="${pal.glow}" stop-opacity=".55"/><stop offset="1" stop-color="${pal.glow}" stop-opacity="0"/></radialGradient>
+<radialGradient id="halo" cx=".5" cy=".5" r=".5"><stop offset="0" stop-color="${pal.glow}" stop-opacity=".85"/><stop offset=".6" stop-color="${pal.glow}" stop-opacity=".25"/><stop offset="1" stop-color="${pal.glow}" stop-opacity="0"/></radialGradient>
 <linearGradient id="gl" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${pal.glyph[0]}"/><stop offset="1" stop-color="${pal.glyph[1]}"/></linearGradient>
-<radialGradient id="vig" cx=".5" cy=".45" r=".75"><stop offset=".6" stop-color="#000" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity=".7"/></radialGradient>
-<filter id="blur" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur stdDeviation="9"/></filter>
-<style>.k{fill:${pal.sky[0]};opacity:.85}.ks{fill:none;stroke:${pal.sky[0]};stroke-width:6;stroke-linecap:round;opacity:.8}.s{fill:none;stroke:url(#gl);stroke-linecap:round;stroke-linejoin:round}</style>
+<radialGradient id="vig" cx=".5" cy=".45" r=".75"><stop offset=".65" stop-color="${pal.stroke}" stop-opacity="0"/><stop offset="1" stop-color="${pal.stroke}" stop-opacity=".35"/></radialGradient>
+<filter id="blur" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur stdDeviation="7"/></filter>
+<style>.k{fill:${pal.stroke};opacity:.9}.ks{fill:none;stroke:${pal.stroke};stroke-width:6;stroke-linecap:round;opacity:.85}.s{fill:none;stroke:url(#gl);stroke-linecap:round;stroke-linejoin:round}</style>
 </defs>
 <rect width="256" height="256" fill="url(#sky)"/>
 ${scenery(card.tribe, r, pal)}
-<circle cx="${cx}" cy="124" r="96" fill="url(#halo)"/>
+<circle cx="${cx}" cy="124" r="100" fill="url(#halo)"/>
 <g transform="translate(${cx} 128) rotate(${rot}) scale(${scale}) translate(-128 -128)">
-<g filter="url(#blur)" opacity=".9" fill="${pal.glow}" stroke="${pal.glow}">${glyph.replace(/class="(k|ks)"/g, 'opacity="0"')}</g>
-<g fill="url(#gl)" stroke="${pal.sky[0]}" stroke-width="2">${glyph}</g>
+<g filter="url(#blur)" opacity=".95" fill="#ffffff" stroke="#ffffff" stroke-width="22">${outlineOf(glyph, 22, '#ffffff')}</g>
+<g fill="${pal.stroke}" stroke="${pal.stroke}" stroke-width="12" stroke-linejoin="round">${outlineOf(glyph, 12, pal.stroke)}</g>
+<g fill="url(#gl)" stroke="none">${glyph}</g>
 </g>
+${sparkle(cx + 70, 70, 9, '#ffffff', 0.95)}${sparkle(cx - 74, 178, 6, '#ffffff', 0.85)}
 <rect width="256" height="256" fill="url(#vig)"/>
 </svg>`;
 }
 
 for (const c of data.cards) fs.writeFileSync(path.join(outCards, `${c.id}.svg`), cardSvg(c));
 
-// ---------------- battle board (MTGA-style arena) ----------------
+// ---------------- battle board: a dreamy pastel arena ----------------
 function boardSvg() {
   const r = rng('board');
   const W = 1600, H = 900;
-  const rocks = [];
-  for (let i = 0; i < 26; i++) {
-    const side = i % 2 ? 1 : 0;
-    const x = side ? W - r() * 170 : r() * 170;
-    const y = 80 + r() * 760;
-    const s = 30 + r() * 70;
-    rocks.push(`<path d="M${x - s} ${y + s * 0.4}l${s * 0.4} ${-s * 0.9} ${s * 0.9} ${-s * 0.2} ${s * 0.7} ${s * 0.8} -${s * 0.3} ${s * 0.5}z" fill="url(#rock)" opacity="${0.6 + r() * 0.4}"/>`);
-  }
-  const crystals = [];
+  const clouds = [];
   for (let i = 0; i < 14; i++) {
-    const x = r() < 0.5 ? 40 + r() * 140 : W - 40 - r() * 140;
-    const y = 100 + r() * 700;
-    const h = 30 + r() * 60;
-    crystals.push(`<path d="M${x} ${y}l10 -${h} 10 ${h} -10 ${h * 0.3}z" fill="#7fe0ff" opacity=".55" filter="url(#soft)"/><path d="M${x} ${y}l10 -${h} 10 ${h} -10 ${h * 0.3}z" fill="#c8f4ff" opacity=".7"/>`);
+    const x = r() < 0.5 ? r() * 330 : W - r() * 330;
+    clouds.push(cloud(x, 60 + r() * 780, 160 + r() * 160, '#ffffff', 0.45 + r() * 0.35));
   }
-  const motes = [];
-  for (let i = 0; i < 120; i++) motes.push(`<circle cx="${r() * W}" cy="${r() * H}" r="${0.6 + r() * 2.2}" fill="#ffe7b0" opacity="${0.15 + r() * 0.5}"/>`);
-  const runes = [];
-  for (let i = 0; i < 24; i++) {
-    const a = (i / 24) * Math.PI * 2;
-    const x = 800 + Math.cos(a) * 250, y = 450 + Math.sin(a) * 120;
-    runes.push(`<path d="M${x - 6} ${y - 8}l12 16M${x + 6} ${y - 8}l-6 8" stroke="#ffd98a" stroke-width="2" opacity=".55"/>`);
+  for (let i = 0; i < 5; i++) clouds.push(cloud(400 + r() * 800, 40 + r() * 70, 200 + r() * 120, '#ffffff', 0.35));
+  const sparks = [];
+  for (let i = 0; i < 90; i++) sparks.push(sparkle(r() * W, r() * H, 2 + r() * 7, r() < 0.3 ? '#ffd1ec' : '#ffffff', 0.35 + r() * 0.55));
+  const hearts = [];
+  for (let i = 0; i < 18; i++) hearts.push(heart(r() * W, r() * H, 5 + r() * 8, r() < 0.5 ? '#ffb6dc' : '#e2ccff', 0.45 + r() * 0.35));
+  const ring = [];
+  for (let i = 0; i < 20; i++) {
+    const a = (i / 20) * Math.PI * 2;
+    const x = 800 + Math.cos(a) * 300, y = 450 + Math.sin(a) * 138;
+    ring.push(i % 2 ? sparkle(x, y, 7, '#ffffff', 0.9) : heart(x, y, 6, '#ff9ccf', 0.75));
   }
+  let hill1 = `M0 ${H}L0 760`; for (let x = 0; x <= W + 200; x += 200) hill1 += `Q${x + 100} ${700 + r() * 40} ${x + 200} ${750 + r() * 40}`;
+  let hill2 = `M0 ${H}L0 830`; for (let x = 0; x <= W + 160; x += 160) hill2 += `Q${x + 80} ${790 + r() * 30} ${x + 160} ${820 + r() * 30}`;
   return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${W} ${H}" width="${W}" height="${H}" preserveAspectRatio="xMidYMid slice">
 <defs>
-<radialGradient id="ground" cx=".5" cy=".5" r=".65"><stop offset="0" stop-color="#5a4630"/><stop offset=".45" stop-color="#332619"/><stop offset=".8" stop-color="#17110b"/><stop offset="1" stop-color="#07050a"/></radialGradient>
-<radialGradient id="center" cx=".5" cy=".5" r=".5"><stop offset="0" stop-color="#ffcf7a" stop-opacity=".35"/><stop offset="1" stop-color="#ffcf7a" stop-opacity="0"/></radialGradient>
-<linearGradient id="rock" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#3a3340"/><stop offset="1" stop-color="#121016"/></linearGradient>
-<linearGradient id="trim" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#6b4a1e" stop-opacity="0"/><stop offset=".2" stop-color="#e8c06a"/><stop offset=".5" stop-color="#fff0c0"/><stop offset=".8" stop-color="#e8c06a"/><stop offset="1" stop-color="#6b4a1e" stop-opacity="0"/></linearGradient>
-<radialGradient id="mistTop" cx=".5" cy="0" r=".8"><stop offset="0" stop-color="#3a5a8a" stop-opacity=".5"/><stop offset="1" stop-color="#3a5a8a" stop-opacity="0"/></radialGradient>
-<radialGradient id="mistBot" cx=".5" cy="1" r=".8"><stop offset="0" stop-color="#8a4a2a" stop-opacity=".45"/><stop offset="1" stop-color="#8a4a2a" stop-opacity="0"/></radialGradient>
-<filter id="soft"><feGaussianBlur stdDeviation="6"/></filter>
-<radialGradient id="vig" cx=".5" cy=".5" r=".72"><stop offset=".55" stop-color="#000" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity=".75"/></radialGradient>
-<filter id="grain"><feTurbulence type="fractalNoise" baseFrequency=".9" numOctaves="2" seed="3"/><feColorMatrix values="0 0 0 0 .5  0 0 0 0 .4  0 0 0 0 .3  0 0 0 .18 0"/></filter>
-<filter id="cracks"><feTurbulence type="turbulence" baseFrequency=".012 .02" numOctaves="3" seed="8"/><feColorMatrix values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 -2.2 1.1"/></filter>
+<linearGradient id="sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#cbb8ff"/><stop offset=".45" stop-color="#f1dcff"/><stop offset=".8" stop-color="#ffdcef"/><stop offset="1" stop-color="#ffeef7"/></linearGradient>
+<radialGradient id="center" cx=".5" cy=".5" r=".5"><stop offset="0" stop-color="#ffffff" stop-opacity=".85"/><stop offset=".7" stop-color="#ffffff" stop-opacity=".2"/><stop offset="1" stop-color="#ffffff" stop-opacity="0"/></radialGradient>
+<radialGradient id="vig" cx=".5" cy=".5" r=".75"><stop offset=".6" stop-color="#b48ce6" stop-opacity="0"/><stop offset="1" stop-color="#9a6fd8" stop-opacity=".35"/></radialGradient>
 </defs>
-<rect width="${W}" height="${H}" fill="url(#ground)"/>
-<rect width="${W}" height="${H}" filter="url(#cracks)" opacity=".35"/>
-<rect width="${W}" height="${H}" filter="url(#grain)"/>
-<rect width="${W}" height="${H}" fill="url(#mistTop)"/>
-<rect width="${W}" height="${H}" fill="url(#mistBot)"/>
-<ellipse cx="800" cy="450" rx="560" ry="300" fill="url(#center)"/>
-<ellipse cx="800" cy="450" rx="290" ry="140" fill="none" stroke="#e8c06a" stroke-width="3" opacity=".45"/>
-<ellipse cx="800" cy="450" rx="250" ry="120" fill="none" stroke="#e8c06a" stroke-width="1.5" opacity=".35" stroke-dasharray="6 10"/>
-${runes.join('')}
-<path d="M240 450H1360" stroke="url(#trim)" stroke-width="3" opacity=".7"/>
-<path d="M300 440l500-14 500 14M300 460l500 14 500-14" stroke="#e8c06a" stroke-width="1" fill="none" opacity=".3"/>
-<g filter="url(#soft)" opacity=".5">${rocks.slice(0, 8).join('')}</g>
-${rocks.join('')}
-${crystals.join('')}
-${motes.join('')}
+<rect width="${W}" height="${H}" fill="url(#sky)"/>
+${clouds.join('')}
+<ellipse cx="800" cy="450" rx="640" ry="330" fill="url(#center)"/>
+<ellipse cx="800" cy="450" rx="300" ry="138" fill="none" stroke="#ffffff" stroke-width="4" opacity=".8"/>
+<ellipse cx="800" cy="450" rx="270" ry="120" fill="none" stroke="#f3a6d2" stroke-width="2" stroke-dasharray="4 12" stroke-linecap="round" opacity=".9"/>
+${ring.join('')}
+<path d="${hill1}L${W} ${H}z" fill="#e7d3ff" opacity=".9"/>
+<path d="${hill2}L${W} ${H}z" fill="#f7cfe6" opacity=".9"/>
+${hearts.join('')}
+${sparks.join('')}
 <rect width="${W}" height="${H}" fill="url(#vig)"/>
 </svg>`;
 }
@@ -313,34 +314,36 @@ fs.writeFileSync(path.join(root, 'public/art/board.svg'), boardSvg());
 function menuSvg() {
   const r = rng('menu');
   const W = 1600, H = 900;
-  const stars = Array.from({ length: 220 }, () => `<circle cx="${r() * W}" cy="${r() * 520}" r="${r() * 1.6}" fill="#fff" opacity="${0.2 + r() * 0.7}"/>`).join('');
-  let ridge1 = `M0 ${H}L0 620`; for (let x = 0; x <= W; x += 60) ridge1 += `L${x} ${560 + r() * 120}`;
-  let ridge2 = `M0 ${H}L0 720`; for (let x = 0; x <= W; x += 40) ridge2 += `L${x} ${680 + r() * 80}`;
+  const sparks = Array.from({ length: 140 }, () => sparkle(r() * W, r() * 560, 1.5 + r() * 6, '#ffffff', 0.3 + r() * 0.7)).join('');
+  const clouds = Array.from({ length: 12 }, () => cloud(r() * W, 460 + r() * 260, 220 + r() * 220, '#ffffff', 0.5 + r() * 0.4)).join('');
+  let ridge1 = `M0 ${H}L0 690`; for (let x = 0; x <= W + 200; x += 200) ridge1 += `Q${x + 100} ${620 + r() * 60} ${x + 200} ${680 + r() * 50}`;
+  let ridge2 = `M0 ${H}L0 790`; for (let x = 0; x <= W + 160; x += 160) ridge2 += `Q${x + 80} ${740 + r() * 40} ${x + 160} ${780 + r() * 40}`;
   return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${W} ${H}" width="${W}" height="${H}" preserveAspectRatio="xMidYMid slice">
-<defs><linearGradient id="s" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#05040c"/><stop offset=".55" stop-color="#1f1640"/><stop offset=".8" stop-color="#6a3a3a"/><stop offset="1" stop-color="#e09a5a"/></linearGradient>
-<radialGradient id="m" cx=".5" cy=".5" r=".5"><stop offset="0" stop-color="#fff3d0"/><stop offset=".3" stop-color="#ffd890" stop-opacity=".6"/><stop offset="1" stop-color="#ffd890" stop-opacity="0"/></radialGradient></defs>
-<rect width="${W}" height="${H}" fill="url(#s)"/>${stars}
-<circle cx="800" cy="430" r="260" fill="url(#m)"/><circle cx="800" cy="430" r="70" fill="#fff6dc"/>
-<path d="${ridge1}L${W} ${H}z" fill="#140d20"/>
-<path d="M1220 700v-120l12-18 12 18v-36l12-24 12 24v36l12-18 12 18v120z" fill="#0c0814"/>
-<path d="${ridge2}L${W} ${H}z" fill="#08050d"/>
+<defs><linearGradient id="s" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#8f74e0"/><stop offset=".45" stop-color="#d7a8f0"/><stop offset=".75" stop-color="#ffc2df"/><stop offset="1" stop-color="#fff0f7"/></linearGradient>
+<radialGradient id="m" cx=".5" cy=".5" r=".5"><stop offset="0" stop-color="#ffffff"/><stop offset=".35" stop-color="#fff4fb" stop-opacity=".7"/><stop offset="1" stop-color="#ffe0f2" stop-opacity="0"/></radialGradient></defs>
+<rect width="${W}" height="${H}" fill="url(#s)"/>${sparks}
+<circle cx="800" cy="400" r="300" fill="url(#m)"/><circle cx="800" cy="400" r="78" fill="#fffaf2"/><circle cx="828" cy="384" r="70" fill="#fdeefb" opacity=".55"/>
+<path d="${ridge1}L${W} ${H}z" fill="#c9a8ef"/>
+${clouds}
+<g fill="#b48fe6"><path d="M1240 720v-130l16-22 16 22v-40l16-30 16 30v40l16-22 16 22v130z"/><path d="M1284 530v-22l16 7-16 7z" fill="#ff9ccf"/><rect x="1278" y="640" width="12" height="18" rx="6" fill="#fff4c4"/></g>
+<path d="${ridge2}L${W} ${H}z" fill="#f2c4e4"/>
 </svg>`;
 }
 fs.writeFileSync(path.join(root, 'public/art/menu.svg'), menuSvg());
 
 // ---------------- hero portraits ----------------
-const HERO_COLORS = [['#2b1d4a', '#f2c14e'], ['#0f3a4a', '#9ff6ff'], ['#4a0f1a', '#ff9a7a'], ['#1d4a25', '#d8ff9e'], ['#4a3410', '#ffd36a'], ['#1a2440', '#bfe6ff'], ['#3a1240', '#ffb3c8'], ['#2a2a2a', '#e0c88f'], ['#102a2a', '#7fe0b0'], ['#40201a', '#ffb43a'], ['#202040', '#c0a0ff'], ['#3a2a10', '#fff0a0']];
+const HERO_COLORS = [['#b89cff', '#5a3f9e'], ['#8fd8f0', '#2a7f9e'], ['#ffa3c4', '#b2406e'], ['#9fe0bd', '#3a8a62'], ['#ffd78a', '#b07a1a'], ['#a9c9ff', '#3c64b0'], ['#ffb3d9', '#a83a78'], ['#d6cdf0', '#5e5290'], ['#9ee6dc', '#2d8579'], ['#ffbf9e', '#b85a36'], ['#c8b0ff', '#5a42a8'], ['#fff0a0', '#a0861a']];
 const HERO_GLYPHS = ['crown', 'eye', 'flame', 'tree', 'coin', 'helm', 'heart', 'hood', 'gear', 'sun', 'moon', 'star'];
 for (let i = 0; i < 12; i++) {
-  const [bg, fg] = HERO_COLORS[i];
+  const [bg, ink] = HERO_COLORS[i];
   const glyph = G[HERO_GLYPHS[i]];
   const r = rng('hero' + i);
-  const rays = Array.from({ length: 16 }, (_, k) => { const a = (k / 16) * Math.PI * 2 + r(); return `<path d="M128 128L${128 + Math.cos(a) * 200} ${128 + Math.sin(a) * 200}L${128 + Math.cos(a + 0.12) * 200} ${128 + Math.sin(a + 0.12) * 200}z" fill="${fg}" opacity=".07"/>`; }).join('');
+  const sp = Array.from({ length: 7 }, () => sparkle(30 + r() * 196, 30 + r() * 196, 4 + r() * 6, '#ffffff', 0.8)).join('');
   fs.writeFileSync(path.join(outHeroes, `${i}.svg`), `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256">
-<defs><radialGradient id="b" cx=".5" cy=".4" r=".7"><stop offset="0" stop-color="${fg}" stop-opacity=".45"/><stop offset=".5" stop-color="${bg}"/><stop offset="1" stop-color="#050308"/></radialGradient>
-<filter id="blur"><feGaussianBlur stdDeviation="8"/></filter><style>.k{fill:${bg}}.ks{fill:none;stroke:${bg};stroke-width:6}.s{fill:none;stroke:${fg}}</style></defs>
-<rect width="256" height="256" fill="url(#b)"/>${rays}
-<g transform="translate(128 128) scale(.7) translate(-128 -128)"><g filter="url(#blur)" fill="${fg}">${glyph.replace(/class="(k|ks)"/g, 'opacity="0"')}</g><g fill="${fg}">${glyph}</g></g>
+<defs><radialGradient id="b" cx=".5" cy=".38" r=".7"><stop offset="0" stop-color="#ffffff"/><stop offset=".55" stop-color="${bg}"/><stop offset="1" stop-color="${ink}" stop-opacity=".75"/></radialGradient>
+<filter id="blur"><feGaussianBlur stdDeviation="6"/></filter><style>.k{fill:${ink}}.ks{fill:none;stroke:${ink};stroke-width:6}.s{fill:none;stroke:#fff}</style></defs>
+<rect width="256" height="256" fill="url(#b)"/>${sp}
+<g transform="translate(128 132) scale(.66) translate(-128 -128)"><g filter="url(#blur)" fill="#fff" stroke="#fff" stroke-width="12">${glyph.replace(/class="(k|ks)"/g, 'opacity="0"')}</g><g fill="#ffffff" stroke="${ink}" stroke-width="6" stroke-linejoin="round">${glyph}</g></g>
 </svg>`);
 }
 

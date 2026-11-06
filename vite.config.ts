@@ -4,12 +4,14 @@ import fs from 'node:fs';
 
 const pkg = JSON.parse(fs.readFileSync('package.json', 'utf8'));
 const isTauri = !!process.env.TAURI_ENV_PLATFORM;
+// `npm run build:artifact` makes a copy for playing inside Claude (no service worker, no update checks)
+const isArtifact = process.env.TORREKIN_TARGET === 'artifact';
 
 export default defineConfig({
   base: './',
-  define: { __APP_VERSION__: JSON.stringify(pkg.version) },
+  define: { __APP_VERSION__: JSON.stringify(pkg.version), __ARTIFACT__: JSON.stringify(isArtifact) },
+  build: { target: 'es2021', chunkSizeWarningLimit: 1500, outDir: isArtifact ? 'dist-artifact' : 'dist' },
   server: { port: 5173, strictPort: true },
-  build: { target: 'es2021', chunkSizeWarningLimit: 1500 },
   plugins: [
     {
       name: 'torrekin-version-json',
@@ -25,7 +27,8 @@ export default defineConfig({
         });
       },
     },
-    ...(isTauri ? [] : [VitePWA({
+    VitePWA({
+      disable: isTauri || isArtifact,
       registerType: 'prompt',
       includeAssets: ['icon.svg', 'icon-192.png', 'icon-512.png'],
       workbox: {
@@ -48,6 +51,6 @@ export default defineConfig({
           { src: 'icon-512.png', sizes: '512x512', type: 'image/png', purpose: 'any maskable' },
         ],
       },
-    })]),
+    }),
   ],
 });
