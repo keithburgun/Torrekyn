@@ -25,13 +25,13 @@
   --card-hi: #efe8e1;       /* warm grey card face */
   --card-lo: #c9bfb5;
   --card-edge: #9c9087;
-  --t-neverending: #8a6ad8;
-  --t-azure: #4f8fe6;
+  --t-neverending: #8a4fd6;
+  --t-azure: #2c4fb8;
   --t-kindred: #e8648f;
-  --t-brambor: #3fae74;
-  --t-cloister: #c9406a;
-  --t-alcove: #2aa6bd;
-  --t-demons: #e8733f;
+  --t-brambor: #8b5a2b;
+  --t-cloister: #2f7d4a;
+  --t-alcove: #f2c419;
+  --t-demons: #d63a3a;
   --t-neutral: #8d8496;
   --display: 'Fredoka', 'Nunito', 'Trebuchet MS', system-ui, sans-serif;
   --text: 'Nunito', 'Segoe UI', system-ui, sans-serif;
@@ -186,6 +186,8 @@ b { font-weight: 800; }
 .t-neverending { --tc: var(--t-neverending); } .t-azure { --tc: var(--t-azure); } .t-kindred { --tc: var(--t-kindred); }
 .t-brambor { --tc: var(--t-brambor); } .t-cloister { --tc: var(--t-cloister); } .t-alcove { --tc: var(--t-alcove); }
 .t-demons { --tc: var(--t-demons); } .t-neutral { --tc: var(--t-neutral); }
+/* Alcove's bright yellow needs dark lettering */
+.t-alcove .tribe-plate, .bigcard.t-alcove .tribe span { color: #3d2f00; text-shadow: 0 1px 0 rgba(255, 255, 255, 0.35); }
 
 /* big card (detail / discover) */
 .bigcard {

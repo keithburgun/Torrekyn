@@ -125,7 +125,7 @@ feat('streak5', 'Rampage', 'Win 5 combats in a row.', 'Combat', (c) => c.game.st
 feat('ghost', 'Ghostbuster', 'Defeat a ghost.', 'Combat', (c) => !!c.combat?.won && c.combat.ghost);
 // end of game feats
 const place = (c: Ctx) => (c.end && c.p ? c.p.placement : 0);
-feat('healthy', 'Barely a Scratch', 'Finish 1st with 40 or more Health.', 'Feats', (c) => place(c) === 1 && c.p!.health >= 40);
+feat('healthy', 'Barely a Scratch', 'Finish 1st with 30 or more Health.', 'Feats', (c) => place(c) === 1 && c.p!.health >= 30);
 feat('comeback', 'Comeback Kid', 'Finish 1st with 5 or less Health.', 'Feats', (c) => place(c) === 1 && c.p!.health <= 5);
 feat('quick', 'Blitz', 'Finish 1st by turn 12.', 'Feats', (c) => place(c) === 1 && c.g!.round <= 12);
 feat('long', 'War of Attrition', 'Play a game that lasts 20 turns.', 'Feats', (c) => !!c.end && c.g!.round >= 20);

@@ -24,13 +24,13 @@ function rng(seed) {
 
 // Pastel palettes per tribe: sky gradient (top -> bottom), glow, glyph fill, outline, far/near scenery
 const PAL = {
-  neverending: { sky: ['#6b5aa8', '#a690de', '#e4d6ff'], glow: '#d4fff0', glyph: ['#ffffff', '#b9a4f0'], stroke: '#523a8a', far: '#9b86d6', near: '#7f69bf', spark: '#e9fff6' },
-  azure: { sky: ['#82b4ff', '#b9d6ff', '#f0f6ff'], glow: '#ffffff', glyph: ['#ffffff', '#9cc4ff'], stroke: '#3c68b8', far: '#a8c7f6', near: '#8bb2ea', spark: '#ffffff' },
+  neverending: { sky: ['#7a4fc4', '#b598ea', '#efe4ff'], glow: '#f3e8ff', glyph: ['#ffffff', '#c3a6f2'], stroke: '#4d2b8c', far: '#a98ade', near: '#8e6ccf', spark: '#f3e8ff' },
+  azure: { sky: ['#3f63c9', '#8ea6ea', '#e6edff'], glow: '#ffffff', glyph: ['#ffffff', '#9fb4f0'], stroke: '#22398a', far: '#8aa1e2', near: '#647fd1', spark: '#ffffff' },
   kindred: { sky: ['#ff9cc0', '#ffc4d9', '#fff0f6'], glow: '#fff6cf', glyph: ['#ffffff', '#ffa9c8'], stroke: '#bf4a7b', far: '#f6aec9', near: '#ea91b4', spark: '#fff6cf' },
-  brambor: { sky: ['#7ccfa6', '#b6ebcf', '#eefff5'], glow: '#fffbd6', glyph: ['#ffffff', '#93dcb5'], stroke: '#357f5c', far: '#a2dcbe', near: '#7fc8a3', spark: '#fffbd6' },
-  cloister: { sky: ['#e56e9b', '#f6aac6', '#ffe6ef'], glow: '#ffffff', glyph: ['#ffffff', '#f59ab9'], stroke: '#9e2f5b', far: '#ec98b8', near: '#db779f', spark: '#ffffff' },
-  alcove: { sky: ['#5ecbe0', '#a9e8f3', '#ecfcff'], glow: '#ffffff', glyph: ['#ffffff', '#8fe0ee'], stroke: '#2a85a0', far: '#93dbe9', near: '#71c7da', spark: '#ffffff' },
-  demons: { sky: ['#ff9a80', '#ffc6aa', '#fff3e6'], glow: '#fff7cc', glyph: ['#ffffff', '#ffb798'], stroke: '#bb5236', far: '#f8b597', near: '#ee987a', spark: '#fff7cc' },
+  brambor: { sky: ['#9a6a3e', '#d0aa82', '#f7ecdf'], glow: '#fff3d6', glyph: ['#ffffff', '#ddb98f'], stroke: '#5e3a17', far: '#c79e74', near: '#a87c52', spark: '#fff3d6' },
+  cloister: { sky: ['#3f8a58', '#93cfa4', '#e6f7ea'], glow: '#f4fff0', glyph: ['#ffffff', '#9fd8b0'], stroke: '#1f5632', far: '#86c39a', near: '#5f9f74', spark: '#f4fff0' },
+  alcove: { sky: ['#f2be1e', '#fbe07a', '#fffbe2'], glow: '#ffffff', glyph: ['#ffffff', '#ffe27a'], stroke: '#9a7200', far: '#f5d76b', near: '#e8bf3c', spark: '#ffffff' },
+  demons: { sky: ['#d94848', '#f2a0a0', '#ffe9e6'], glow: '#fff1e0', glyph: ['#ffffff', '#f5a5a5'], stroke: '#8f1f1f', far: '#ec9898', near: '#d86c6c', spark: '#fff1e0' },
   neutral: { sky: ['#a99cd2', '#d1c8ee', '#f7f3ff'], glow: '#ffffff', glyph: ['#ffffff', '#c8bdf0'], stroke: '#625392', far: '#c5bae8', near: '#ab9ed8', spark: '#ffffff' },
 };
 

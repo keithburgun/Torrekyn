@@ -3,7 +3,7 @@ import type { Body, CardDef, GameState, Keyword, Player, Tribe, Unit } from './t
 
 export const CONFIG = {
   players: 6,
-  startHealth: 60,
+  startHealth: 45,
   damageCap: 15,
   maxTier: 5,
   boardSize: 7,
@@ -15,8 +15,8 @@ export const CONFIG = {
   upgradeCost: [0, 0, 5, 7, 8, 9],
   shopSize: [0, 3, 4, 4, 5, 5],
   copiesPerTier: [0, 15, 13, 11, 9, 7],
-  /** 7 tribes exist; 4 are banned each match, so 3 are in play (plus Neutral) */
-  tribesPerGame: 3,
+  /** 7 tribes exist; 3 are banned each match, so 4 are in play (plus Neutral) */
+  tribesPerGame: 4,
   maxGold: 10,
   heroChoices: 4,
 };

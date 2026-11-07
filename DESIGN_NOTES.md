@@ -3,12 +3,12 @@
 When the card text was ambiguous, Hearthstone: Battlegrounds conventions were used. Everything below can be changed; tell Claude which ones to change.
 
 ## Core rules (src/engine/core.ts `CONFIG`)
-- 6 players, 60 Health each. Damage = winner's Tavern Tier + tiers of the winner's surviving units, always capped at 15.
+- 6 players, 45 Health each. Damage = winner's Tavern Tier + tiers of the winner's surviving units, always capped at 15.
 - Tavern Tiers 1–5. Upgrade costs: Tier 2 = 5, Tier 3 = 7, Tier 4 = 8, Tier 5 = 9, each dropping by 1 every turn (as in HS).
 - Shop size by tier: 3 / 4 / 4 / 5 / 5. Units cost 3, sell for 1, Refresh costs 1, Freeze is free.
 - Gold: 3 on turn 1, +1 per turn, max 10 (plus Investor/trinket bonuses).
 - Card pool copies per tier: 15 / 13 / 11 / 9 / 7 (scaled down from HS for 6 players).
-- 4 of the 7 tribes are banned each game, so 3 are in play, picked at random (Neutral is always in). The game announces them at the start.
+- 3 of the 7 tribes are banned each game, so 4 are in play, picked at random (Neutral is always in). The game announces them at the start.
 - Triples: 3 copies → Golden (double base stats + all buffs from the copies). Playing it lets you Discover a unit from Tavern Tier +1.
 - Matchmaking avoids your last opponent where possible. With an odd number alive, one player fights the ghost of the most recently eliminated player.
 - Board 7, hand 10.

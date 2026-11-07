@@ -1,6 +1,6 @@
 # Torrekin
 
-A single-player autobattler in the style of Hearthstone: Battlegrounds, with 6 players, 60 Health, a 15 damage cap, its own tribes and cards, and slot bonuses.
+A single-player autobattler in the style of Hearthstone: Battlegrounds, with 6 players, 45 Health, a 15 damage cap, its own tribes and cards, and slot bonuses.
 
 It runs on **Windows** (installer), in any **web browser**, and on **phones and tablets** (installable web app). Every version checks for updates on its own.
 

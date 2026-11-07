@@ -195,7 +195,7 @@ export class App {
 
   heroSelectHtml() {
     const offer = this.me.heroOffer ?? HEROES.slice(0, 4).map((h) => h.id);
-    const tribes = this.g!.tribes.map((t) => TRIBE_NAMES[t]).join(' · ') + '  (4 tribes banned)';
+    const tribes = this.g!.tribes.map((t) => TRIBE_NAMES[t]).join(' · ') + `  (${7 - CONFIG.tribesPerGame} tribes banned)`;
     return `<div class="modal" style="background:rgba(255,255,255,.08)">
       <h2>Choose Your Hero</h2>
       <div class="hint" style="font-size:17px">Tribes this game: ${esc(tribes)}</div>
