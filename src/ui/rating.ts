@@ -2,19 +2,22 @@
  * Your rating (Elo), kept in this browser. After each game it moves like Battlegrounds MMR: by where you
  * finished and how strong the lobby was. Each rival counts as a head-to-head match (you "won" against
  * everyone you finished above); the expected result against each comes from the usual Elo formula.
- * New players start at 1500, about where the weakest bot sits; the Expert bot is 2000.
+ * New players start at 1000, where the weakest bot sits; the Expert bot is 1500.
  */
 import type { GameState } from '../engine/types';
 import { personaById, personaElo } from '../engine/personas';
 
 const KEY = 'torrekin-rating';
-export const START_RATING = 1500;
+export const START_RATING = 1000;
+/** ratings saved before the scale moved down 500 points get shifted once */
+const SCALE_VERSION = 2;
 /** points at stake per game (split across the 5 rivals); doubled for your first 10 games */
 const K = 48;
 const PROVISIONAL_GAMES = 10;
 
 export interface RatingState {
   rating: number;
+  v?: number;
   games: number;
   peak: number;
   history: { at: number; place: number; delta: number; rating: number }[];
@@ -22,10 +25,18 @@ export interface RatingState {
 
 export function getRating(): RatingState {
   try {
-    const r = JSON.parse(localStorage.getItem(KEY) ?? 'null');
-    if (r && typeof r.rating === 'number') return r;
+    const r = JSON.parse(localStorage.getItem(KEY) ?? 'null') as RatingState | null;
+    if (r && typeof r.rating === 'number') {
+      if (r.v !== SCALE_VERSION) {
+        r.rating -= 500; r.peak -= 500;
+        for (const h of r.history) h.rating -= 500;
+        r.v = SCALE_VERSION;
+        save(r);
+      }
+      return r;
+    }
   } catch { /* storage unavailable */ }
-  return { rating: START_RATING, games: 0, peak: START_RATING, history: [] };
+  return { rating: START_RATING, v: SCALE_VERSION, games: 0, peak: START_RATING, history: [] };
 }
 
 function save(r: RatingState) {
@@ -38,7 +49,7 @@ export const isProvisional = (r: RatingState) => r.games < PROVISIONAL_GAMES;
 export function seatRating(g: GameState, id: number): number {
   const p = g.players[id];
   const per = personaById(p.persona);
-  return per ? personaElo(per) : 1750;
+  return per ? personaElo(per) : 1250;
 }
 
 /** Work out the change for this game without saving it. */

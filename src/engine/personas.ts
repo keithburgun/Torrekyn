@@ -76,7 +76,25 @@ export function personaProfile(per: Persona): BotProfile {
 /** measured ratings (calibration run); falls back to a line from 2000 (Expert) down if missing */
 const ELO = eloData as Record<string, number>;
 export function personaElo(per: Persona): number {
-  return ELO[per.id] ?? Math.round(1000 + per.skill * 1000);
+  return ELO[per.id] ?? Math.round(1000 + per.skill * 500);
 }
 
-export const EXPERT_ELO = 2000;
+/** the scale: the Expert bot is 1500, the weakest bot (and a new player) about 1000 */
+export const EXPERT_ELO = 1500;
+
+/**
+ * Matchmaking: pick rivals near a rating, like Battlegrounds. Each persona's chance falls off with its
+ * distance from the rating (about halving every 90 points), with a small floor so lobbies still vary.
+ */
+export function matchPersonas(rating: number, n: number, rnd: () => number): Persona[] {
+  const left = [...PERSONAS];
+  const out: Persona[] = [];
+  while (out.length < n && left.length) {
+    const w = left.map((p) => Math.max(0.015, Math.exp(-(((personaElo(p) - rating) / 110) ** 2))));
+    let r = rnd() * w.reduce((a, b) => a + b, 0);
+    let i = 0;
+    while (i < w.length - 1 && (r -= w[i]) > 0) i++;
+    out.push(left.splice(i, 1)[0]);
+  }
+  return out;
+}

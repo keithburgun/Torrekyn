@@ -15,9 +15,9 @@ describe('personas and rating', () => {
     expect(new Set(rivals.map((p) => p.persona)).size).toBe(5);
   });
 
-  it('the Expert persona is 2000 and the weakest is the lowest', () => {
+  it('the Expert persona is 1500 and the weakest is the lowest', () => {
     const elos = PERSONAS.map(personaElo);
-    expect(elos[0]).toBe(2000);
+    expect(elos[0]).toBe(1500);
     expect(Math.min(...elos)).toBe(personaElo(PERSONAS[PERSONAS.length - 1]));
   });
 
@@ -36,15 +36,30 @@ describe('personas and rating', () => {
     g.phase = 'over';
     // win: everyone else knocked out
     g.players.forEach((p, i) => { p.alive = i === 0; p.placement = i + 1; });
-    const win = ratingChange(g, { rating: 1500, games: 20, peak: 1500, history: [] });
+    const win = ratingChange(g, { rating: 1000, games: 20, peak: 1000, history: [] });
     expect(win.delta).toBeGreaterThan(20);
     // knocked out first: everyone else still alive
     g.players.forEach((p, i) => { p.alive = i !== 0; p.placement = i === 0 ? 6 : 0; });
-    const last = ratingChange(g, { rating: 1500, games: 20, peak: 1500, history: [] });
+    const last = ratingChange(g, { rating: 1000, games: 20, peak: 1000, history: [] });
     expect(last.delta).toBeLessThan(0);
-    expect(Math.abs(last.delta)).toBeLessThan(win.delta); // a 1500 player is expected to lose to these bots
+    expect(Math.abs(last.delta)).toBeLessThan(win.delta); // a 1000 player is expected to lose to these bots
     // provisional games move twice as fast
-    const prov = ratingChange(g, { rating: 1500, games: 0, peak: 1500, history: [] });
+    const prov = ratingChange(g, { rating: 1000, games: 0, peak: 1000, history: [] });
     expect(Math.abs(prov.delta - last.delta * 2)).toBeLessThanOrEqual(1);
+  });
+});
+
+describe('matchmaking', () => {
+  it('rivals cluster near the player rating', async () => {
+    const { matchPersonas, personaElo } = await import('../src/engine/personas');
+    let r = 1;
+    const rnd = () => { r = (r * 16807) % 2147483647; return r / 2147483647; };
+    const avg = (rating: number) => {
+      let s = 0;
+      for (let i = 0; i < 200; i++) s += matchPersonas(rating, 5, rnd).reduce((a, p) => a + personaElo(p), 0) / 5;
+      return s / 200;
+    };
+    expect(avg(1000)).toBeLessThan(1150);
+    expect(avg(1500)).toBeGreaterThan(1300);
   });
 });

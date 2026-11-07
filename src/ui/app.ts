@@ -749,7 +749,7 @@ export class App {
   newGame() {
     this.seen = null;
     this.lastRating = null;
-    this.g = newGame((Math.random() * 2 ** 31) | 0);
+    this.g = newGame((Math.random() * 2 ** 31) | 0, 'You', undefined, { rating: getRating().rating });
     this.sel = null;
     this.targeting = null;
     this.seenBoards.clear();

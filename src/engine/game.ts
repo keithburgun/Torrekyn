@@ -1,10 +1,10 @@
 import {
-  ALL_TRIBES, CARDS, CONFIG, cloneUnit, def, displayName, effStats, isTribe, log, makeUnit, mult, pick, randInt, sample, shuffle,
+  ALL_TRIBES, CARDS, CONFIG, cloneUnit, def, displayName, effStats, isTribe, log, makeUnit, mult, pick, rand, randInt, sample, shuffle,
 } from './core';
 import { EFFECTS, battlecryTimes, hasBattlecry } from './effects';
 import { runCombat } from './combat';
 import { aiTakeTurn, aiChooseDiscover } from './ai';
-import { PERSONAS, personaProfile } from './personas';
+import { PERSONAS, matchPersonas, personaProfile } from './personas';
 import { HEROES, buyCost, gainPower, heroDef, heroEndTurn, heroHooks, hasTrinket, offerTrinkets, shopBonus, GREATER_TRINKET_TURN, LESSER_TRINKET_TURN } from './heroes';
 import type { Discover, GameState, Player, Slot, Tribe, Unit } from './types';
 
@@ -27,7 +27,7 @@ export function newPlayer(id: number, name: string, human: boolean, avatar: numb
   };
 }
 
-export function newGame(seed: number, humanName = 'You', tribes?: Tribe[]): GameState {
+export function newGame(seed: number, humanName = 'You', tribes?: Tribe[], opts: { rating?: number } = {}): GameState {
   const g: GameState = {
     version: SAVE_VERSION, seed, rng: seed | 0, round: 0, phase: 'shop', players: [], pool: {},
     tribes: [], nextUid: 1, lastCombats: [], deadOrder: [],
@@ -45,8 +45,8 @@ export function newGame(seed: number, humanName = 'You', tribes?: Tribe[]): Game
   const heroIds = shuffle(g, HEROES.filter((h) => !h.needsTribe || g.tribes.includes(h.needsTribe)).map((h) => h.id));
   g.players[0].heroOffer = heroIds.slice(0, CONFIG.heroChoices);
   const rest = heroIds.slice(CONFIG.heroChoices);
-  // rivals: random personas (personas.ts), each playing a random champion
-  const rivals = sample(g, PERSONAS, g.players.length - 1);
+  // rivals: personas near your rating when one is given (matchmaking), otherwise any; each plays a random champion
+  const rivals = opts.rating !== undefined ? matchPersonas(opts.rating, g.players.length - 1, () => rand(g)) : sample(g, PERSONAS, g.players.length - 1);
   for (let i = 1; i < g.players.length; i++) {
     const p = g.players[i];
     p.hero = rest.length ? rest.shift()! : pick(g, heroIds)!;

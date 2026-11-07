@@ -117,29 +117,31 @@ Tried and dropped (no gain): faster or slower leveling curves (the 5/8/10 curve 
 **Result: the Expert bot finishes above the original bot 77% of the time (+210 Elo) and wins 27% of mixed lobbies against its 6%.**
 
 ### Skill levels and personas (src/engine/personas.ts)
-`profileForSkill(0…1)` switches the Expert's habits on as skill rises (most valuable last), and below that adds evaluation noise, blunders, lazy shopping (ending a turn with gold unspent), holding weak units, and late leveling. Fifteen personas sit on that dial, some with quirks (always Kindred, always Neverending, triple-hungry, reroll-happy, fast leveler). Each new game seats 5 of them at random, each playing a random champion.
+`profileForSkill(0…1)` switches the Expert's habits on as skill rises (most valuable last), and below that adds evaluation noise, blunders, lazy shopping (ending a turn with gold unspent), holding weak units, and late leveling. Fifteen personas sit on that dial, some with quirks (always Kindred, always Neverending, triple-hungry, reroll-happy, fast leveler). Each new game seats 5 of them, chosen by matchmaking (below), each playing a random champion.
 
 ### Elo
-Ratings are standard Elo (400 points = 10:1 odds) applied to Battlegrounds-style results: each rival in the lobby counts as a head-to-head match, won if you finished above them. **Persona ratings are measured, not assigned**: 3,600 lobbies of randomly chosen personas, fitted with Bradley-Terry maximum likelihood (`CALIBRATE=1 npx vitest run tests/calibrate.test.ts` → `src/data/personaElo.json`), anchored so the **Expert bot = 2000**. The weakest bot lands at **1500**; the original bot would sit at 1781.
+Ratings are standard Elo (400 points = 10:1 odds) applied to Battlegrounds-style results: each rival in the lobby counts as a head-to-head match, won if you finished above them. **Persona ratings are measured, not assigned**: 3,600 lobbies of randomly chosen personas, fitted with Bradley-Terry maximum likelihood (`CALIBRATE=1 npx vitest run tests/calibrate.test.ts` → `src/data/personaElo.json`), anchored so the **Expert bot = 1500**. The weakest bot lands at **1000**; the original bot would sit at 1281.
 
 | Persona | Skill | Elo |
 |---|---|---|
-| xX_TavernKing_Xx (Expert) | 1.00 | 2000 |
-| golden_gremlin | 0.85 | 1987 |
-| sl0t_machine | 0.70 | 1954 |
-| rerollandpray | 0.62 | 1870 |
-| DivineShieldBoi | 0.56 | 1833 |
-| QuestLogQueen | 0.50 | 1799 |
-| MidRangeMaddie | 0.45 | 1788 |
-| potato_witch_irl | 0.40 | 1753 |
-| Freeze_Frame | 0.35 | 1654 |
-| NoTauntNoProblem | 0.30 | 1647 |
-| skel3tor_dad | 0.25 | 1612 |
-| bunnyhop_99 | 0.18 | 1564 |
-| ItsJustAPhase | 0.12 | 1525 |
-| sixthplacesteve | 0.06 | 1508 |
-| ctrl_alt_defeat (weakest) | 0.00 | 1500 |
+| xX_TavernKing_Xx (Expert) | 1.00 | 1500 |
+| golden_gremlin | 0.85 | 1487 |
+| sl0t_machine | 0.70 | 1454 |
+| rerollandpray | 0.62 | 1370 |
+| DivineShieldBoi | 0.56 | 1333 |
+| QuestLogQueen | 0.50 | 1299 |
+| MidRangeMaddie | 0.45 | 1288 |
+| potato_witch_irl | 0.40 | 1253 |
+| Freeze_Frame | 0.35 | 1154 |
+| NoTauntNoProblem | 0.30 | 1147 |
+| skel3tor_dad | 0.25 | 1112 |
+| bunnyhop_99 | 0.18 | 1064 |
+| ItsJustAPhase | 0.12 | 1025 |
+| sixthplacesteve | 0.06 | 1008 |
+| ctrl_alt_defeat (weakest) | 0.00 | 1000 |
 
 The spread (500 points) is narrower than chess because a 6-player autobattler has a lot of luck: even so, the Expert finishes above the weakest bot about 95% of the time.
 
-**Your rating** (src/ui/rating.ts, stored in the browser) starts at 1500. After each game: change = K × Σ(result − expected) / 5 over the five rivals, K = 48 (96 for your first 10 "provisional" games). Winning a lobby of equal-rated players gains about +24; finishing last loses about −24; beating a strong lobby gains more, losing to a weak one costs more. Shown on the title screen and at game over.
+**Your rating** (src/ui/rating.ts, stored in the browser) starts at 1000, level with the weakest bot. After each game: change = K × Σ(result − expected) / 5 over the five rivals, K = 48 (96 for your first 10 "provisional" games). Winning a lobby of equal-rated players gains about +24; finishing last loses about −24; beating a strong lobby gains more, losing to a weak one costs more. Shown on the title screen and at game over.
+
+**Matchmaking:** each new game draws your 5 rivals with a strong preference for personas near your rating (the chance falls off with distance, roughly halving every 90 points, with a small floor so lobbies still vary). `matchPersonas` in personas.ts.
