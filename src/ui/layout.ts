@@ -34,7 +34,8 @@ export interface Layout {
   leader: { x: number; y: number; w: number; h: number; horizontal: boolean };
   endTurn: { x: number; y: number };
   gold: { x: number; y: number };
-  gear: { x: number; y: number };
+  gear: { x: number; y: number; size: number };
+  mute: { x: number; y: number; size: number };
   tribes: { x: number; y: number; w: number };
   cardsBtn: { x: number; y: number };
   targetBar: { x: number; y: number; w: number };
@@ -51,7 +52,7 @@ export const LANDSCAPE: Layout = {
   heroY: 680, handY: 770, handWidth: 1040,
   shopDrop: 372, boardTop: 372, boardBottom: 625,
   leader: { x: 14, y: 14, w: 228, h: 800, horizontal: false },
-  endTurn: { x: 1410, y: 360 }, gold: { x: 1150, y: 812 }, gear: { x: 1540, y: 842 },
+  endTurn: { x: 1410, y: 360 }, gold: { x: 1150, y: 812 }, gear: { x: 1494, y: 12, size: 44 }, mute: { x: 1546, y: 12, size: 44 },
   tribes: { x: 14, y: 826, w: 228 },
   cardsBtn: { x: 1436, y: 470 },
   targetBar: { x: 250, y: 640, w: 440 },
@@ -84,9 +85,9 @@ export function portraitLayout(H: number): Layout {
     heroY: heroTop + 85, handY, handWidth: 880,
     shopDrop: slotTop - 14, boardTop: slotTop - 14, boardBottom: slotTop + sizes.board + 10,
     leader: { x: 10, y: leaderY, w: 760, h: sizes.leader, horizontal: true },
-    endTurn: { x: 696, y: heroTop + 28 }, gold: { x: 30, y: heroTop + 18 }, gear: { x: 846, y: heroTop + 118 },
+    endTurn: { x: 696, y: heroTop + 28 }, gold: { x: 30, y: heroTop + 18 }, gear: { x: 828, y: leaderY + 76, size: 58 }, mute: { x: 828, y: leaderY + 8, size: 58 },
     tribes: { x: 30, y: heroTop + 104, w: 210 },
-    cardsBtn: { x: 684, y: heroTop + 118 },
+    cardsBtn: { x: 720, y: heroTop + 118 },
     targetBar: { x: 230, y: slotTop + sizes.board + 2, w: 440 },
     popover: 'stack',
     combat: {

@@ -3,6 +3,7 @@ import type { CombatFrame, CombatFrameUnit, CombatFx, CombatResult, GameState } 
 import { cardHtml, esc, frameUnitView, heroArt } from './view';
 import { sfx } from './sfx';
 import { currentLayout, type Layout } from './layout';
+import { placeHud } from './hud';
 
 
 /** base time each frame stays on screen (ms at speed ×1) */
@@ -46,6 +47,7 @@ export class CombatPlayer {
       <div id="clayer" class="abs" style="inset:0;pointer-events:none"></div>
       <div id="fxlayer" class="abs" style="inset:0;pointer-events:none;z-index:40"></div>`;
     this.layer = stage.querySelector('#clayer') as HTMLElement;
+    placeHud(stage, this.L);
     this.fxLayer = stage.querySelector('#fxlayer') as HTMLElement;
     stage.querySelector('[data-cact="speed"]')!.addEventListener('click', (e) => {
       this.speed = this.speed >= 4 ? 1 : this.speed * 2;

@@ -475,7 +475,7 @@ b { font-weight: 800; }
 @media (orientation: portrait) and (max-width: 700px) {
   .rotate-hint { display: block; position: fixed; bottom: 10px; left: 0; right: 0; text-align: center; color: var(--ink); font-weight: 700; font-size: 14px; z-index: 900; }
 }
-#mute-btn { position: fixed; z-index: 2000; top: calc(10px + env(safe-area-inset-top, 0px)); right: calc(10px + env(safe-area-inset-right, 0px));
+#mute-btn { position: absolute; z-index: 120;
   width: 44px; height: 44px; border-radius: 50%; border: 2px solid var(--slate-edge); background: rgba(43, 40, 50, 0.9); color: var(--ink); font-size: 20px; cursor: pointer; padding: 0;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4); }
 #mute-btn:hover { filter: brightness(1.2); }
@@ -606,7 +606,7 @@ b { font-weight: 800; }
 .cards-btn { position: absolute; font-size: 17px; padding: 8px 16px; }
 
 /* achievement toast (outside the stage so it shows on every screen) */
-#ach-toasts { position: fixed; z-index: 3000; top: calc(64px + env(safe-area-inset-top, 0px)); right: calc(12px + env(safe-area-inset-right, 0px)); display: flex; flex-direction: column; gap: 8px; pointer-events: none; }
+#ach-toasts { position: fixed; z-index: 3000; top: calc(80px + env(safe-area-inset-top, 0px)); right: calc(12px + env(safe-area-inset-right, 0px)); display: flex; flex-direction: column; gap: 8px; pointer-events: none; }
 .ach-toast { display: flex; gap: 12px; align-items: center; width: 300px; max-width: 80vw; padding: 10px 14px; border-radius: 16px; background: rgba(43, 40, 50, 0.96);
   border: 2px solid #ffcf4a; box-shadow: 0 8px 26px rgba(0, 0, 0, 0.5), 0 0 22px rgba(255, 207, 74, 0.35); color: var(--ink); animation: toast-in 0.45s cubic-bezier(.3, 1.5, .5, 1); transition: opacity 0.5s, transform 0.5s; }
 .ach-toast.out { opacity: 0; transform: translateX(40px); }

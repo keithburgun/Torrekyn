@@ -11,6 +11,7 @@ import { APP_VERSION, checkForUpdates } from './update';
 import { isMuted, setMuted, sfx } from './sfx';
 import { achievementsHtml, cardGridHtml, cardViewerHtml, filteredCards, tribesAnnounceHtml, type ViewerState } from './screens';
 import { playTriple } from './ceremony';
+import { placeHud } from './hud';
 import { bump, evaluate, newGameStarted, noteGame, onUnlock, recordCombat, recordGameEnd, type AchievementDef } from './achievements';
 import { currentLayout, getMode, LANDSCAPE, setMode, type Layout, type LayoutMode } from './layout';
 import { ALL_TRIBES } from '../engine/core';
@@ -105,6 +106,7 @@ export class App {
     if (this.viewer) html += cardViewerHtml(this.viewer, this.g);
     if (this.achOpen) html += achievementsHtml();
     this.stage.innerHTML = html;
+    placeHud(this.stage, L);
     if (this.screen === 'shop') this.shopFeedback();
   }
 
@@ -343,7 +345,7 @@ export class App {
         <div class="pips">${pips}</div>
         ${p.goldNextTurn ? `<div class="hint" style="padding:0">+${p.goldNextTurn} gold next turn</div>` : ''}
       </div>
-      <button class="gear" data-act="options" style="left:${L.gear.x}px;top:${L.gear.y}px" title="Options">⚙</button>
+      <button class="gear" data-act="options" style="left:${L.gear.x}px;top:${L.gear.y}px;width:${L.gear.size}px;height:${L.gear.size}px;font-size:${Math.round(L.gear.size * 0.5)}px" title="Options">⚙</button>
       ${this.tribesHtml()}
       <button class="btn cards-btn" data-act="cards" style="left:${L.cardsBtn.x}px;top:${L.cardsBtn.y}px">📖 Cards</button>`;
   }
@@ -540,6 +542,12 @@ export class App {
       document.body.appendChild(d);
       return d;
     })();
+    // keep the popups inside the game canvas (its top-right corner, under the mute button)
+    const r = this.stage.getBoundingClientRect();
+    const scale = r.width / L.W;
+    holder.style.right = `${Math.max(8, window.innerWidth - r.right + 12 * scale)}px`;
+    holder.style.top = `${r.top + (L.mute.y + L.mute.size + 70) * scale}px`;
+    holder.style.maxWidth = `${Math.max(200, r.width - 24 * scale)}px`;
     const t = document.createElement('div');
     t.className = 'ach-toast';
     t.innerHTML = `<div class="ach-icon">🏆</div><div><div class="at-label">Achievement unlocked</div><div class="at-name">${esc(a.name)}</div><div class="at-desc">${esc(a.desc)}</div></div>`;

@@ -8,7 +8,6 @@ import '@fontsource/nunito/latin-800.css';
 import './ui/styles.css';
 import { App } from './ui/app';
 import { initUpdates } from './ui/update';
-import { isMuted, onMuteChange, setMuted } from './ui/sfx';
 import { currentLayout, onLayoutChange } from './ui/layout';
 import type { GameState } from './engine/types';
 
@@ -48,20 +47,6 @@ function start(data: { g?: GameState; screen?: string } = {}) {
   if (data.g) app.resume(data.g);
   hot?.snapshot?.(() => ({ g: app.g, screen: app.screen }));
 }
-
-// mute button, top-right on every screen
-const muteBtn = document.createElement('button');
-muteBtn.id = 'mute-btn';
-const paintMute = (m: boolean) => {
-  muteBtn.textContent = m ? '🔇' : '🔊';
-  muteBtn.title = m ? 'Unmute' : 'Mute';
-  muteBtn.setAttribute('aria-label', m ? 'Unmute sound' : 'Mute sound');
-  muteBtn.classList.toggle('muted', m);
-};
-paintMute(isMuted());
-onMuteChange(paintMute);
-muteBtn.addEventListener('click', () => setMuted(!isMuted()));
-document.body.appendChild(muteBtn);
 
 if (hot?.ready) hot.ready(start);
 else start(hot?.data ?? {});
