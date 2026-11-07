@@ -148,9 +148,12 @@ export class Combat {
     return cu;
   }
 
+  /** Summon several copies one at a time: each gets its own frame, so they appear one after another. */
   spawnMany(s: Side, cardId: string, golden: boolean, n: number, pos: number) {
-    for (let i = 0; i < n; i++) if (this.spawn(s, cardId, golden, pos + i) === null) break;
-    this.snap('trigger', { note: `Summon ${def(cardId).name}` });
+    for (let i = 0; i < n; i++) {
+      if (this.spawn(s, cardId, golden, pos + i) === null) break;
+      this.snap('trigger', i === 0 ? { note: `Summon ${def(cardId).name}` } : {});
+    }
   }
 
   spawnCopy(s: Side, d: CUnit, pos: number): CUnit | null {
