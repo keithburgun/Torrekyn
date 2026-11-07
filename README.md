@@ -10,6 +10,15 @@ npm install
 npm run dev          # http://localhost:5173
 ```
 
+## itch.io
+Every push to `main` uploads the browser version, the Windows app and the Android APK to itch.io. Setup and
+details: [docs/itch.md](docs/itch.md).
+
+## Cloud saves
+Rating, achievements, the game in progress and a few settings sync across devices with a free Supabase account
+(the same accounts as Spellstorm), ready to switch to Steam Cloud / Google Play / iCloud later.
+Setup and design: [docs/cloud-saves.md](docs/cloud-saves.md).
+
 ## Playing inside Claude
 `npm run build:artifact && node tools/make-artifact.mjs` builds a copy for Claude in `dist-artifact/`. It has no service worker and no update checks. Claude publishes `torrekin.html` with the files next to it.
 

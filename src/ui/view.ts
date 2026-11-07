@@ -1,4 +1,5 @@
 import artManifest from '../data/art.json';
+import { store } from '../save/store';
 import artV2 from '../data/artV2.json';
 import { def, effStats, TRIBE_NAMES } from '../engine/core';
 import { EFFECTS } from '../engine/effects';
@@ -12,11 +13,14 @@ export const art = (path: string) => BASE + path;
  * built by tools/build_art.py) or "classic" (the original generated placeholder art, public/art/cards|heroes).
  */
 export type ArtStyle = 'illustrated' | 'classic';
-let artStyle: ArtStyle = (() => { try { return localStorage.getItem('torrekin-art') === 'classic' ? 'classic' : 'illustrated'; } catch { return 'illustrated'; } })();
+let artStyle: ArtStyle = 'illustrated';
 export const getArtStyle = () => artStyle;
+/** read the setting (startup, and after a cloud save) */
+export function reloadArtStyle() { artStyle = store.get('torrekin-art') === 'classic' ? 'classic' : 'illustrated'; }
+reloadArtStyle();
 export function setArtStyle(s: ArtStyle) {
   artStyle = s;
-  try { localStorage.setItem('torrekin-art', s); } catch { /* ignore */ }
+  store.set('torrekin-art', s);
 }
 const V2 = artV2 as Record<string, string>;
 export const cardArt = (id: string) => art((artStyle === 'illustrated' && V2[`card:${id}`]) || ((artManifest as Record<string, string>)[id] ?? `art/cards/${id}.svg`));

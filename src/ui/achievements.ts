@@ -2,6 +2,7 @@
  * 100 achievements. Progress and unlocks are kept on this device (localStorage).
  * The UI reports what happens (buys, combats, game ends…) and the state is checked after every change.
  */
+import { store } from '../save/store';
 import { ALL_TRIBES, def, effStats, TRIBE_NAMES } from '../engine/core';
 import { HEROES } from '../engine/heroes';
 import type { GameState, Player, Tribe } from '../engine/types';
@@ -141,12 +142,13 @@ export const ACHIEVEMENTS: AchievementDef[] = A;
 const KEY = 'torrekin-achievements';
 interface Saved { unlocked: Record<string, number>; stats: Stats }
 let saved: Saved = { unlocked: {}, stats: {} };
-try {
-  const raw = localStorage.getItem(KEY);
-  if (raw) saved = { unlocked: {}, stats: {}, ...JSON.parse(raw) };
-} catch { /* storage unavailable */ }
+/** (re)read from storage: at startup, and after a cloud save brought progress from another device */
+export function reloadAchievements() {
+  saved = { unlocked: {}, stats: {}, ...(store.getJSON<Saved>(KEY) ?? {}) };
+}
+reloadAchievements();
 function persist() {
-  try { localStorage.setItem(KEY, JSON.stringify(saved)); } catch { /* ignore */ }
+  store.setJSON(KEY, saved);
 }
 
 let game: GameTrack = { discovers: 0, heroPowers: 0, streak: 0, firstTripleRound: null };

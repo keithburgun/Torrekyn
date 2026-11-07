@@ -15,7 +15,8 @@
     "tauri:dev": "tauri dev",
     "tauri:build": "tauri build",
     "build:artifact": "npm run art && tsc --noEmit && TORREKIN_TARGET=artifact vite build",
-    "build:android": "npm run art && tsc --noEmit && TORREKIN_TARGET=android vite build && cap sync android"
+    "build:android": "npm run art && tsc --noEmit && TORREKIN_TARGET=android vite build && cap sync android",
+    "build:itch": "npm run art && tsc --noEmit && TORREKIN_TARGET=itch vite build"
   },
   "devDependencies": {
     "@capacitor/cli": "^8.6.0",

@@ -8,6 +8,8 @@ const isTauri = !!process.env.TAURI_ENV_PLATFORM;
 const isArtifact = process.env.TORREKIN_TARGET === 'artifact';
 // `npm run build:android` makes the copy wrapped into the Android app (Capacitor, see capacitor.config.json)
 const isAndroid = process.env.TORREKIN_TARGET === 'android';
+// `npm run build:itch` makes the itch.io browser version (no service worker; itch.io handles updates)
+const isItch = process.env.TORREKIN_TARGET === 'itch';
 
 export default defineConfig({
   base: './',
@@ -15,11 +17,13 @@ export default defineConfig({
   // from the public builds repo. __BUILD__: CI run number (TORREKIN_BUILD), how the Android app tells builds apart.
   define: {
     __APP_VERSION__: JSON.stringify(pkg.version),
-    __NO_UPDATES__: JSON.stringify(isArtifact),
+    __NO_UPDATES__: JSON.stringify(isArtifact || isItch),
+    // cloud saves: everywhere except the copy inside Claude (which can't reach outside servers)
+    __CLOUD__: JSON.stringify(!isArtifact),
     __ANDROID__: JSON.stringify(isAndroid),
     __BUILD__: JSON.stringify(Number(process.env.TORREKIN_BUILD ?? 0)),
   },
-  build: { target: 'es2021', chunkSizeWarningLimit: 1500, outDir: isArtifact ? 'dist-artifact' : isAndroid ? 'dist-android' : 'dist' },
+  build: { target: 'es2021', chunkSizeWarningLimit: 1500, outDir: isArtifact ? 'dist-artifact' : isAndroid ? 'dist-android' : isItch ? 'dist-itch' : 'dist' },
   server: { port: 5173, strictPort: true },
   plugins: [
     {
@@ -37,7 +41,7 @@ export default defineConfig({
       },
     },
     VitePWA({
-      disable: isTauri || isArtifact || isAndroid,
+      disable: isTauri || isArtifact || isAndroid || isItch,
       registerType: 'prompt',
       includeAssets: ['icon.svg', 'icon-192.png', 'icon-512.png'],
       workbox: {

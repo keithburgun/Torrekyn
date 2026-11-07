@@ -8,3 +8,4 @@ src-tauri/gen/
 dist-artifact/
 dist-android/
 balance.json
+dist-itch/

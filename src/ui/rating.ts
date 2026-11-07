@@ -4,6 +4,7 @@
  * everyone you finished above); the expected result against each comes from the usual Elo formula.
  * New players start at 1000, where the weakest bot sits; the Expert bot is 1500.
  */
+import { store } from '../save/store';
 import type { GameState } from '../engine/types';
 import { personaById, personaElo } from '../engine/personas';
 
@@ -25,7 +26,7 @@ export interface RatingState {
 
 export function getRating(): RatingState {
   try {
-    const r = JSON.parse(localStorage.getItem(KEY) ?? 'null') as RatingState | null;
+    const r = store.getJSON<RatingState>(KEY);
     if (r && typeof r.rating === 'number') {
       if (r.v !== SCALE_VERSION) {
         r.rating -= 500; r.peak -= 500;
@@ -40,7 +41,7 @@ export function getRating(): RatingState {
 }
 
 function save(r: RatingState) {
-  try { localStorage.setItem(KEY, JSON.stringify(r)); } catch { /* ignore */ }
+  store.setJSON(KEY, r);
 }
 
 export const isProvisional = (r: RatingState) => r.games < PROVISIONAL_GAMES;

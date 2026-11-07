@@ -1,4 +1,5 @@
 import { heroDef } from '../engine/heroes';
+import { store } from '../save/store';
 import type { CombatFrame, CombatFrameUnit, CombatFx, CombatResult, GameState } from '../engine/types';
 import { cardHtml, esc, frameUnitView, heroArt } from './view';
 import { sfx } from './sfx';
@@ -34,7 +35,7 @@ export class CombatPlayer {
   }
 
   constructor(private stage: HTMLElement, private g: GameState, private r: CombatResult, private me: 0 | 1, private round: number, private done: () => void) {
-    try { this.speed = Number(localStorage.getItem('torrekin-speed')) || 1; } catch { /* storage unavailable */ }
+    this.speed = Number(store.get('torrekin-speed')) || 1;
     const meP = g.players[0];
     const oppId = me === 0 ? (r.b === -1 ? r.ghostOf! : r.b) : r.a;
     const opp = g.players[oppId];
@@ -58,7 +59,7 @@ export class CombatPlayer {
     this.fxLayer = stage.querySelector('#fxlayer') as HTMLElement;
     stage.querySelector('[data-cact="speed"]')!.addEventListener('click', (e) => {
       this.speed = this.speed >= 4 ? 1 : this.speed * 2;
-      try { localStorage.setItem('torrekin-speed', String(this.speed)); } catch { /* ignore */ }
+      store.set('torrekin-speed', String(this.speed));
       (e.target as HTMLElement).textContent = `Speed ×${this.speed}`;
     });
     stage.querySelector('[data-cact="skip"]')!.addEventListener('click', () => { this.skip = true; });

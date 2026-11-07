@@ -1,4 +1,9 @@
 import { CONFIG, def, TRIBE_NAMES } from '../engine/core';
+import { store } from '../save/store';
+import { provider as cloudProvider, state as cloudState, statusText as cloudStatus, sync, syncNow, takeCombined } from '../save/sync';
+import { friendly, supabase } from '../save/providers/supabase';
+import { reloadAchievements } from './achievements';
+import { reloadArtStyle } from './view';
 import {
   buy, chooseDiscover, endTurn, move, needsTarget, newGame, play, reroll, selectHero, sell, sellValue, toggleFreeze, upgrade, validTargets,
 } from '../engine/game';
@@ -57,6 +62,8 @@ export class App {
   targeting: Targeting | HeroTargeting | null = null;
   inspect: number | null = null; // player id shown in rival modal
   options = false; // options window open
+  /** the cloud-save sign-in window: which form, and any message to show */
+  account: { msg: string; ok?: boolean; busy?: boolean } | null = null;
   viewer: ViewerState | null = null; // card viewer open
   achOpen = false; // achievements window open
   busy = false; // a ceremony is playing
@@ -88,7 +95,22 @@ export class App {
       if (c) c.textContent = `${filteredCards(this.viewer, this.g).length} cards`;
     });
     onUnlock((a) => this.achievementToast(a));
+    // cloud saves: don't swap the game being played underneath you; redraw when progress arrives from elsewhere
+    sync.setBusyKeys(() => (this.g && (this.screen === 'shop' || this.screen === 'combat') ? ['torrekin-save'] : []));
+    sync.onApplied(() => {
+      reloadAchievements();
+      reloadArtStyle();
+      if (this.screen !== 'combat' && !this.account) this.render();
+      if (takeCombined()) this.toast('Your progress here was combined with your account.');
+    });
+    sync.onStatus(() => {
+      const el = this.stage.querySelector('#cloud-status');
+      if (el) el.textContent = cloudStatus();
+      else if (this.options && !this.account) this.render();
+    });
+    sync.start();
     window.addEventListener('keydown', (e) => {
+      if ((e.target as HTMLElement).tagName === 'INPUT') return;
       if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'z' && !e.shiftKey) { e.preventDefault(); this.undo(); return; }
       if (e.key === 'Escape') { this.sheet = null; this.targeting = null; this.sel = null; this.viewer = null; this.achOpen = false; this.render(); }
     });
@@ -114,6 +136,7 @@ export class App {
     else if (this.screen === 'shop') html = this.shopHtml();
     else if (this.screen === 'over') html = this.shopHtml() + this.overHtml();
     if (this.options) html += this.optionsHtml();
+    if (this.account) html += this.accountHtml();
     if (this.viewer) html += cardViewerHtml(this.viewer, this.g);
     if (this.achOpen) html += achievementsHtml();
     const before = this.cardCentres();
@@ -574,7 +597,7 @@ export class App {
   optionsHtml() {
     const mode = getMode();
     let speed = 1;
-    try { speed = Number(localStorage.getItem('torrekin-speed')) || 1; } catch { /* ignore */ }
+    speed = Number(store.get('torrekin-speed')) || 1;
     const seg = (act: string, items: [string, string][], cur: string, key = 'mode') => `<div class="seg">${items.map(([v, label]) =>
       `<button class="btn ${cur === v ? 'on' : ''}" data-act="${act}" data-${key}="${v}">${label}</button>`).join('')}</div>`;
     return `<div class="modal" style="z-index:80"><div class="panel options">
@@ -582,6 +605,7 @@ export class App {
       <div class="opt-row"><span>Screen layout</span>${seg('layout', [['auto', 'Auto'], ['landscape', 'Landscape'], ['portrait', 'Portrait']], mode)}</div>
       <div class="hint" style="margin-top:-8px">Auto picks portrait when the window is taller than it is wide.</div>
       <div class="opt-row"><span>Sound</span>${seg('sound', [['on', 'On'], ['off', 'Off']], isMuted() ? 'off' : 'on')}</div>
+      ${this.cloudRowHtml()}
       <div class="opt-row"><span>Card art</span>${seg('art-style', [['illustrated', 'Illustrated'], ['classic', 'Classic']], getArtStyle())}</div>
       <div class="opt-row"><span>Battle speed</span>${seg('speed', [['1', '×1'], ['2', '×2'], ['4', '×4']], String(speed), 'v')}</div>
       <div style="display:flex;gap:12px;justify-content:center">
@@ -593,6 +617,72 @@ export class App {
         ${this.screen === 'shop' ? '<button class="btn big" data-act="menu">Quit to Title</button>' : ''}
       </div>
     </div></div>`;
+  }
+
+  /** Options: cloud save status, sign in / out */
+  cloudRowHtml() {
+    const p = cloudProvider();
+    const st = cloudState();
+    if (!p || st === 'off') return '';
+    if (p.kind === 'platform') {
+      return `<div class="opt-row"><span>Cloud save</span><div class="cloud-info"><b>${esc(p.label)}</b> · <span id="cloud-status">${esc(cloudStatus())}</span></div></div>`;
+    }
+    if (st === 'signedOut') {
+      return `<div class="opt-row"><span>Cloud save</span><button class="btn" data-act="account">Sign in</button></div>
+        <div class="hint" style="margin-top:-8px">Sign in to keep your rating, achievements and game on all your devices. Spellstorm accounts work here too.</div>`;
+    }
+    return `<div class="opt-row"><span>Cloud save</span><div class="cloud-info">${esc(supabase.email() ?? '')}<br><span id="cloud-status" class="cloud-st">${esc(cloudStatus())}</span></div></div>
+      <div style="display:flex;gap:12px;justify-content:center;margin-top:-6px"><button class="btn" data-act="sync-now">Sync now</button><button class="btn" data-act="sign-out">Sign out</button></div>`;
+  }
+
+  /** the sign-in window (email + password; the same accounts as Spellstorm) */
+  accountHtml() {
+    const a = this.account!;
+    return `<div class="modal" style="z-index:90"><form class="panel account" data-form="account" onsubmit="return false">
+      <h2 style="font-size:30px">Cloud save</h2>
+      <p class="hint">Sign in or create an account to keep your progress in sync on all your devices. If you play Spellstorm, use that account.</p>
+      <label>Email<input id="acc-email" type="email" autocomplete="email" required></label>
+      <label>Password<input id="acc-pw" type="password" autocomplete="current-password" minlength="6"></label>
+      <div class="acc-msg ${a.ok ? 'ok' : ''}" id="acc-msg">${esc(a.msg)}</div>
+      <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap">
+        <button class="btn big primary" data-act="acc-signin" ${a.busy ? 'disabled' : ''}>Sign in</button>
+        <button class="btn big" data-act="acc-create" ${a.busy ? 'disabled' : ''}>Create account</button>
+      </div>
+      <div style="display:flex;gap:12px;justify-content:center;margin-top:6px">
+        <button class="btn" data-act="acc-forgot" ${a.busy ? 'disabled' : ''}>Forgot password</button>
+        <button class="btn" data-act="acc-close">Cancel</button>
+      </div>
+    </form></div>`;
+  }
+
+  private async accountAction(kind: 'signin' | 'create' | 'forgot') {
+    const email = (this.stage.querySelector('#acc-email') as HTMLInputElement | null)?.value.trim() ?? '';
+    const pw = (this.stage.querySelector('#acc-pw') as HTMLInputElement | null)?.value ?? '';
+    const msg = (t: string, ok = false) => {
+      if (!this.account) return;
+      this.account = { msg: t, ok, busy: false };
+      const m = this.stage.querySelector('#acc-msg');
+      if (m) { m.textContent = t; m.classList.toggle('ok', ok); }
+      this.stage.querySelectorAll<HTMLButtonElement>('[data-form="account"] button').forEach((b) => { b.disabled = false; });
+    };
+    if (!email.includes('@')) return msg('Enter your email address.');
+    if (kind !== 'forgot' && pw.length < 6) return msg('Passwords need at least 6 characters.');
+    this.stage.querySelectorAll<HTMLButtonElement>('[data-form="account"] button:not([data-act="acc-close"])').forEach((b) => { b.disabled = true; });
+    try {
+      if (kind === 'forgot') {
+        await supabase.resetPassword(email);
+        return msg('If that email has an account, a reset link is on its way.', true);
+      }
+      const r = await supabase.signIn(email, pw, kind === 'create');
+      if (r === 'confirmEmail') return msg('Account created. Check your email to confirm it, then sign in here.', true);
+      this.account = null;
+      this.render();
+      await sync.signedIn();
+      this.toast(cloudState() === 'error' ? cloudStatus() : 'Signed in. Your progress is saved to the cloud.');
+      this.render();
+    } catch (e) {
+      msg(friendly(e));
+    }
   }
 
   /** The enlarged card shown next to a hovered or selected card (with actions when selected). */
@@ -1245,10 +1335,17 @@ export class App {
       case 'menu': this.options = false; this.screen = 'title'; this.render(); break;
       case 'options': this.options = true; this.render(); break;
       case 'close-options': this.options = false; this.render(); break;
+      case 'account': this.account = { msg: '' }; this.render(); (this.stage.querySelector('#acc-email') as HTMLInputElement | null)?.focus(); break;
+      case 'acc-close': this.account = null; this.render(); break;
+      case 'acc-signin': void this.accountAction('signin'); break;
+      case 'acc-create': void this.accountAction('create'); break;
+      case 'acc-forgot': void this.accountAction('forgot'); break;
+      case 'sync-now': void syncNow(); break;
+      case 'sign-out': void sync.signOut().then(() => { this.toast('Signed out. Your progress stays on this device.'); this.render(); }); break;
       case 'layout': setMode(el.dataset.mode as LayoutMode); break;
       case 'sound': setMuted(el.dataset.mode === 'off'); this.render(); break;
       case 'art-style': setArtStyle(el.dataset.mode as ArtStyle); this.render(); break;
-      case 'speed': try { localStorage.setItem('torrekin-speed', el.dataset.v!); } catch { /* ignore */ } this.render(); break;
+      case 'speed': store.set('torrekin-speed', el.dataset.v!); this.render(); break;
       case 'tribes': this.showTribes = !this.showTribes; this.render(); break;
       case 'to-hero': sfx.click(); this.screen = 'hero'; this.render(); break;
       case 'cards': this.options = false; this.viewer = { fromGame: this.screen === 'shop' && !!this.g, onlyMatch: this.screen === 'shop', tribe: '', tier: 0, ability: '', golden: false, q: '' }; this.render(); break;

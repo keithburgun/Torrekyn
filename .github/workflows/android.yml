@@ -59,6 +59,11 @@ jobs:
           ls -la out
       - uses: actions/upload-artifact@v4
         with: { name: torrekin-apk, path: out/Torrekin.apk }
+      - name: Upload to itch.io (channel android)
+        env:
+          BUTLER_API_KEY: ${{ secrets.BUTLER_API_KEY }}
+          ITCH_GAME: ${{ vars.ITCH_GAME }}
+        run: .github/scripts/itch_push.sh out/Torrekin.apk android "$(node -p "require('./package.json').version")-build.${{ github.run_number }}"
       - name: Publish to the "android-latest" release
         env:
           GH_TOKEN: ${{ github.token }}

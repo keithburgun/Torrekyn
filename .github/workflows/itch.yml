@@ -1,0 +1,70 @@
+# Uploads Torrekin to itch.io on every push to main: the browser version (channel html5) and the Windows app
+# (channel windows). The Android APK is uploaded by android.yml (channel android) once it's built.
+# Setup (once): itch.io API key as the repo secret BUTLER_API_KEY, and the repo variable ITCH_GAME = "user/game".
+# Until then the uploads are skipped (the builds still run). See docs/itch.md.
+name: itch.io
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: itch
+  cancel-in-progress: true
+
+jobs:
+  html5:
+    runs-on: ubuntu-latest
+    env:
+      BUTLER_API_KEY: ${{ secrets.BUTLER_API_KEY }}
+      ITCH_GAME: ${{ vars.ITCH_GAME }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22, cache: npm }
+      - run: npm ci
+      - run: npm test
+      - run: npm run build:itch
+      - name: Upload the browser version
+        run: |
+          VERSION="$(node -p "require('./package.json').version")-build.${{ github.run_number }}"
+          (cd dist-itch && zip -qr ../torrekin-web.zip .)
+          .github/scripts/itch_push.sh torrekin-web.zip html5 "$VERSION"
+      - uses: actions/upload-artifact@v4
+        with: { name: torrekin-web, path: torrekin-web.zip }
+
+  windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22, cache: npm }
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: swatinem/rust-cache@v2
+        with: { workspaces: src-tauri }
+      - run: npm ci
+      # the plain app (itch.io's app installs and updates it itself; no installer needed)
+      - run: npx tauri build --no-bundle
+      - name: Collect the app
+        shell: bash
+        run: |
+          mkdir -p win
+          cp src-tauri/target/release/torrekin.exe win/Torrekin.exe
+          ls -la win
+      - uses: actions/upload-artifact@v4
+        with: { name: torrekin-windows, path: win }
+
+  windows-upload:
+    needs: windows
+    runs-on: ubuntu-latest
+    env:
+      BUTLER_API_KEY: ${{ secrets.BUTLER_API_KEY }}
+      ITCH_GAME: ${{ vars.ITCH_GAME }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with: { name: torrekin-windows, path: win }
+      - name: Upload the Windows app
+        run: |
+          VERSION="$(node -p "require('./package.json').version")-build.${{ github.run_number }}"
+          .github/scripts/itch_push.sh win windows "$VERSION"
