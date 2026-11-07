@@ -1079,3 +1079,21 @@ button.trinket-orb { appearance: none; border: 0; padding: 0; cursor: pointer; }
   font-family: var(--display); font-weight: 700; font-size: 30px; color: #ffe38a; letter-spacing: 0.04em; animation: eot-banner 1.1s ease-out forwards; }
 @keyframes eot-banner { 0% { opacity: 0; transform: translate(-50%, -50%) scale(0.6); } 20% { opacity: 1; transform: translate(-50%, -50%) scale(1.05); } 30% { transform: translate(-50%, -50%) scale(1); } 75% { opacity: 1; } 100% { opacity: 0; } }
 #stage.portrait .eot-banner { font-size: 44px; }
+
+/* ---- targeting arrow ---- */
+svg.aim-arrow { position: absolute; left: 0; top: 0; z-index: 60; pointer-events: none; overflow: visible; }
+svg.aim-arrow .aim-under { fill: none; stroke: rgba(40, 10, 40, 0.55); stroke-width: 20; stroke-linecap: round; }
+svg.aim-arrow .aim-line { fill: none; stroke: #ff8fc8; stroke-width: 12; stroke-linecap: round; stroke-dasharray: 18 14;
+  filter: url(#aimGlow); animation: aim-flow 0.5s linear infinite; }
+svg.aim-arrow .aim-head path { fill: #ff8fc8; stroke: #fff; stroke-width: 3; stroke-linejoin: round; filter: url(#aimGlow); }
+svg.aim-arrow .aim-ring { fill: none; stroke: #ffe38a; stroke-width: 5; opacity: 0; transition: r 0.15s ease-out, opacity 0.15s; }
+svg.aim-arrow.locked .aim-line { stroke: #ffe38a; }
+svg.aim-arrow.locked .aim-head path { fill: #ffe38a; }
+svg.aim-arrow.locked .aim-ring { opacity: 0.9; animation: aim-ring 0.9s ease-in-out infinite; }
+@keyframes aim-flow { to { stroke-dashoffset: -32; } }
+@keyframes aim-ring { 50% { stroke-width: 9; opacity: 0.5; } }
+.card.aiming { transform: translateY(-40px) scale(1.06); filter: drop-shadow(0 0 18px #ff8fc8); z-index: 30; transition: transform 0.2s ease-out; }
+.card.targetable.aimed { transform: scale(1.08); filter: drop-shadow(0 0 22px #ffe38a); z-index: 25; }
+@media (prefers-reduced-motion: reduce) { svg.aim-arrow .aim-line { animation: none; } }
+#stage.portrait svg.aim-arrow .aim-under { stroke-width: 30; }
+#stage.portrait svg.aim-arrow .aim-line { stroke-width: 18; stroke-dasharray: 26 20; }

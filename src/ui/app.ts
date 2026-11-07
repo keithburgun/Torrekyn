@@ -121,6 +121,86 @@ export class App {
     placeHud(this.stage, L);
     this.slideCards(before);
     if (this.screen === 'shop') this.shopFeedback();
+    if (this.screen === 'shop' && this.targeting) this.drawArrow();
+  }
+
+  // ---------------- targeting arrow ----------------
+  /** last pointer position in stage pixels, so the arrow survives a re-render */
+  private aimPt: { x: number; y: number } | null = null;
+
+  /** where the arrow starts: the card being played (lifted out of your hand) or your hero */
+  private arrowSource(): { x: number; y: number } | null {
+    const t = this.targeting;
+    if (!t) return null;
+    const el = (t.kind === 'play'
+      ? this.stage.querySelector(`.card[data-zone="hand"][data-idx="${t.handIdx}"]`)
+      : this.stage.querySelector('.my-hero')) as HTMLElement | null;
+    if (!el) return null;
+    if (t.kind === 'play') el.classList.add('aiming');
+    const c = this.centre(el);
+    return { x: c.x, y: c.y - (t.kind === 'play' ? c.h * 0.25 : 0) };
+  }
+
+  /** the valid target under a stage point, if any */
+  private targetAt(pt: { x: number; y: number }): HTMLElement | null {
+    for (const el of this.stage.querySelectorAll<HTMLElement>('.card.targetable')) {
+      const x = parseFloat(el.style.left);
+      const y = parseFloat(el.style.top);
+      if (pt.x >= x - 6 && pt.x <= x + el.offsetWidth + 6 && pt.y >= y - 6 && pt.y <= y + el.offsetHeight + 6) return el;
+    }
+    return null;
+  }
+
+  /**
+   * A curved arrow from the card (or hero) to the pointer, like Hearthstone's: it bends up and over,
+   * its dashes flow toward the tip, and it snaps onto a valid target and turns gold when you're on one.
+   */
+  drawArrow(pt?: { x: number; y: number }) {
+    if (pt) this.aimPt = pt;
+    let svg = this.stage.querySelector('svg.aim-arrow') as SVGSVGElement | null;
+    const src = this.arrowSource();
+    if (!this.targeting || !src) { svg?.remove(); return; }
+    let to = this.aimPt;
+    if (!to) {
+      // no pointer yet (phones): point at the first target
+      const first = this.stage.querySelector('.card.targetable') as HTMLElement | null;
+      to = first ? this.centre(first) : { x: src.x, y: src.y - 200 };
+    }
+    this.stage.querySelectorAll('.card.aimed').forEach((e) => e.classList.remove('aimed'));
+    const hit = this.targetAt(to);
+    if (hit) { hit.classList.add('aimed'); to = this.centre(hit); }
+    const W = L.W;
+    const H = this.stage.offsetHeight || 900;
+    if (!svg) {
+      svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+      svg.classList.add('aim-arrow');
+      svg.setAttribute('viewBox', `0 0 ${W} ${H}`);
+      svg.innerHTML = `<defs><filter id="aimGlow" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="5" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs>
+        <path class="aim-under"/><path class="aim-line"/><g class="aim-head"><path d="M -26 -24 L 18 0 L -26 24 L -14 0 Z"/></g><circle class="aim-ring" r="0"/>`;
+      this.stage.appendChild(svg);
+    }
+    svg.setAttribute('width', String(W));
+    svg.setAttribute('height', String(H));
+    svg.classList.toggle('locked', !!hit);
+    // a bend that rises with distance, always bulging upward
+    const dx = to.x - src.x;
+    const dy = to.y - src.y;
+    const dist = Math.hypot(dx, dy);
+    const lift = Math.min(260, 60 + dist * 0.35);
+    const c = { x: src.x + dx * 0.5 - dx * 0.15, y: Math.min(src.y, to.y) - lift };
+    // stop the line short of the tip so the head sits on it
+    const ang = Math.atan2(to.y - c.y, to.x - c.x);
+    const tip = { x: to.x - Math.cos(ang) * 6, y: to.y - Math.sin(ang) * 6 };
+    const back = L.portrait ? 30 : 20;
+    const end = { x: tip.x - Math.cos(ang) * back, y: tip.y - Math.sin(ang) * back };
+    const d = `M ${src.x} ${src.y} Q ${c.x} ${c.y} ${end.x} ${end.y}`;
+    svg.querySelector('.aim-under')!.setAttribute('d', d);
+    svg.querySelector('.aim-line')!.setAttribute('d', d);
+    svg.querySelector('.aim-head')!.setAttribute('transform', `translate(${tip.x} ${tip.y}) rotate(${(ang * 180) / Math.PI})${L.portrait ? ' scale(1.5)' : ''}`);
+    const ring = svg.querySelector('.aim-ring')!;
+    ring.setAttribute('cx', String(to.x));
+    ring.setAttribute('cy', String(to.y));
+    ring.setAttribute('r', hit ? String(Math.max(hit.offsetWidth, hit.offsetHeight) * 0.42) : '0');
   }
 
   /** Where each unit's card is on screen (its centre in stage pixels), keyed by unit id. */
@@ -517,7 +597,8 @@ export class App {
   /** The enlarged card shown next to a hovered or selected card (with actions when selected). */
   popoverHtml() {
     const p = this.me;
-    const s = this.sel ?? this.hover;
+    const s = this.sel ?? (this.targeting && L.popover !== "stack" ? null : this.hover);
+    // while aiming, the enlarged card would sit on top of the targets
     if (!s) return '';
     const list = s.zone === 'shop' ? p.shop : s.zone === 'hand' ? p.hand : p.board;
     const u = list[s.idx];
@@ -1064,6 +1145,7 @@ export class App {
     if (p.board.length >= CONFIG.boardSize) return this.toast('Your army is full');
     if (needsTarget(u.cardId) && validTargets(p, u.cardId).length) {
       this.targeting = { kind: 'play', handIdx, pos };
+      this.aimPt = null;
       this.sel = null;
       this.render();
       return;
@@ -1212,6 +1294,7 @@ export class App {
         if (h.target) {
           if (!p!.board.length) { this.toast('You need a unit in your army'); break; }
           this.targeting = { kind: 'hero', id: h.id };
+          this.aimPt = null;
           this.render();
         } else { if (useHeroPower(g!, p!, undefined, h.id)) { sfx.power(); bump('heroPowers'); noteGame('heroPower'); } this.commit(); }
         break;
@@ -1255,6 +1338,7 @@ export class App {
   }
 
   onMove(e: PointerEvent) {
+    if (this.targeting && this.screen === 'shop') this.drawArrow(this.toStage(e));
     if (!this.press || e.pointerId !== this.press.pointerId) return;
     const pt = this.toStage(e);
     if (!this.dragging) {
