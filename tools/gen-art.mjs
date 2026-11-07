@@ -350,6 +350,7 @@ const HERO_ART = {
   abragail: ['#c8d8ff', '#4a54a8', 'book'],
   bill_milton: ['#ffb39a', '#8f2f2a', 'tophat'],
   unknown: ['#e9e0ff', '#7d5bd0', 'star'],
+  tavern: ['#ffc6e0', '#7d5bd0', 'pagoda'],
 };
 fs.rmSync(outHeroes, { recursive: true, force: true });
 fs.mkdirSync(outHeroes, { recursive: true });
@@ -362,6 +363,22 @@ for (const [id, [bg, ink, gname]] of Object.entries(HERO_ART)) {
 <filter id="blur"><feGaussianBlur stdDeviation="6"/></filter><style>.k{fill:${ink}}.ks{fill:none;stroke:${ink};stroke-width:6;stroke-linecap:round}.s{fill:none;stroke:#fff}</style></defs>
 <rect width="256" height="256" fill="url(#b)"/>${sp}
 <g transform="translate(128 132) scale(.66) translate(-128 -128)"><g filter="url(#blur)" fill="#fff" stroke="#fff" stroke-width="14">${outlineOf(glyph, 14, '#ffffff')}</g><g fill="${ink}" stroke="${ink}" stroke-width="12" stroke-linejoin="round">${outlineOf(glyph, 12, ink)}</g><g fill="#ffffff">${glyph}</g></g>
+</svg>`);
+}
+
+// ---------------- hero power icons (inverted: white emblem on the hero's dark colour) ----------------
+const POWER_GLYPH = {
+  andromeda_robin: 'flame', gelf_lanz: 'bolt', derby_pocket: 'heart', bunny_wizard: 'sun', croh_vosh: 'wave', may_danaris: 'eye',
+  locas_clare: 'coin', venice_gorn: 'sprout', omar_evans: 'tree', eve_williams: 'infinity', abragail: 'scroll', bill_milton: 'chart',
+};
+for (const [id, gname] of Object.entries(POWER_GLYPH)) {
+  const [bg, ink] = HERO_ART[id];
+  const glyph = G[gname];
+  fs.writeFileSync(path.join(outHeroes, `power_${id}.svg`), `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256">
+<defs><radialGradient id="b" cx=".5" cy=".35" r=".75"><stop offset="0" stop-color="${bg}"/><stop offset=".6" stop-color="${ink}"/><stop offset="1" stop-color="#1e1c23"/></radialGradient>
+<filter id="blur"><feGaussianBlur stdDeviation="8"/></filter><style>.k{fill:${ink}}.ks{fill:none;stroke:${ink};stroke-width:6;stroke-linecap:round}.s{fill:none;stroke:#fff}</style></defs>
+<rect width="256" height="256" fill="url(#b)"/>
+<g transform="translate(128 128) scale(.6) translate(-128 -128)"><g filter="url(#blur)" fill="${bg}" stroke="${bg}" stroke-width="16">${outlineOf(glyph, 16, bg)}</g><g fill="#ffffff">${glyph.replace(/class="s"/g, 'fill="none" stroke="#ffffff" stroke-linecap="round" stroke-linejoin="round"')}</g></g>
 </svg>`);
 }
 

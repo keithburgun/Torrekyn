@@ -2,8 +2,8 @@ import { heroDef } from '../engine/heroes';
 import type { CombatFrame, CombatFrameUnit, CombatFx, CombatResult, GameState } from '../engine/types';
 import { cardHtml, esc, frameUnitView, heroArt } from './view';
 
-const ENEMY_Y = 130;
-const MY_Y = 520;
+const ENEMY_Y = 168;
+const MY_Y = 452;
 /** base time each frame stays on screen (ms at speed ×1) */
 const DUR: Record<CombatFrame['kind'], number> = {
   start: 800, trigger: 420, attack: 420, hit: 380, death: 900, resolve: 160, end: 500,
@@ -31,9 +31,9 @@ export class CombatPlayer {
     const oppId = me === 0 ? (r.b === -1 ? r.ghostOf! : r.b) : r.a;
     const opp = g.players[oppId];
     stage.innerHTML = `
-      <div class="combat-name" style="left:40px;top:40px"><div class="avatar" id="avatar-enemy" style="background-image:url('${heroArt(opp.hero)}')"></div>
+      <div class="combat-name enemy" style="left:${800 - 50}px;top:12px"><div class="avatar" id="avatar-enemy" style="background-image:url('${heroArt(opp.hero)}')"><div class="hpb">${opp.health}</div></div>
         <div>${r.b === -1 ? 'Ghost of ' : ''}${esc(opp.name)}<div class="hint" style="padding:0;text-align:left">${esc(heroDef(opp.hero)?.title ?? '')}</div></div></div>
-      <div class="combat-name" style="left:40px;bottom:40px"><div class="avatar" id="avatar-me" style="background-image:url('${heroArt(meP.hero)}')"></div><div>${esc(meP.name)}</div></div>
+      <div class="combat-name mine" style="left:${800 - 62}px;top:${742 - 62}px"><div class="avatar" id="avatar-me" style="background-image:url('${heroArt(meP.hero)}')"><div class="hpb">${meP.health}</div></div><div>${esc(meP.name)}</div></div>
       <div class="vs-banner">ROUND ${round} · BATTLE</div>
       <div class="abs" style="right:30px;bottom:30px;display:flex;gap:10px">
         <button class="btn" data-cact="speed">Speed ×${this.speed}</button>
@@ -85,7 +85,7 @@ export class CombatPlayer {
   }
 
   private heroCenter(side: 0 | 1) {
-    return side === this.me ? { x: 67, y: 833 } : { x: 67, y: 67 };
+    return side === this.me ? { x: 800, y: 742 } : { x: 800, y: 62 };
   }
 
   private spot(cls: string, x: number, y: number, life: number, text = '') {

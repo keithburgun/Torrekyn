@@ -18,13 +18,17 @@ interface Targeting { kind: 'play'; handIdx: number; pos: number } // play a car
 interface HeroTargeting { kind: 'hero' }
 
 // ---- layout (stage coordinates, 1600x900) ----
+// Mirrors the Battlegrounds screen: Tavern controls on top, shop row, your army, hero at bottom centre,
+// hand along the bottom edge, End Turn on the right edge, gold bottom right, leaderboard on the left.
 export const SLOT_X = (i: number) => 263 + i * 154;
-const BOARD_Y = 350;
-const SHOP_Y = 76;
-const HAND_Y = 712;
-const SHOP_DROP_LINE = 310; // above this = tavern
-const BOARD_TOP = 320;
-const BOARD_BOTTOM = 640;
+const SHOP_Y = 160;
+const SLOT_TOP = 382;
+const BOARD_Y = 398;
+const HERO_Y = 680; // centre of your hero portrait
+const HAND_Y = 770;
+const SHOP_DROP_LINE = 372; // above this = tavern (drop here to sell)
+const BOARD_TOP = 372;
+const BOARD_BOTTOM = 625;
 
 function shopX(i: number, n: number) {
   const total = n * 152 - 12;
@@ -206,93 +210,121 @@ export class App {
   }
 
   shopHtml() {
-    const g = this.g!;
     const p = this.me;
     const tgt = this.targeting;
     const targetUids = tgt?.kind === 'play'
       ? new Set(validTargets(p, p.hand[tgt.handIdx]?.cardId ?? '').map((u) => u.uid))
       : tgt?.kind === 'hero' ? new Set(p.board.map((u) => u.uid)) : null;
     let h = this.leaderboardHtml();
-    // tavern header
-    const upCost = p.tier >= CONFIG.maxTier ? null : p.upgradeCost;
-    h += `<div class="abs panel" style="left:258px;top:14px;width:1084px;height:300px"></div>`;
-    h += `<div class="zone-label" style="left:282px;top:24px">Tavern · Tier ${p.tier} ${'★'.repeat(p.tier)}</div>`;
-    h += `<div class="abs" style="right:276px;top:20px;display:flex;gap:10px">
-      <button class="btn" data-act="upgrade" ${upCost === null || p.gold < upCost ? 'disabled' : ''}>${upCost === null ? 'Max Tier' : `Upgrade <span class="cost">${upCost}<span class="coin"></span></span>`}</button>
-      <button class="btn" data-act="reroll" ${p.gold < CONFIG.rerollCost ? 'disabled' : ''}>Refresh <span class="cost">${CONFIG.rerollCost}<span class="coin"></span></span></button>
-      <button class="btn ${p.frozen ? 'on' : ''}" data-act="freeze">${p.frozen ? 'Frozen' : 'Freeze'}</button>
-    </div>`;
+    h += this.tavernBarHtml();
     p.shop.forEach((u, i) => {
       const sel = this.sel?.zone === 'shop' && this.sel.idx === i ? 'selected' : '';
       const v = unitView(p, u, 'shop', i);
       h += cardHtml(v, { zone: 'shop', idx: i, x: shopX(i, p.shop.length), y: SHOP_Y, extraClass: `${sel} ${p.gold < buyCost(p) ? 'unaffordable' : ''} ${p.frozen ? 'frozen' : ''}` });
     });
-    if (!p.shop.length) h += `<div class="hint abs" style="left:560px;top:170px;width:480px">The Tavern is empty. Refresh for new units.</div>`;
+    if (!p.shop.length) h += `<div class="hint abs" style="left:560px;top:250px;width:480px">The Tavern is empty. Refresh for new units.</div>`;
     // army slots
     for (let i = 0; i < CONFIG.boardSize; i++) {
       const s = p.slots[i];
       const bonus = [s.atk || s.hp ? `${s.atk >= 0 ? '+' : ''}${s.atk}/${s.hp >= 0 ? '+' : ''}${s.hp}` : '', ...s.kw.map((k) => ({ taunt: 'Taunt', divineShield: 'Shield', reborn: 'Reborn', venomous: 'Venom', stealth: 'Stealth', windfury: 'Windfury' })[k])].filter(Boolean).join(' · ');
       const buffed = s.atk || s.hp || s.kw.length;
-      h += `<div class="slot-plate ${buffed ? 'buffed' : ''}" data-slot="${i}" style="left:${SLOT_X(i)}px"><div class="bonus ${s.atk < 0 || s.hp < 0 ? 'neg' : ''}">${bonus || `Slot ${i + 1}`}</div></div>`;
+      h += `<div class="slot-plate ${buffed ? 'buffed' : ''}" data-slot="${i}" style="left:${SLOT_X(i)}px;top:${SLOT_TOP}px"><div class="bonus ${s.atk < 0 || s.hp < 0 ? 'neg' : ''}">${bonus || `Slot ${i + 1}`}</div></div>`;
     }
     p.board.forEach((u, i) => {
       const sel = this.sel?.zone === 'board' && this.sel.idx === i ? 'selected' : '';
       const tg = targetUids?.has(u.uid) ? 'targetable' : '';
       h += cardHtml(unitView(p, u, 'board', i), { zone: 'board', idx: i, x: SLOT_X(i) + 5, y: BOARD_Y, extraClass: `${sel} ${tg}`, id: u.uid });
     });
-    // hand
-    h += `<div class="zone-label" style="left:282px;top:${HAND_Y - 40}px">Hand ${p.hand.length}/${CONFIG.handSize}</div>`;
+    h += this.heroAreaHtml();
+    // hand: along the bottom edge, cards rise when hovered
     p.hand.forEach((u, i) => {
       const sel = this.sel?.zone === 'hand' && this.sel.idx === i ? 'selected' : '';
-      h += cardHtml(unitView(p, u, 'hand', i), { zone: 'hand', idx: i, x: handX(i, p.hand.length), y: HAND_Y, small: true, extraClass: sel, id: u.uid });
+      h += cardHtml(unitView(p, u, 'hand', i), { zone: 'hand', idx: i, x: handX(i, p.hand.length), y: HAND_Y, small: true, extraClass: `in-hand ${sel}`, id: u.uid });
     });
-    // right panel
-    h += this.rightPanelHtml();
-    // targeting hint
+    h += this.rightSideHtml();
+    h += `<div id="popover">${this.popoverHtml()}</div>`;
     if (tgt) {
-      h += `<div class="abs panel" style="left:520px;top:600px;width:560px;padding:10px;display:flex;gap:14px;align-items:center;justify-content:center;z-index:20">
+      h += `<div class="abs panel target-bar">
         <span>${tgt.kind === 'hero' ? 'Choose a unit for your Hero Power' : `Choose a target for ${esc(def(p.hand[tgt.handIdx]?.cardId ?? 'skel').name)}`}</span>
         ${tgt.kind === 'play' ? '<button class="btn" data-act="no-target">No target</button>' : ''}
         <button class="btn" data-act="cancel-target">Cancel</button></div>`;
     }
-    // modals
     if (p.discovers.length) h += this.discoverHtml();
     else if (p.trinketOffer) h += this.trinketHtml();
     if (this.inspect !== null) h += this.inspectHtml();
-    void g;
     return h;
   }
 
-  rightPanelHtml() {
+  /** Top of the screen, as in Battlegrounds: Upgrade — Tavern — Refresh, Freeze. */
+  tavernBarHtml() {
+    const p = this.me;
+    const upCost = p.tier >= CONFIG.maxTier ? null : p.upgradeCost;
+    return `
+      <div class="tavern-btn upgrade ${upCost === null || p.gold < upCost ? 'off' : ''}" data-act="upgrade" style="left:${800 - 175}px;top:28px" title="Upgrade the Tavern">
+        <div class="tb-icon">⬆</div>${upCost === null ? '' : `<div class="tb-cost">${upCost}</div>`}
+        <div class="tb-label">${upCost === null ? 'Max Tier' : `Tier ${p.tier + 1}`}</div>
+      </div>
+      <div class="tavern-keeper" style="left:${800 - 66}px;top:14px">
+        <div class="tk-portrait" style="background-image:url('${heroArt('tavern')}')"></div>
+        <div class="tk-tier">${'★'.repeat(p.tier)}</div>
+        <div class="tk-label">Tavern · Tier ${p.tier}</div>
+      </div>
+      <div class="tavern-btn refresh ${p.gold < CONFIG.rerollCost ? 'off' : ''}" data-act="reroll" style="left:${800 + 87}px;top:28px" title="Refresh the Tavern">
+        <div class="tb-icon">↻</div><div class="tb-cost">${CONFIG.rerollCost}</div><div class="tb-label">Refresh</div>
+      </div>
+      <div class="tavern-btn freeze ${p.frozen ? 'on' : ''}" data-act="freeze" style="left:${800 + 187}px;top:28px" title="Freeze the Tavern">
+        <div class="tb-icon">❄</div><div class="tb-label">${p.frozen ? 'Frozen' : 'Freeze'}</div>
+      </div>`;
+  }
+
+  /** Bottom centre: your hero, hero power to the right, trinkets to the left. */
+  heroAreaHtml() {
     const p = this.me;
     const hd = heroDef(p.hero);
     const canPower = hd && canUseHeroPower(this.g!, p);
-    const trink = p.trinkets.map((t) => `<span class="trinket-chip" title="${esc(trinketDef(t).text)}">${esc(trinketDef(t).name)}</span>`).join('');
-    return `<div class="abs panel hero-box" style="left:1356px;top:14px;width:230px;height:872px">
+    let h = `<div class="my-hero" style="left:${800 - 62}px;top:${HERO_Y - 62}px">
       <div class="hero-portrait" style="background-image:url('${heroArt(p.hero)}')"><div class="hp">${p.health}</div></div>
-      <div style="font-family:var(--display);font-weight:700;font-size:16px;text-align:center">${esc(hd?.name ?? p.name)}</div>
-      ${hd ? `<div class="power ${hd.passive ? 'passive' : ''} ${p.heroUsed ? 'used' : ''} ${!hd.passive && !canPower ? 'disabled' : ''}" data-act="hero-power">
-        <div class="pn">${esc(hd.power)} ${hd.passive ? '' : `<span class="cost">${hd.cost}<span class="coin"></span></span>`}</div>
-        <div class="pt">${esc(hd.text)}</div></div>` : ''}
-      ${trink ? `<div class="trinkets">${trink}</div>` : ''}
-      <div class="gold-display"><span class="coin"></span>${p.gold}<span style="font-size:16px;color:var(--ink-soft)">/ ${Math.min(CONFIG.maxGold, 2 + this.g!.round) + p.maxGoldBonus}</span></div>
-      <div style="font-size:14px;color:var(--ink-soft)">Round ${this.g!.round}${p.goldNextTurn ? ` · +${p.goldNextTurn} gold next turn` : ''}</div>
-      <button class="btn big primary" data-act="end-turn" style="width:100%">End Turn</button>
-      <div id="detail" class="detail">${this.detailHtml()}</div>
-      <button class="btn" data-act="menu" style="position:absolute;top:12px;left:12px;font-size:13px;padding:4px 10px">Menu</button>
     </div>`;
+    if (hd) {
+      h += `<div class="hero-power ${hd.passive ? 'passive' : ''} ${p.heroUsed ? 'used' : ''} ${!hd.passive && !canPower ? 'off' : ''}" data-act="hero-power" style="left:${800 + 82}px;top:${HERO_Y - 44}px">
+        <div class="hp-icon" style="background-image:url('${heroArt('power_' + p.hero)}')"></div>
+        ${hd.passive ? '' : `<div class="tb-cost">${hd.cost}</div>`}
+        <div class="tip"><b>${esc(hd.power)}</b>${hd.passive ? ' (Passive)' : ` (${hd.cost} gold)`}<br>${esc(hd.text)}</div>
+      </div>`;
+    }
+    p.trinkets.forEach((t, i) => {
+      const td = trinketDef(t);
+      h += `<div class="trinket-orb ${td.greater ? 'greater' : ''}" style="left:${800 - 140 - i * 70}px;top:${HERO_Y - 30}px">
+        <div class="tip"><b>${esc(td.name)}</b><br>${esc(td.text)}</div></div>`;
+    });
+    const quests = p.quests.filter((q) => q.have < q.need);
+    if (quests.length) {
+      h += `<div class="quest-chip" style="left:${800 - 140 - p.trinkets.length * 70 - 120}px;top:${HERO_Y - 16}px">${quests.map((q) => `${q.kind === 'bill' ? 'Demons' : 'Kindred'} ${q.have}/${q.need}`).join('<br>')}</div>`;
+    }
+    return h;
   }
 
-  detailHtml() {
+  /** Right edge: End Turn in the middle, gold at the bottom right, menu gear in the corner. */
+  rightSideHtml() {
+    const p = this.me;
+    const max = Math.min(CONFIG.maxGold, 2 + this.g!.round) + p.maxGoldBonus;
+    const pips = Array.from({ length: Math.min(max, 12) }, (_, i) => `<span class="pip ${i < p.gold ? 'full' : ''}"></span>`).join('');
+    return `
+      <div class="turn-label" style="left:1416px;top:330px">Turn ${this.g!.round}</div>
+      <button class="end-turn" data-act="end-turn" style="left:1410px;top:360px">End Turn</button>
+      <div class="gold-bar" style="left:1150px;top:812px">
+        <div class="gold-display"><span class="coin"></span>${p.gold}<span class="gmax">/${max}</span></div>
+        <div class="pips">${pips}</div>
+        ${p.goldNextTurn ? `<div class="hint" style="padding:0">+${p.goldNextTurn} gold next turn</div>` : ''}
+      </div>
+      <button class="gear" data-act="menu" style="left:1540px;top:842px" title="Menu">⚙</button>`;
+  }
+
+  /** The enlarged card shown next to a hovered or selected card (with actions when selected). */
+  popoverHtml() {
     const p = this.me;
     const s = this.sel ?? this.hover;
-    if (!s) {
-      const next = p.nextOpponent === -1 ? 'a ghost' : p.nextOpponent !== null ? this.g!.players[p.nextOpponent].name : '?';
-      const quests = p.quests.filter((q) => q.have < q.need).map((q) => `<div class="hint">Quest: ${q.kind === 'bill' ? 'Buy Business Demons' : 'Buy Kindred'} ${q.have}/${q.need}</div>`).join('');
-      return `<div class="hint" style="margin-top:20px">Next opponent:<br><b style="color:var(--ink);font-size:17px">${esc(next)}</b></div>
-        ${quests}
-        <div class="hint" style="margin-top:16px">Drag a Tavern unit down to buy it. Drag from your hand into your army to play it. Drag an army unit up to the Tavern to sell it.<br><br>Or tap a card to see it and act.</div>`;
-    }
+    if (!s) return '';
     const list = s.zone === 'shop' ? p.shop : s.zone === 'hand' ? p.hand : p.board;
     const u = list[s.idx];
     if (!u) return '';
@@ -305,7 +337,24 @@ export class App {
         <button class="btn primary" data-act="sell" ${u.mem.locked ? 'disabled' : ''}>Sell <span class="cost">+${sellValue(u, p)}<span class="coin"></span></span></button>
         <button class="btn" data-act="right" ${s.idx >= p.board.length - 1 || u.mem.locked ? 'disabled' : ''}>▶</button>`;
     }
-    return `<div style="transform:scale(.84);transform-origin:top center;margin-bottom:-50px">${bigCardHtml(v)}</div><div class="actions">${actions}</div>`;
+    // place it beside the card (above it for cards in hand)
+    const W = 210;
+    const H = 300 + (actions ? 54 : 0);
+    let x: number;
+    let y: number;
+    if (s.zone === 'hand') {
+      x = handX(s.idx, p.hand.length) + 60 - W / 2;
+      y = HAND_Y - H - 40;
+    } else {
+      const cx = s.zone === 'shop' ? shopX(s.idx, p.shop.length) : SLOT_X(s.idx) + 5;
+      const cy = s.zone === 'shop' ? SHOP_Y : BOARD_Y;
+      x = cx + 140 + W + 16 < 1400 ? cx + 152 : cx - W - 12;
+      y = cy - 50;
+    }
+    x = Math.max(220, Math.min(1390 - W, x));
+    y = Math.max(8, Math.min(890 - H, y));
+    return `<div class="popover ${actions ? 'interactive' : ''}" style="left:${x}px;top:${y}px;width:${W}px">
+      <div class="pop-card">${bigCardHtml(v)}</div>${actions ? `<div class="actions">${actions}</div>` : ''}</div>`;
   }
 
   discoverHtml() {
@@ -361,8 +410,8 @@ export class App {
   }
 
   updateDetail() {
-    const el = this.stage.querySelector('#detail');
-    if (el) el.innerHTML = this.detailHtml();
+    const el = this.stage.querySelector('#popover');
+    if (el) el.innerHTML = this.popoverHtml();
   }
 
   toast(msg: string) {
