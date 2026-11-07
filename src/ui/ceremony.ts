@@ -116,7 +116,7 @@ export async function playTriple(stage: HTMLElement, L: Layout, cardId: string, 
   sub.style.opacity = '0';
   rays.style.opacity = '0';
   let to = { x: cx, y: L.H - 120 };
-  if (handEl) to = { x: parseFloat(handEl.style.left) + 60, y: parseFloat(handEl.style.top) + 82 };
+  if (handEl) to = { x: parseFloat(handEl.style.left) + handEl.offsetWidth / 2, y: parseFloat(handEl.style.top) + handEl.offsetHeight / 2 };
   await card.animate(
     [{ transform: 'translate(0,0) scale(1)' }, { transform: `translate(${to.x - cx}px, ${to.y - cy}px) scale(.45)`, opacity: 0.9 }],
     { duration: 520, easing: 'cubic-bezier(.5,0,.3,1)', fill: 'forwards' },

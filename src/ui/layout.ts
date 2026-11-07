@@ -9,9 +9,14 @@ export interface Layout {
   W: number;
   H: number;
   cx: number; // horizontal centre
-  small: boolean; // use small cards on the board and in the shop
-  cardW: number;
+  small: boolean; // use small cards on the board (and in combat)
+  cardW: number; // board / combat card size
   cardH: number;
+  shopBig: boolean; // large cards in the shop and hand (portrait)
+  shopCardW: number;
+  shopCardH: number;
+  handCardW: number;
+  handCardH: number;
   slotX(i: number): number;
   slotW: number;
   slotTop: number;
@@ -33,13 +38,14 @@ export interface Layout {
   tribes: { x: number; y: number; w: number };
   cardsBtn: { x: number; y: number };
   targetBar: { x: number; y: number; w: number };
-  popover: 'beside' | 'dock';
-  dockY: number;
+  /** beside: to the right/left of the card (landscape); stack: above/below it (portrait) */
+  popover: 'beside' | 'stack';
   combat: { enemyY: number; myY: number; enemyHero: { x: number; y: number }; myHero: { x: number; y: number }; banner: number; step: number };
 }
 
 export const LANDSCAPE: Layout = {
   portrait: false, W: 1600, H: 900, cx: 800, small: false, cardW: 140, cardH: 190,
+  shopBig: false, shopCardW: 140, shopCardH: 190, handCardW: 120, handCardH: 165,
   slotX: (i) => 263 + i * 154, slotW: 150, slotTop: 382, slotH: 236,
   boardY: 398, shopY: 160, shopStep: 152, tavernY: 14,
   heroY: 680, handY: 770, handWidth: 1040,
@@ -49,24 +55,46 @@ export const LANDSCAPE: Layout = {
   tribes: { x: 14, y: 826, w: 228 },
   cardsBtn: { x: 1436, y: 470 },
   targetBar: { x: 250, y: 640, w: 440 },
-  popover: 'beside', dockY: 0,
+  popover: 'beside',
   combat: { enemyY: 168, myY: 452, enemyHero: { x: 800, y: 62 }, myHero: { x: 800, y: 742 }, banner: 411, step: 154 },
 };
 
-export const PORTRAIT: Layout = {
-  portrait: true, W: 900, H: 1600, cx: 450, small: true, cardW: 120, cardH: 165,
-  slotX: (i) => 17 + i * 124, slotW: 122, slotTop: 560, slotH: 214,
-  boardY: 576, shopY: 340, shopStep: 132, tavernY: 150,
-  heroY: 880, handY: 1020, handWidth: 860,
-  shopDrop: 548, boardTop: 548, boardBottom: 790,
-  leader: { x: 10, y: 10, w: 760, h: 120, horizontal: true },
-  endTurn: { x: 690, y: 846 }, gold: { x: 36, y: 846 }, gear: { x: 840, y: 1540 },
-  tribes: { x: 36, y: 920, w: 220 },
-  cardsBtn: { x: 720, y: 940 },
-  targetBar: { x: 230, y: 1210, w: 440 },
-  popover: 'dock', dockY: 1192,
-  combat: { enemyY: 420, myY: 840, enemyHero: { x: 450, y: 250 }, myHero: { x: 450, y: 1150 }, banner: 712, step: 124 },
-};
+/**
+ * Portrait: sections are stacked top to bottom with fixed sizes, and whatever height is left over is
+ * shared evenly between them, so nothing pools at the bottom. The stage height follows the screen's
+ * shape (between 1300 and 1600 stage pixels tall).
+ */
+export function portraitLayout(H: number): Layout {
+  const W = 900;
+  const sizes = { leader: 140, tavern: 150, shop: 228, board: 214, hero: 170, hand: 228 };
+  const fixed = 10 + Object.values(sizes).reduce((a, b) => a + b, 0) + 24;
+  const gap = Math.max(12, (H - fixed) / 5);
+  let y = 10;
+  const leaderY = y; y += sizes.leader + gap;
+  const tavernY = y; y += sizes.tavern + gap;
+  const shopY = y + 6; y += sizes.shop + gap;
+  const slotTop = y; y += sizes.board + gap;
+  const heroTop = y; y += sizes.hero + gap;
+  const handY = y;
+  return {
+    portrait: true, W, H, cx: 450, small: true, cardW: 120, cardH: 165,
+    shopBig: true, shopCardW: 168, shopCardH: 228, handCardW: 168, handCardH: 228,
+    slotX: (i) => 17 + i * 124, slotW: 122, slotTop, slotH: sizes.board,
+    boardY: slotTop + 16, shopY, shopStep: 176, tavernY,
+    heroY: heroTop + 85, handY, handWidth: 880,
+    shopDrop: slotTop - 14, boardTop: slotTop - 14, boardBottom: slotTop + sizes.board + 10,
+    leader: { x: 10, y: leaderY, w: 760, h: sizes.leader, horizontal: true },
+    endTurn: { x: 696, y: heroTop + 28 }, gold: { x: 30, y: heroTop + 18 }, gear: { x: 846, y: heroTop + 118 },
+    tribes: { x: 30, y: heroTop + 104, w: 210 },
+    cardsBtn: { x: 684, y: heroTop + 118 },
+    targetBar: { x: 230, y: slotTop + sizes.board + 2, w: 440 },
+    popover: 'stack',
+    combat: {
+      enemyHero: { x: 450, y: Math.round(H * 0.13) }, enemyY: Math.round(H * 0.27), banner: Math.round(H * 0.44),
+      myY: Math.round(H * 0.52), myHero: { x: 450, y: Math.round(H * 0.76) }, step: 124,
+    },
+  };
+}
 
 let mode: LayoutMode = 'auto';
 try { mode = (localStorage.getItem('torrekin-layout') as LayoutMode) || 'auto'; } catch { /* storage unavailable */ }
@@ -81,7 +109,8 @@ export function setMode(m: LayoutMode) {
 export function onLayoutChange(f: () => void) { listeners.add(f); }
 
 export function currentLayout(): Layout {
-  if (mode === 'portrait') return PORTRAIT;
-  if (mode === 'landscape') return LANDSCAPE;
-  return window.innerHeight > window.innerWidth * 1.1 ? PORTRAIT : LANDSCAPE;
+  const portrait = mode === 'portrait' || (mode === 'auto' && window.innerHeight > window.innerWidth * 1.1);
+  if (!portrait) return LANDSCAPE;
+  const H = Math.round(Math.min(1600, Math.max(1300, 900 * (window.innerHeight / window.innerWidth))));
+  return portraitLayout(H);
 }

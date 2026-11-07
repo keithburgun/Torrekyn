@@ -66,6 +66,7 @@ export interface CardViewOpts {
   x: number;
   y: number;
   small?: boolean;
+  large?: boolean;
   extraClass?: string;
   atk?: number;
   hp?: number;
@@ -78,7 +79,7 @@ export function cardHtml(u: { cardId: string; golden: boolean; atk: number; hp: 
   const atk = o.atk ?? u.atk;
   const hp = o.hp ?? u.hp;
   const kw = o.kw ?? u.kw;
-  const cls = ['card', `t-${d.tribe}`, u.golden ? 'golden' : '', o.small ? 'small' : '', ...kw.map((k) => `kw-${k}`), u.mem?.locked ? 'locked' : '', o.extraClass ?? ''].join(' ');
+  const cls = ['card', `t-${d.tribe}`, u.golden ? 'golden' : '', o.small ? 'small' : '', o.large ? 'large' : '', ...kw.map((k) => `kw-${k}`), u.mem?.locked ? 'locked' : '', o.extraClass ?? ''].join(' ');
   const baseAtk = d.atk * (u.golden ? 2 : 1);
   const baseHp = d.hp * (u.golden ? 2 : 1);
   const icons = kw.filter((k) => k !== 'taunt' && k !== 'divineShield').map((k) => `<span title="${KW_ICON[k][1]}">${KW_ICON[k][0]}</span>`).join('');
@@ -90,7 +91,7 @@ export function cardHtml(u: { cardId: string; golden: boolean; atk: number; hp: 
   <div class="kws">${icons}</div>
   <div class="abil">${tags}</div>
   <div class="name">${esc(d.name)}</div>
-  <div class="tribe-plate">${TRIBE_SHORT[d.tribe] ?? d.tribe}</div>${o.badge ?? ''}
+  <div class="tribe-plate ${(TRIBE_SHORT[d.tribe] ?? d.tribe).length > 8 ? 'long' : ''}">${TRIBE_SHORT[d.tribe] ?? d.tribe}</div>${o.badge ?? ''}
   <div class="stat atk ${atk > baseAtk ? 'buffed' : ''}">${atk}</div>
   <div class="stat hp ${hp > baseHp ? 'buffed' : hp < baseHp ? 'hurt' : ''}">${hp}</div>
 </div>`;

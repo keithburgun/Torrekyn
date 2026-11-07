@@ -134,6 +134,9 @@ b { font-weight: 800; }
   background: var(--tc); box-shadow: inset 0 -2px 0 rgba(0, 0, 0, 0.18), 0 1px 2px rgba(0, 0, 0, 0.25); text-shadow: 0 1px 1px rgba(0, 0, 0, 0.35); }
 .card.small .tribe-plate { bottom: 5px; left: 17px; right: 17px; height: 16px; font-size: 9px; }
 .card.small .tribe-plate { letter-spacing: 0.02em; }
+.card .tribe-plate.long { font-size: 8.5px; letter-spacing: 0; }
+.card.small .tribe-plate.long { font-size: 7.5px; }
+.card.large .tribe-plate.long { font-size: 10px; }
 .card.small .abil { bottom: 23px; }
 
 .card.golden .face {
@@ -660,3 +663,14 @@ b { font-weight: 800; }
   background: linear-gradient(#fff3b8, #ffcf4a); box-shadow: 0 0 14px rgba(255, 207, 74, 0.9); animation: tag-bob 1.1s ease-in-out infinite; }
 @keyframes tag-bob { 50% { transform: translateX(-50%) translateY(-4px); } }
 @media (prefers-reduced-motion: reduce) { .card.pair-hint .face::after, .card.triple-hint .face, .card.triple-hint .face::after, .trip-tag { animation: none !important; } }
+
+/* large cards (portrait shop and hand) */
+.card.large { width: 168px; height: 228px; border-radius: 24px; }
+.card.large .name { font-size: 18px; height: 36px; }
+.card.large .stat { width: 50px; height: 50px; font-size: 23px; }
+.card.large .tier { font-size: 13px; line-height: 19px; }
+.card.large .abil { bottom: 34px; }
+.card.large .abil i { font-size: 13px; }
+.card.large .kws span { width: 26px; height: 26px; font-size: 15px; }
+.card.large .tribe-plate { bottom: 8px; left: 24px; right: 24px; height: 21px; font-size: 12px; }
+#stage.portrait .card.in-hand:hover, #stage.portrait .card.in-hand.selected { transform: translateY(-24px) scale(1.06); }

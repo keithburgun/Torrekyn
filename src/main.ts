@@ -23,15 +23,16 @@ const hot = (window as unknown as { claude?: { hot?: Hot } }).claude?.hot;
 
 const stage = document.getElementById('stage')!;
 
-let lastPortrait: boolean | null = null;
+let lastSize: string | null = null;
 function fit() {
   const L = currentLayout();
   stage.style.width = `${L.W}px`;
   stage.style.height = `${L.H}px`;
   const s = Math.min(window.innerWidth / L.W, window.innerHeight / L.H);
   stage.style.transform = `scale(${s})`;
-  const changed = lastPortrait !== null && lastPortrait !== L.portrait;
-  lastPortrait = L.portrait;
+  const size = `${L.W}x${L.H}`;
+  const changed = lastSize !== null && lastSize !== size;
+  lastSize = size;
   return changed;
 }
 window.addEventListener('resize', () => { if (fit()) appRef?.render(); });

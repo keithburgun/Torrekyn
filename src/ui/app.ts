@@ -28,12 +28,13 @@ let L: Layout = LANDSCAPE;
 const boardCardX = (i: number) => L.slotX(i) + (L.slotW - L.cardW) / 2;
 
 function shopX(i: number, n: number) {
-  const total = (n - 1) * L.shopStep + L.cardW;
+  const total = (n - 1) * L.shopStep + L.shopCardW;
   return L.cx - total / 2 + i * L.shopStep;
 }
 function handX(i: number, n: number) {
-  const step = Math.min(128, Math.floor((L.handWidth - 120) / Math.max(1, n - 1)));
-  const total = (n - 1) * step + 120;
+  const w = L.handCardW;
+  const step = Math.min(w + 8, Math.floor((L.handWidth - w) / Math.max(1, n - 1)));
+  const total = (n - 1) * step + w;
   return L.cx - total / 2 + i * step;
 }
 const ordinal = (n: number) => n + (n === 1 ? 'st' : n === 2 ? 'nd' : n === 3 ? 'rd' : 'th');
@@ -247,7 +248,7 @@ export class App {
       const v = unitView(p, u, 'shop', i);
       const have = owned.get(u.cardId) ?? 0;
       const hint = have >= 2 ? 'triple-hint' : have === 1 ? 'pair-hint' : '';
-      h += cardHtml(v, { zone: 'shop', idx: i, x: shopX(i, p.shop.length), y: L.shopY, small: L.small, extraClass: `${sel} ${hint} ${p.gold < buyCost(p) ? 'unaffordable' : ''} ${p.frozen ? 'frozen' : ''}`,
+      h += cardHtml(v, { zone: 'shop', idx: i, x: shopX(i, p.shop.length), y: L.shopY, small: L.small && !L.shopBig, large: L.shopBig, extraClass: `${sel} ${hint} ${p.gold < buyCost(p) ? 'unaffordable' : ''} ${p.frozen ? 'frozen' : ''}`,
         badge: have >= 2 ? '<div class="trip-tag">TRIPLE!</div>' : '' });
     });
     if (!p.shop.length) h += `<div class="hint abs" style="left:${L.cx - 240}px;top:${L.shopY + 70}px;width:480px">The Tavern is empty. Refresh for new units.</div>`;
@@ -267,7 +268,7 @@ export class App {
     // hand: along the bottom edge, cards rise when hovered
     p.hand.forEach((u, i) => {
       const sel = this.sel?.zone === 'hand' && this.sel.idx === i ? 'selected' : '';
-      h += cardHtml(unitView(p, u, 'hand', i), { zone: 'hand', idx: i, x: handX(i, p.hand.length), y: L.handY, small: true, extraClass: `in-hand ${sel}`, id: u.uid });
+      h += cardHtml(unitView(p, u, 'hand', i), { zone: 'hand', idx: i, x: handX(i, p.hand.length), y: L.handY, small: !L.shopBig, large: L.shopBig, extraClass: `in-hand ${sel}`, id: u.uid });
     });
     h += this.rightSideHtml();
     h += `<div id="popover">${this.popoverHtml()}</div>`;
@@ -407,12 +408,15 @@ export class App {
     const H = 300 + (actions ? 54 : 0);
     let x: number;
     let y: number;
-    if (L.popover === 'dock') {
-      // portrait: a fixed detail area under the hand
-      x = L.cx - W / 2;
-      y = L.dockY;
+    if (L.popover === 'stack') {
+      // portrait: shop cards show it over the army, army cards over the shop, hand cards above the hand
+      const cx = s.zone === 'shop' ? shopX(s.idx, p.shop.length) + L.shopCardW / 2
+        : s.zone === 'hand' ? handX(s.idx, p.hand.length) + L.handCardW / 2 : L.slotX(s.idx) + L.slotW / 2;
+      x = Math.max(8, Math.min(L.W - W - 8, cx - W / 2));
+      y = s.zone === 'shop' ? L.shopY + L.shopCardH + 14 : s.zone === 'board' ? L.slotTop - H - 6 : L.handY - H - 12;
+      y = Math.max(8, Math.min(L.H - H - 8, y));
     } else if (s.zone === 'hand') {
-      x = handX(s.idx, p.hand.length) + 60 - W / 2;
+      x = handX(s.idx, p.hand.length) + L.handCardW / 2 - W / 2;
       y = L.handY - H - 40;
     } else {
       const cx = s.zone === 'shop' ? shopX(s.idx, p.shop.length) : boardCardX(s.idx);
