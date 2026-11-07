@@ -898,7 +898,7 @@
    "name": "Sniper",
    "tribe": "alcove",
    "tier": 2,
-   "atk": 25,
+   "atk": 1,
    "hp": 1,
    "text": "Start of battle: Deal 12 damage to the opponent's right-most minion.",
    "goldenText": "Start of battle: Deal 12 damage to the opponent's right-most minion twice.",

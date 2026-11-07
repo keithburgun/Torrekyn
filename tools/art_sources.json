@@ -623,12 +623,8 @@
    "px": true
   },
   "sniper": {
-   "src": "R/oren 1 rgb version.png",
-   "crop": [
-    0.5,
-    0.48,
-    0.75
-   ]
+   "src": "S/Alcove/sniper.png",
+   "px": true
   },
   "mod": {
    "src": "S/Alcove/hacker.png",
