@@ -462,6 +462,8 @@ export function runCombat(g: GameState, a: Player, b: Player, bIsGhost: boolean)
     for (const fn of s.afterFns) fn();
   }
   // remember boards for Remember / scouting
+  a.lastFightBoard = a.board.map(cloneUnit);
+  if (!bIsGhost) b.lastFightBoard = b.board.map(cloneUnit);
   a.lastOpponent = bIsGhost ? null : b.id;
   a.lastOpponentBoard = bBoard.map(cloneUnit);
   if (!bIsGhost) {

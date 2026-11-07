@@ -7,7 +7,7 @@
 import { esc, heroArt } from './view';
 import { sfx } from './sfx';
 
-interface Who { hero?: string; name: string; health: number }
+interface Who { hero?: string; name: string; health: number; sub?: string }
 
 function layer(stage: HTMLElement, cls: string) {
   const r = stage.getBoundingClientRect();
@@ -43,7 +43,7 @@ export async function battleIntro(stage: HTMLElement, me: Who, opp: Who, round: 
   const wait = waiter(el);
   const side = (w: Who, cls: string, label: string) => `<div class="tx-panel ${cls}"><div class="tx-hero">
     <div class="tx-portrait" style="background-image:url('${heroArt(w.hero)}')"><span class="tx-hp">${Math.max(0, w.health)}</span></div>
-    <div class="tx-name"><small>${label}</small>${esc(w.name)}</div></div></div>`;
+    <div class="tx-name"><small>${label}</small>${esc(w.name)}${w.sub ? `<em>${esc(w.sub)}</em>` : ''}</div></div></div>`;
   el.innerHTML = `${side(opp, 'enemy', ghost ? 'Ghost' : 'Opponent')}${side(me, 'mine', 'You')}
     <div class="tx-seam"></div><div class="tx-flash"></div>
     <div class="tx-vs">VS</div><div class="tx-round">Round ${round}</div><div class="tx-go">Battle!</div>`;

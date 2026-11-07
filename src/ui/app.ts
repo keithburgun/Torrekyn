@@ -14,6 +14,8 @@ import { playTriple } from './ceremony';
 import { placeBoardBg, placeHud } from './hud';
 import { puff } from './fx';
 import { battleIntro, recruitWipe } from './transitions';
+import { getRating, isProvisional, rateGame, seatRating } from './rating';
+import { EXPERT_ELO, personaById } from '../engine/personas';
 import { bump, evaluate, newGameStarted, noteGame, onUnlock, recordCombat, recordGameEnd, type AchievementDef } from './achievements';
 import { currentLayout, getMode, LANDSCAPE, setMode, type Layout, type LayoutMode } from './layout';
 import { ALL_TRIBES } from '../engine/core';
@@ -61,6 +63,8 @@ export class App {
   showTribes = false; // tribes tooltip pinned open (tap on phones)
   /** phones have no hover: tapping your hero or a trinket opens this sheet instead of a tooltip */
   sheet: { kind: 'hero' } | { kind: 'trinket'; id: string } | null = null;
+  /** your rating change in the game that just ended */
+  lastRating: { before: number; after: number; delta: number } | null = null;
   seenBoards = new Map<number, CombatResult['frames'][number]['sides'][number]>();
   combat: CombatPlayer | null = null;
 
@@ -191,6 +195,7 @@ export class App {
     return `<div class="title-wrap">
       <h1 class="logo">TORREKIN</h1>
       <div class="subtitle">An Autobattler</div>
+      ${this.ratingBadge()}
       <div class="menu">
         ${canContinue ? `<button class="btn big primary" data-act="continue">Continue (Round ${saved!.round})</button>` : ''}
         <button class="btn big ${canContinue ? '' : 'primary'}" data-act="new">New Game</button>
@@ -200,6 +205,13 @@ export class App {
       </div>
     </div>
     <div class="version">v${APP_VERSION}${__NO_UPDATES__ ? '' : ' · <a href="#" data-act="check-update" style="color:inherit">Check for updates</a>'}</div>`;
+  }
+
+  ratingBadge() {
+    const r = getRating();
+    return `<div class="rating-badge" title="Your rating. The Expert bot is ${EXPERT_ELO}.">
+      <span class="rb-label">Rating</span><span class="rb-num">${r.rating}</span>
+      <span class="rb-sub">${isProvisional(r) ? `Provisional · ${r.games}/10 games` : `${r.games} games · best ${r.peak}`}</span></div>`;
   }
 
   rulesHtml() {
@@ -271,7 +283,7 @@ export class App {
         <div class="avatar" style="background-image:url('${heroArt(p.hero)}')"></div>
         <div class="meta">
           <div class="nm">${esc(p.name)}</div>
-          <div class="hero-nm">${esc((p.human ? h?.name : h?.title) ?? '')}</div>
+          <div class="hero-nm">${esc(h?.name ?? '')}${p.human ? '' : ` · ${seatRating(this.g!, p.id)}`}</div>
           <div class="hpbar"><div style="width:${pct}%"></div></div>
           <div class="nums"><span>❤ ${p.health}</span><span>★ ${p.tier}</span></div>
         </div>
@@ -605,6 +617,7 @@ export class App {
   inspectHtml() {
     const p = this.g!.players[this.inspect!];
     const h = heroDef(p.hero);
+    const per = personaById(p.persona);
     const seen = this.seenBoards.get(p.id);
     const cards = seen?.length
       ? seen.map((u, i) => cardHtml({ cardId: u.cardId, golden: u.golden, atk: u.atk, hp: u.hp, kw: u.kw }, { zone: 'none', idx: i, x: 0, y: 0, small: true }).replace('position:absolute', '').replace(/style="left:0px;top:0px"/, 'style="position:relative"')).join('')
@@ -613,8 +626,9 @@ export class App {
       <div class="panel inspect-panel" style="padding:24px 30px;display:flex;flex-direction:column;gap:14px;align-items:center;min-width:700px">
         <div style="display:flex;gap:18px;align-items:center">
           <div class="hero-portrait" style="width:96px;height:96px;background-image:url('${heroArt(p.hero)}')"><div class="hp">${p.health}</div></div>
-          <div><div class="ip-name" style="font-family:var(--display);font-size:26px">${esc(p.name)}</div>
-          <div class="hint" style="padding:0;text-align:left">${esc(h?.title ?? '')}<br>${powersOf(p).map((x) => `${esc(x.power)}: ${esc(x.text)}`).join('<br>')}<br>Tavern Tier ${p.tier}${p.trinkets.length ? ' · Trinkets: ' + p.trinkets.map((t) => trinketDef(t).name).join(', ') : ''}</div></div>
+          <div><div class="ip-name" style="font-family:var(--display);font-size:26px">${esc(p.name)}${per ? ` <span class="ip-rating">${seatRating(this.g!, p.id)}</span>` : ''}</div>
+          ${per ? `<div class="ip-style">“${esc(per.style)}”</div>` : ''}
+          <div class="hint" style="padding:0;text-align:left">Playing <b>${esc(h?.name ?? '')}</b>, ${esc(h?.title ?? '')}<br>${powersOf(p).map((x) => `${esc(x.power)}: ${esc(x.text)}`).join('<br>')}<br>Tavern Tier ${p.tier}${p.trinkets.length ? ' · Trinkets: ' + p.trinkets.map((t) => trinketDef(t).name).join(', ') : ''}</div></div>
         </div>
         <div class="hint">Army when you last fought:</div>
         <div style="display:flex;gap:10px;flex-wrap:wrap;justify-content:center">${cards}</div>
@@ -622,10 +636,22 @@ export class App {
       </div></div>`;
   }
 
+  /** The game is over for you: achievements and your rating (once per game). */
+  gameEnded(g: GameState) {
+    recordGameEnd(g);
+    const c = rateGame(g);
+    if (c) { this.lastRating = c; save(g); }
+  }
+
   overHtml() {
     const p = this.me;
     const place = p.placement || 1;
+    const c = this.lastRating;
+    const rating = c ? `<div class="rating-change ${c.delta >= 0 ? 'up' : 'down'}">
+        <span class="rc-label">Rating</span><span class="rc-from">${c.before}</span><span class="rc-arrow">→</span><span class="rc-to">${c.after}</span>
+        <span class="rc-delta">${c.delta >= 0 ? '+' : ''}${c.delta}</span></div>` : '';
     return `<div class="modal"><h2>${place === 1 ? 'Victory!' : `You finished ${ordinal(place)}`}</h2>
+      ${rating}
       <div class="hint lead">Rounds survived: ${this.g!.round}</div>
       <div style="display:flex;gap:14px"><button class="btn big primary" data-act="new">Play Again</button><button class="btn big" data-act="title">Title</button></div></div>`;
   }
@@ -678,7 +704,19 @@ export class App {
     this.busy = false;
   }
 
+  /** achievements waiting to be shown; popups appear one at a time so they never pile up over the screen */
+  private achQueue: AchievementDef[] = [];
+  private achShowing = false;
+
   achievementToast(a: AchievementDef) {
+    this.achQueue.push(a);
+    if (!this.achShowing) this.nextAchievementToast();
+  }
+
+  private nextAchievementToast() {
+    const a = this.achQueue.shift();
+    if (!a) { this.achShowing = false; return; }
+    this.achShowing = true;
     sfx.achievement();
     const holder = document.getElementById('ach-toasts') ?? (() => {
       const d = document.createElement('div');
@@ -686,18 +724,20 @@ export class App {
       document.body.appendChild(d);
       return d;
     })();
-    // keep the popups inside the game canvas (its top-right corner, under the mute button)
+    // keep the popup inside the game canvas: under the mute button on PC, over the top strip on phones
     const r = this.stage.getBoundingClientRect();
     const scale = r.width / L.W;
     holder.style.right = `${Math.max(8, window.innerWidth - r.right + 12 * scale)}px`;
-    holder.style.top = `${r.top + (L.mute.y + L.mute.size + 70) * scale}px`;
-    holder.style.maxWidth = `${Math.max(200, r.width - 24 * scale)}px`;
+    holder.style.top = `${r.top + (L.portrait ? 12 : L.mute.y + L.mute.size + 70) * scale}px`;
+    holder.style.maxWidth = `${Math.max(200, r.width - (L.portrait ? 120 : 24) * scale)}px`;
     const t = document.createElement('div');
     t.className = 'ach-toast';
-    t.innerHTML = `<div class="ach-icon">🏆</div><div><div class="at-label">Achievement unlocked</div><div class="at-name">${esc(a.name)}</div><div class="at-desc">${esc(a.desc)}</div></div>`;
+    t.innerHTML = `<div class="ach-icon">🏆</div><div><div class="at-label">Achievement unlocked${this.achQueue.length ? ` · ${this.achQueue.length} more` : ''}</div><div class="at-name">${esc(a.name)}</div><div class="at-desc">${esc(a.desc)}</div></div>`;
+    t.addEventListener('click', () => t.classList.add('out'));
     holder.appendChild(t);
-    setTimeout(() => t.classList.add('out'), 3600);
-    setTimeout(() => t.remove(), 4200);
+    const life = this.achQueue.length ? 2200 : 3400;
+    setTimeout(() => t.classList.add('out'), life);
+    setTimeout(() => { t.remove(); this.nextAchievementToast(); }, life + 500);
   }
 
   result(r: { ok: boolean; reason?: string }, sound?: () => void, stat?: string) {
@@ -708,6 +748,7 @@ export class App {
 
   newGame() {
     this.seen = null;
+    this.lastRating = null;
     this.g = newGame((Math.random() * 2 ** 31) | 0);
     this.sel = null;
     this.targeting = null;
@@ -765,7 +806,7 @@ export class App {
     const mine = results.find((r) => r.a === 0 || r.b === 0);
     if (!mine) {
       this.screen = g.phase === 'over' ? 'over' : 'shop';
-      if (g.phase === 'over') recordGameEnd(g);
+      if (g.phase === 'over') this.gameEnded(g);
       return this.commit();
     }
     const meSide = mine.a === 0 ? 0 : 1;
@@ -775,7 +816,7 @@ export class App {
     // health shown on the intro is from before this battle's damage
     const before = (pl: Player) => pl.health + (mine.winner !== -1 && (mine.winner === 0 ? mine.b : mine.a) === pl.id ? mine.damage : 0);
     this.busy = true;
-    void battleIntro(this.stage, { hero: p.hero, name: p.name, health: before(p) }, { hero: opp.hero, name: opp.name, health: before(opp) }, round, mine.b === -1, () => {
+    void battleIntro(this.stage, { hero: p.hero, name: p.name, health: before(p) }, { hero: opp.hero, name: opp.name, health: before(opp), sub: `${heroDef(opp.hero)?.name ?? ''}${opp.persona ? ` · ${seatRating(g, opp.id)}` : ''}` }, round, mine.b === -1, () => {
       this.screen = 'combat';
       this.startCombat(mine, meSide, round);
     }).then(() => {
@@ -796,7 +837,7 @@ export class App {
           myUnits: mine.frames[0]?.sides[meSide].length ?? 0, oppUnits: mine.frames[0]?.sides[1 - meSide].length ?? 0,
           survivors: last?.sides[meSide].length ?? 0, ghost: mine.b === -1,
         });
-        if (g.phase === 'over') recordGameEnd(g);
+        if (g.phase === 'over') this.gameEnded(g);
         this.commit();
       };
       if (g.phase === 'over') toShop();

@@ -1,0 +1,82 @@
+/**
+ * Bot personas: the rivals you meet. Each has a skill (0 = beginner, 1 = the Expert bot), a play-style
+ * quirk, and an Elo rating measured by having them play each other (tests/calibrate.test.ts writes
+ * src/data/personaElo.json). See DESIGN_NOTES "Bots and Elo".
+ */
+import type { BotProfile, Tribe } from './types';
+import { FEATURES, type Feature } from './ai';
+import eloData from '../data/personaElo.json';
+
+/**
+ * Skill to bot profile. Expert habits switch on as skill rises, most valuable last (so the top personas
+ * are the ones that position by simulation and reroll with discipline); below that, evaluation noise and
+ * blunders grow, and the weakest also level their Tavern late.
+ */
+const UNLOCK: Record<Feature, number> = {
+  triples: 0.2, hero: 0.25, discover: 0.3, tribe: 0.35, value: 0.4, freeze: 0.5, econ: 0.55, spend: 0.6, reroll: 0.65, arrange: 0.8,
+  level: 2, simbuy: 2, powerFirst: 2, // never (measured not to help)
+};
+
+export function profileForSkill(skill: number): BotProfile {
+  const s = Math.max(0, Math.min(1, skill));
+  const f = Object.fromEntries(FEATURES.map((k) => [k, s >= UNLOCK[k]])) as Record<string, boolean>;
+  const x: Record<string, number> = {};
+  if (s < 0.45) {
+    // beginners level late and never on a whim
+    f.level = true;
+    const late = Math.round((0.45 - s) * 11);
+    x.lvl3 = 5 + late; x.lvl4 = 8 + late; x.lvl5 = 10 + late; x.cheap = 0;
+  }
+  // beginners also wander off with gold unspent and hang on to weak units
+  if (s < 0.5) { x.lazy = +((0.5 - s) * 1.2).toFixed(2); x.keep = +((0.5 - s) * 40).toFixed(1); }
+  return { noise: +(3 * (1 - s) ** 2).toFixed(3), blunder: +(0.3 * (1 - s) ** 2).toFixed(3), f, x };
+}
+
+export interface Persona {
+  id: string;
+  /** username shown in game */
+  name: string;
+  skill: number;
+  /** one line shown when you look at them */
+  style: string;
+  /** play-style quirks layered on the skill profile */
+  quirk?: { tribe?: Tribe; x?: Record<string, number> };
+}
+
+export const PERSONAS: Persona[] = [
+  { id: 'tavernking', name: 'xX_TavernKing_Xx', skill: 1, style: 'Plays like the house always wins. Because it does.' },
+  { id: 'goldengremlin', name: 'golden_gremlin', skill: 0.85, style: 'Will sell their grandmother for a triple.', quirk: { x: { trip2: 80, trip1: 16 } } },
+  { id: 'slotmachine', name: 'sl0t_machine', skill: 0.7, style: 'Thinks about positioning more than is healthy.' },
+  { id: 'rerollandpray', name: 'rerollandpray', skill: 0.62, style: 'Never met a Refresh button they didn\'t like.', quirk: { x: { rerollBar: 1.5 } } },
+  { id: 'divineshieldboi', name: 'DivineShieldBoi', skill: 0.56, style: 'Steady, sensible, a little smug about it.' },
+  { id: 'questlogqueen', name: 'QuestLogQueen', skill: 0.5, style: 'Reads every card. Twice.' },
+  { id: 'midrangemaddie', name: 'MidRangeMaddie', skill: 0.45, style: 'Never first, never last, always fine.' },
+  { id: 'potatowitch', name: 'potato_witch_irl', skill: 0.4, style: 'Kindred or bust. Usually bust.', quirk: { tribe: 'kindred' } },
+  { id: 'freezeframe', name: 'Freeze_Frame', skill: 0.35, style: 'Levels up fast and asks questions later.', quirk: { x: { lvl3: 4, lvl4: 6, lvl5: 8 } } },
+  { id: 'notaunt', name: 'NoTauntNoProblem', skill: 0.3, style: 'Confident. Unclear why.' },
+  { id: 'skeletordad', name: 'skel3tor_dad', skill: 0.25, style: 'Plays Neverending whenever it shows up.', quirk: { tribe: 'neverending' } },
+  { id: 'bunnyhop', name: 'bunnyhop_99', skill: 0.18, style: 'Clicks fast. Thinks later.' },
+  { id: 'itsjustaphase', name: 'ItsJustAPhase', skill: 0.12, style: 'Sure this strategy will work eventually.' },
+  { id: 'sixthplacesteve', name: 'sixthplacesteve', skill: 0.06, style: 'The name is a prophecy.' },
+  { id: 'ctrlaltdefeat', name: 'ctrl_alt_defeat', skill: 0, style: 'Just happy to be here.' },
+];
+
+export function personaById(id: string | undefined): Persona | undefined {
+  return PERSONAS.find((p) => p.id === id);
+}
+
+/** The bot profile a persona plays with (skill profile plus quirks). */
+export function personaProfile(per: Persona): BotProfile {
+  const b = profileForSkill(per.skill);
+  if (per.quirk?.x) b.x = { ...b.x, ...per.quirk.x };
+  if (per.quirk?.tribe) b.tribe = per.quirk.tribe;
+  return b;
+}
+
+/** measured ratings (calibration run); falls back to a line from 2000 (Expert) down if missing */
+const ELO = eloData as Record<string, number>;
+export function personaElo(per: Persona): number {
+  return ELO[per.id] ?? Math.round(1000 + per.skill * 1000);
+}
+
+export const EXPERT_ELO = 2000;

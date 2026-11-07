@@ -17,6 +17,7 @@ describe.skipIf(!process.env.BALANCE)('balance', () => {
     for (let s = 0; s < GAMES; s++) {
       const g = newGame(1000 + s);
       g.simulateAll = true;
+      for (const p of g.players) p.bot = undefined; // every seat plays as the Expert bot
       selectHero(g, pick(g, human(g).heroOffer!)!);
       let guard = 0;
       while (g.phase !== 'over' && guard++ < 80) endTurn(g);

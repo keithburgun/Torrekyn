@@ -4,10 +4,11 @@ import {
 import { EFFECTS, battlecryTimes, hasBattlecry } from './effects';
 import { runCombat } from './combat';
 import { aiTakeTurn, aiChooseDiscover } from './ai';
+import { PERSONAS, personaProfile } from './personas';
 import { HEROES, buyCost, gainPower, heroDef, heroEndTurn, heroHooks, hasTrinket, offerTrinkets, shopBonus, GREATER_TRINKET_TURN, LESSER_TRINKET_TURN } from './heroes';
 import type { Discover, GameState, Player, Slot, Tribe, Unit } from './types';
 
-export const SAVE_VERSION = 3;
+export const SAVE_VERSION = 4;
 
 
 function emptySlots(): Slot[] {
@@ -44,11 +45,16 @@ export function newGame(seed: number, humanName = 'You', tribes?: Tribe[]): Game
   const heroIds = shuffle(g, HEROES.filter((h) => !h.needsTribe || g.tribes.includes(h.needsTribe)).map((h) => h.id));
   g.players[0].heroOffer = heroIds.slice(0, CONFIG.heroChoices);
   const rest = heroIds.slice(CONFIG.heroChoices);
+  // rivals: random personas (personas.ts), each playing a random champion
+  const rivals = sample(g, PERSONAS, g.players.length - 1);
   for (let i = 1; i < g.players.length; i++) {
     const p = g.players[i];
     p.hero = rest.length ? rest.shift()! : pick(g, heroIds)!;
     p.avatar = heroDef(p.hero)!.avatar;
-    p.name = heroDef(p.hero)!.name;
+    const per = rivals[i - 1];
+    p.persona = per?.id;
+    p.bot = per ? personaProfile(per) : undefined;
+    p.name = per?.name ?? heroDef(p.hero)!.name;
   }
   g.phase = 'hero';
   return g;
@@ -254,7 +260,7 @@ export function discoverOptions(g: GameState, filter: (id: string) => boolean, n
 export function queueDiscover(g: GameState, p: Player, options: string[], reason: string, golden = false) {
   if (!options.length) return;
   const d: Discover = { options, reason, golden };
-  if (p.human) p.discovers.push(d);
+  if (p.human && !g.simulateAll) p.discovers.push(d);
   else {
     const choice = aiChooseDiscover(g, p, d);
     takeDiscover(g, p, d, choice);
@@ -265,7 +271,7 @@ export function queueDiscover(g: GameState, p: Player, options: string[], reason
 export function queuePowerDiscover(g: GameState, p: Player, options: string[], reason: string) {
   if (!options.length) return;
   const d: Discover = { options, reason, powers: true };
-  if (p.human) p.discovers.push(d);
+  if (p.human && !g.simulateAll) p.discovers.push(d);
   else takeDiscover(g, p, d, aiChooseDiscover(g, p, d));
 }
 

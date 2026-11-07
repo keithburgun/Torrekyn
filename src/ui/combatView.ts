@@ -44,7 +44,7 @@ export class CombatPlayer {
     placeBoardBg(stage, this.L, (this.L.combat.enemyY + this.L.combat.myY + this.L.cardH) / 2);
     stage.innerHTML = `
       <div class="combat-name enemy" style="left:${this.L.combat.enemyHero.x - this.av.enemy / 2}px;top:${this.L.combat.enemyHero.y - this.av.enemy / 2}px"><div class="avatar" id="avatar-enemy" style="background-image:url('${heroArt(opp.hero)}')"><div class="hpb">${opp.health}</div></div>
-        <div>${r.b === -1 ? 'Ghost of ' : ''}${esc(opp.name)}<div class="hint" style="padding:0;text-align:left">${esc(heroDef(opp.hero)?.title ?? '')}</div></div></div>
+        <div>${r.b === -1 ? 'Ghost of ' : ''}${esc(opp.name)}<div class="hint" style="padding:0;text-align:left">${esc(heroDef(opp.hero)?.name ?? '')}</div></div></div>
       <div class="combat-name mine" style="left:${this.L.combat.myHero.x - this.av.mine / 2}px;top:${this.L.combat.myHero.y - this.av.mine / 2}px"><div class="avatar" id="avatar-me" style="background-image:url('${heroArt(meP.hero)}')"><div class="hpb">${meP.health}</div></div><div>${esc(meP.name)}</div></div>
       <div class="vs-banner" style="left:${this.L.cx}px;top:${this.L.combat.banner}px">ROUND ${round} · BATTLE</div>
       <div class="abs combat-ctl" style="right:30px;bottom:30px;display:flex;gap:10px">

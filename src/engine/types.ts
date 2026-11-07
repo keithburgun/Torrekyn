@@ -56,8 +56,29 @@ export interface Discover {
   reason: string;
 }
 
+/**
+ * How a bot plays (see ai.ts). Personas are profiles with a name. Every field is optional; missing
+ * fields fall back to the Expert bot.
+ */
+export interface BotProfile {
+  /** random noise added to every evaluation (bigger = more mistakes) */
+  noise?: number;
+  /** chance each turn of an outright blunder (random buy, skipped level, no repositioning) */
+  blunder?: number;
+  /** feature switches, so each improvement can be measured against the old behaviour */
+  f?: Record<string, boolean>;
+  /** tuning numbers (see ai.ts `knob`) */
+  x?: Record<string, number>;
+  /** a tribe this bot always goes for when it's in the game (persona quirk) */
+  tribe?: Tribe;
+}
+
 export interface Player {
   id: number;
+  /** bot behaviour; undefined = Expert */
+  bot?: BotProfile;
+  /** which persona is playing this seat (personas.ts) */
+  persona?: string;
   name: string;
   human: boolean;
   avatar: number;
@@ -86,6 +107,8 @@ export interface Player {
   discovers: Discover[];
   lastOpponent: number | null;
   lastOpponentBoard: Unit[];
+  /** this player's own army at their last fight (public; bots use it to plan) */
+  lastFightBoard?: Unit[];
   nextOpponent: number | null;
   favoriteTribe?: Tribe;
   hero?: string;
@@ -156,4 +179,6 @@ export interface GameState {
   deadOrder: number[];
   /** testing only: bots play every seat and the game runs until one player is left */
   simulateAll?: boolean;
+  /** the human's rating has been updated for this game */
+  rated?: boolean;
 }

@@ -969,3 +969,34 @@ button.trinket-orb { appearance: none; border: 0; padding: 0; cursor: pointer; }
 .scene-tx.hurry * { animation-duration: 0.15s !important; animation-delay: 0s !important; }
 .scene-tx.instant * { animation: none !important; }
 @media (prefers-reduced-motion: reduce) { #stage.tx-shake { animation: none; } }
+
+/* ---------------- rating ---------------- */
+.rating-badge { display: flex; align-items: baseline; gap: 10px; padding: 6px 18px; border-radius: 999px; background: rgba(30, 28, 35, 0.75); border: 2px solid var(--lilac);
+  box-shadow: var(--shadow); margin-top: 6px; }
+.rating-badge .rb-label { font-size: 13px; font-weight: 800; letter-spacing: 0.18em; text-transform: uppercase; color: var(--lilac); }
+.rating-badge .rb-num { font-family: var(--display); font-weight: 700; font-size: 30px; color: #fff; }
+.rating-badge .rb-sub { font-size: 13px; color: var(--ink-soft); font-weight: 700; }
+#stage.portrait .rating-badge { padding: 10px 26px; gap: 14px; }
+#stage.portrait .rating-badge .rb-label { font-size: 22px; }
+#stage.portrait .rating-badge .rb-num { font-size: 48px; }
+#stage.portrait .rating-badge .rb-sub { font-size: 22px; }
+.rating-change { display: flex; align-items: baseline; gap: 12px; padding: 10px 26px; border-radius: 20px; background: rgba(30, 28, 35, 0.85); border: 3px solid var(--lilac);
+  font-family: var(--display); font-weight: 700; color: #fff; animation: pop 0.45s 0.2s cubic-bezier(.3, 1.6, .5, 1) both; }
+.rating-change .rc-label { font-family: var(--text); font-size: 15px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--ink-soft); }
+.rating-change .rc-from { font-size: 26px; color: var(--ink-soft); }
+.rating-change .rc-arrow { font-size: 22px; color: var(--ink-soft); }
+.rating-change .rc-to { font-size: 40px; }
+.rating-change .rc-delta { font-size: 30px; padding: 0 12px; border-radius: 999px; }
+.rating-change.up { border-color: #7ee2b8; } .rating-change.up .rc-delta { color: #0f3a28; background: #7ee2b8; }
+.rating-change.down { border-color: var(--pink); } .rating-change.down .rc-delta { color: #fff; background: #c23a5c; }
+#stage.portrait .rating-change { padding: 16px 32px; gap: 16px; }
+#stage.portrait .rating-change .rc-label { font-size: 24px; }
+#stage.portrait .rating-change .rc-from { font-size: 40px; }
+#stage.portrait .rating-change .rc-to { font-size: 62px; }
+#stage.portrait .rating-change .rc-delta { font-size: 46px; }
+.ip-rating { font-size: 0.7em; color: var(--lilac); margin-left: 6px; }
+.ip-style { font-style: italic; color: var(--ink-soft); font-size: 15px; margin: 2px 0 6px; }
+#stage.portrait .ip-style { font-size: 27px; }
+.scene-tx.battle .tx-name em { font-style: normal; font-family: var(--text); font-size: 20px; font-weight: 700; opacity: 0.8; }
+.scene-tx.battle.portrait .tx-name em { font-size: 28px; }
+.ach-toast { pointer-events: auto; cursor: pointer; }

@@ -94,10 +94,52 @@ Fourteen Torrekin champions; you choose 1 of 4 at the start. Heroes tied to a tr
 
 Hero Avenge counts friendly deaths in each combat and starts over every combat.
 
-In 800 bot-only games (45 Health, 3 tribes banned), average placements ranged from 3.15 (Clover) to 4.15 (Locas Clare); 3.5 is even. Locas is the outlier: bots don't time the steal well, and stealing earlier made them worse. Run `BALANCE=1 npx vitest run tests/balance.test.ts` to re-check.
+In 800 games with the Expert bot in every seat (45 Health, 3 tribes banned), average placements ranged from 3.00 (May Danaris) and 3.11 (Abragail) to 4.10 (Locas Clare); 3.5 is even. Locas is the outlier. Run `BALANCE=1 npx vitest run tests/balance.test.ts` to re-check.
 
 ## Trinkets
 The trinkets are still **placeholders**. A lesser trinket offer (4 options) arrives on turn 6 and a greater one on turn 9. You buy one with gold or skip.
 
-## Opponents
-Bots use the same shop rules as you. They level on a curve, prefer their main tribe, chase triples, use hero powers and buy trinkets. Personas and Elo are planned for later.
+## Bots and Elo
+### How the bot plays (src/engine/ai.ts)
+One bot brain with a profile: feature switches, evaluation noise, a blunder chance and tuning numbers. Every improvement was measured in the arena (`ARENA=1 npx vitest run tests/arena.test.ts`): lobbies split between two profiles, thousands of games, and the head-to-head record ("finished above") converted to an Elo gap. Kept:
+
+| Feature | What it does | Measured |
+|---|---|---|
+| value | Unit worth includes each card's **measured ability value**: every card was played onto typical armies and fought thousands of battles against the same army with a plain stand-in of equal stats (`CARDVALUES=1 npx vitest run tests/cardvalues.test.ts` → `src/data/cardValues.json`) | +55 |
+| reroll | Picky shopping: with gold to spare, rerolls instead of buying a unit below 1.3× the army's average | +53 |
+| triples | Pairs and triple pieces weighted heavily; never sells half a triple | +20 |
+| econ | Hand-set value for gold and card generation (Pickaxe, Librarian, Purveyor…), which battles can't measure | +21 |
+| arrange | Positions the army by simulated battles against rivals' last-seen armies (7 candidate orders) | +21 |
+| discover, freeze, tribe, hero, spend | Smarter Discovers, freezing triple pieces, re-evaluating its tribe, sensible Hero Power use, rerolling leftover gold | +5 to +12 each |
+
+Tried and dropped (no gain): faster or slower leveling curves (the 5/8/10 curve won), simulation-tested buying (−10 and 5× slower), using Hero Powers before shopping, deeper positioning search.
+
+**Result: the Expert bot finishes above the original bot 77% of the time (+210 Elo) and wins 27% of mixed lobbies against its 6%.**
+
+### Skill levels and personas (src/engine/personas.ts)
+`profileForSkill(0…1)` switches the Expert's habits on as skill rises (most valuable last), and below that adds evaluation noise, blunders, lazy shopping (ending a turn with gold unspent), holding weak units, and late leveling. Fifteen personas sit on that dial, some with quirks (always Kindred, always Neverending, triple-hungry, reroll-happy, fast leveler). Each new game seats 5 of them at random, each playing a random champion.
+
+### Elo
+Ratings are standard Elo (400 points = 10:1 odds) applied to Battlegrounds-style results: each rival in the lobby counts as a head-to-head match, won if you finished above them. **Persona ratings are measured, not assigned**: 3,600 lobbies of randomly chosen personas, fitted with Bradley-Terry maximum likelihood (`CALIBRATE=1 npx vitest run tests/calibrate.test.ts` → `src/data/personaElo.json`), anchored so the **Expert bot = 2000**. The weakest bot lands at **1500**; the original bot would sit at 1781.
+
+| Persona | Skill | Elo |
+|---|---|---|
+| xX_TavernKing_Xx (Expert) | 1.00 | 2000 |
+| golden_gremlin | 0.85 | 1987 |
+| sl0t_machine | 0.70 | 1954 |
+| rerollandpray | 0.62 | 1870 |
+| DivineShieldBoi | 0.56 | 1833 |
+| QuestLogQueen | 0.50 | 1799 |
+| MidRangeMaddie | 0.45 | 1788 |
+| potato_witch_irl | 0.40 | 1753 |
+| Freeze_Frame | 0.35 | 1654 |
+| NoTauntNoProblem | 0.30 | 1647 |
+| skel3tor_dad | 0.25 | 1612 |
+| bunnyhop_99 | 0.18 | 1564 |
+| ItsJustAPhase | 0.12 | 1525 |
+| sixthplacesteve | 0.06 | 1508 |
+| ctrl_alt_defeat (weakest) | 0.00 | 1500 |
+
+The spread (500 points) is narrower than chess because a 6-player autobattler has a lot of luck: even so, the Expert finishes above the weakest bot about 95% of the time.
+
+**Your rating** (src/ui/rating.ts, stored in the browser) starts at 1500. After each game: change = K × Σ(result − expected) / 5 over the five rivals, K = 48 (96 for your first 10 "provisional" games). Winning a lobby of equal-rated players gains about +24; finishing last loses about −24; beating a strong lobby gains more, losing to a weak one costs more. Shown on the title screen and at game over.
