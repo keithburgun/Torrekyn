@@ -300,12 +300,12 @@ export class Combat {
           }
         }
       }
-      // Secret: when your last unit dies, spawn a White Ninja
+      // Secret: when your last unit dies, spawn a Forest Abomination (id white_ninja)
       for (const s of this.sides) {
         if (!s.units.some((u) => u.hp > 0) && s.secrets.length) {
           const golden = s.secrets.shift()!;
           this.spawn(s, 'white_ninja', golden, 0);
-          this.snap('trigger', { note: 'Secret: White Ninja' });
+          this.snap('trigger', { note: 'Secret: Forest Abomination' });
         }
       }
       this.snap('resolve');

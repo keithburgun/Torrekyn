@@ -101,7 +101,7 @@ GOLDEN = {
     "hunter": "Start of Combat: Give 2 random enemy units Taunt and deal 1 damage to them.",
     "orange_ninja": "Venomous",
     "owl": "Battlecry: Discover a unit from a Rival's army twice.",
-    "secret": "Start of Combat: When your last unit dies, spawn a Golden White Ninja.",
+    "secret": "Start of Combat: When your last unit dies, spawn a Golden Forest Abomination.",
     "white_ninja": "Divine Shield. Venomous.",
     "songstress": "Avenge(3): Give a random card in your hand +10/+10.",
     "red_sea_snake": "Venomous. Rally: Give 2 other Cloister units Venomous.",
@@ -172,10 +172,14 @@ TOKENS = [
 ]
 
 
+# cards renamed after launch keep their original ID (their ability code and art are keyed by it)
+RENAMED = {"forest_abomination": "white_ninja"}
+
+
 def slug(s):
     s = s.lower().replace("&", "and")
     s = re.sub(r"[^a-z0-9]+", "_", s).strip("_")
-    return s
+    return RENAMED.get(s, s)
 
 
 def parse_keywords(text):
@@ -273,11 +277,13 @@ def update_art(changes):
         spec = {"src": key}
         if crop.startswith("pixel"):
             spec["px"] = True
-            box = re.findall(r"\d+", crop)
+            box = re.findall(r"\d+", crop.replace("flipped", ""))
             if len(box) == 4:
                 spec["box"] = [int(b) for b in box]
         else:
             spec["crop"] = [float(v) for v in re.findall(r"[\d.]+", crop)[:3]]
+        if "flip" in crop:
+            spec["flip"] = True
         if data["cards"].get(cid) != spec:
             data["cards"][cid] = spec
             changed.append(cid)

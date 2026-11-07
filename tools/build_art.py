@@ -7,6 +7,7 @@ Builds the illustrated card and hero art (public/art/v2/) from Keith's art archi
 Which image each card/hero uses, and how it is cropped, lives in tools/art_sources.json.
 Crops are [centre x, centre y, side] as fractions of the image (side = fraction of the shorter edge).
 Pixel sprites (px: true) use their first animation frame, scaled up sharp on a tribe-coloured backdrop.
+flip: true mirrors the result left-to-right.
 """
 import json, os, sys
 from PIL import Image, ImageDraw, ImageFilter
@@ -111,6 +112,8 @@ def main():
             path = os.path.join(R[key], file)
             tribe = cards[id_]['tribe'] if kind == 'cards' else 'hero'
             im = pixel_art(path, tribe, spec.get('box')) if spec.get('px') else cropped(path, spec['crop'], tribe)
+            if spec.get('flip'):
+                im = im.transpose(Image.FLIP_LEFT_RIGHT)
             im.save(os.path.join(ROOT, 'public', rel), 'WEBP', quality=82, method=6)
     json.dump(manifest, open(os.path.join(ROOT, 'src/data/artV2.json'), 'w'), indent=1)
     print('built', len(manifest))

@@ -47,9 +47,10 @@ def where(spec):
     return f'{FOLDER[k]}/{f}'
 
 def crop_text(spec):
+    flip = ', flipped' if spec.get('flip') else ''
     if spec.get('px'):
-        return 'pixel' + (f" box {','.join(map(str, spec['box']))}" if spec.get('box') else '')
-    return ', '.join(f'{v:g}' for v in spec['crop'])
+        return 'pixel' + (f" box {','.join(map(str, spec['box']))}" if spec.get('box') else '') + flip
+    return ', '.join(f'{v:g}' for v in spec['crop']) + flip
 
 def style_sheet(ws, headers, widths, title=None):
     hdr_row = 1

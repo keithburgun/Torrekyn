@@ -761,13 +761,13 @@
    "tier": 3,
    "atk": 3,
    "hp": 3,
-   "text": "Start of Combat: When your last unit dies, spawn a White Ninja.",
-   "goldenText": "Start of Combat: When your last unit dies, spawn a Golden White Ninja.",
+   "text": "Start of Combat: When your last unit dies, spawn a Forest Abomination.",
+   "goldenText": "Start of Combat: When your last unit dies, spawn a Golden Forest Abomination.",
    "keywords": []
   },
   {
    "id": "white_ninja",
-   "name": "White Ninja",
+   "name": "Forest Abomination",
    "tribe": "cloister",
    "tier": 3,
    "atk": 18,
