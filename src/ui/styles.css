@@ -233,8 +233,8 @@ b { font-weight: 800; }
 
 .hero-box { display: flex; flex-direction: column; align-items: center; padding: 12px; gap: 9px; }
 .hero-portrait { width: 120px; height: 120px; border-radius: 50%; background-size: cover; box-shadow: 0 0 0 5px var(--slate), 0 0 0 8px var(--lilac), 0 0 26px rgba(183, 156, 242, 0.4); position: relative; }
-.hero-portrait .hp { position: absolute; right: -10px; bottom: -6px; width: 48px; height: 46px; display: flex; align-items: center; justify-content: center; padding-bottom: 4px;
-  font-family: var(--display); font-weight: 700; font-size: 18px; color: #fff; text-shadow: 0 2px 0 rgba(80, 30, 80, 0.4);
+.hero-portrait .hp { position: absolute; right: -18px; bottom: -14px; width: 76px; height: 72px; display: flex; align-items: center; justify-content: center; padding-bottom: 7px;
+  font-family: var(--display); font-weight: 700; font-size: 31px; color: #fff; text-shadow: 0 2px 0 rgba(80, 30, 80, 0.4);
   background: radial-gradient(circle at 35% 30%, #ffc4da, var(--hp) 60%, #e23a76);
   -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Cpath d='M20 37C6 27 1 20 1 12.5 1 6.5 5.5 2 11 2c4 0 7 2 9 5.5C22 4 25 2 29 2c5.5 0 10 4.5 10 10.5C39 20 34 27 20 37z'/%3E%3C/svg%3E") center/contain no-repeat;
   mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Cpath d='M20 37C6 27 1 20 1 12.5 1 6.5 5.5 2 11 2c4 0 7 2 9 5.5C22 4 25 2 29 2c5.5 0 10 4.5 10 10.5C39 20 34 27 20 37z'/%3E%3C/svg%3E") center/contain no-repeat; }
@@ -324,7 +324,7 @@ b { font-weight: 800; }
 
 /* ---------------- Battlegrounds-style layout pieces ---------------- */
 .tavern-keeper { position: absolute; width: 132px; display: flex; flex-direction: column; align-items: center; }
-.tk-portrait { width: 116px; height: 116px; border-radius: 50%; background-size: cover; box-shadow: 0 0 0 5px var(--slate), 0 0 0 8px var(--pink), 0 0 34px rgba(255, 127, 191, 0.45); }
+.tk-portrait { width: 116px; height: 116px; border-radius: 50%; background-size: cover; filter: saturate(0.6) brightness(0.75); box-shadow: 0 0 0 5px var(--slate), 0 0 0 8px var(--pink), 0 0 34px rgba(255, 127, 191, 0.45); }
 .tk-tier { margin-top: -14px; background: var(--slate); border: 2px solid var(--pink); border-radius: 999px; padding: 0 10px; color: #ffcf4a; font-size: 14px; line-height: 20px; z-index: 1; }
 .tk-label { display: none; }
 .tavern-btn {
@@ -343,10 +343,19 @@ b { font-weight: 800; }
 .tb-cost { position: absolute; top: -6px; right: -6px; width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center;
   background: radial-gradient(circle at 35% 30%, #fff8cf, var(--coin) 55%, #e59a12); color: #5a3a00; font-family: var(--display); font-weight: 700; font-size: 17px;
   box-shadow: 0 0 0 3px var(--slate); }
-.tb-label { position: absolute; bottom: -24px; left: 50%; transform: translateX(-50%); white-space: nowrap; font-size: 13px; font-weight: 800; color: var(--ink-soft); }
+.tb-label { position: absolute; bottom: -28px; left: 50%; transform: translateX(-50%); white-space: nowrap; font-size: 17px; font-weight: 800; color: var(--ink); text-shadow: 0 2px 4px #000; }
+.tk-num { position: absolute; top: 4px; left: 50%; transform: translateX(-50%); width: 110px; text-align: center; font-family: var(--display); font-weight: 700; font-size: 84px; line-height: 108px; color: #fff;
+  -webkit-text-stroke: 4px var(--lilac-deep); paint-order: stroke fill; text-shadow: 0 4px 0 var(--pink-deep), 0 0 20px rgba(255, 127, 191, 0.8); pointer-events: none; }
 
-.my-hero { position: absolute; width: 124px; height: 124px; }
-.my-hero .hero-portrait { width: 124px; height: 124px; }
+.my-hero { position: absolute; width: 140px; height: 140px; }
+.my-hero .hero-portrait { width: 140px; height: 140px; }
+.my-hero .tb-cost { top: -2px; right: 0; width: 38px; height: 38px; font-size: 20px; }
+.my-hero.ready { cursor: pointer; }
+.my-hero.ready .hero-portrait { box-shadow: 0 0 0 5px var(--slate), 0 0 0 8px #7ee2b8, 0 0 30px rgba(126, 226, 184, 0.65); animation: ready-glow 1.8s ease-in-out infinite; }
+@keyframes ready-glow { 50% { box-shadow: 0 0 0 5px var(--slate), 0 0 0 8px #7ee2b8, 0 0 44px rgba(126, 226, 184, 0.9); } }
+.my-hero.ready:hover .hero-portrait { filter: brightness(1.12); }
+.my-hero.spent .tb-cost { filter: grayscale(1); opacity: 0.6; }
+.my-hero:hover .tip { display: block; }
 .hero-power { position: absolute; width: 88px; height: 88px; border-radius: 50%; cursor: pointer; box-shadow: 0 0 0 4px var(--slate), 0 0 0 7px var(--lilac), 0 0 20px rgba(183, 156, 242, 0.4); }
 .hero-power .hp-icon { position: absolute; inset: 0; border-radius: 50%; background-size: cover; }
 .hero-power:not(.passive):not(.off):not(.used):hover { filter: brightness(1.15); }
@@ -420,6 +429,15 @@ b { font-weight: 800; }
 .fx.buff-glow { width: 190px; height: 230px; border-radius: 40%; background: radial-gradient(ellipse, rgba(157, 255, 192, 0.55), rgba(157, 255, 192, 0) 65%); animation-name: glow-out; }
 @keyframes glow-out { 0% { opacity: 0; transform: translate(-50%, -50%) scale(0.7); } 30% { opacity: 1; } 100% { opacity: 0; transform: translate(-50%, -50%) scale(1.15); } }
 .fx.shield-pop { width: 190px; height: 230px; border-radius: 50%; border: 6px solid #ffe9a0; box-shadow: 0 0 30px #ffd36a, inset 0 0 26px rgba(255, 233, 160, 0.8); animation-name: shield-pop; }
+/* Divine Shield shattering: a bright flash, a burst ring, and golden glass shards flying outward */
+.fx.shatter-flash { width: 220px; height: 260px; border-radius: 50%; background: radial-gradient(ellipse, rgba(255, 255, 240, 0.95), rgba(255, 228, 140, 0.55) 40%, rgba(255, 210, 90, 0) 70%); animation-name: flash-out; }
+@keyframes flash-out { 0% { opacity: 1; transform: translate(-50%, -50%) scale(0.85); } 100% { opacity: 0; transform: translate(-50%, -50%) scale(1.35); } }
+.fx.shard { width: 18px; height: 30px; clip-path: polygon(50% 0, 100% 40%, 70% 100%, 10% 75%, 0 25%);
+  background: linear-gradient(135deg, #fffbe6, #ffd36a 55%, #ffb6dc); filter: drop-shadow(0 0 6px #ffd36a); animation-name: shard-fly; animation-timing-function: cubic-bezier(.2, .7, .4, 1); }
+@keyframes shard-fly {
+  0% { opacity: 1; transform: translate(-50%, -50%) rotate(var(--r0)) scale(1); }
+  100% { opacity: 0; transform: translate(calc(-50% + var(--dx)), calc(-50% + var(--dy))) rotate(var(--r1)) scale(0.5); }
+}
 @keyframes shield-pop { 0% { opacity: 1; transform: translate(-50%, -50%) scale(0.9); } 40% { opacity: 1; border-style: dashed; } 100% { opacity: 0; transform: translate(-50%, -50%) scale(1.5); border-width: 1px; } }
 .fx.shield-gain { width: 190px; height: 230px; border-radius: 50%; border: 6px solid #ffe9a0; box-shadow: 0 0 30px #ffd36a; animation-name: shield-gain; }
 @keyframes shield-gain { 0% { opacity: 0; transform: translate(-50%, -50%) scale(1.6); } 60% { opacity: 1; } 100% { opacity: 0; transform: translate(-50%, -50%) scale(1); } }
@@ -443,6 +461,11 @@ b { font-weight: 800; }
 @media (orientation: portrait) and (max-width: 700px) {
   .rotate-hint { display: block; position: fixed; bottom: 10px; left: 0; right: 0; text-align: center; color: var(--ink); font-weight: 700; font-size: 14px; z-index: 900; }
 }
+#mute-btn { position: fixed; z-index: 2000; top: calc(10px + env(safe-area-inset-top, 0px)); right: calc(10px + env(safe-area-inset-right, 0px));
+  width: 44px; height: 44px; border-radius: 50%; border: 2px solid var(--slate-edge); background: rgba(43, 40, 50, 0.9); color: var(--ink); font-size: 20px; cursor: pointer; padding: 0;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4); }
+#mute-btn:hover { filter: brightness(1.2); }
+#mute-btn.muted { color: var(--ink-soft); border-color: var(--pink); }
 @media (prefers-reduced-motion: reduce) {
   .fx, .projectile { display: none; }
   .card.reborn-in, .card.summon-in, .card.activate, .card.buff-flash { animation-duration: 1ms !important; }

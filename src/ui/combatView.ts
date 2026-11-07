@@ -1,6 +1,7 @@
 import { heroDef } from '../engine/heroes';
 import type { CombatFrame, CombatFrameUnit, CombatFx, CombatResult, GameState } from '../engine/types';
 import { cardHtml, esc, frameUnitView, heroArt } from './view';
+import { sfx } from './sfx';
 
 const ENEMY_Y = 168;
 const MY_Y = 452;
@@ -99,6 +100,29 @@ export class CombatPlayer {
     setTimeout(() => d.remove(), life + 50);
   }
 
+  /** Divine Shield breaking: flash, ring and golden shards flying outward. */
+  private shatter(x: number, y: number) {
+    sfx.shieldBreak();
+    const life = this.t(750);
+    this.spot('shatter-flash', x, y, this.t(420));
+    this.spot('shield-pop', x, y, life);
+    for (let i = 0; i < 14; i++) {
+      const a = (i / 14) * Math.PI * 2 + Math.random() * 0.4;
+      const dist = 110 + Math.random() * 80;
+      const d = document.createElement('div');
+      d.className = 'fx shard';
+      d.style.left = `${x + Math.cos(a) * 60}px`;
+      d.style.top = `${y + Math.sin(a) * 75}px`;
+      d.style.setProperty('--life', `${life}ms`);
+      d.style.setProperty('--dx', `${Math.cos(a) * dist}px`);
+      d.style.setProperty('--dy', `${Math.sin(a) * dist + 40}px`);
+      d.style.setProperty('--r0', `${Math.random() * 360}deg`);
+      d.style.setProperty('--r1', `${Math.random() * 720 - 360}deg`);
+      this.fxLayer.appendChild(d);
+      setTimeout(() => d.remove(), life + 50);
+    }
+  }
+
   private float(x: number, y: number, text: string, cls: string) {
     const d = document.createElement('div');
     d.className = `float-num ${cls}`;
@@ -114,6 +138,7 @@ export class CombatPlayer {
   private async projectiles(fx: CombatFx[]) {
     const shots = fx.filter((e) => (e.k === 'hit' || e.k === 'kill') && (e.from !== undefined || e.fromSide !== undefined));
     if (!shots.length) return;
+    sfx.zap();
     const flight = this.t(380);
     const anims: Promise<unknown>[] = [];
     shots.slice(0, 12).forEach((e, i) => {
@@ -138,6 +163,7 @@ export class CombatPlayer {
       );
       anims.push(a.finished.then(() => {
         p.remove();
+        sfx.hit();
         this.spot('impact', to.x, to.y, this.t(420));
       }).catch(() => p.remove()));
     });
@@ -174,6 +200,7 @@ export class CombatPlayer {
       if (pos.has(id)) continue;
       this.els.delete(id);
       if (instant) { el.remove(); continue; }
+      sfx.destroy();
       el.style.transition = `opacity ${this.t(DEATH_FADE)}ms ease-out, transform ${this.t(DEATH_FADE)}ms ease-out, filter ${this.t(DEATH_FADE)}ms`;
       el.classList.add('dying');
       setTimeout(() => el.remove(), this.t(DEATH_FADE) + 30);
@@ -192,10 +219,12 @@ export class CombatPlayer {
         el.style.pointerEvents = 'none';
         if (!instant) {
           if (fxFor(id, 'reborn')) {
+            sfx.reborn();
             el.classList.add('reborn-in');
             el.style.setProperty('--life', `${this.t(REBORN_FADE)}ms`);
             this.spot('reborn-burst', x + 70, y + 95, this.t(REBORN_FADE));
           } else if (fxFor(id, 'summon') || prev) {
+            sfx.deploy();
             el.classList.add('summon-in');
             el.style.setProperty('--life', `${this.t(650)}ms`);
             this.spot('summon-burst', x + 70, y + 95, this.t(650));
@@ -219,7 +248,7 @@ export class CombatPlayer {
           this.float(x, y, `+${Math.max(0, u.atk - before.atk)}/+${Math.max(0, u.hp - before.hp)}`, 'buff');
           this.spot('buff-glow', x + 70, y + 95, this.t(700));
         } else if (u.atk < before.atk) this.float(x, y, `${u.atk - before.atk} atk`, 'dmg');
-        if (before.kw.includes('divineShield') && !u.kw.includes('divineShield')) this.spot('shield-pop', x + 70, y + 95, this.t(650));
+        if (before.kw.includes('divineShield') && !u.kw.includes('divineShield')) this.shatter(x + 70, y + 95);
         if (!before.kw.includes('divineShield') && u.kw.includes('divineShield')) this.spot('shield-gain', x + 70, y + 95, this.t(650));
         if (!before.kw.includes('taunt') && u.kw.includes('taunt')) this.spot('kw-gain', x + 70, y + 30, this.t(800), '🛡');
         if (!before.kw.includes('reborn') && u.kw.includes('reborn')) this.spot('kw-gain', x + 70, y + 30, this.t(800), '☥');
@@ -242,7 +271,7 @@ export class CombatPlayer {
           [{ transform: 'none' }, { transform: `translate(${dx * 0.12}px, ${dy * 0.12 - (dy > 0 ? 14 : -14)}px) scale(1.1)`, offset: 0.4 },
             { transform: `translate(${dx * 0.82}px, ${dy * 0.82}px) scale(1.06)`, offset: 0.7 }, { transform: 'none' }],
           { duration: this.t(DUR.attack + 140), easing: 'ease-in-out' });
-        setTimeout(() => this.spot('impact big', parseFloat(t.style.left) + 70, parseFloat(t.style.top) + 95, this.t(380)), this.t((DUR.attack + 140) * 0.7));
+        setTimeout(() => { sfx.hit(); this.spot('impact big', parseFloat(t.style.left) + 70, parseFloat(t.style.top) + 95, this.t(380)); }, this.t((DUR.attack + 140) * 0.7));
         await anim.finished.catch(() => undefined);
         a.style.zIndex = '';
         return;
@@ -272,6 +301,7 @@ export class CombatPlayer {
     const myWin = r.winner === this.me;
     const tie = r.winner === -1;
     const me = this.g.players[0];
+    if (myWin) sfx.win(); else if (!tie) sfx.lose();
     const b = document.createElement('div');
     b.className = `result-banner ${!tie && !myWin ? 'lose' : ''}`;
     b.innerHTML = `<h2>${tie ? 'Draw' : myWin ? 'Victory' : 'Defeat'}</h2>

@@ -8,6 +8,7 @@ import { CombatPlayer } from './combatView';
 import { art, bigCardHtml, cardHtml, esc, heroArt, unitView, KEYWORD_HELP } from './view';
 import { clearSave, loadSave, save } from './save';
 import { APP_VERSION, checkForUpdates } from './update';
+import { sfx } from './sfx';
 
 declare const __ARTIFACT__: boolean;
 
@@ -262,10 +263,11 @@ export class App {
     return `
       <div class="tavern-btn upgrade ${upCost === null || p.gold < upCost ? 'off' : ''}" data-act="upgrade" style="left:${800 - 175}px;top:28px" title="Upgrade the Tavern">
         <div class="tb-icon">⬆</div>${upCost === null ? '' : `<div class="tb-cost">${upCost}</div>`}
-        <div class="tb-label">${upCost === null ? 'Max Tier' : `Tier ${p.tier + 1}`}</div>
+        <div class="tb-label">${upCost === null ? 'Max Tier' : 'Upgrade'}</div>
       </div>
       <div class="tavern-keeper" style="left:${800 - 66}px;top:14px">
         <div class="tk-portrait" style="background-image:url('${heroArt('tavern')}')"></div>
+        <div class="tk-num">${p.tier}</div>
         <div class="tk-tier">${'★'.repeat(p.tier)}</div>
         <div class="tk-label">Tavern · Tier ${p.tier}</div>
       </div>
@@ -281,20 +283,16 @@ export class App {
   heroAreaHtml() {
     const p = this.me;
     const hd = heroDef(p.hero);
-    const canPower = hd && canUseHeroPower(this.g!, p);
-    let h = `<div class="my-hero" style="left:${800 - 62}px;top:${HERO_Y - 62}px">
+    const canPower = !!hd && canUseHeroPower(this.g!, p);
+    const state = !hd ? '' : hd.passive ? 'passive' : canPower ? 'ready' : 'spent';
+    let h = `<div class="my-hero ${state}" ${hd && !hd.passive ? 'data-act="hero-power"' : ''} style="left:${800 - 70}px;top:${HERO_Y - 70}px">
       <div class="hero-portrait" style="background-image:url('${heroArt(p.hero)}')"><div class="hp">${p.health}</div></div>
+      ${hd && !hd.passive ? `<div class="tb-cost">${hd.cost}</div>` : ''}
+      ${hd ? `<div class="tip"><b>${esc(hd.power)}</b>${hd.passive ? ' (Passive)' : ` (${hd.cost} gold)`}<br>${esc(hd.text)}${hd.passive ? '' : `<br><i>${p.heroUsed ? 'Used this turn.' : 'Click your hero to use it.'}</i>`}</div>` : ''}
     </div>`;
-    if (hd) {
-      h += `<div class="hero-power ${hd.passive ? 'passive' : ''} ${p.heroUsed ? 'used' : ''} ${!hd.passive && !canPower ? 'off' : ''}" data-act="hero-power" style="left:${800 + 82}px;top:${HERO_Y - 44}px">
-        <div class="hp-icon" style="background-image:url('${heroArt('power_' + p.hero)}')"></div>
-        ${hd.passive ? '' : `<div class="tb-cost">${hd.cost}</div>`}
-        <div class="tip"><b>${esc(hd.power)}</b>${hd.passive ? ' (Passive)' : ` (${hd.cost} gold)`}<br>${esc(hd.text)}</div>
-      </div>`;
-    }
     p.trinkets.forEach((t, i) => {
       const td = trinketDef(t);
-      h += `<div class="trinket-orb ${td.greater ? 'greater' : ''}" style="left:${800 - 140 - i * 70}px;top:${HERO_Y - 30}px">
+      h += `<div class="trinket-orb ${td.greater ? 'greater' : ''}" style="left:${800 - 150 - i * 70}px;top:${HERO_Y - 30}px">
         <div class="tip"><b>${esc(td.name)}</b><br>${esc(td.text)}</div></div>`;
     });
     const quests = p.quests.filter((q) => q.have < q.need);
@@ -428,7 +426,8 @@ export class App {
     this.render();
   }
 
-  result(r: { ok: boolean; reason?: string }) {
+  result(r: { ok: boolean; reason?: string }, sound?: () => void) {
+    if (r.ok) sound?.();
     if (!r.ok && r.reason) this.toast(r.reason);
   }
 
@@ -468,7 +467,7 @@ export class App {
       this.render();
       return;
     }
-    this.result(play(this.g!, p, handIdx, pos));
+    this.result(play(this.g!, p, handIdx, pos), sfx.deploy);
     this.sel = null;
     this.commit();
   }
@@ -516,13 +515,13 @@ export class App {
       case 'menu': this.screen = 'title'; this.render(); break;
       case 'check-update': e.preventDefault(); checkForUpdates(true); break;
       case 'hero-pick': selectHero(g!, el.dataset.id!); this.screen = 'shop'; this.commit(); break;
-      case 'upgrade': this.result(upgrade(g!, p!)); this.commit(); break;
-      case 'reroll': this.result(reroll(g!, p!)); this.sel = null; this.commit(); break;
-      case 'freeze': toggleFreeze(p!); this.commit(); break;
-      case 'end-turn': this.endTurn(); break;
-      case 'buy': if (this.sel) { this.result(buy(g!, p!, this.sel.idx)); this.sel = null; this.commit(); } break;
+      case 'upgrade': this.result(upgrade(g!, p!), sfx.upgrade); this.commit(); break;
+      case 'reroll': this.result(reroll(g!, p!), sfx.refresh); this.sel = null; this.commit(); break;
+      case 'freeze': toggleFreeze(p!); sfx.click(); this.commit(); break;
+      case 'end-turn': sfx.click(); this.endTurn(); break;
+      case 'buy': if (this.sel) { this.result(buy(g!, p!, this.sel.idx), sfx.buy); this.sel = null; this.commit(); } break;
       case 'play': if (this.sel) this.doPlay(this.sel.idx, p!.board.length); break;
-      case 'sell': if (this.sel) { this.result(sell(g!, p!, this.sel.idx)); this.sel = null; this.commit(); } break;
+      case 'sell': if (this.sel) { this.result(sell(g!, p!, this.sel.idx), sfx.sell); this.sel = null; this.commit(); } break;
       case 'left': case 'right': if (this.sel) {
         const to = this.sel.idx + (act === 'left' ? -1 : 1);
         const r = move(p!, this.sel.idx, to);
@@ -530,8 +529,8 @@ export class App {
         this.result(r);
         this.commit();
       } break;
-      case 'discover': chooseDiscover(g!, p!, Number(el.dataset.idx)); this.commit(); break;
-      case 'trinket': if (!pickTrinket(g!, p!, el.dataset.id!)) this.toast('Not enough gold'); this.commit(); break;
+      case 'discover': chooseDiscover(g!, p!, Number(el.dataset.idx)); sfx.buy(); this.commit(); break;
+      case 'trinket': if (!pickTrinket(g!, p!, el.dataset.id!)) this.toast('Not enough gold'); else sfx.upgrade(); this.commit(); break;
       case 'trinket-skip': pickTrinket(g!, p!, null); this.commit(); break;
       case 'hero-power': {
         const h = heroDef(p!.hero);
@@ -541,13 +540,13 @@ export class App {
           if (!p!.board.length) { this.toast('You need a unit in your army'); break; }
           this.targeting = { kind: 'hero' };
           this.render();
-        } else { useHeroPower(g!, p!); this.commit(); }
+        } else { if (useHeroPower(g!, p!)) sfx.power(); this.commit(); }
         break;
       }
       case 'no-target': if (this.targeting?.kind === 'play') {
         const t = this.targeting;
         this.targeting = null;
-        this.result(play(g!, p!, t.handIdx, t.pos));
+        this.result(play(g!, p!, t.handIdx, t.pos), sfx.deploy);
         this.commit();
       } break;
       case 'cancel-target': this.targeting = null; this.render(); break;
@@ -654,10 +653,10 @@ export class App {
         if (t.kind === 'play') {
           if (!validTargets(p, p.hand[t.handIdx].cardId).includes(u)) return;
           this.targeting = null;
-          this.result(play(g, p, t.handIdx, t.pos, u.uid));
+          this.result(play(g, p, t.handIdx, t.pos, u.uid), sfx.deploy);
         } else {
           this.targeting = null;
-          useHeroPower(g, p, u);
+          if (useHeroPower(g, p, u)) sfx.power();
         }
         this.commit();
         return;
@@ -670,15 +669,15 @@ export class App {
     }
     // a drag
     if (press.zone === 'shop') {
-      if (pt.y > SHOP_DROP_LINE) this.result(buy(g, p, press.idx));
+      if (pt.y > SHOP_DROP_LINE) this.result(buy(g, p, press.idx), sfx.buy);
     } else if (press.zone === 'hand') {
       if (pt.y > BOARD_TOP && pt.y < BOARD_BOTTOM) {
         this.doPlay(press.idx, this.boardIndexAt(pt.x));
         return;
       }
     } else if (press.zone === 'board') {
-      if (pt.y < SHOP_DROP_LINE) this.result(sell(g, p, press.idx));
-      else if (pt.y < BOARD_BOTTOM) this.result(move(p, press.idx, this.boardIndexAt(pt.x, press.idx)));
+      if (pt.y < SHOP_DROP_LINE) this.result(sell(g, p, press.idx), sfx.sell);
+      else if (pt.y < BOARD_BOTTOM) this.result(move(p, press.idx, this.boardIndexAt(pt.x, press.idx)), sfx.click);
     }
     this.sel = null;
     this.commit();
