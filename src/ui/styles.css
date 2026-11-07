@@ -1099,7 +1099,7 @@ svg.aim-arrow.locked .aim-head path { fill: #ffe38a; }
 svg.aim-arrow.locked .aim-ring { opacity: 0.9; animation: aim-ring 0.9s ease-in-out infinite; }
 @keyframes aim-flow { to { stroke-dashoffset: -32; } }
 @keyframes aim-ring { 50% { stroke-width: 9; opacity: 0.5; } }
-.card.aiming { transform: translateY(-40px) scale(1.06); filter: drop-shadow(0 0 18px #ff8fc8); z-index: 30; transition: transform 0.2s ease-out; }
+.card.placing { filter: drop-shadow(0 0 18px #ff8fc8); z-index: 30; pointer-events: none; }
 .card.targetable.aimed { transform: scale(1.08); filter: drop-shadow(0 0 22px #ffe38a); z-index: 25; }
 @media (prefers-reduced-motion: reduce) { svg.aim-arrow .aim-line { animation: none; } }
 #stage.portrait svg.aim-arrow .aim-under { stroke-width: 30; }

@@ -152,15 +152,14 @@ export class App {
   /** last pointer position in stage pixels, so the arrow survives a re-render */
   private aimPt: { x: number; y: number } | null = null;
 
-  /** where the arrow starts: the card being played (lifted out of your hand) or your hero */
+  /** where the arrow starts: the card being played (sitting in the slot it was dropped on) or your hero */
   private arrowSource(): { x: number; y: number } | null {
     const t = this.targeting;
     if (!t) return null;
     const el = (t.kind === 'play'
-      ? this.stage.querySelector(`.card[data-zone="hand"][data-idx="${t.handIdx}"]`)
+      ? this.stage.querySelector('.card.placing')
       : this.stage.querySelector('.my-hero')) as HTMLElement | null;
     if (!el) return null;
-    if (t.kind === 'play') el.classList.add('aiming');
     const c = this.centre(el);
     return { x: c.x, y: c.y - (t.kind === 'play' ? c.h * 0.25 : 0) };
   }
@@ -426,14 +425,22 @@ export class App {
       const buffed = s.atk || s.hp || s.kw.length;
       h += `<div class="slot-plate ${buffed ? 'buffed' : ''}" data-slot="${i}" style="left:${L.slotX(i)}px;top:${L.slotTop}px;width:${L.slotW}px;height:${L.slotH}px"><div class="bonus ${s.atk < 0 || s.hp < 0 ? 'neg' : ''}">${bonus || `Slot ${i + 1}`}</div></div>`;
     }
+    // a unit being played with a targeted Battlecry stays in the slot it was dropped on while you aim
+    const placing = tgt?.kind === 'play' && p.hand[tgt.handIdx] ? tgt : null;
     p.board.forEach((u, i) => {
       const sel = this.sel?.zone === 'board' && this.sel.idx === i ? 'selected' : '';
       const tg = targetUids?.has(u.uid) ? 'targetable' : '';
-      h += cardHtml(unitView(p, u, 'board', i), { zone: 'board', idx: i, x: boardCardX(i), y: L.boardY, small: L.small, extraClass: `${sel} ${tg}`, id: u.uid });
+      const at = placing && i >= placing.pos ? i + 1 : i;
+      h += cardHtml(unitView(p, u, 'board', i), { zone: 'board', idx: i, x: boardCardX(at), y: L.boardY, small: L.small, extraClass: `${sel} ${tg}`, id: u.uid });
     });
+    if (placing) {
+      const u = p.hand[placing.handIdx];
+      h += cardHtml(unitView(p, u, 'hand', placing.handIdx), { zone: 'placing', idx: placing.handIdx, x: boardCardX(Math.min(placing.pos, p.board.length)), y: L.boardY, small: L.small, extraClass: 'placing' });
+    }
     h += this.heroAreaHtml();
     // hand: along the bottom edge, cards rise when hovered
     p.hand.forEach((u, i) => {
+      if (placing && i === placing.handIdx) return;
       const sel = this.sel?.zone === 'hand' && this.sel.idx === i ? 'selected' : '';
       h += cardHtml(unitView(p, u, 'hand', i), { zone: 'hand', idx: i, x: handX(i, p.hand.length), y: L.handY, small: !L.shopBig, large: L.shopBig, extraClass: `in-hand ${sel}`, id: u.uid });
     });

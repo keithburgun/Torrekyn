@@ -98,7 +98,9 @@ export interface Player {
   slots: Slot[];
   frozen: boolean;
   tribeAtk: Partial<Record<Tribe, number>>;
+  /** Scientist: extra Attack for Alcove units, for the rest of the game (name kept so saved games still load) */
   alcoveAtkThisTier: number;
+  /** Tinker: extra stats for Alcove units in the shop, for the rest of the game (name kept so saved games still load) */
   tinkerThisTier: number;
   bannerBonus: number;
   redGemBonus: number;

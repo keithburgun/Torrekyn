@@ -889,8 +889,8 @@
    "tier": 1,
    "atk": 2,
    "hp": 2,
-   "text": "Alcove units in the shop have +1/+1 for the rest of this tower level.",
-   "goldenText": "Alcove units in the shop have +2/+2 for the rest of this tower level.",
+   "text": "Alcove units in the shop have +1/+1 for the rest of this game.",
+   "goldenText": "Alcove units in the shop have +2/+2 for the rest of this game.",
    "keywords": []
   },
   {
@@ -979,8 +979,8 @@
    "tier": 4,
    "atk": 1,
    "hp": 1,
-   "text": "Battlecry: For the rest of this tower level, Alcove units have +3 Attack.",
-   "goldenText": "Battlecry: For the rest of this tower level, Alcove units have +6 Attack.",
+   "text": "Battlecry: For the rest of this game, Alcove units have +3 Attack.",
+   "goldenText": "Battlecry: For the rest of this game, Alcove units have +6 Attack.",
    "keywords": []
   },
   {

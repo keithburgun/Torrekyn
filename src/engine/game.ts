@@ -466,8 +466,7 @@ export function techUp(p: Player) {
   if (p.tier >= CONFIG.maxTier) return;
   p.tier++;
   p.upgradeCost = CONFIG.upgradeCost[p.tier + 1] ?? 0;
-  p.alcoveAtkThisTier = 0;
-  p.tinkerThisTier = 0;
+  // Tinker's and Scientist's bonuses last for the rest of the game (they used to reset here, per "tower level")
 }
 
 export function endTurnEffects(g: GameState, p: Player) {
