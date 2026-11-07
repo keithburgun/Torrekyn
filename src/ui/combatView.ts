@@ -4,6 +4,7 @@ import { cardHtml, esc, frameUnitView, heroArt } from './view';
 import { sfx } from './sfx';
 import { currentLayout, type Layout } from './layout';
 import { placeBoardBg, placeHud } from './hud';
+import { puff } from './fx';
 
 
 /** base time each frame stays on screen (ms at speed ×1) */
@@ -235,10 +236,10 @@ export class CombatPlayer {
             el.style.setProperty('--life', `${this.t(REBORN_FADE)}ms`);
             this.spot('reborn-burst', x + this.L.cardW / 2, y + this.L.cardH / 2, this.t(REBORN_FADE));
           } else if (fxFor(id, 'summon') || prev) {
-            sfx.deploy();
+            sfx.puff();
             el.classList.add('summon-in');
-            el.style.setProperty('--life', `${this.t(650)}ms`);
-            this.spot('summon-burst', x + this.L.cardW / 2, y + this.L.cardH / 2, this.t(650));
+            el.style.setProperty('--life', `${this.t(750)}ms`);
+            puff(this.fxLayer, x + this.L.cardW / 2, y + this.L.cardH / 2, this.t(750), this.L.large ? 1.3 : 1);
           }
         }
         this.layer.appendChild(el);
@@ -303,7 +304,7 @@ export class CombatPlayer {
     }
     let wait = DUR[f.kind];
     if (fx.some((e) => e.k === 'reborn')) wait = Math.max(wait, REBORN_FADE * 0.8);
-    if (fx.some((e) => e.k === 'summon')) wait = Math.max(wait, 600);
+    if (fx.some((e) => e.k === 'summon')) wait = Math.max(wait, 650);
     await sleep(this.t(wait));
   }
 

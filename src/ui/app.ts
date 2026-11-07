@@ -12,6 +12,8 @@ import { isMuted, setMuted, sfx } from './sfx';
 import { achievementsHtml, cardGridHtml, cardViewerHtml, filteredCards, tribesAnnounceHtml, type ViewerState } from './screens';
 import { playTriple } from './ceremony';
 import { placeBoardBg, placeHud } from './hud';
+import { puff } from './fx';
+import { battleIntro, recruitWipe } from './transitions';
 import { bump, evaluate, newGameStarted, noteGame, onUnlock, recordCombat, recordGameEnd, type AchievementDef } from './achievements';
 import { currentLayout, getMode, LANDSCAPE, setMode, type Layout, type LayoutMode } from './layout';
 import { ALL_TRIBES } from '../engine/core';
@@ -49,7 +51,6 @@ export class App {
   press: Press | null = null;
   dragging = false;
   ghost: HTMLElement | null = null;
-  marker: HTMLElement | null = null;
   targeting: Targeting | HeroTargeting | null = null;
   inspect: number | null = null; // player id shown in rival modal
   options = false; // options window open
@@ -132,7 +133,8 @@ export class App {
       const before = prev.units.get(uid);
       if (!before || (before.zone !== now.zone && now.zone === 'board')) {
         el.classList.add('summon-in');
-        el.style.setProperty('--life', '550ms');
+        el.style.setProperty('--life', '650ms');
+        if (now.zone === 'board') puff(this.stage, parseFloat(el.style.left) + el.offsetWidth / 2, parseFloat(el.style.top) + el.offsetHeight / 2, 650);
         continue;
       }
       const da = now.atk - before.atk;
@@ -739,20 +741,40 @@ export class App {
     const meSide = mine.a === 0 ? 0 : 1;
     const oppId = meSide === 0 ? (mine.b === -1 ? mine.ghostOf! : mine.b) : mine.a;
     if (mine.frames[0]) this.seenBoards.set(oppId, mine.frames[0].sides[1 - meSide]);
-    this.screen = 'combat';
+    const opp = g.players[oppId];
+    // health shown on the intro is from before this battle's damage
+    const before = (pl: Player) => pl.health + (mine.winner !== -1 && (mine.winner === 0 ? mine.b : mine.a) === pl.id ? mine.damage : 0);
+    this.busy = true;
+    void battleIntro(this.stage, { hero: p.hero, name: p.name, health: before(p) }, { hero: opp.hero, name: opp.name, health: before(opp) }, round, mine.b === -1, () => {
+      this.screen = 'combat';
+      this.startCombat(mine, meSide, round);
+    }).then(() => {
+      this.busy = false;
+      this.combat?.play();
+    });
+  }
+
+  private startCombat(mine: CombatResult, meSide: 0 | 1, round: number) {
+    const g = this.g!;
     this.combat = new CombatPlayer(this.stage, g, mine, meSide, round, () => {
       this.combat = null;
-      this.screen = g.phase === 'over' ? 'over' : 'shop';
-      const last = mine.frames[mine.frames.length - 1];
-      recordCombat(g, {
-        won: mine.winner === meSide, lost: mine.winner === 1 - meSide, tie: mine.winner === -1, damage: mine.damage,
-        myUnits: mine.frames[0]?.sides[meSide].length ?? 0, oppUnits: mine.frames[0]?.sides[1 - meSide].length ?? 0,
-        survivors: last?.sides[meSide].length ?? 0, ghost: mine.b === -1,
-      });
-      if (g.phase === 'over') recordGameEnd(g);
-      this.commit();
+      const toShop = () => {
+        this.screen = g.phase === 'over' ? 'over' : 'shop';
+        const last = mine.frames[mine.frames.length - 1];
+        recordCombat(g, {
+          won: mine.winner === meSide, lost: mine.winner === 1 - meSide, tie: mine.winner === -1, damage: mine.damage,
+          myUnits: mine.frames[0]?.sides[meSide].length ?? 0, oppUnits: mine.frames[0]?.sides[1 - meSide].length ?? 0,
+          survivors: last?.sides[meSide].length ?? 0, ghost: mine.b === -1,
+        });
+        if (g.phase === 'over') recordGameEnd(g);
+        this.commit();
+      };
+      if (g.phase === 'over') toShop();
+      else {
+        this.busy = true;
+        void recruitWipe(this.stage, g.round, toShop).then(() => { this.busy = false; });
+      }
     });
-    this.combat.play();
   }
 
   // ---------------- input ----------------
@@ -871,6 +893,9 @@ export class App {
       if (this.targeting || this.me.discovers.length || this.me.trinketOffer) return;
       if (this.press.zone === 'board' && this.me.board[this.press.idx]?.mem.locked) return;
       this.dragging = true;
+      // the enlarged card would cover the army while you drag
+      this.hover = null;
+      this.updateDetail();
       this.ghost = this.press.el.cloneNode(true) as HTMLElement;
       this.ghost.classList.add('ghost');
       this.ghost.classList.remove('selected');
@@ -884,39 +909,54 @@ export class App {
     this.updateMarker(pt);
   }
 
-  boardIndexAt(x: number, excludeIdx = -1) {
-    const n = this.me.board.length;
-    let idx = 0;
-    for (let i = 0; i < n; i++) {
-      if (i === excludeIdx) continue;
-      if (x > L.slotX(i) + L.slotW / 2) idx++;
-    }
-    return idx;
+  /** The board slot under x (0-6). */
+  slotAt(x: number) {
+    const step = L.slotX(1) - L.slotX(0);
+    return Math.max(0, Math.min(CONFIG.boardSize - 1, Math.floor((x - L.slotX(0) + (step - L.slotW) / 2) / step)));
   }
 
+  /**
+   * Where a dragged unit would land. Units always fill slots from the left, so dropping on an empty slot
+   * lands in the first empty one; dropping on a unit puts the new one there and slides the rest right.
+   * Returns the index it would take, or -1 if it can't go anywhere.
+   */
+  dropIndex(x: number): number {
+    const p = this.me;
+    const k = this.slotAt(x);
+    if (this.press!.zone === 'board') return Math.min(k, p.board.length - 1);
+    if (p.board.length >= CONFIG.boardSize) return -1;
+    return Math.min(k, p.board.length);
+  }
+
+  /** While dragging over the army: light up the slot it will take and slide the other units to show the result. */
   updateMarker(pt: { x: number; y: number }) {
-    const showBoard = pt.y > L.boardTop && pt.y < L.boardBottom && (this.press!.zone === 'hand' || this.press!.zone === 'board');
-    if (!showBoard) {
-      this.marker?.remove();
-      this.marker = null;
-      return;
+    const zone = this.press!.zone;
+    const over = pt.y > L.boardTop && pt.y < L.boardBottom && (zone === 'hand' || zone === 'board');
+    const target = over ? this.dropIndex(pt.x) : -1;
+    // the units' new order (as board indexes) if dropped here
+    const n = this.me.board.length;
+    const order = Array.from({ length: n }, (_, i) => i);
+    if (target >= 0) {
+      if (zone === 'board') { order.splice(this.press!.idx, 1); order.splice(target, 0, this.press!.idx); }
+      else order.splice(target, 0, -1);
     }
-    if (!this.marker) {
-      this.marker = document.createElement('div');
-      this.marker.className = 'insert-marker';
-      this.stage.appendChild(this.marker);
+    for (const el of this.stage.querySelectorAll<HTMLElement>('.card[data-zone="board"]')) {
+      const i = Number(el.dataset.idx);
+      const to = order.indexOf(i); // (the faded original of a dragged unit shows where it will land)
+      el.classList.toggle('sliding', target >= 0 && to !== i);
+      el.style.transform = target >= 0 && to !== i ? `translateX(${L.slotX(to) - L.slotX(i)}px)` : '';
     }
-    const idx = this.boardIndexAt(pt.x, this.press!.zone === 'board' ? this.press!.idx : -1);
-    this.marker.style.left = `${L.slotX(idx) - 5}px`;
-    this.marker.style.top = `${L.boardY - 3}px`;
-    this.marker.style.height = `${L.cardH + 10}px`;
+    this.stage.querySelectorAll('.slot-plate.drop-target').forEach((e) => e.classList.remove('drop-target'));
+    if (target >= 0) this.stage.querySelector(`.slot-plate[data-slot="${target}"]`)?.classList.add('drop-target');
+    this.stage.classList.toggle('board-full-drag', over && target < 0);
   }
 
   cancelDrag() {
     this.ghost?.remove();
-    this.marker?.remove();
     this.ghost = null;
-    this.marker = null;
+    for (const el of this.stage.querySelectorAll<HTMLElement>('.card[data-zone="board"]')) { el.style.transform = ''; el.classList.remove('sliding'); }
+    this.stage.querySelectorAll('.slot-plate.drop-target').forEach((e) => e.classList.remove('drop-target'));
+    this.stage.classList.remove('board-full-drag');
     this.press?.el.classList.remove('dragging');
     this.press = null;
     this.dragging = false;
@@ -957,12 +997,20 @@ export class App {
       if (pt.y > L.shopDrop) { this.lastShopPos = { x: shopX(press.idx, p.shop.length), y: L.shopY }; this.result(buy(g, p, press.idx), sfx.buy, 'bought'); }
     } else if (press.zone === 'hand') {
       if (pt.y > L.boardTop && pt.y < L.boardBottom) {
-        this.doPlay(press.idx, this.boardIndexAt(pt.x));
+        this.press = press; // dropIndex reads the zone being dragged
+        const to = this.dropIndex(pt.x);
+        this.press = null;
+        this.doPlay(press.idx, to < 0 ? p.board.length : to);
         return;
       }
     } else if (press.zone === 'board') {
       if (pt.y < L.shopDrop) this.result(sell(g, p, press.idx), sfx.sell, 'sold');
-      else if (pt.y < L.boardBottom) this.result(move(p, press.idx, this.boardIndexAt(pt.x, press.idx)), sfx.click);
+      else if (pt.y < L.boardBottom) {
+        this.press = press;
+        const to = this.dropIndex(pt.x);
+        this.press = null;
+        this.result(move(p, press.idx, to), sfx.click);
+      }
     }
     this.sel = null;
     this.commit();

@@ -96,6 +96,27 @@ export const sfx = {
     tone({ f: 1568, t: 0.12, d: 0.22, type: 'sine', v: 0.18 });
     noise({ d: 0.08, v: 0.12, lp: 3000, hp: 800 });
   },
+  /** a unit appears in a puff of smoke */
+  puff() {
+    if (!throttle('puff', 70)) return;
+    noise({ d: 0.22, v: 0.22, lp: 2600, hp: 300 });
+    tone({ f: 300, f2: 900, d: 0.16, type: 'sine', v: 0.18 });
+    tone({ f: 1320, t: 0.08, d: 0.18, type: 'triangle', v: 0.12 });
+  },
+  /** shop -> battle: whoosh, then a big hit */
+  battle() {
+    noise({ d: 0.42, v: 0.22, lp: 7000, hp: 600 });
+    tone({ f: 180, f2: 720, d: 0.4, type: 'sawtooth', v: 0.05 });
+    noise({ t: 0.42, d: 0.5, v: 0.45, lp: 1400 });
+    tone({ t: 0.42, f: 120, f2: 38, d: 0.7, type: 'sine', v: 0.9 });
+    [262, 330, 392, 523].forEach((f) => tone({ t: 0.44, f, d: 0.9, type: 'sawtooth', v: 0.05, a: 0.01 }));
+    [523, 659, 784].forEach((f, i) => tone({ t: 0.5 + i * 0.07, f, d: 0.5, type: 'triangle', v: 0.16 }));
+  },
+  /** battle -> shop */
+  whoosh() {
+    noise({ d: 0.38, v: 0.2, lp: 5000, hp: 400 });
+    tone({ f: 660, f2: 990, d: 0.3, type: 'sine', v: 0.1 });
+  },
   buy() {
     tone({ f: 988, d: 0.08, type: 'square', v: 0.16 });
     tone({ f: 1319, t: 0.06, d: 0.2, type: 'square', v: 0.14 });

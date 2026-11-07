@@ -227,7 +227,13 @@ b { font-weight: 800; }
 .slot-plate .bonus.neg { color: var(--danger); }
 .slot-plate.buffed { border-style: solid; border-color: var(--pink); background: linear-gradient(rgba(255, 127, 191, 0.16), rgba(183, 156, 242, 0.14)); box-shadow: 0 0 22px rgba(255, 127, 191, 0.35); }
 .slot-plate.buffed .bonus { color: var(--pink); }
-.insert-marker { position: absolute; top: 395px; width: 8px; height: 200px; border-radius: 4px; background: var(--pink); box-shadow: 0 0 0 3px #fff, 0 0 16px var(--pink); pointer-events: none; }
+/* dragging into the army: the slot the unit will take lights up, and units that would move slide over */
+.slot-plate.drop-target { border-style: solid; border-color: #fff; background: linear-gradient(rgba(255, 127, 191, 0.32), rgba(183, 156, 242, 0.28));
+  box-shadow: 0 0 0 4px var(--pink), 0 0 34px rgba(255, 127, 191, 0.75); animation: drop-pulse 0.9s ease-in-out infinite; }
+.slot-plate.drop-target .bonus { color: #fff; }
+@keyframes drop-pulse { 50% { box-shadow: 0 0 0 6px var(--pink), 0 0 50px rgba(255, 127, 191, 0.95); } }
+.card.sliding { transition: transform 0.22s cubic-bezier(.3, 1.2, .5, 1); z-index: 3; }
+#stage.board-full-drag .slot-plate { border-color: rgba(232, 69, 122, 0.6); }
 
 .zone-label { position: absolute; font-family: var(--display); font-weight: 600; font-size: 16px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--lilac); }
 
@@ -423,8 +429,23 @@ b { font-weight: 800; }
   55% { opacity: 0.85; filter: brightness(1.6) saturate(0.4) blur(1px) drop-shadow(0 0 26px #b8f1ff); }
   100% { opacity: 1; transform: none; filter: none; }
 }
-.card.summon-in { animation: summon-in var(--life, 650ms) cubic-bezier(.3, 1.5, .5, 1) both; }
-@keyframes summon-in { 0% { opacity: 0; transform: scale(0.35); } 60% { opacity: 1; transform: scale(1.08); } 100% { transform: none; } }
+.card.summon-in { animation: summon-in var(--life, 750ms) ease-out both; }
+/* summoned units grow out of their puff of smoke */
+@keyframes summon-in {
+  0% { opacity: 0; transform: scale(0.08); filter: brightness(2.2); }
+  15% { opacity: 1; }
+  55% { transform: scale(1.14); filter: brightness(1.25); }
+  75% { transform: scale(0.95); }
+  100% { transform: none; filter: none; }
+}
+.fx.puff { border-radius: 50%; animation-name: puff-out; animation-timing-function: cubic-bezier(.15, .7, .35, 1); z-index: 2;
+  background: radial-gradient(circle at 38% 34%, #ffffff 0 22%, #f4ecff 45%, rgba(230, 214, 255, 0.85) 60%, rgba(214, 196, 250, 0) 72%); }
+@keyframes puff-out {
+  0% { opacity: 0.95; transform: translate(-50%, -50%) scale(0.25); }
+  35% { opacity: 0.95; }
+  100% { opacity: 0; transform: translate(calc(-50% + var(--dx)), calc(-50% + var(--dy))) scale(1.25); }
+}
+.fx.puff-ring { width: 150px; height: 150px; border-radius: 50%; border: 6px solid rgba(255, 255, 255, 0.85); animation-name: ring-out; }
 .card.activate { animation: activate var(--life, 650ms) ease-out; z-index: 15; }
 @keyframes activate {
   0% { transform: none; filter: none; }
@@ -870,3 +891,80 @@ button.trinket-orb { appearance: none; border: 0; padding: 0; cursor: pointer; }
 #rotate-prompt .rp-text { font-size: 17px; color: var(--ink-soft); max-width: 420px; }
 #rotate-prompt button { font-size: 16px; padding: 10px 18px; min-height: 44px; }
 @keyframes rp-turn { 0%, 30% { transform: rotate(-90deg); } 60%, 100% { transform: rotate(0deg); } }
+
+/* ======================================================================================
+   SCENE TRANSITIONS (src/ui/transitions.ts). The layer sits over the stage at stage size.
+   ====================================================================================== */
+.scene-tx { position: fixed; z-index: 4000; transform-origin: 0 0; overflow: hidden; pointer-events: auto; cursor: pointer; font-family: var(--text); color: var(--ink); }
+.scene-tx * { pointer-events: none; }
+
+/* shop -> battle: the opponent's panel drops from the top, yours rises from the bottom, they meet on a slanted seam */
+.scene-tx.battle .tx-panel { position: absolute; inset: 0; animation: 0.44s cubic-bezier(.2, 1.25, .45, 1) both; }
+.scene-tx.battle .tx-panel.enemy { background: linear-gradient(160deg, #24121e, #6e2450 55%, #c2457f);
+  clip-path: polygon(0 0, 100% 0, 100% 46%, 0 54%); animation-name: tx-drop; }
+.scene-tx.battle .tx-panel.mine { background: linear-gradient(340deg, #141026, #3c2a74 55%, #8a6ad8);
+  clip-path: polygon(0 54%, 100% 46%, 100% 100%, 0 100%); animation-name: tx-rise; }
+@keyframes tx-drop { from { transform: translateY(-100%); } }
+@keyframes tx-rise { from { transform: translateY(100%); } }
+.scene-tx.battle .tx-hero { position: absolute; left: 50%; display: flex; align-items: center; gap: 30px; transform: translateX(-50%); white-space: nowrap; }
+.scene-tx.battle .enemy .tx-hero { top: 5%; flex-direction: row-reverse; }
+.scene-tx.battle .mine .tx-hero { bottom: 5%; }
+.scene-tx.battle .tx-portrait { position: relative; width: 210px; height: 210px; border-radius: 50%; background-size: cover; flex: none;
+  box-shadow: 0 0 0 7px #1e1c23, 0 0 0 12px #fff, 0 0 60px rgba(255, 255, 255, 0.45); }
+.scene-tx.battle .tx-hp { position: absolute; right: -16px; bottom: -8px; width: 74px; height: 70px; display: flex; align-items: center; justify-content: center; padding-bottom: 7px;
+  font-family: var(--display); font-weight: 700; font-size: 31px; color: #fff; background: radial-gradient(circle at 35% 30%, #ffc4da, var(--hp) 60%, #e23a76);
+  -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Cpath d='M20 37C6 27 1 20 1 12.5 1 6.5 5.5 2 11 2c4 0 7 2 9 5.5C22 4 25 2 29 2c5.5 0 10 4.5 10 10.5C39 20 34 27 20 37z'/%3E%3C/svg%3E") center/contain no-repeat;
+  mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Cpath d='M20 37C6 27 1 20 1 12.5 1 6.5 5.5 2 11 2c4 0 7 2 9 5.5C22 4 25 2 29 2c5.5 0 10 4.5 10 10.5C39 20 34 27 20 37z'/%3E%3C/svg%3E") center/contain no-repeat; }
+.scene-tx.battle .tx-name { font-family: var(--display); font-weight: 700; font-size: 52px; color: #fff; text-shadow: 0 4px 14px rgba(0, 0, 0, 0.5); display: flex; flex-direction: column; line-height: 1.05; }
+.scene-tx.battle .enemy .tx-name { text-align: right; }
+.scene-tx.battle .tx-name small { font-family: var(--text); font-size: 20px; font-weight: 800; letter-spacing: 0.22em; text-transform: uppercase; opacity: 0.75; }
+.scene-tx.battle .tx-seam { position: absolute; left: -5%; right: -5%; top: 50%; height: 10px; transform: translateY(-50%) rotate(-2.9deg); background: #fff;
+  box-shadow: 0 0 20px #fff, 0 0 60px var(--pink); animation: tx-seam 0.3s 0.4s ease-out both; }
+@keyframes tx-seam { from { transform: translateY(-50%) rotate(-2.9deg) scaleX(0); } }
+.scene-tx.battle .tx-flash { position: absolute; inset: 0; background: radial-gradient(circle at 50% 50%, #fff 0 10%, rgba(255, 220, 240, 0.7) 30%, rgba(255, 220, 240, 0) 60%);
+  opacity: 0; animation: tx-flash 0.55s 0.42s ease-out both; }
+@keyframes tx-flash { 0% { opacity: 0; } 15% { opacity: 1; } 100% { opacity: 0; } }
+.scene-tx.battle .tx-vs { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%) rotate(-6deg); font-family: var(--display); font-weight: 700; font-size: 190px; line-height: 1; color: #fff;
+  -webkit-text-stroke: 9px #2a1630; paint-order: stroke fill; text-shadow: 0 10px 0 var(--pink-deep), 0 0 50px rgba(255, 127, 191, 0.9); animation: tx-slam 0.38s 0.42s cubic-bezier(.3, 1.6, .5, 1) both; }
+@keyframes tx-slam { from { opacity: 0; transform: translate(-50%, -50%) rotate(-6deg) scale(3.2); } }
+.scene-tx.battle .tx-round, .scene-tx.battle .tx-go { position: absolute; left: 50%; transform: translateX(-50%); font-family: var(--display); font-weight: 700; color: #fff; white-space: nowrap;
+  text-shadow: 0 3px 12px rgba(0, 0, 0, 0.6); animation: tx-pop 0.4s cubic-bezier(.3, 1.6, .5, 1) both; }
+.scene-tx.battle .tx-round { top: calc(50% - 140px); font-size: 30px; letter-spacing: 0.3em; text-transform: uppercase; animation-delay: 0.6s; }
+.scene-tx.battle .tx-go { top: calc(50% + 100px); font-size: 46px; letter-spacing: 0.12em; text-transform: uppercase; color: #ffe38a; animation-delay: 0.7s; }
+@keyframes tx-pop { from { opacity: 0; transform: translateX(-50%) scale(0.5); } }
+/* leaving: the panels split apart and reveal the battle */
+.scene-tx.battle.out .tx-panel.enemy { animation: tx-leave-up 0.48s cubic-bezier(.6, 0, .8, .4) both; }
+.scene-tx.battle.out .tx-panel.mine { animation: tx-leave-down 0.48s cubic-bezier(.6, 0, .8, .4) both; }
+@keyframes tx-leave-up { to { transform: translateY(-105%); } }
+@keyframes tx-leave-down { to { transform: translateY(105%); } }
+.scene-tx.battle.out .tx-vs, .scene-tx.battle.out .tx-round, .scene-tx.battle.out .tx-go, .scene-tx.battle.out .tx-seam { transition: opacity 0.25s; opacity: 0; }
+/* phones: bigger heroes, stacked name */
+.scene-tx.battle.portrait .tx-hero { flex-direction: column !important; gap: 22px; }
+.scene-tx.battle.portrait .enemy .tx-hero { top: 8%; }
+.scene-tx.battle.portrait .mine .tx-hero { bottom: 8%; flex-direction: column-reverse !important; }
+.scene-tx.battle.portrait .tx-portrait { width: 250px; height: 250px; }
+.scene-tx.battle.portrait .tx-name { text-align: center !important; font-size: 60px; }
+.scene-tx.battle.portrait .tx-name small { font-size: 28px; }
+.scene-tx.battle.portrait .tx-vs { font-size: 230px; }
+.scene-tx.battle.portrait .tx-round { font-size: 38px; top: calc(50% - 200px); }
+.scene-tx.battle.portrait .tx-go { font-size: 60px; top: calc(50% + 130px); }
+/* the stage shakes when the panels meet */
+#stage.tx-shake { animation: tx-shake 0.42s ease-out; }
+@keyframes tx-shake { 15% { translate: -14px 8px; } 30% { translate: 12px -8px; } 45% { translate: -8px 5px; } 60% { translate: 5px -3px; } 80% { translate: -2px 1px; } }
+
+/* battle -> shop: a diagonal band sweeps across with the next round */
+.scene-tx.recruit .tx-band { position: absolute; inset: -10% -20%; background: linear-gradient(100deg, #2b1c3a, #6a4fb4 40%, #ff7fbf 75%, #ffd0e6);
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; transform: skewX(-12deg) translateX(-110%);
+  animation: tx-band-in 0.36s cubic-bezier(.25, .8, .35, 1) both; }
+@keyframes tx-band-in { to { transform: skewX(-12deg) translateX(0); } }
+.scene-tx.recruit.out .tx-band { animation: tx-band-out 0.38s cubic-bezier(.6, 0, .8, .4) both; }
+@keyframes tx-band-out { from { transform: skewX(-12deg) translateX(0); } to { transform: skewX(-12deg) translateX(110%); } }
+.scene-tx.recruit .tx-round, .scene-tx.recruit .tx-go { transform: skewX(12deg); font-family: var(--display); font-weight: 700; color: #fff; text-shadow: 0 4px 14px rgba(40, 10, 40, 0.5); }
+.scene-tx.recruit .tx-round { font-size: 34px; letter-spacing: 0.3em; text-transform: uppercase; opacity: 0.85; }
+.scene-tx.recruit .tx-go { font-size: 110px; line-height: 1; }
+.scene-tx.recruit.portrait .tx-round { font-size: 44px; }
+.scene-tx.recruit.portrait .tx-go { font-size: 140px; }
+
+.scene-tx.hurry * { animation-duration: 0.15s !important; animation-delay: 0s !important; }
+.scene-tx.instant * { animation: none !important; }
+@media (prefers-reduced-motion: reduce) { #stage.tx-shake { animation: none; } }
