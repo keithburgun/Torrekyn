@@ -98,6 +98,7 @@ export interface Player {
 
 export interface CombatFrameUnit {
   id: number;
+  dead?: boolean; // dealt lethal damage, about to be removed
   cardId: string;
   golden: boolean;
   atk: number;
@@ -105,9 +106,18 @@ export interface CombatFrameUnit {
   kw: Keyword[];
 }
 
+/** Visual effects attached to a combat frame (for animation only). */
+export interface CombatFx {
+  k: 'hit' | 'kill' | 'shield' | 'venom' | 'reborn' | 'summon';
+  to: number;
+  from?: number; // source unit id
+  fromSide?: 0 | 1; // a hero/trinket on this side caused it
+}
+
 export interface CombatFrame {
-  kind: 'start' | 'trigger' | 'attack' | 'resolve' | 'end';
+  kind: 'start' | 'trigger' | 'attack' | 'hit' | 'death' | 'resolve' | 'end';
   sides: [CombatFrameUnit[], CombatFrameUnit[]];
+  fx?: CombatFx[];
   attacker?: number;
   target?: number;
   source?: number;

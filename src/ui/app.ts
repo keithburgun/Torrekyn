@@ -81,6 +81,46 @@ export class App {
     else if (this.screen === 'shop') html = this.shopHtml();
     else if (this.screen === 'over') html = this.shopHtml() + this.overHtml();
     this.stage.innerHTML = html;
+    if (this.screen === 'shop') this.shopFeedback();
+  }
+
+  /** Last seen stats of your units, so changes can be animated after each action. */
+  private seen: { units: Map<number, { atk: number; hp: number; zone: string }>; slots: string[] } | null = null;
+
+  private shopFeedback() {
+    const p = this.me;
+    const units = new Map<number, { atk: number; hp: number; zone: string }>();
+    p.board.forEach((u, i) => { const v = unitView(p, u, 'board', i); units.set(u.uid, { atk: v.atk, hp: v.hp, zone: 'board' }); });
+    p.hand.forEach((u, i) => { const v = unitView(p, u, 'hand', i); units.set(u.uid, { atk: v.atk, hp: v.hp, zone: 'hand' }); });
+    const slots = p.slots.map((s) => `${s.atk}/${s.hp}/${s.kw.join(',')}`);
+    const prev = this.seen;
+    this.seen = { units, slots };
+    if (!prev) return;
+    for (const [uid, now] of units) {
+      const el = this.stage.querySelector(`.card[data-id="${uid}"]`) as HTMLElement | null;
+      if (!el) continue;
+      const before = prev.units.get(uid);
+      if (!before || (before.zone !== now.zone && now.zone === 'board')) {
+        el.classList.add('summon-in');
+        el.style.setProperty('--life', '550ms');
+        continue;
+      }
+      const da = now.atk - before.atk;
+      const dh = now.hp - before.hp;
+      if (da > 0 || dh > 0) {
+        el.classList.add('buff-flash');
+        const f = document.createElement('div');
+        f.className = 'float-num buff';
+        f.textContent = `+${Math.max(0, da)}/+${Math.max(0, dh)}`;
+        f.style.left = `${parseFloat(el.style.left) + el.offsetWidth / 2}px`;
+        f.style.top = `${parseFloat(el.style.top) + 40}px`;
+        this.stage.appendChild(f);
+        setTimeout(() => f.remove(), 1000);
+      }
+    }
+    slots.forEach((sl, i) => {
+      if (sl !== prev.slots[i]) this.stage.querySelector(`.slot-plate[data-slot="${i}"]`)?.classList.add('flash');
+    });
   }
 
   titleHtml() {
@@ -193,18 +233,18 @@ export class App {
       const s = p.slots[i];
       const bonus = [s.atk || s.hp ? `${s.atk >= 0 ? '+' : ''}${s.atk}/${s.hp >= 0 ? '+' : ''}${s.hp}` : '', ...s.kw.map((k) => ({ taunt: 'Taunt', divineShield: 'Shield', reborn: 'Reborn', venomous: 'Venom', stealth: 'Stealth', windfury: 'Windfury' })[k])].filter(Boolean).join(' · ');
       const buffed = s.atk || s.hp || s.kw.length;
-      h += `<div class="slot-plate ${buffed ? 'buffed' : ''}" style="left:${SLOT_X(i)}px"><div class="bonus ${s.atk < 0 || s.hp < 0 ? 'neg' : ''}">${bonus || `Slot ${i + 1}`}</div></div>`;
+      h += `<div class="slot-plate ${buffed ? 'buffed' : ''}" data-slot="${i}" style="left:${SLOT_X(i)}px"><div class="bonus ${s.atk < 0 || s.hp < 0 ? 'neg' : ''}">${bonus || `Slot ${i + 1}`}</div></div>`;
     }
     p.board.forEach((u, i) => {
       const sel = this.sel?.zone === 'board' && this.sel.idx === i ? 'selected' : '';
       const tg = targetUids?.has(u.uid) ? 'targetable' : '';
-      h += cardHtml(unitView(p, u, 'board', i), { zone: 'board', idx: i, x: SLOT_X(i) + 5, y: BOARD_Y, extraClass: `${sel} ${tg}` });
+      h += cardHtml(unitView(p, u, 'board', i), { zone: 'board', idx: i, x: SLOT_X(i) + 5, y: BOARD_Y, extraClass: `${sel} ${tg}`, id: u.uid });
     });
     // hand
     h += `<div class="zone-label" style="left:282px;top:${HAND_Y - 40}px">Hand ${p.hand.length}/${CONFIG.handSize}</div>`;
     p.hand.forEach((u, i) => {
       const sel = this.sel?.zone === 'hand' && this.sel.idx === i ? 'selected' : '';
-      h += cardHtml(unitView(p, u, 'hand', i), { zone: 'hand', idx: i, x: handX(i, p.hand.length), y: HAND_Y, small: true, extraClass: sel });
+      h += cardHtml(unitView(p, u, 'hand', i), { zone: 'hand', idx: i, x: handX(i, p.hand.length), y: HAND_Y, small: true, extraClass: sel, id: u.uid });
     });
     // right panel
     h += this.rightPanelHtml();
@@ -344,6 +384,7 @@ export class App {
   }
 
   newGame() {
+    this.seen = null;
     this.g = newGame((Math.random() * 2 ** 31) | 0);
     this.sel = null;
     this.targeting = null;

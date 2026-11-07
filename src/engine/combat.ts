@@ -9,7 +9,7 @@ import { addKw, cloneUnit, def, effStats, has, mult, pick, rand, removeKw, sampl
 import { EFFECTS, hasBattlecry, battlecryTimes, type CCtx } from './effects';
 import { gainNew, combatDamage, onBattlecryTriggered } from './game';
 import { heroSoc } from './heroes';
-import type { Body, CombatFrame, CombatFrameUnit, CombatResult, GameState, Keyword, Player, Slot, Unit } from './types';
+import type { Body, CombatFrame, CombatFrameUnit, CombatFx, CombatResult, GameState, Keyword, Player, Slot, Unit } from './types';
 
 export interface CUnit extends Body {
   id: number;
@@ -85,10 +85,28 @@ export class Combat {
   }
 
   // ---------- frames ----------
+  /** Effects waiting to be attached to the next frame. */
+  fx: CombatFx[] = [];
+  /** true while an attacker and defender trade blows (that damage is shown by the lunge, not projectiles) */
+  inExchange = false;
+  /** a hero power / trinket of this side is acting */
+  heroSide: 0 | 1 | undefined;
+
   snap(kind: CombatFrame['kind'], extra: Partial<CombatFrame> = {}) {
     const f = (s: Side): CombatFrameUnit[] =>
-      s.units.filter((u) => u.hp > 0).map((u) => ({ id: u.id, cardId: u.cardId, golden: u.golden, atk: u.atk, hp: u.hp, kw: [...u.kw] }));
-    this.frames.push({ kind, sides: [f(this.sides[0]), f(this.sides[1])], ...extra });
+      s.units.filter((u) => !u.processed).map((u) => ({
+        id: u.id, cardId: u.cardId, golden: u.golden, atk: u.atk, hp: Math.max(0, u.hp), kw: [...u.kw], ...(u.hp <= 0 ? { dead: true } : {}),
+      }));
+    const frame: CombatFrame = { kind, sides: [f(this.sides[0]), f(this.sides[1])], ...extra };
+    if (this.fx.length) {
+      frame.fx = this.fx;
+      this.fx = [];
+    }
+    this.frames.push(frame);
+  }
+
+  private addFx(fx: CombatFx) {
+    this.fx.push(fx);
   }
 
   // ---------- helpers used by effects ----------
@@ -123,6 +141,7 @@ export class Combat {
     const cu = this.makeCU(s.idx, cardId, golden, d.atk * m, d.hp * m, d.keywords, null, -1);
     cu.atk += s.owner.tribeAtk[d.tribe] ?? 0;
     s.units.splice(Math.max(0, Math.min(pos, s.units.length)), 0, cu);
+    this.addFx({ k: 'summon', to: cu.id });
     return cu;
   }
 
@@ -135,6 +154,7 @@ export class Combat {
     if (s.units.filter((u) => u.hp > 0).length >= CONFIG.boardSize) return null;
     const cu = this.makeCU(s.idx, d.cardId, d.golden, d.startAtk, d.startHp, d.startKw, null, -1, { ...d.mem });
     s.units.splice(Math.max(0, Math.min(pos, s.units.length)), 0, cu);
+    this.addFx({ k: 'summon', to: cu.id });
     this.snap('trigger', { note: `Summon ${def(d.cardId).name}` });
     return cu;
   }
@@ -145,6 +165,7 @@ export class Combat {
     const st = effStats(s.owner, u, 'hand');
     const cu = this.makeCU(s.idx, u.cardId, u.golden, st.atk, st.hp, st.kw, null, -1, { ...u.mem });
     s.units.splice(Math.max(0, Math.min(pos, s.units.length)), 0, cu);
+    this.addFx({ k: 'summon', to: cu.id });
     this.snap('trigger', { note: `Summon ${def(u.cardId).name}` });
     return cu;
   }
@@ -153,12 +174,15 @@ export class Combat {
     if (t.hp <= 0) return;
     t.hp = 0;
     if (source && !t.killedBy) t.killedBy = source;
+    this.addFx({ k: 'kill', to: t.id, from: source?.id });
   }
 
   damage(t: CUnit | undefined, amount: number, source?: CUnit) {
     if (!t || t.hp <= 0 || amount <= 0) return;
+    if (!this.inExchange) this.addFx({ k: 'hit', to: t.id, from: source?.id, fromSide: source ? undefined : this.heroSide });
     if (has(t, 'divineShield')) {
       removeKw(t, 'divineShield');
+      this.addFx({ k: 'shield', to: t.id });
       for (const s of this.sides) for (const w of [...s.units]) {
         if (w.hp > 0) EFFECTS[w.cardId]?.onShieldLost?.(this.ctx(w), t);
       }
@@ -169,6 +193,7 @@ export class Combat {
     if (source && has(source, 'venomous') && t.hp > 0) {
       t.hp = 0;
       removeKw(source, 'venomous');
+      this.addFx({ k: 'venom', to: t.id });
     }
     if (t.hp <= 0 && source && !t.killedBy) t.killedBy = source;
     if (t.hp > 0) EFFECTS[t.cardId]?.onDamaged?.(this.ctx(t));
@@ -208,6 +233,7 @@ export class Combat {
         }
       }
       if (!batch.length) return;
+      this.snap('death');
       for (const { u, s, pos } of batch) {
         s.died.push(u);
         // Avenge counters on friendly units
@@ -243,6 +269,7 @@ export class Combat {
             const r = this.makeCU(s.idx, u.cardId, u.golden, d.atk * m + (s.owner.tribeAtk[d.tribe] ?? 0), 1,
               d.keywords.filter((k) => k !== 'reborn'), u.src, u.slot, { ...u.mem });
             s.units.splice(Math.min(pos, s.units.length), 0, r);
+            this.addFx({ k: 'reborn', to: r.id });
             for (const side of this.sides) for (const w of [...side.units]) {
               if (w.hp > 0) EFFECTS[w.cardId]?.onRebornAny?.(this.ctx(w), r);
             }
@@ -307,8 +334,11 @@ export class Combat {
     for (const u of side.units) if (u.cardId === 'vulnerability' && u.hp > 0) invuln = Math.max(invuln, u.golden ? 2 : 1);
     const atkA = a.atk;
     const atkT = t.atk;
+    this.inExchange = true;
     this.damage(t, atkA, a);
     if (idx >= invuln) this.damage(a, atkT, t);
+    this.inExchange = false;
+    this.snap('hit', { attacker: a.id, target: t.id });
     this.resolveDeaths();
   }
 
@@ -321,7 +351,9 @@ export class Combat {
     this.attacking = aCount > bCount ? 0 : bCount > aCount ? 1 : rand(this.g) < 0.5 ? 0 : 1;
     // Start of Combat: hero powers and trinkets first, then units
     for (const s of [this.sides[this.attacking], this.sides[1 - this.attacking]]) {
+      this.heroSide = s.idx;
       heroSoc(this, s);
+      this.heroSide = undefined;
     }
     this.snap('trigger', { note: 'Start of Combat' });
     this.resolveDeaths();

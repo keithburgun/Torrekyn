@@ -312,9 +312,8 @@ b { font-weight: 800; }
 @keyframes floatup { from { opacity: 1; transform: translate(-50%, 0) scale(1.25); } to { opacity: 0; transform: translate(-50%, -54px) scale(1); } }
 .trigger-note { position: absolute; z-index: 31; padding: 4px 14px; border-radius: 999px; background: var(--slate); border: 2px solid var(--lilac);
   font-size: 15px; font-weight: 700; color: var(--lilac); pointer-events: none; transform: translateX(-50%); animation: toast 1.1s forwards; white-space: nowrap; box-shadow: var(--shadow); }
-.card.dying { opacity: 0 !important; transform: scale(0.5) rotate(12deg) !important; transition: opacity 0.35s, transform 0.35s; }
-.card.spawn { animation: spawn 0.4s cubic-bezier(.3, 1.6, .5, 1); }
-@keyframes spawn { from { opacity: 0; transform: scale(0.3); } }
+
+
 .result-banner { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); padding: 28px 54px; border-radius: 36px; text-align: center; z-index: 60;
   background: var(--slate); color: var(--ink); border: 4px solid var(--charcoal); box-shadow: 0 0 0 4px var(--pink), 0 20px 50px rgba(0, 0, 0, 0.6); animation: pop 0.35s cubic-bezier(.3, 1.6, .5, 1); }
 .result-banner h2 { margin: 0 0 6px; font-family: var(--display); font-weight: 700; font-size: 50px; color: var(--pink); }
@@ -322,6 +321,54 @@ b { font-weight: 800; }
 .result-banner.lose h2 { color: var(--lilac); }
 .result-banner p { margin: 0 0 16px; font-size: 20px; }
 @keyframes pop { from { transform: translate(-50%, -50%) scale(0.6); opacity: 0; } }
+
+/* ---------------- combat & ability effects ---------------- */
+.card.dying { opacity: 0 !important; transform: translateY(18px) scale(0.86) !important; filter: grayscale(1) blur(2px) brightness(0.8); }
+.card.doomed { filter: saturate(0.35) brightness(0.8); }
+.card.doomed .face { box-shadow: 0 0 0 3px #fff, 0 0 20px rgba(232, 69, 122, 0.8); }
+.card.reborn-in { animation: reborn-in var(--life, 1100ms) ease-out both; }
+@keyframes reborn-in {
+  0% { opacity: 0; transform: translateY(-22px) scale(0.92); filter: brightness(2.6) saturate(0) blur(5px) drop-shadow(0 0 30px #b8f1ff); }
+  55% { opacity: 0.85; filter: brightness(1.6) saturate(0.4) blur(1px) drop-shadow(0 0 26px #b8f1ff); }
+  100% { opacity: 1; transform: none; filter: none; }
+}
+.card.summon-in { animation: summon-in var(--life, 650ms) cubic-bezier(.3, 1.5, .5, 1) both; }
+@keyframes summon-in { 0% { opacity: 0; transform: scale(0.35); } 60% { opacity: 1; transform: scale(1.08); } 100% { transform: none; } }
+.card.activate { animation: activate var(--life, 650ms) ease-out; z-index: 15; }
+@keyframes activate {
+  0% { transform: none; filter: none; }
+  35% { transform: scale(1.13) translateY(-6px); filter: brightness(1.15) drop-shadow(0 0 16px #ff8fc8) drop-shadow(0 0 30px #b79cf2); }
+  100% { transform: none; filter: none; }
+}
+.card.buff-flash { animation: buff-flash 0.8s ease-out; }
+@keyframes buff-flash { 30% { transform: scale(1.08); filter: brightness(1.2) drop-shadow(0 0 14px #9dffc0); } }
+
+.fx { position: absolute; transform: translate(-50%, -50%); pointer-events: none; animation-duration: var(--life, 500ms); animation-fill-mode: forwards; }
+.projectile {
+  position: absolute; width: 26px; height: 26px; border-radius: 50%; pointer-events: none;
+  background: radial-gradient(circle, #fff 0 30%, #ffb6dc 55%, rgba(255, 127, 191, 0) 72%);
+  box-shadow: 0 0 18px 6px rgba(255, 127, 191, 0.75), 0 0 40px 14px rgba(183, 156, 242, 0.45);
+}
+.projectile.hero { background: radial-gradient(circle, #fff 0 30%, #ffe08a 55%, rgba(255, 201, 61, 0) 72%); box-shadow: 0 0 18px 6px rgba(255, 201, 61, 0.8), 0 0 40px 14px rgba(255, 150, 80, 0.4); }
+.projectile.kill { background: radial-gradient(circle, #fff 0 25%, #a77bff 55%, rgba(80, 40, 160, 0) 72%); box-shadow: 0 0 18px 6px rgba(140, 90, 255, 0.8), 0 0 40px 14px rgba(40, 0, 80, 0.5); }
+.fx.impact { width: 70px; height: 70px; border-radius: 50%; border: 5px solid #fff; box-shadow: 0 0 22px #ff8fc8, inset 0 0 18px #ff8fc8; animation-name: ring-out; }
+.fx.impact.big { width: 120px; height: 120px; border-width: 7px; }
+@keyframes ring-out { from { transform: translate(-50%, -50%) scale(0.2); opacity: 1; } to { transform: translate(-50%, -50%) scale(1.25); opacity: 0; } }
+.fx.buff-glow { width: 190px; height: 230px; border-radius: 40%; background: radial-gradient(ellipse, rgba(157, 255, 192, 0.55), rgba(157, 255, 192, 0) 65%); animation-name: glow-out; }
+@keyframes glow-out { 0% { opacity: 0; transform: translate(-50%, -50%) scale(0.7); } 30% { opacity: 1; } 100% { opacity: 0; transform: translate(-50%, -50%) scale(1.15); } }
+.fx.shield-pop { width: 190px; height: 230px; border-radius: 50%; border: 6px solid #ffe9a0; box-shadow: 0 0 30px #ffd36a, inset 0 0 26px rgba(255, 233, 160, 0.8); animation-name: shield-pop; }
+@keyframes shield-pop { 0% { opacity: 1; transform: translate(-50%, -50%) scale(0.9); } 40% { opacity: 1; border-style: dashed; } 100% { opacity: 0; transform: translate(-50%, -50%) scale(1.5); border-width: 1px; } }
+.fx.shield-gain { width: 190px; height: 230px; border-radius: 50%; border: 6px solid #ffe9a0; box-shadow: 0 0 30px #ffd36a; animation-name: shield-gain; }
+@keyframes shield-gain { 0% { opacity: 0; transform: translate(-50%, -50%) scale(1.6); } 60% { opacity: 1; } 100% { opacity: 0; transform: translate(-50%, -50%) scale(1); } }
+.fx.venom-pop { width: 170px; height: 170px; border-radius: 50%; background: radial-gradient(circle, rgba(140, 255, 120, 0.85), rgba(60, 200, 90, 0.3) 50%, rgba(60, 200, 90, 0) 70%); animation-name: glow-out; }
+.fx.kill-pop { font-family: var(--display); font-size: 90px; font-weight: 700; color: #c9a8ff; text-shadow: 0 0 20px #7d5bd0; animation-name: pop-fade; }
+.fx.kw-gain { font-size: 54px; filter: drop-shadow(0 0 10px #fff); animation-name: pop-fade; }
+@keyframes pop-fade { 0% { opacity: 0; transform: translate(-50%, -50%) scale(0.3); } 30% { opacity: 1; transform: translate(-50%, -50%) scale(1.15); } 100% { opacity: 0; transform: translate(-50%, -80%) scale(1); } }
+.fx.reborn-burst { width: 170px; height: 420px; border-radius: 50%; background: radial-gradient(ellipse, rgba(220, 250, 255, 0.9), rgba(150, 230, 255, 0.35) 45%, rgba(150, 230, 255, 0) 70%); animation-name: pillar; }
+@keyframes pillar { 0% { opacity: 0; transform: translate(-50%, -50%) scaleY(0.2); } 35% { opacity: 1; transform: translate(-50%, -50%) scaleY(1); } 100% { opacity: 0; transform: translate(-50%, -50%) scaleY(1.1); } }
+.fx.summon-burst { width: 200px; height: 200px; border-radius: 50%; background: radial-gradient(circle, rgba(255, 182, 220, 0.75), rgba(183, 156, 242, 0.3) 50%, rgba(183, 156, 242, 0) 70%); animation-name: glow-out; }
+.slot-plate.flash { animation: plate-flash 1s ease-out; }
+@keyframes plate-flash { 30% { box-shadow: 0 0 40px rgba(255, 127, 191, 0.9); border-color: #fff; } }
 
 /* ---------------- update banner ---------------- */
 #update-banner { position: fixed; left: 50%; top: 10px; transform: translateX(-50%); z-index: 1000; display: none; gap: 12px; align-items: center;
@@ -334,5 +381,7 @@ b { font-weight: 800; }
   .rotate-hint { display: block; position: fixed; bottom: 10px; left: 0; right: 0; text-align: center; color: var(--ink); font-weight: 700; font-size: 14px; z-index: 900; }
 }
 @media (prefers-reduced-motion: reduce) {
+  .fx, .projectile { display: none; }
+  .card.reborn-in, .card.summon-in, .card.activate, .card.buff-flash { animation-duration: 1ms !important; }
   .card, .card.golden::after, .card.kw-divineShield::after, .card.targetable .face { animation: none !important; transition: none !important; }
 }
