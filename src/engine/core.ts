@@ -24,7 +24,15 @@ export const CONFIG = {
 export const TRIBE_NAMES: Record<Tribe, string> = cardData.tribes as Record<Tribe, string>;
 export const ALL_TRIBES: Tribe[] = ['neverending', 'azure', 'kindred', 'brambor', 'cloister', 'alcove', 'demons'];
 
-export const CARDS: CardDef[] = cardData.cards as CardDef[];
+/** tokens that come from hero powers rather than the card list */
+const HERO_TOKENS: CardDef[] = [
+  { id: 'pumpkin', name: 'Pumpkin', tribe: 'neutral', tier: 1, atk: 1, hp: 1, keywords: [], token: true, allTribes: true,
+    text: 'Has every tribe. Whenever another unit dies in combat, this permanently gains its Deathrattle.',
+    goldenText: 'Has every tribe. Whenever another unit dies in combat, this permanently gains its Deathrattle.' },
+  { id: 'dragon', name: 'Dragon', tribe: 'neutral', tier: 1, atk: 1, hp: 1, keywords: [], token: true, text: '', goldenText: '' },
+];
+
+export const CARDS: CardDef[] = [...(cardData.cards as CardDef[]), ...HERO_TOKENS];
 const BY_ID = new Map(CARDS.map((c) => [c.id, c]));
 
 export function def(id: string): CardDef {
@@ -89,6 +97,19 @@ export function tribeOf(b: Body): Tribe {
   return def(b.cardId).tribe;
 }
 
+/** Is this unit of the tribe? (The Pumpkin counts as every tribe.) */
+export function isTribe(b: Body | string, t: Tribe): boolean {
+  const d = def(typeof b === 'string' ? b : b.cardId);
+  return d.tribe === t || (!!d.allTribes && t !== 'neutral');
+}
+
+/** Permanent "+Attack for this tribe" bonuses that apply to a card (all of them for the Pumpkin). */
+export function tribeAtkFor(p: Player, cardId: string): number {
+  const d = def(cardId);
+  if (!d.allTribes) return p.tribeAtk[d.tribe] ?? 0;
+  return Object.values(p.tribeAtk).reduce((s, v) => s + (v ?? 0), 0);
+}
+
 export function displayName(b: Body): string {
   return (b.golden ? 'Golden ' : '') + def(b.cardId).name;
 }
@@ -98,10 +119,9 @@ export function effStats(p: Player, u: Unit, zone: 'board' | 'hand' | 'shop', in
   let atk = u.atk;
   let hp = u.hp;
   const kw = [...u.kw];
-  const tribe = tribeOf(u);
-  atk += p.tribeAtk[tribe] ?? 0;
-  if (tribe === 'alcove') atk += p.alcoveAtkThisTier;
-  if (zone === 'shop' && tribe === 'alcove') {
+  atk += tribeAtkFor(p, u.cardId);
+  if (isTribe(u, 'alcove')) atk += p.alcoveAtkThisTier;
+  if (zone === 'shop' && isTribe(u, 'alcove')) {
     atk += p.tinkerThisTier;
     hp += p.tinkerThisTier;
   }

@@ -3,10 +3,11 @@
  * Heroes are the Torrekin champions. Trinkets are still PLACEHOLDERS.
  * Each hook is called from game.ts / combat.ts.
  */
-import { addKw, cloneUnit, def, effStats, log, makeUnit, pick, sample, tribeOf, CONFIG } from './core';
-import type { GameState, Player, Unit } from './types';
-import type { Side, Combat } from './combat';
-import { drawFromPool, gainCard, gainNew, randomCardOfTier } from './game';
+import { addKw, def, effStats, isTribe, log, makeUnit, pick, sample, CONFIG } from './core';
+import type { GameState, Player, Tribe, Unit } from './types';
+import type { CUnit, Side, Combat } from './combat';
+import { hasBattlecry } from './effects';
+import { discoverOptions, drawFromPool, gainCard, gainNew, queueDiscover, queuePowerDiscover, randomCardOfTier } from './game';
 
 export interface HeroDef {
   id: string;
@@ -16,97 +17,99 @@ export interface HeroDef {
   text: string;
   avatar: number;
   cost?: number; // active powers only
+  /** cost that changes during the game (Locas Clare); overrides `cost` */
+  costFn?(g: GameState, p: Player): number;
   passive?: boolean;
   target?: boolean; // active power needs a friendly target
+  /** not offered when this tribe is banned (HS convention for tribe heroes) */
+  needsTribe?: Tribe;
   canUse?(g: GameState, p: Player): boolean;
+  /** why an active power can't be used right now, if there is a rule beyond gold (shown to the player) */
+  locked?(g: GameState, p: Player): string | null;
   use?(g: GameState, p: Player, target?: Unit): void;
+  /** the power was gained (hero chosen, or discovered by Abragail) */
+  onGain?(g: GameState, p: Player): void;
   shopBonus?: number;
-  buyCost?(p: Player): number;
-  onBuy?(g: GameState, p: Player): void;
+  /** gold off the price of this card */
+  discount?(p: Player, cardId: string): number;
+  onBuy?(g: GameState, p: Player, u: Unit): void;
+  onPlay?(g: GameState, p: Player, u: Unit): void;
+  onSell?(g: GameState, p: Player, u: Unit): void;
+  /** Battlecries trigger this many times (multiplies with other effects) */
+  battlecryTimes?(p: Player): number;
   startTurn?(g: GameState, p: Player): void;
   endTurn?(g: GameState, p: Player): void;
   soc?(c: Combat, s: Side): void;
+  /** combat: a unit was summoned for this side */
+  onSummon?(c: Combat, s: Side, u: CUnit): void;
+  /** combat: a friendly unit died (Avenge counters) */
+  onFriendlyDeath?(c: Combat, s: Side): void;
+  /** short progress note for the UI, e.g. "3/5" */
+  progress?(g: GameState, p: Player): string | null;
 }
 
-const ELEMENTS: [string, (u: Unit) => void][] = [
-  ['Fire', (u) => { u.atk += 3; }],
-  ['Water', (u) => { u.hp += 4; }],
-  ['Earth', (u) => { u.atk += 1; u.hp += 2; addKw(u, 'taunt'); }],
-  ['Wind', (u) => { u.atk += 2; u.hp += 2; }],
-];
+const BATTLECRIES_FOR_COFFEE = 5;
+const SALES_FOR_LEAVES = 5;
+const ZUZUNI: Tribe = 'cloister'; // Omar Evans' "Zuzuni" units (assumed to be Cloister, the ninja tribe)
 
-function opponentBoard(g: GameState, p: Player): Unit[] {
-  if (p.nextOpponent === null) return [];
-  if (p.nextOpponent === -1) {
-    const ghost = g.players[g.deadOrder[g.deadOrder.length - 1]];
-    return ghost?.ghost?.board ?? [];
-  }
-  return g.players[p.nextOpponent].board;
+/** Avenge (n) for a hero power: count friendly deaths this combat, fire every n. */
+function heroAvenge(s: Side, id: string, n: number): boolean {
+  s.heroAvenge[id] = (s.heroAvenge[id] ?? 0) + 1;
+  if (s.heroAvenge[id] < n) return false;
+  s.heroAvenge[id] = 0;
+  return true;
 }
 
 export const HEROES: HeroDef[] = [
   {
-    id: 'andromeda_robin', name: 'Andromeda Robin', title: 'Potato witch of the forest', power: 'Elemental Weave', avatar: 0, cost: 1, target: true,
-    text: 'Give a friendly unit a random Element: Fire (+3 Attack), Water (+4 Health), Earth (+1/+2 and Taunt) or Wind (+2/+2).',
-    use: (g, p, t) => {
-      if (!t) return;
-      const [name, fn] = pick(g, ELEMENTS)!;
-      fn(t);
-      log(p, `${def(t.cardId).name} was blessed with ${name}.`);
-    },
+    id: 'andromeda_robin', name: 'Andromeda Robin', title: 'Potato witch', power: 'Elemental Weave', avatar: 0, passive: true,
+    text: 'Start the game with a 1/1 Pumpkin. It has every tribe and permanently gains the Deathrattle of any other unit that dies in combat.',
+    onGain: (g, p) => { gainNew(g, p, 'pumpkin'); },
   },
   {
-    id: 'gelf_lanz', name: 'Gelf Lanz', title: 'Leader of the Azure Order', power: 'Lance Charge', avatar: 1, passive: true,
-    text: 'Start of Combat: Your left-most unit charges, dealing half its Attack to the enemy across from it.',
-    soc: (c, s) => {
-      const u = s.units[0];
-      const t = c.enemy(s).units.find((x) => x.hp > 0);
-      if (u && t && u.atk > 1) c.damage(t, Math.floor(u.atk / 2), u);
-    },
+    id: 'gelf_lanz', name: 'Gelf Lanz', title: 'Leader of the Azure Order', power: 'Inspire', avatar: 1, passive: true, needsTribe: 'azure',
+    text: 'After you buy an Azure unit, your next Azure unit costs 1 less.',
+    discount: (p, cardId) => (p.heroMem.inspired && isTribe(cardId, 'azure') ? 1 : 0),
+    onBuy: (g, p, u) => { if (isTribe(u, 'azure')) p.heroMem.inspired = 1; },
+    progress: (g, p) => (p.heroMem.inspired ? 'Next Azure −1' : null),
   },
   {
-    id: 'derby_pocket', name: 'Derby Pocket', title: 'Ex-intern, eternal optimist', power: 'Team Spirit', avatar: 2, passive: true,
-    text: 'At the end of your turn, give a random friendly unit +1/+1 for each different tribe in your army (up to +3/+3).',
-    endTurn: (g, p) => {
-      const n = Math.min(3, new Set(p.board.map(tribeOf).filter((t) => t !== 'neutral')).size);
-      const u = pick(g, p.board);
-      if (u && n) { u.atk += n; u.hp += n; }
-    },
+    id: 'derby_pocket', name: 'Derby Pocket', title: 'Ex-Business Demon intern', power: 'Coffee Run', avatar: 2, passive: true,
+    text: `After you play ${BATTLECRIES_FOR_COFFEE} Battlecry units, your Battlecries trigger an extra time.`,
+    onPlay: (g, p, u) => { if (hasBattlecry(u.cardId)) p.heroMem.coffee = (p.heroMem.coffee ?? 0) + 1; },
+    battlecryTimes: (p) => ((p.heroMem.coffee ?? 0) >= BATTLECRIES_FOR_COFFEE ? 2 : 1),
+    progress: (g, p) => ((p.heroMem.coffee ?? 0) >= BATTLECRIES_FOR_COFFEE ? 'Active' : `${p.heroMem.coffee ?? 0}/${BATTLECRIES_FOR_COFFEE}`),
   },
   {
-    id: 'bunny_wizard', name: 'Bunny Wizard', title: 'A very soft healer', power: 'Cuddle Spell', avatar: 3, cost: 1, target: true,
-    text: 'Give a friendly unit +1/+3. Restore 1 Health to your hero.',
-    use: (g, p, t) => {
-      if (t) { t.atk += 1; t.hp += 3; }
-      p.health = Math.min(CONFIG.startHealth, p.health + 1);
-    },
+    id: 'bunny_wizard', name: 'Bunny Wizard', title: 'A very soft healer', power: 'Cuddle Spell', avatar: 3, cost: 1, needsTribe: 'kindred',
+    text: 'Discover a Kindred unit. (Unlocks at Tavern Tier 4.)',
+    locked: (g, p) => (p.tier < 4 ? 'Unlocks at Tavern Tier 4' : null),
+    use: (g, p) => queueDiscover(g, p, discoverOptions(g, (id) => isTribe(id, 'kindred') && def(id).tier <= p.tier), 'Cuddle Spell: Discover a Kindred unit'),
   },
   {
     id: 'croh_vosh', name: 'Croh Vosh', title: 'The drowned lich', power: 'Abyssal Sweep', avatar: 4, passive: true,
-    text: 'Start of Combat: Swing the sunken greatsword, dealing damage equal to your Tavern Tier to 2 random enemy units.',
-    soc: (c, s) => {
-      for (const u of sample(c.g, c.enemy(s).units.filter((x) => x.hp > 0), 2)) c.damage(u, s.tier);
-    },
+    text: 'Units you summon during combat get +1/+2.',
+    onSummon: (c, s, u) => { u.atk += 1; u.hp += 2; },
   },
   {
     id: 'may_danaris', name: 'May Danaris', title: 'Hacker from the neon district', power: 'Root Access', avatar: 5, cost: 2,
-    text: 'Get a copy of the strongest unit (most Attack + Health) in your next opponent\'s army.',
-    canUse: (g, p) => opponentBoard(g, p).length > 0,
+    text: "Discover a unit from your last opponent's army.",
+    locked: (g, p) => (p.lastOpponentBoard.length ? null : 'No opponent fought yet'),
     use: (g, p) => {
-      const src = [...opponentBoard(g, p)].sort((a, b) => b.atk + b.hp - (a.atk + a.hp))[0];
-      if (!src) return;
-      const copy = cloneUnit(src);
-      copy.uid = g.nextUid++;
-      copy.mem = {};
-      gainCard(g, p, copy);
+      const ids = [...new Set(p.lastOpponentBoard.map((u) => u.cardId))];
+      queueDiscover(g, p, sample(g, ids, 3), "Root Access: Discover a unit from your last opponent's army");
     },
   },
   {
-    id: 'locas_clare', name: 'Locas Clare', title: 'Prankster and lockpick', power: 'Five-Finger Discount', avatar: 6, passive: true,
-    text: 'The first unit you buy each turn costs 1 less.',
-    buyCost: (p) => (p.heroMem.bought ? CONFIG.buyCost : CONFIG.buyCost - 1),
-    onBuy: (g, p) => { p.heroMem.bought = 1; },
-    startTurn: (g, p) => { p.heroMem.bought = 0; },
+    id: 'locas_clare', name: 'Locas Clare', title: 'Prankster and lockpick', power: 'Five-Finger Discount', avatar: 6,
+    text: 'Steal every unit in the Tavern (they go to your hand), then this resets to 10. Costs 1 less each turn.',
+    costFn: (g, p) => Math.max(0, 10 - (g.round - (p.heroMem.locasFrom ?? 1))),
+    locked: (g, p) => (!p.shop.length ? 'The Tavern is empty' : p.hand.length >= CONFIG.handSize ? 'Your hand is full' : null),
+    use: (g, p) => {
+      while (p.shop.length && p.hand.length < CONFIG.handSize) gainCard(g, p, p.shop.shift()!);
+      p.heroMem.locasFrom = g.round + 1; // back to 10 next turn
+      log(p, 'Locas cleaned out the Tavern!');
+    },
   },
   {
     id: 'venice_gorn', name: 'Venice Gorn', title: 'Potato farmer', power: 'Sow Seeds', avatar: 7, cost: 2,
@@ -120,14 +123,20 @@ export const HEROES: HeroDef[] = [
         log(p, 'A seed sprouted!');
       }
     },
+    progress: (g, p) => (p.heroSeeds.length ? `${p.heroSeeds.length} planted` : null),
   },
   {
-    id: 'omar_evans', name: 'Omar Evans', title: 'Bug ninja of the green', power: 'Leaf Cloak', avatar: 8, passive: true,
-    text: 'Start of Combat: Your right-most unit gains Stealth and +1/+1 for each Tier of your Tavern.',
-    soc: (c, s) => {
-      const u = s.units[s.units.length - 1];
-      if (u) { addKw(u, 'stealth'); u.atk += s.tier; u.hp += s.tier; }
+    id: 'omar_evans', name: 'Omar Evans', title: 'Bug ninja of the green', power: 'Leaf Cloak', avatar: 8, passive: true, needsTribe: ZUZUNI,
+    text: `After you sell ${SALES_FOR_LEAVES} Cloister units, get a random Cloister unit. (Repeats.)`,
+    onSell: (g, p, u) => {
+      if (!isTribe(u, ZUZUNI)) return;
+      p.heroMem.leaves = (p.heroMem.leaves ?? 0) + 1;
+      if (p.heroMem.leaves >= SALES_FOR_LEAVES) {
+        p.heroMem.leaves = 0;
+        gainNew(g, p, drawFromPool(g, (id) => isTribe(id, ZUZUNI) && def(id).tier <= p.tier));
+      }
     },
+    progress: (g, p) => `${p.heroMem.leaves ?? 0}/${SALES_FOR_LEAVES}`,
   },
   {
     id: 'eve_williams', name: 'Eve Williams', title: 'The grinning skeleton', power: 'Wild Card', avatar: 9, cost: 1, target: true,
@@ -147,19 +156,46 @@ export const HEROES: HeroDef[] = [
     },
   },
   {
-    id: 'abragail', name: 'Abragail', title: 'Scholar of the Azura Academy', power: 'Tutoring', avatar: 10, cost: 1, target: true,
-    text: 'Give a friendly unit +1/+1, plus +1/+1 for each other unit of its tribe in your army.',
-    use: (g, p, t) => {
-      if (!t) return;
-      const tribe = tribeOf(t);
-      const n = 1 + (tribe === 'neutral' ? 0 : p.board.filter((u) => u !== t && tribeOf(u) === tribe).length);
-      t.atk += n;
-      t.hp += n;
+    id: 'abragail', name: 'Abragail', title: 'Scholar of the Azura Academy', power: 'Well-Studied', avatar: 10, passive: true,
+    text: 'At the start of turn 4, Discover two Hero Powers to replace this one.',
+    startTurn: (g, p) => {
+      if (g.round < 4 || p.heroMem.studied) return;
+      p.heroMem.studied = 1;
+      const pool = HEROES.filter((h) => h.id !== 'abragail' && !p.powers.includes(h.id) && (!h.needsTribe || g.tribes.includes(h.needsTribe)));
+      const six = sample(g, pool, 6).map((h) => h.id);
+      queuePowerDiscover(g, p, six.slice(0, 3), 'Well-Studied: Choose your first new Hero Power');
+      queuePowerDiscover(g, p, six.slice(3, 6), 'Well-Studied: Choose your second new Hero Power');
     },
+    progress: (g, p) => (g.round < 4 ? `Turn ${g.round}/4` : null),
   },
   {
-    id: 'bill_milton', name: 'Bill Milton', title: 'CEO of the Business Demons', power: 'Golden Parachute', avatar: 11, passive: true,
-    text: 'Your units sell for 2 gold. (Obviously.)',
+    id: 'bill_milton', name: 'Bill Milton', title: 'CEO of the Business Demons', power: 'Golden Parachute', avatar: 11, passive: true, needsTribe: 'demons',
+    text: 'Whenever you play a Business Demon, gain 1 gold.',
+    onPlay: (g, p, u) => { if (isTribe(u, 'demons')) p.gold += 1; },
+  },
+  {
+    id: 'clover', name: 'Clover', title: 'Dragon of Dragon Bridge', power: 'Broodmother', avatar: 12, passive: true,
+    text: 'Avenge (4): Summon a 1/1 Dragon, and improve this (+1/+1 to future Dragons).',
+    onFriendlyDeath: (c, s) => {
+      if (!heroAvenge(s, 'clover', 4)) return;
+      const lvl = s.owner.heroMem.brood ?? 0;
+      const d = c.spawn(s, 'dragon', false, s.units.length);
+      if (d) { d.atk += lvl; d.hp += lvl; }
+      if (s.persistent) s.owner.heroMem.brood = lvl + 1;
+      c.snap('trigger', { note: 'Broodmother: Summon a Dragon' });
+    },
+    progress: (g, p) => `Dragons ${1 + (p.heroMem.brood ?? 0)}/${1 + (p.heroMem.brood ?? 0)}`,
+  },
+  {
+    id: 'trevor_l', name: 'Trevor L', title: 'Rock and roll skeleton', power: 'Party All Night', avatar: 13, passive: true,
+    text: 'Avenge (5): Give a random friendly unit Reborn.',
+    onFriendlyDeath: (c, s) => {
+      if (!heroAvenge(s, 'trevor_l', 5)) return;
+      const u = pick(c.g, s.units.filter((x) => x.hp > 0 && !x.kw.includes('reborn')));
+      if (!u) return;
+      addKw(u, 'reborn');
+      c.snap('trigger', { source: u.id, note: 'Party All Night: Reborn' });
+    },
   },
 ];
 
@@ -222,7 +258,7 @@ function makeGolden(g: GameState, p: Player) {
 }
 
 export function shopBonus(p: Player): number {
-  return (heroDef(p.hero)?.shopBonus ?? 0) + p.trinkets.reduce((s, t) => s + (trinketDef(t).shopBonus ?? 0), 0);
+  return powersOf(p).reduce((n, h) => n + (h.shopBonus ?? 0), 0) + p.trinkets.reduce((s, t) => s + (trinketDef(t).shopBonus ?? 0), 0);
 }
 
 export function offerTrinkets(g: GameState, p: Player, greater: boolean) {
@@ -230,21 +266,58 @@ export function offerTrinkets(g: GameState, p: Player, greater: boolean) {
   p.trinketOffer = sample(g, pool, 4).map((t) => t.id);
 }
 
-export function canUseHeroPower(g: GameState, p: Player): boolean {
-  const h = heroDef(p.hero);
-  if (!h || h.passive || p.heroUsed || p.gold < (h.cost ?? 0)) return false;
+/** The hero powers a player has (usually one). */
+export function powersOf(p: Player): HeroDef[] {
+  const ids = p.powers?.length ? p.powers : p.hero ? [p.hero] : [];
+  return ids.map((id) => heroDef(id)).filter((h): h is HeroDef => !!h);
+}
+
+/** The first active power (what clicking your hero uses), if any. */
+export function mainActive(p: Player): HeroDef | undefined {
+  return powersOf(p).find((h) => !h.passive);
+}
+
+export function powerCost(g: GameState, p: Player, h: HeroDef): number {
+  return h.costFn ? h.costFn(g, p) : h.cost ?? 0;
+}
+
+export function canUseHeroPower(g: GameState, p: Player, id?: string): boolean {
+  const h = id ? heroDef(id) : mainActive(p);
+  if (!h || h.passive || !powersOf(p).includes(h) || p.usedPowers.includes(h.id) || p.gold < powerCost(g, p, h)) return false;
+  if (h.locked?.(g, p)) return false;
   return h.canUse ? h.canUse(g, p) : true;
 }
 
-export function useHeroPower(g: GameState, p: Player, target?: Unit): boolean {
-  const h = heroDef(p.hero);
-  if (!h || !canUseHeroPower(g, p) || !h.use) return false;
+export function useHeroPower(g: GameState, p: Player, target?: Unit, id?: string): boolean {
+  const h = id ? heroDef(id) : mainActive(p);
+  if (!h || !canUseHeroPower(g, p, h.id) || !h.use) return false;
   if (h.target && !target) return false;
-  p.gold -= h.cost ?? 0;
-  p.heroUsed = true;
+  p.gold -= powerCost(g, p, h);
+  p.usedPowers.push(h.id);
   h.use(g, p, target);
   return true;
 }
+
+/** Give a player a hero power (start of game, or discovered). */
+export function gainPower(g: GameState, p: Player, id: string, replace?: string) {
+  if (!p.powers.length && p.hero) p.powers = [p.hero];
+  const i = replace ? p.powers.indexOf(replace) : -1;
+  if (i >= 0) p.powers[i] = id;
+  else if (!p.powers.includes(id)) p.powers.push(id);
+  heroDef(id)?.onGain?.(g, p);
+}
+
+/** Hero-power hooks, run for every power the player has. */
+export const heroHooks = {
+  discount: (p: Player, cardId: string) => powersOf(p).reduce((s, h) => s + (h.discount?.(p, cardId) ?? 0), 0),
+  onBuy: (g: GameState, p: Player, u: Unit) => { for (const h of powersOf(p)) h.onBuy?.(g, p, u); },
+  onPlay: (g: GameState, p: Player, u: Unit) => { for (const h of powersOf(p)) h.onPlay?.(g, p, u); },
+  onSell: (g: GameState, p: Player, u: Unit) => { for (const h of powersOf(p)) h.onSell?.(g, p, u); },
+  battlecryTimes: (p: Player) => powersOf(p).reduce((s, h) => s * (h.battlecryTimes?.(p) ?? 1), 1),
+  startTurn: (g: GameState, p: Player) => { for (const h of powersOf(p)) h.startTurn?.(g, p); },
+  onSummon: (c: Combat, s: Side, u: CUnit) => { for (const h of powersOf(s.owner)) h.onSummon?.(c, s, u); },
+  onFriendlyDeath: (c: Combat, s: Side) => { for (const h of powersOf(s.owner)) h.onFriendlyDeath?.(c, s); },
+};
 
 export function pickTrinket(g: GameState, p: Player, id: string | null): boolean {
   if (!p.trinketOffer) return false;
@@ -262,17 +335,18 @@ export function pickTrinket(g: GameState, p: Player, id: string | null): boolean
   return true;
 }
 
-export function buyCost(p: Player): number {
-  return heroDef(p.hero)?.buyCost?.(p) ?? CONFIG.buyCost;
+/** What a unit costs you to buy (hero discounts included). */
+export function buyCost(p: Player, cardId?: string): number {
+  return Math.max(0, CONFIG.buyCost - (cardId ? heroHooks.discount(p, cardId) : 0));
 }
 
 export function heroEndTurn(g: GameState, p: Player) {
-  heroDef(p.hero)?.endTurn?.(g, p);
+  for (const h of powersOf(p)) h.endTurn?.(g, p);
   for (const t of p.trinkets) trinketDef(t).endTurn?.(g, p);
 }
 
 export function heroSoc(c: Combat, s: Side) {
-  heroDef(s.owner.hero)?.soc?.(c, s);
+  for (const h of powersOf(s.owner)) h.soc?.(c, s);
   for (const t of s.owner.trinkets ?? []) trinketDef(t).soc?.(c, s);
 }
 

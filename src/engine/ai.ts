@@ -1,7 +1,7 @@
 import { CONFIG, def, effStats, tribeOf } from './core';
 import { EFFECTS } from './effects';
 import { buy, play, reroll, sell, upgrade, chooseDiscover, validTargets, move } from './game';
-import { buyCost, canUseHeroPower, heroDef, pickTrinket, trinketDef, useHeroPower } from './heroes';
+import { buyCost, canUseHeroPower, pickTrinket, powersOf, trinketDef, useHeroPower } from './heroes';
 import type { Discover, GameState, Player, Unit, Tribe } from './types';
 
 /** Rough value of a unit for a bot. */
@@ -120,10 +120,11 @@ export function aiTakeTurn(g: GameState, p: Player) {
   for (let guard = 0; guard < 30; guard++) {
     chooseFavorite(g, p);
     playHand(g, p);
-    if (p.gold >= buyCost(p) && p.shop.length) {
+    if (p.shop.some((u) => p.gold >= buyCost(p, u.cardId))) {
       let bi = -1;
       let bs = -Infinity;
       p.shop.forEach((u, i) => {
+        if (p.gold < buyCost(p, u.cardId)) return;
         // triples are very valuable
         const copies = [...p.board, ...p.hand].filter((x) => x.cardId === u.cardId && !x.golden).length;
         const s = unitScore(p, u, 'shop') + copies * 12;
@@ -144,11 +145,13 @@ export function aiTakeTurn(g: GameState, p: Player) {
     break;
   }
   // hero power with leftover gold
-  const h = heroDef(p.hero);
-  if (h && canUseHeroPower(g, p)) {
+  for (const h of powersOf(p)) {
+    if (h.passive || !canUseHeroPower(g, p, h.id)) continue;
+    // Locas: only steal when there are a few units worth taking
+    if (h.id === 'locas_clare' && (p.shop.length < 3 || CONFIG.handSize - p.hand.length < 2)) continue;
     const weakest = [...p.board].filter((u) => !u.mem.locked).sort((a, b) => unitScore(p, a, 'board') - unitScore(p, b, 'board'))[0];
     const target = h.target ? (h.id === 'eve_williams' ? weakest : p.board[0]) : undefined;
-    if (!h.target || target) useHeroPower(g, p, target);
+    if (!h.target || target) useHeroPower(g, p, target, h.id);
     while (p.discovers.length) chooseDiscover(g, p, 0);
   }
   playHand(g, p);
@@ -156,6 +159,7 @@ export function aiTakeTurn(g: GameState, p: Player) {
 }
 
 export function aiChooseDiscover(g: GameState, p: Player, d: Discover): number {
+  if (d.powers) return 0; // bots take the first offered Hero Power (the options are already random)
   let best = 0;
   let bs = -Infinity;
   d.options.forEach((id, i) => {

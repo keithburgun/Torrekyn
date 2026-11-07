@@ -5,10 +5,10 @@
  *  - Divine Shield absorbs one hit; Venomous kills on damage (one use); Reborn returns at 1 Health;
  *  - Windfury attacks twice; deaths resolve left-to-right, attacking side first.
  */
-import { addKw, cloneUnit, def, effStats, has, mult, pick, rand, removeKw, sample, tribeOf, CONFIG } from './core';
+import { addKw, cloneUnit, def, effStats, has, mult, pick, rand, removeKw, sample, tribeAtkFor, tribeOf, CONFIG } from './core';
 import { EFFECTS, hasBattlecry, battlecryTimes, type CCtx } from './effects';
 import { gainNew, combatDamage, onBattlecryTriggered } from './game';
-import { heroSoc } from './heroes';
+import { heroHooks, heroSoc } from './heroes';
 import type { Body, CombatFrame, CombatFrameUnit, CombatFx, CombatResult, GameState, Keyword, Player, Slot, Unit } from './types';
 
 export interface CUnit extends Body {
@@ -35,6 +35,8 @@ export interface Side {
   secrets: boolean[];
   ptr: number;
   afterFns: (() => void)[];
+  /** Avenge counters for hero powers (Clover, Trevor L) */
+  heroAvenge: Record<string, number>;
 }
 
 const MAX_STEPS = 400;
@@ -57,7 +59,7 @@ export class Combat {
   private makeSide(idx: 0 | 1, s: { p: Player; board: Unit[]; slots: Slot[]; tier: number; persistent: boolean }): Side {
     const side: Side = {
       idx, units: [], owner: s.p, persistent: s.persistent, slots: s.slots, tier: s.tier,
-      died: [], secrets: [], ptr: 0, afterFns: [],
+      died: [], secrets: [], ptr: 0, afterFns: [], heroAvenge: {},
     };
     s.board.forEach((u, i) => {
       // for ghosts use a player-like view with the ghost's slots
@@ -139,9 +141,10 @@ export class Combat {
     const d = def(cardId);
     const m = golden ? 2 : 1;
     const cu = this.makeCU(s.idx, cardId, golden, d.atk * m, d.hp * m, d.keywords, null, -1);
-    cu.atk += s.owner.tribeAtk[d.tribe] ?? 0;
+    cu.atk += tribeAtkFor(s.owner, cardId);
     s.units.splice(Math.max(0, Math.min(pos, s.units.length)), 0, cu);
     this.addFx({ k: 'summon', to: cu.id });
+    heroHooks.onSummon(this, s, cu);
     return cu;
   }
 
@@ -155,6 +158,7 @@ export class Combat {
     const cu = this.makeCU(s.idx, d.cardId, d.golden, d.startAtk, d.startHp, d.startKw, null, -1, { ...d.mem });
     s.units.splice(Math.max(0, Math.min(pos, s.units.length)), 0, cu);
     this.addFx({ k: 'summon', to: cu.id });
+    heroHooks.onSummon(this, s, cu);
     this.snap('trigger', { note: `Summon ${def(d.cardId).name}` });
     return cu;
   }
@@ -166,6 +170,7 @@ export class Combat {
     const cu = this.makeCU(s.idx, u.cardId, u.golden, st.atk, st.hp, st.kw, null, -1, { ...u.mem });
     s.units.splice(Math.max(0, Math.min(pos, s.units.length)), 0, cu);
     this.addFx({ k: 'summon', to: cu.id });
+    heroHooks.onSummon(this, s, cu);
     this.snap('trigger', { note: `Summon ${def(u.cardId).name}` });
     return cu;
   }
@@ -248,13 +253,27 @@ export class Combat {
             this.snap('trigger', { source: f.id, note: `${def(f.cardId).name}: Avenge` });
           }
         }
+        // hero powers that count friendly deaths
+        heroHooks.onFriendlyDeath(this, s);
         // watchers on both sides
         for (const side of this.sides) for (const w of [...side.units]) {
           if (w.hp > 0) EFFECTS[w.cardId]?.onDeathAny?.(this.ctx(w), u);
         }
+        // Pumpkins (Andromeda Robin) permanently take the Deathrattle of any other unit that dies
+        if (u.cardId !== 'pumpkin' && EFFECTS[u.cardId]?.deathrattle) {
+          const key = `dr_${u.cardId}`;
+          const m = mult(u);
+          for (const side of this.sides) for (const pk of side.units) {
+            if (pk.cardId !== 'pumpkin' || pk.hp <= 0 || (pk.mem[key] ?? 0) >= m) continue;
+            pk.mem[key] = m;
+            this.perm(pk, (pu) => { pu.mem[key] = m; });
+            this.snap('trigger', { source: pk.id, note: `Pumpkin gained ${def(u.cardId).name}'s Deathrattle` });
+          }
+        }
         // deathrattles (Tom Judith)
         const dr = EFFECTS[u.cardId]?.deathrattle;
-        if (dr) {
+        const pumpkinEmpty = u.cardId === 'pumpkin' && !Object.keys(u.mem).some((k) => k.startsWith('dr_'));
+        if (dr && !pumpkinEmpty) {
           let times = 1;
           for (const f of s.units) if (f.cardId === 'tom_judith' && f.hp > 0) times = Math.max(times, f.golden ? 3 : 2);
           if (s.owner.trinkets?.includes('gravebell')) times++;
@@ -266,7 +285,7 @@ export class Combat {
           const d = def(u.cardId);
           const m = u.golden ? 2 : 1;
           if (s.units.filter((x) => x.hp > 0).length < CONFIG.boardSize) {
-            const r = this.makeCU(s.idx, u.cardId, u.golden, d.atk * m + (s.owner.tribeAtk[d.tribe] ?? 0), 1,
+            const r = this.makeCU(s.idx, u.cardId, u.golden, d.atk * m + tribeAtkFor(s.owner, u.cardId), 1,
               d.keywords.filter((k) => k !== 'reborn'), u.src, u.slot, { ...u.mem });
             s.units.splice(Math.min(pos, s.units.length), 0, r);
             this.addFx({ k: 'reborn', to: r.id });

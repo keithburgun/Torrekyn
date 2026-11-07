@@ -6,6 +6,8 @@ import path from 'node:path';
 
 const root = path.resolve(path.dirname(new URL(import.meta.url).pathname), '..');
 const data = JSON.parse(fs.readFileSync(path.join(root, 'src/data/cards.json'), 'utf8'));
+// hero-power tokens defined in src/engine/core.ts (not in the spreadsheet)
+data.cards.push({ id: 'pumpkin', tribe: 'neutral', tier: 1 }, { id: 'dragon', tribe: 'neutral', tier: 1 });
 const outCards = path.join(root, 'public/art/cards');
 const outHeroes = path.join(root, 'public/art/heroes');
 fs.mkdirSync(outCards, { recursive: true });
@@ -118,6 +120,9 @@ const G = {
   fang: `<path d="M60 70h136c0 40-20 60-40 66l-10 70-18-66h-0l-18 66-10-70c-20-6-40-26-40-66z"/>`,
   spoon: `<ellipse cx="128" cy="80" rx="36" ry="48"/><rect x="120" y="120" width="16" height="104" rx="8"/>`,
   moon: `<path d="M150 40c-50 6-84 46-84 92s38 86 88 86c22 0 40-8 54-20-60 10-104-30-104-82 0-34 20-64 46-76z"/><circle cx="170" cy="70" r="6"/><circle cx="196" cy="110" r="4"/>`,
+  pumpkin: `<path d="M120 86l2-34h18l-4 34z"/><ellipse cx="128" cy="148" rx="88" ry="66"/><path d="M100 88c-18 30-18 86 0 120M156 88c18 30 18 86 0 120" class="ks"/><path d="M88 136l18-22 18 22z" class="k"/><path d="M132 136l18-22 18 22z" class="k"/><path d="M90 164q38 26 76 0l-10 16q-28 14-56 0z" class="k"/>`,
+  dragon: `<path d="M118 78l-18-40 34 30z"/><path d="M150 72l8-42 16 40z"/><path d="M56 156c0-48 36-84 84-84 18 0 34 6 46 16l34-22-8 40c8 12 12 26 12 40 0 40-34 68-84 68H94c-22 0-38-16-38-38z"/><circle cx="164" cy="128" r="11" class="k"/><circle cx="210" cy="156" r="5" class="k"/><path d="M112 186q28 14 56 0" class="ks"/>`,
+  guitar: `<circle cx="102" cy="170" r="46"/><circle cx="134" cy="132" r="34"/><path d="M146 110l54-54 16 16-54 54z"/><path d="M198 44l22-8 8 22-14 14-16-16z"/><circle cx="112" cy="158" r="13" class="k"/><path d="M92 182L214 58" class="ks"/>`,
   bell: `<path d="M128 42c-36 0-56 30-56 70v48l-18 26h148l-18-26v-48c0-40-20-70-56-70z"/><circle cx="128" cy="204" r="16"/><path d="M128 42V28" class="s" stroke-width="8"/>`,
 };
 
@@ -142,6 +147,7 @@ const GLYPH_OF = {
   gem_wizard: 'hat', exploit: 'claw', sword: 'sword', shield_neutral: 'shield', pickaxe: 'pickaxe', scout: 'compass',
   silver_banner: 'banner', gold_banner: 'banner', poison: 'flask', vampire: 'fang', locas: 'eye', spoonful: 'spoon', grief: 'droplet',
   sarinee: 'moon', broken_land: 'mountains', tom_judith: 'bell', omni_gem: 'gem', skel: 'skull', rootling: 'roots', phoenix: 'bird',
+  pumpkin: 'pumpkin', dragon: 'dragon',
 };
 
 
@@ -349,6 +355,8 @@ const HERO_ART = {
   eve_williams: ['#e4d2ff', '#6a3fa8', 'skull'],
   abragail: ['#c8d8ff', '#4a54a8', 'book'],
   bill_milton: ['#ffb39a', '#8f2f2a', 'tophat'],
+  clover: ['#c6efa6', '#3d7a2c', 'dragon'],
+  trevor_l: ['#e2d4ff', '#4b2f7e', 'guitar'],
   unknown: ['#e9e0ff', '#7d5bd0', 'star'],
   tavern: ['#ffc6e0', '#7d5bd0', 'pagoda'],
 };
@@ -370,6 +378,7 @@ for (const [id, [bg, ink, gname]] of Object.entries(HERO_ART)) {
 const POWER_GLYPH = {
   andromeda_robin: 'flame', gelf_lanz: 'bolt', derby_pocket: 'heart', bunny_wizard: 'sun', croh_vosh: 'wave', may_danaris: 'eye',
   locas_clare: 'coin', venice_gorn: 'sprout', omar_evans: 'tree', eve_williams: 'infinity', abragail: 'scroll', bill_milton: 'chart',
+  clover: 'wings', trevor_l: 'note',
 };
 for (const [id, gname] of Object.entries(POWER_GLYPH)) {
   const [bg, ink] = HERO_ART[id];

@@ -1,13 +1,13 @@
 import {
-  ALL_TRIBES, CARDS, CONFIG, cloneUnit, def, displayName, effStats, log, makeUnit, mult, pick, randInt, sample, shuffle, tribeOf,
+  ALL_TRIBES, CARDS, CONFIG, cloneUnit, def, displayName, effStats, isTribe, log, makeUnit, mult, pick, randInt, sample, shuffle,
 } from './core';
 import { EFFECTS, battlecryTimes, hasBattlecry } from './effects';
 import { runCombat } from './combat';
 import { aiTakeTurn, aiChooseDiscover } from './ai';
-import { HEROES, buyCost, heroDef, heroEndTurn, hasTrinket, offerTrinkets, shopBonus, GREATER_TRINKET_TURN, LESSER_TRINKET_TURN } from './heroes';
+import { HEROES, buyCost, gainPower, heroDef, heroEndTurn, heroHooks, hasTrinket, offerTrinkets, shopBonus, GREATER_TRINKET_TURN, LESSER_TRINKET_TURN } from './heroes';
 import type { Discover, GameState, Player, Slot, Tribe, Unit } from './types';
 
-export const SAVE_VERSION = 2;
+export const SAVE_VERSION = 3;
 
 
 function emptySlots(): Slot[] {
@@ -22,7 +22,7 @@ export function newPlayer(id: number, name: string, human: boolean, avatar: numb
     board: [], hand: [], shop: [], slots: emptySlots(), frozen: false,
     tribeAtk: {}, alcoveAtkThisTier: 0, tinkerThisTier: 0, bannerBonus: 0, redGemBonus: 0,
     battlecriesThisTurn: 0, battlecriesLastTurn: 0, battlecriesGame: 0,
-    quests: [], discovers: [], heroUsed: false, heroMem: {}, heroSeeds: [], trinkets: [], trinketOffer: null, lastOpponent: null, lastOpponentBoard: [], nextOpponent: null, log: [],
+    quests: [], discovers: [], powers: [], usedPowers: [], heroMem: {}, heroSeeds: [], trinkets: [], trinketOffer: null, lastOpponent: null, lastOpponentBoard: [], nextOpponent: null, log: [],
   };
 }
 
@@ -40,7 +40,8 @@ export function newGame(seed: number, humanName = 'You', tribes?: Tribe[]): Game
     g.pool[c.id] = CONFIG.copiesPerTier[c.tier];
   }
   // heroes: the human is offered a choice, bots take random others
-  const heroIds = shuffle(g, HEROES.map((h) => h.id));
+  // heroes tied to a tribe are left out when that tribe is banned (as in Battlegrounds)
+  const heroIds = shuffle(g, HEROES.filter((h) => !h.needsTribe || g.tribes.includes(h.needsTribe)).map((h) => h.id));
   g.players[0].heroOffer = heroIds.slice(0, CONFIG.heroChoices);
   const rest = heroIds.slice(CONFIG.heroChoices);
   for (let i = 1; i < g.players.length; i++) {
@@ -59,6 +60,7 @@ export function selectHero(g: GameState, heroId: string) {
   p.hero = heroId;
   p.avatar = heroDef(heroId)?.avatar ?? 0;
   p.heroOffer = undefined;
+  for (const pl of g.players) if (pl.hero) gainPower(g, pl, pl.hero);
   startRound(g);
 }
 
@@ -139,8 +141,8 @@ export function startTurn(g: GameState, p: Player) {
   p.goldNextTurn = 0;
   p.battlecriesLastTurn = p.battlecriesThisTurn;
   p.battlecriesThisTurn = 0;
-  p.heroUsed = false;
-  heroDef(p.hero)?.startTurn?.(g, p);
+  p.usedPowers = [];
+  heroHooks.startTurn(g, p);
   if (g.round === LESSER_TRINKET_TURN) offerTrinkets(g, p, false);
   if (g.round === GREATER_TRINKET_TURN) offerTrinkets(g, p, true);
   // start-of-turn effects
@@ -182,12 +184,11 @@ export function gainCard(g: GameState, p: Player, u: Unit, how: 'buy' | 'gain' =
     return false;
   }
   p.hand.push(u);
-  const tribe = tribeOf(u);
   for (const b of [...p.board]) EFFECTS[b.cardId]?.onGain?.({ g, p, self: b, m: mult(b), board: p.board }, u, how);
   if (how === 'buy') {
     for (const q of p.quests) {
       if (q.have >= q.need) continue;
-      if ((q.kind === 'devotion' && tribe === 'kindred') || (q.kind === 'bill' && tribe === 'demons')) {
+      if ((q.kind === 'devotion' && isTribe(u, 'kindred')) || (q.kind === 'bill' && isTribe(u, 'demons'))) {
         q.have++;
         if (q.have >= q.need) completeQuest(g, p, q.kind, q.reward);
       }
@@ -260,8 +261,21 @@ export function queueDiscover(g: GameState, p: Player, options: string[], reason
   }
 }
 
+/** Discover a Hero Power (Abragail): the first one replaces Well-Studied, the second is added. */
+export function queuePowerDiscover(g: GameState, p: Player, options: string[], reason: string) {
+  if (!options.length) return;
+  const d: Discover = { options, reason, powers: true };
+  if (p.human) p.discovers.push(d);
+  else takeDiscover(g, p, d, aiChooseDiscover(g, p, d));
+}
+
 function takeDiscover(g: GameState, p: Player, d: Discover, idx: number) {
   const id = d.options[Math.max(0, Math.min(idx, d.options.length - 1))];
+  if (d.powers) {
+    gainPower(g, p, id, 'abragail');
+    log(p, `Learned ${heroDef(id)?.power}.`);
+    return;
+  }
   if (g.pool[id] > 0) g.pool[id]--;
   gainCard(g, p, makeUnit(g, id, !!d.golden));
 }
@@ -284,13 +298,13 @@ export function buy(g: GameState, p: Player, shopIdx: number): ActionResult {
   if (busy(p)) return fail('Choose a card first');
   const u = p.shop[shopIdx];
   if (!u) return fail('Nothing there');
-  const cost = buyCost(p);
+  const cost = buyCost(p, u.cardId);
   if (p.gold < cost) return fail('Not enough gold');
   if (p.hand.length >= CONFIG.handSize) return fail('Your hand is full');
   p.gold -= cost;
-  heroDef(p.hero)?.onBuy?.(g, p);
   p.shop.splice(shopIdx, 1);
-  if (tribeOf(u) === 'alcove' && p.tinkerThisTier) {
+  heroHooks.onBuy(g, p, u);
+  if (isTribe(u, 'alcove') && p.tinkerThisTier) {
     u.atk += p.tinkerThisTier;
     u.hp += p.tinkerThisTier;
   }
@@ -301,7 +315,7 @@ export function buy(g: GameState, p: Player, shopIdx: number): ActionResult {
 
 export function sellValue(u: Unit, p?: Player) {
   if (u.cardId === 'treasure') return 6 * mult(u);
-  return p?.hero === 'bill_milton' ? 2 : CONFIG.sellValue;
+  return CONFIG.sellValue;
 }
 
 export function sell(g: GameState, p: Player, boardIdx: number): ActionResult {
@@ -320,6 +334,7 @@ export function sellUnit(g: GameState, p: Player, u: Unit) {
   p.gold += sellValue(u, p);
   returnToPool(g, u);
   EFFECTS[u.cardId]?.onSell?.({ g, p, self: u, m: mult(u), board: p.board });
+  heroHooks.onSell(g, p, u);
   for (const b of [...p.board]) EFFECTS[b.cardId]?.onSellOther?.({ g, p, self: b, m: mult(b), board: p.board }, u);
 }
 
@@ -359,13 +374,14 @@ export function play(g: GameState, p: Player, handIdx: number, pos: number, targ
   for (const b of [...p.board]) {
     if (b !== u) EFFECTS[b.cardId]?.onPlayOther?.({ g, p, self: b, m: mult(b), board: p.board }, u);
   }
+  heroHooks.onPlay(g, p, u);
   return OK;
 }
 
 export function runBattlecry(g: GameState, p: Player, u: Unit, target?: Unit) {
   const e = EFFECTS[u.cardId];
   if (!e?.battlecry) return;
-  const times = battlecryTimes(p, u) * (hasTrinket(p, 'crown_of_echoes') ? 2 : 1);
+  const times = battlecryTimes(p, u) * (hasTrinket(p, 'crown_of_echoes') ? 2 : 1) * heroHooks.battlecryTimes(p);
   for (let i = 0; i < times; i++) {
     if (!p.board.includes(u) && i > 0) break;
     e.battlecry({ g, p, self: u, m: mult(u), board: p.board, target });

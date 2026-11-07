@@ -2,7 +2,7 @@ import { CONFIG, def, TRIBE_NAMES } from '../engine/core';
 import {
   buy, chooseDiscover, endTurn, move, needsTarget, newGame, play, reroll, selectHero, sell, sellValue, toggleFreeze, upgrade, validTargets,
 } from '../engine/game';
-import { HEROES, buyCost, canUseHeroPower, heroDef, pickTrinket, trinketDef, useHeroPower } from '../engine/heroes';
+import { HEROES, buyCost, canUseHeroPower, heroDef, mainActive, pickTrinket, powerCost, powersOf, trinketDef, useHeroPower, type HeroDef } from '../engine/heroes';
 import type { CombatResult, GameState, Player } from '../engine/types';
 import { CombatPlayer } from './combatView';
 import { art, bigCardHtml, cardHtml, esc, heroArt, unitView, KEYWORD_HELP } from './view';
@@ -22,7 +22,7 @@ type Zone = 'shop' | 'hand' | 'board';
 interface Sel { zone: Zone; idx: number }
 interface Press { zone: Zone; idx: number; x: number; y: number; el: HTMLElement; pointerId: number }
 interface Targeting { kind: 'play'; handIdx: number; pos: number } // play a card that needs a target
-interface HeroTargeting { kind: 'hero' }
+interface HeroTargeting { kind: 'hero'; id: string }
 
 // ---- layout: see layout.ts (landscape mirrors Battlegrounds on PC; portrait is for phones) ----
 let L: Layout = LANDSCAPE;
@@ -207,7 +207,7 @@ export class App {
           <div class="hero-portrait" style="background-image:url('${heroArt(h.id)}')"></div>
           <div class="hn">${esc(h.name)}</div>
           <div class="pc htitle" style="font-size:14px;margin-top:-8px;text-align:center">${esc(h.title)}</div>
-          <div class="pw">${esc(h.power)} ${h.passive ? '<span class="pc">(Passive)</span>' : `<span class="pc">(${h.cost} gold)</span>`}</div>
+          <div class="pw">${esc(h.power)} ${h.passive ? '<span class="pc">(Passive)</span>' : `<span class="pc">(${h.costFn ? 'starts at 10 gold' : `${h.cost} gold`})</span>`}</div>
           <div class="pt">${esc(h.text)}</div>
         </div>`;
       }).join('')}</div>
@@ -268,7 +268,7 @@ export class App {
       const v = unitView(p, u, 'shop', i);
       const have = owned.get(u.cardId) ?? 0;
       const hint = have >= 2 ? 'triple-hint' : have === 1 ? 'pair-hint' : '';
-      h += cardHtml(v, { zone: 'shop', idx: i, x: shopX(i, p.shop.length), y: L.shopY, small: L.small && !L.shopBig, large: L.shopBig, extraClass: `${sel} ${hint} ${p.gold < buyCost(p) ? 'unaffordable' : ''} ${p.frozen ? 'frozen' : ''}`,
+      h += cardHtml(v, { zone: 'shop', idx: i, x: shopX(i, p.shop.length), y: L.shopY, small: L.small && !L.shopBig, large: L.shopBig, extraClass: `${sel} ${hint} ${p.gold < buyCost(p, u.cardId) ? 'unaffordable' : ''} ${p.frozen ? 'frozen' : ''}`,
         badge: have >= 2 ? '<div class="trip-tag">TRIPLE!</div>' : '' });
     });
     if (!p.shop.length) h += `<div class="hint abs" style="left:${L.cx - 240}px;top:${L.shopY + 70}px;width:480px">The Tavern is empty. Refresh for new units.</div>`;
@@ -329,21 +329,42 @@ export class App {
       </div>`;
   }
 
-  /** Bottom centre: your hero, hero power to the right, trinkets to the left. */
-  heroAreaHtml() {
+  /** One hero power's state for display: label suffix and whether it can be used now. */
+  powerStatus(h: HeroDef): { ready: boolean; note: string } {
+    const g = this.g!;
     const p = this.me;
-    const hd = heroDef(p.hero);
-    const canPower = !!hd && canUseHeroPower(this.g!, p);
-    const state = !hd ? '' : hd.passive ? 'passive' : canPower ? 'ready' : 'spent';
+    const prog = h.progress?.(g, p) ?? null;
+    if (h.passive) return { ready: false, note: prog ?? '' };
+    if (p.usedPowers.includes(h.id)) return { ready: false, note: 'Used' };
+    const lock = h.locked?.(g, p);
+    if (lock) return { ready: false, note: lock };
+    if (p.gold < powerCost(g, p, h)) return { ready: false, note: prog ?? '' };
+    return { ready: canUseHeroPower(g, p, h.id), note: prog ?? '' };
+  }
+
+  /** Bottom centre: your hero (it carries your Hero Powers), trinkets beside it. */
+  heroAreaHtml() {
+    const g = this.g!;
+    const p = this.me;
+    const powers = powersOf(p);
+    const main = mainActive(p);
+    const canPower = powers.some((h) => !h.passive && canUseHeroPower(g, p, h.id));
+    const state = !powers.length ? '' : !main ? 'passive' : canPower ? 'ready' : 'spent';
+    const costBadge = main ? `<div class="tb-cost">${powerCost(g, p, main)}</div>` : '';
     const ph = L.phone;
     if (ph) {
-      // phones: tapping the hero opens a sheet with the power and a Use button (there is no hover)
+      // phones: tapping the hero opens a sheet with the powers and Use buttons (there is no hover)
       const hs = ph.heroSize;
-      let out = `<button class="my-hero ${state}" data-act="hero-info" aria-label="Your hero power" style="left:${L.cx - hs / 2}px;top:${L.heroY - hs / 2}px;width:${hs}px;height:${hs}px">
+      let out = `<button class="my-hero ${state}" data-act="hero-info" aria-label="Your hero powers" style="left:${L.cx - hs / 2}px;top:${L.heroY - hs / 2}px;width:${hs}px;height:${hs}px">
         <div class="hero-portrait" style="width:${hs}px;height:${hs}px;background-image:url('${heroArt(p.hero)}')"><div class="hp">${p.health}</div></div>
-        ${hd && !hd.passive ? `<div class="tb-cost">${hd.cost}</div>` : ''}
+        ${costBadge}
       </button>`;
-      if (hd) out += `<button class="power-pill ${state}" data-act="hero-info" style="left:${L.cx - 150}px;top:${ph.pillY}px;width:300px">${esc(hd.power)}${hd.passive ? '' : state === 'ready' ? ' · Tap' : p.heroUsed ? ' · Used' : ''}</button>`;
+      if (powers.length) {
+        const one = powers[0];
+        const st = this.powerStatus(one);
+        const label = powers.length > 1 ? `${powers.length} Hero Powers${canPower ? ' · Tap' : ''}` : `${one.power}${st.ready ? ' · Tap' : st.note ? ` · ${st.note}` : ''}`;
+        out += `<button class="power-pill ${state}" data-act="hero-info" style="left:${L.cx - 170}px;top:${ph.pillY}px;width:340px">${esc(label)}</button>`;
+      }
       p.trinkets.forEach((tid, i) => {
         const td = trinketDef(tid);
         out += `<button class="trinket-orb ${td.greater ? 'greater' : ''}" data-act="trinket-info" data-id="${tid}" aria-label="${esc(td.name)}" style="left:${ph.trinket.x}px;top:${ph.trinket.y + i * ph.trinket.step}px;width:${ph.trinket.size}px;height:${ph.trinket.size}px"></button>`;
@@ -352,10 +373,17 @@ export class App {
       if (qs.length) out += `<div class="quest-chip" style="left:${ph.quest.x}px;top:${ph.quest.y}px;width:${ph.quest.w}px">${qs.map((q) => `${q.kind === 'bill' ? 'Demons' : 'Kindred'} ${q.have}/${q.need}`).join(' · ')}</div>`;
       return out;
     }
-    let h = `<div class="my-hero ${state}" ${hd && !hd.passive ? 'data-act="hero-power"' : ''} style="left:${L.cx - 70}px;top:${L.heroY - 70}px">
+    // PC: hover for the tooltip; click uses your one active power, or opens the list when you have several
+    const act = powers.length > 1 ? 'data-act="hero-info"' : main ? `data-act="hero-power" data-id="${main.id}"` : '';
+    const tipRows = powers.map((h) => {
+      const st = this.powerStatus(h);
+      return `<div class="tip-power"><b>${esc(h.power)}</b> ${h.passive ? '(Passive)' : `(${powerCost(g, p, h)} gold)`}${st.note ? ` · <i>${esc(st.note)}</i>` : ''}<br>${esc(h.text)}</div>`;
+    }).join('');
+    const hint = powers.length > 1 ? 'Click your hero to choose a power.' : main ? (p.usedPowers.includes(main.id) ? 'Used this turn.' : 'Click your hero to use it.') : '';
+    let h = `<div class="my-hero ${state}" ${act} style="left:${L.cx - 70}px;top:${L.heroY - 70}px">
       <div class="hero-portrait" style="background-image:url('${heroArt(p.hero)}')"><div class="hp">${p.health}</div></div>
-      ${hd && !hd.passive ? `<div class="tb-cost">${hd.cost}</div>` : ''}
-      ${hd ? `<div class="tip"><b>${esc(hd.power)}</b>${hd.passive ? ' (Passive)' : ` (${hd.cost} gold)`}<br>${esc(hd.text)}${hd.passive ? '' : `<br><i>${p.heroUsed ? 'Used this turn.' : 'Click your hero to use it.'}</i>`}</div>` : ''}
+      ${costBadge}
+      ${powers.length ? `<div class="tip">${tipRows}${hint ? `<i>${hint}</i>` : ''}</div>` : ''}
     </div>`;
     p.trinkets.forEach((t, i) => {
       const td = trinketDef(t);
@@ -364,7 +392,7 @@ export class App {
     });
     const quests = p.quests.filter((q) => q.have < q.need);
     if (quests.length) {
-      h += `<div class="quest-chip" style="left:${L.portrait ? L.cx + 90 : L.cx - 140 - p.trinkets.length * 70 - 120}px;top:${L.portrait ? L.heroY + 40 : L.heroY - 16}px">${quests.map((q) => `${q.kind === 'bill' ? 'Demons' : 'Kindred'} ${q.have}/${q.need}`).join('<br>')}</div>`;
+      h += `<div class="quest-chip" style="left:${L.cx - 140 - p.trinkets.length * 70 - 120}px;top:${L.heroY - 16}px">${quests.map((q) => `${q.kind === 'bill' ? 'Demons' : 'Kindred'} ${q.have}/${q.need}`).join('<br>')}</div>`;
     }
     return h;
   }
@@ -438,7 +466,7 @@ export class App {
     const v = unitView(p, u, s.zone, s.idx);
     let actions = '';
     if (this.sel) {
-      if (s.zone === 'shop') actions = `<button class="btn primary" data-act="buy" ${p.gold < buyCost(p) ? 'disabled' : ''}>Buy <span class="cost">${buyCost(p)}<span class="coin"></span></span></button>`;
+      if (s.zone === 'shop') actions = `<button class="btn primary" data-act="buy" ${p.gold < buyCost(p, u.cardId) ? 'disabled' : ''}>Buy <span class="cost">${buyCost(p, u.cardId)}<span class="coin"></span></span></button>`;
       if (s.zone === 'hand') actions = `<button class="btn primary" data-act="play" ${p.board.length >= CONFIG.boardSize ? 'disabled' : ''}>Play</button>`;
       if (s.zone === 'board') actions = `<button class="btn" data-act="left" ${s.idx === 0 || u.mem.locked ? 'disabled' : ''}>◀</button>
         <button class="btn primary" data-act="sell" ${u.mem.locked ? 'disabled' : ''}>Sell <span class="cost">+${sellValue(u, p)}<span class="coin"></span></span></button>
@@ -483,15 +511,17 @@ export class App {
     let body = '';
     let action = '';
     if (s.kind === 'hero') {
-      const hd = heroDef(p.hero);
-      if (!hd) return '';
-      title = hd.power;
-      sub = `${hd.name} · ${hd.passive ? 'Passive' : `${hd.cost} gold, once per turn`}`;
-      body = hd.text;
-      if (!hd.passive) {
-        const can = canUseHeroPower(this.g!, p);
-        action = `<button class="btn big primary" data-act="hero-power" ${can ? '' : 'disabled'}>${p.heroUsed ? 'Used this turn' : `Use <span class="cost">${hd.cost}<span class="coin"></span></span>`}</button>`;
-      }
+      // every power you have, each with its own Use button
+      const blocks = powersOf(p).map((hd) => {
+        const st = this.powerStatus(hd);
+        const cost = powerCost(this.g!, p, hd);
+        const use = hd.passive ? '' : `<button class="btn big primary" data-act="hero-power" data-id="${hd.id}" ${st.ready ? '' : 'disabled'}>${p.usedPowers.includes(hd.id) ? 'Used this turn' : `Use <span class="cost">${cost}<span class="coin"></span></span>`}</button>`;
+        return `<div class="sheet-power"><div class="sheet-title">${esc(hd.power)}</div>
+          <div class="sheet-sub">${esc(hd.name)} · ${hd.passive ? 'Passive' : `${cost} gold, once per turn`}${st.note ? ` · ${esc(st.note)}` : ''}</div>
+          <div class="sheet-body">${esc(hd.text)}</div>${use ? `<div class="sheet-actions">${use}</div>` : ''}</div>`;
+      }).join('');
+      return `<div class="modal sheet-wrap" data-act="sheet-close"><div class="panel sheet">${blocks}
+        <div class="sheet-actions"><button class="btn big" data-act="sheet-close">Close</button></div></div></div>`;
     } else {
       const td = trinketDef(s.id);
       title = td.name;
@@ -507,6 +537,17 @@ export class App {
 
   discoverHtml() {
     const d = this.me.discovers[0];
+    if (d.powers) {
+      return `<div class="modal"><h2>${esc(d.reason)}</h2><div class="choices pairs">${d.options.map((id, i) => {
+        const h = heroDef(id)!;
+        return `<div class="choice herocard" data-act="discover" data-idx="${i}">
+          <div class="hero-portrait" style="background-image:url('${heroArt(h.id)}')"></div>
+          <div class="hn">${esc(h.power)}</div>
+          <div class="pw"><span class="pc">${esc(h.name)} · ${h.passive ? 'Passive' : `${powerCost(this.g!, this.me, h)} gold`}</span></div>
+          <div class="pt">${esc(h.text)}</div>
+        </div>`;
+      }).join('')}</div></div>`;
+    }
     return `<div class="modal"><h2>${esc(d.reason)}</h2><div class="choices">${d.options.map((id, i) => {
       const dd = def(id);
       const m = d.golden ? 2 : 1;
@@ -541,7 +582,7 @@ export class App {
         <div style="display:flex;gap:18px;align-items:center">
           <div class="hero-portrait" style="width:96px;height:96px;background-image:url('${heroArt(p.hero)}')"><div class="hp">${p.health}</div></div>
           <div><div class="ip-name" style="font-family:var(--display);font-size:26px">${esc(p.name)}</div>
-          <div class="hint" style="padding:0;text-align:left">${esc(h?.title ?? '')}<br>${esc(h?.power ?? '')}: ${esc(h?.text ?? '')}<br>Tavern Tier ${p.tier}${p.trinkets.length ? ' · Trinkets: ' + p.trinkets.map((t) => trinketDef(t).name).join(', ') : ''}</div></div>
+          <div class="hint" style="padding:0;text-align:left">${esc(h?.title ?? '')}<br>${powersOf(p).map((x) => `${esc(x.power)}: ${esc(x.text)}`).join('<br>')}<br>Tavern Tier ${p.tier}${p.trinkets.length ? ' · Trinkets: ' + p.trinkets.map((t) => trinketDef(t).name).join(', ') : ''}</div></div>
         </div>
         <div class="hint">Army when you last fought:</div>
         <div style="display:flex;gap:10px;flex-wrap:wrap;justify-content:center">${cards}</div>
@@ -769,14 +810,19 @@ export class App {
       case 'sheet-close': if (e.target === el || el.tagName === 'BUTTON') { this.sheet = null; this.render(); } break;
       case 'hero-power': {
         this.sheet = null;
-        const h = heroDef(p!.hero);
+        const h = el.dataset.id ? heroDef(el.dataset.id) : mainActive(p!);
         if (!h || h.passive) break;
-        if (!canUseHeroPower(g!, p!)) { this.toast(p!.heroUsed ? 'Already used this turn' : 'Not enough gold'); break; }
+        if (!canUseHeroPower(g!, p!, h.id)) {
+          const st = this.powerStatus(h);
+          this.toast(p!.usedPowers.includes(h.id) ? 'Already used this turn' : h.locked?.(g!, p!) ?? (p!.gold < powerCost(g!, p!, h) ? 'Not enough gold' : st.note || "Can't use that now"));
+          this.render();
+          break;
+        }
         if (h.target) {
           if (!p!.board.length) { this.toast('You need a unit in your army'); break; }
-          this.targeting = { kind: 'hero' };
+          this.targeting = { kind: 'hero', id: h.id };
           this.render();
-        } else { if (useHeroPower(g!, p!)) { sfx.power(); bump('heroPowers'); noteGame('heroPower'); } this.commit(); }
+        } else { if (useHeroPower(g!, p!, undefined, h.id)) { sfx.power(); bump('heroPowers'); noteGame('heroPower'); } this.commit(); }
         break;
       }
       case 'no-target': if (this.targeting?.kind === 'play') {
@@ -895,7 +941,7 @@ export class App {
           this.result(play(g, p, t.handIdx, t.pos, u.uid), sfx.deploy, 'played');
         } else {
           this.targeting = null;
-          if (useHeroPower(g, p, u)) { sfx.power(); bump('heroPowers'); noteGame('heroPower'); }
+          if (useHeroPower(g, p, u, t.id)) { sfx.power(); bump('heroPowers'); noteGame('heroPower'); }
         }
         this.commit();
         return;

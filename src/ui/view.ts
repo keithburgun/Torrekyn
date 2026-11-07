@@ -103,9 +103,12 @@ export function formatText(text: string): string {
   return t;
 }
 
-export function bigCardHtml(u: { cardId: string; golden: boolean; atk: number; hp: number; kw: Keyword[] }, extra = ''): string {
+export function bigCardHtml(u: { cardId: string; golden: boolean; atk: number; hp: number; kw: Keyword[]; mem?: Record<string, number> }, extra = ''): string {
   const d = def(u.cardId);
-  const text = u.golden ? d.goldenText : d.text;
+  let text = u.golden ? d.goldenText : d.text;
+  // the Pumpkin lists the Deathrattles it has collected
+  const gained = Object.keys(u.mem ?? {}).filter((k) => k.startsWith('dr_')).map((k) => def(k.slice(3)).name);
+  if (gained.length) text += ` Deathrattles: ${gained.join(', ')}.`;
   const kwExtra = u.kw.filter((k) => !d.keywords.includes(k)).map((k) => KW_ICON[k][1]);
   return `<div class="bigcard t-${d.tribe} ${u.golden ? 'golden' : ''} ${extra}">
   <div class="art" style="background-image:url('${cardArt(u.cardId)}')"></div>

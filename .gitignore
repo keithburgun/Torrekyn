@@ -7,3 +7,4 @@ src-tauri/gen/
 .vite/
 dist-artifact/
 dist-android/
+balance.json

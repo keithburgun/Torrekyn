@@ -121,5 +121,7 @@
  "omni_gem": "art/cards/omni_gem.svg",
  "skel": "art/cards/skel.svg",
  "rootling": "art/cards/rootling.svg",
- "phoenix": "art/cards/phoenix.svg"
+ "phoenix": "art/cards/phoenix.svg",
+ "pumpkin": "art/cards/pumpkin.svg",
+ "dragon": "art/cards/dragon.svg"
 }

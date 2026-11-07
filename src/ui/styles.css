@@ -765,6 +765,15 @@ button.trinket-orb { appearance: none; border: 0; padding: 0; cursor: pointer; }
 .sheet-sub { font-size: 28px; color: var(--ink-soft); font-weight: 700; }
 .sheet-body { font-size: 34px; line-height: 1.35; color: var(--ink); }
 .sheet-actions { display: flex; gap: 18px; margin-top: 10px; flex-wrap: wrap; justify-content: center; }
+.sheet-power { display: flex; flex-direction: column; gap: 10px; align-items: center; width: 100%; padding-bottom: 18px; border-bottom: 2px solid var(--panel-edge); }
+.sheet-power:last-of-type { border-bottom: 0; }
+/* PC: the same sheet (used when you have several Hero Powers), at PC size */
+#stage:not(.portrait) .sheet-wrap { justify-content: center; padding-bottom: 0; }
+#stage:not(.portrait) .sheet { width: 560px; padding: 24px 30px; gap: 12px; }
+#stage:not(.portrait) .sheet-title { font-size: 30px; }
+#stage:not(.portrait) .sheet-sub { font-size: 15px; }
+#stage:not(.portrait) .sheet-body { font-size: 18px; }
+.tip-power { margin-bottom: 6px; }
 @keyframes pop-up { from { opacity: 0; transform: translateY(40px); } }
 
 /* menus and modals */

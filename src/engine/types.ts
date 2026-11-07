@@ -16,6 +16,8 @@ export interface CardDef {
   goldenText: string;
   keywords: Keyword[];
   token?: boolean;
+  /** counts as every tribe (Andromeda Robin's Pumpkin) */
+  allTribes?: boolean;
 }
 
 /** Anything with stats and keywords: a persistent unit or a combat unit. */
@@ -47,7 +49,9 @@ export interface Quest {
 }
 
 export interface Discover {
-  options: string[]; // card ids
+  options: string[]; // card ids, or hero ids when `powers` is set
+  /** choosing a Hero Power instead of a card (Abragail) */
+  powers?: boolean;
   golden?: boolean;
   reason: string;
 }
@@ -85,7 +89,10 @@ export interface Player {
   nextOpponent: number | null;
   favoriteTribe?: Tribe;
   hero?: string;
-  heroUsed: boolean;
+  /** hero powers you have (normally just your hero's; Abragail swaps hers for two others) */
+  powers: string[];
+  /** active hero powers already used this turn */
+  usedPowers: string[];
   heroMem: Record<string, number>;
   heroSeeds: number[];
   heroOffer?: string[];

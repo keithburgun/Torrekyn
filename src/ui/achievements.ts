@@ -79,7 +79,7 @@ counter('frz10', 'Cold Storage', 'Freeze the Tavern 10 times.', 'Tavern', 'freez
 counter('hp10', 'Empowered', 'Use your Hero Power 10 times.', 'Heroes', 'heroPowers', 10);
 counter('trk1', 'Collector', 'Buy a Trinket.', 'Tavern', 'trinkets', 1);
 
-// ---- Heroes (24) ----
+// ---- Heroes (2 per hero) ----
 for (const h of HEROES) {
   counter(`play_${h.id}`, `Meet ${h.name}`, `Play a game as ${h.name}.`, 'Heroes', `heroPlay:${h.id}`, 1);
   counter(`win_${h.id}`, `${h.name} Triumphant`, `Finish 1st as ${h.name}.`, 'Heroes', `heroWin:${h.id}`, 1);

@@ -1,10 +1,12 @@
 import { describe, it, expect, vi } from 'vitest';
 
 describe('achievements', () => {
-  it('there are exactly 100 with unique ids', async () => {
+  it('there are 100 plus two for each hero beyond the original 12, with unique ids', async () => {
     vi.stubGlobal('localStorage', { getItem: () => null, setItem: () => undefined });
     const { ACHIEVEMENTS } = await import('../src/ui/achievements');
-    expect(ACHIEVEMENTS.length).toBe(100);
-    expect(new Set(ACHIEVEMENTS.map((a) => a.id)).size).toBe(100);
+    const { HEROES } = await import('../src/engine/heroes');
+    const n = 100 + 2 * (HEROES.length - 12);
+    expect(ACHIEVEMENTS.length).toBe(n);
+    expect(new Set(ACHIEVEMENTS.map((a) => a.id)).size).toBe(n);
   });
 });

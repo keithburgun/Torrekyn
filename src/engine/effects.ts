@@ -8,7 +8,7 @@
  */
 import { BONUS_KEYWORDS } from './types';
 import type { Body, Keyword, Player, Slot, Unit, GameState } from './types';
-import { addKw, def, effStats, has, log, makeUnit, pick, rand, removeKw, sample, tribeOf, CONFIG } from './core';
+import { addKw, def, effStats, has, isTribe, log, makeUnit, pick, rand, removeKw, sample, tribeOf, CONFIG } from './core';
 import type { CUnit, Combat, Side } from './combat';
 import {
   destroyUnit, discoverOptions, gainNew, queueDiscover, randomCardOfTier, sellUnit, drawFromPool,
@@ -136,11 +136,11 @@ export const EFFECTS: Record<string, Effect> = {
   ashlie: {
     battlecry: (c) => {
       c.p.tribeAtk.neverending = (c.p.tribeAtk.neverending ?? 0) + c.m;
-      if (c.combat) for (const u of c.board) if (tribeOf(u) === 'neverending') u.atk += c.m;
+      if (c.combat) for (const u of c.board) if (isTribe(u, 'neverending')) u.atk += c.m;
     },
   },
   bramble: {
-    onDeathAny: (c, dead) => { if (tribeOf(dead) === 'neverending') c.self.atk += c.m; },
+    onDeathAny: (c, dead) => { if (isTribe(dead, 'neverending')) c.self.atk += c.m; },
   },
   thicket: {
     endTurn: (c) => buff(c.board[0], 0, c.m),
@@ -162,7 +162,7 @@ export const EFFECTS: Record<string, Effect> = {
     avenge: [3, 3],
     avengeFn: (c) => {
       c.p.tribeAtk.neverending = (c.p.tribeAtk.neverending ?? 0) + c.m;
-      for (const u of c.side.units) if (tribeOf(u) === 'neverending') u.atk += c.m;
+      for (const u of c.side.units) if (isTribe(u, 'neverending')) u.atk += c.m;
     },
   },
   ancient_name_neverending: {
@@ -213,7 +213,7 @@ export const EFFECTS: Record<string, Effect> = {
     battlecry: (c) => { for (let i = 0; i < c.m; i++) slotBuff(c, i, 0, 0, ['divineShield']); },
   },
   knight: {
-    rally: (c) => { for (const u of c.side.units) if (tribeOf(u) === 'azure') u.atk += 4 * c.m; },
+    rally: (c) => { for (const u of c.side.units) if (isTribe(u, 'azure')) u.atk += 4 * c.m; },
   },
   longbow: {
     avenge: [3, 3],
@@ -287,13 +287,13 @@ export const EFFECTS: Record<string, Effect> = {
   },
   patchwork: {
     onGain: (c, u) => {
-      if (tribeOf(u) !== 'kindred') return;
+      if (!isTribe(u, 'kindred')) return;
       const i = c.board.indexOf(c.self);
       if (i >= 0) slotBuff(c, i, c.m, 2 * c.m);
     },
   },
   hug: {
-    battlecry: (c) => buff(pick(c.g, c.p.hand.filter((u) => tribeOf(u) === 'kindred')), 6 * c.m, 6 * c.m),
+    battlecry: (c) => buff(pick(c.g, c.p.hand.filter((u) => isTribe(u, 'kindred'))), 6 * c.m, 6 * c.m),
   },
   pink_gem: {
     deathrattle: (c) => {
@@ -338,7 +338,7 @@ export const EFFECTS: Record<string, Effect> = {
   },
   honeysuckle_kindred: {
     deathrattle: (c) => {
-      const best = c.p.hand.filter((u) => tribeOf(u) === 'kindred').sort((a, b) => hpOf(c.p, b) - hpOf(c.p, a)).slice(0, c.m);
+      const best = c.p.hand.filter((u) => isTribe(u, 'kindred')).sort((a, b) => hpOf(c.p, b) - hpOf(c.p, a)).slice(0, c.m);
       let pos = c.pos;
       for (const u of best) if (c.c.spawnUnit(c.side, u, pos)) pos++;
     },
@@ -468,14 +468,14 @@ export const EFFECTS: Record<string, Effect> = {
   },
   red_sea_snake: {
     rally: (c) => {
-      const cands = c.side.units.filter((u) => u !== c.self && tribeOf(u) === 'cloister' && !has(u, 'venomous'));
+      const cands = c.side.units.filter((u) => u !== c.self && isTribe(u, 'cloister') && !has(u, 'venomous'));
       for (const u of sample(c.g, cands, c.m)) addKw(u, 'venomous');
     },
   },
   larva: {}, // handled at start of turn
   ambush: {
     deathrattle: (c) => {
-      const best = c.p.hand.filter((u) => tribeOf(u) === 'cloister').sort((a, b) => atkOf(c.p, b) - atkOf(c.p, a)).slice(0, c.m);
+      const best = c.p.hand.filter((u) => isTribe(u, 'cloister')).sort((a, b) => atkOf(c.p, b) - atkOf(c.p, a)).slice(0, c.m);
       let pos = c.pos;
       const spawned: CUnit[] = [];
       for (const u of best) {
@@ -487,7 +487,7 @@ export const EFFECTS: Record<string, Effect> = {
   },
   shadow_place: {
     onPlayOther: (c, u) => {
-      if (tribeOf(u) !== 'cloister') return;
+      if (!isTribe(u, 'cloister')) return;
       for (const t of sample(c.g, c.board.filter((b) => b !== u), 2)) buff(t, 3 * c.m, 3 * c.m);
     },
   },
@@ -572,7 +572,7 @@ export const EFFECTS: Record<string, Effect> = {
   scientist: {
     battlecry: (c) => {
       c.p.alcoveAtkThisTier += 3 * c.m;
-      if (c.combat) for (const u of c.board) if (tribeOf(u) === 'alcove') u.atk += 3 * c.m;
+      if (c.combat) for (const u of c.board) if (isTribe(u, 'alcove')) u.atk += 3 * c.m;
     },
   },
   paradox: {
@@ -748,6 +748,15 @@ export const EFFECTS: Record<string, Effect> = {
       const l = c.board[c.board.indexOf(c.self) - 1];
       if (!l) return;
       for (const k of sample(c.g, BONUS_KEYWORDS.filter((k) => !has(l, k)), 2 * c.m)) addKw(l, k);
+    },
+  },
+  // ===== hero tokens =====
+  // Andromeda Robin's Pumpkin: runs every Deathrattle it has collected (stored as mem.dr_<cardId> = multiplier)
+  pumpkin: {
+    deathrattle: (c) => {
+      for (const [k, m] of Object.entries(c.self.mem)) {
+        if (k.startsWith('dr_')) EFFECTS[k.slice(3)]?.deathrattle?.({ ...c, m });
+      }
     },
   },
 };

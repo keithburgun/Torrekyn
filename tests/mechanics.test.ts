@@ -1,14 +1,20 @@
 import { describe, it, expect } from 'vitest';
 import { newGame as ng, human, buy, play, sell, combatDamage, selectHero } from '../src/engine/game';
-const newGame = (s: number) => { const g = ng(s); selectHero(g, human(g).heroOffer![0]); return g; };
-import { makeUnit } from '../src/engine/core';
+// a game past hero selection with no hero powers in the way (hero tests below give powers explicitly)
+const newGame = (s: number) => {
+  const g = ng(s);
+  selectHero(g, human(g).heroOffer![0]);
+  for (const p of g.players) { p.powers = []; p.hand = []; }
+  return g;
+};
+import { def, makeUnit } from '../src/engine/core';
 import { Combat } from '../src/engine/combat';
 import type { GameState, Player, Unit } from '../src/engine/types';
 
 function fight(g: GameState, a: Unit[], b: Unit[]) {
   const pa = g.players[0], pb = g.players[1];
   pa.board = a; pb.board = b;
-  pa.hero = undefined; pb.hero = undefined;
+  pa.hero = undefined; pb.hero = undefined; pa.powers = []; pb.powers = [];
   const c = new Combat(g, { p: pa, board: a, slots: pa.slots, tier: 1, persistent: true },
     { p: pb, board: b, slots: pb.slots, tier: 1, persistent: true });
   return { c, winner: c.run() };
@@ -78,19 +84,149 @@ describe('mechanics', () => {
 });
 
 describe('heroes', () => {
-  it('every hero power can be used without errors', async () => {
+  /** a game where the human has exactly this hero power */
+  function withPower(id: string, seed = 11) {
+    const g = newGame(seed);
+    const p = human(g);
+    p.hero = id;
+    p.powers = [id];
+    return { g, p };
+  }
+
+  it('every active hero power can be used without errors', async () => {
     const { HEROES, useHeroPower, canUseHeroPower } = await import('../src/engine/heroes');
-    for (const h of HEROES) {
-      const g = newGame(11);
-      const p = human(g);
-      p.hero = h.id;
+    for (const h of HEROES.filter((x) => !x.passive)) {
+      const { g, p } = withPower(h.id);
       p.gold = 10;
+      p.tier = 4; // Bunny Wizard unlocks at Tier 4
       p.board = [makeUnit(g, 'ash'), makeUnit(g, 'lich')];
-      g.players[p.nextOpponent ?? 1].board = [makeUnit(g, 'skeleton')];
-      if (!h.passive) {
-        expect(canUseHeroPower(g, p)).toBe(true);
-        expect(useHeroPower(g, p, h.target ? p.board[0] : undefined)).toBe(true);
-      }
+      p.lastOpponentBoard = [makeUnit(g, 'skeleton'), makeUnit(g, 'knight')]; // May Danaris
+      expect(canUseHeroPower(g, p, h.id), h.id).toBe(true);
+      expect(useHeroPower(g, p, h.target ? p.board[0] : undefined, h.id), h.id).toBe(true);
     }
+  });
+
+  it('Bunny Wizard is locked below Tier 4', async () => {
+    const { canUseHeroPower } = await import('../src/engine/heroes');
+    const { g, p } = withPower('bunny_wizard');
+    p.gold = 10;
+    p.tier = 3;
+    expect(canUseHeroPower(g, p, 'bunny_wizard')).toBe(false);
+  });
+
+  it('Gelf Lanz: after buying an Azure unit, the next one costs 1 less', async () => {
+    const { buyCost } = await import('../src/engine/heroes');
+    const { g, p } = withPower('gelf_lanz');
+    p.gold = 20;
+    p.shop = [makeUnit(g, 'knight'), makeUnit(g, 'knight'), makeUnit(g, 'ash')];
+    expect(buyCost(p, 'knight')).toBe(3);
+    buy(g, p, 0);
+    expect(buyCost(p, 'knight')).toBe(2);
+    expect(buyCost(p, 'ash')).toBe(3);
+  });
+
+  it('Derby Pocket: after 5 Battlecry units, Battlecries trigger twice', async () => {
+    const { heroHooks } = await import('../src/engine/heroes');
+    const { g, p } = withPower('derby_pocket');
+    for (let i = 0; i < 5; i++) {
+      expect(heroHooks.battlecryTimes(p)).toBe(1);
+      p.hand = [makeUnit(g, 'ashlie')];
+      play(g, p, 0, 0);
+      p.board = [];
+    }
+    expect(heroHooks.battlecryTimes(p)).toBe(2);
+  });
+
+  it('Bill Milton: playing a Business Demon gives 1 gold', () => {
+    const { g, p } = withPower('bill_milton');
+    p.gold = 0;
+    p.hand = [makeUnit(g, 'intern'), makeUnit(g, 'ash')];
+    play(g, p, 0, 0);
+    expect(p.gold).toBe(1);
+    play(g, p, 0, 0);
+    expect(p.gold).toBe(1);
+  });
+
+  it('Locas Clare steals the whole Tavern, then resets to 10', async () => {
+    const { useHeroPower, powerCost, heroDef } = await import('../src/engine/heroes');
+    const { g, p } = withPower('locas_clare');
+    g.round = 5;
+    p.gold = 10;
+    expect(powerCost(g, p, heroDef('locas_clare')!)).toBe(6);
+    const n = p.shop.length;
+    expect(useHeroPower(g, p, undefined, 'locas_clare')).toBe(true);
+    expect(p.shop.length).toBe(0);
+    expect(p.hand.length).toBe(n);
+    g.round = 6;
+    expect(powerCost(g, p, heroDef('locas_clare')!)).toBe(10);
+  });
+
+  it('Omar Evans: every 5 Cloister units sold gives a Cloister unit', () => {
+    const { g, p } = withPower('omar_evans');
+    for (let i = 0; i < 5; i++) { p.board = [makeUnit(g, 'disciple')]; sell(g, p, 0); }
+    expect(p.hand.length).toBe(1);
+    expect(def(p.hand[0].cardId).tribe).toBe('cloister');
+  });
+
+  it('Andromeda Robin starts with a Pumpkin that collects Deathrattles', async () => {
+    const { gainPower } = await import('../src/engine/heroes');
+    const g = newGame(5);
+    const p = human(g);
+    gainPower(g, p, 'andromeda_robin');
+    expect(p.hand.some((u) => u.cardId === 'pumpkin')).toBe(true);
+    // a Skeleton dies next to the Pumpkin: it keeps the Deathrattle for good
+    const pumpkin = makeUnit(g, 'pumpkin');
+    pumpkin.hp = 50;
+    const pa = g.players[0], pb = g.players[1];
+    pa.powers = []; pb.powers = [];
+    pa.board = [pumpkin]; pb.board = [makeUnit(g, 'skeleton')];
+    new Combat(g, { p: pa, board: pa.board, slots: pa.slots, tier: 1, persistent: true }, { p: pb, board: pb.board, slots: pb.slots, tier: 1, persistent: true }).run();
+    expect(pumpkin.mem.dr_skeleton).toBe(1);
+  });
+
+  it('Croh Vosh: units summoned in combat get +1/+2', () => {
+    const g = newGame(6);
+    const pa = g.players[0], pb = g.players[1];
+    pa.powers = ['croh_vosh']; pb.powers = [];
+    const c = new Combat(g, { p: pa, board: [], slots: pa.slots, tier: 1, persistent: true }, { p: pb, board: [], slots: pb.slots, tier: 1, persistent: true });
+    const u = c.spawn(c.sides[0], 'skel', false, 0)!;
+    expect([u.atk, u.hp]).toEqual([2, 3]);
+  });
+
+  it('Clover summons a Dragon after 4 friendly deaths, and it grows', async () => {
+    const { heroHooks } = await import('../src/engine/heroes');
+    const g = newGame(7);
+    const pa = g.players[0], pb = g.players[1];
+    pa.powers = ['clover']; pb.powers = [];
+    const c = new Combat(g, { p: pa, board: [], slots: pa.slots, tier: 1, persistent: true }, { p: pb, board: [], slots: pb.slots, tier: 1, persistent: true });
+    for (let i = 0; i < 4; i++) heroHooks.onFriendlyDeath(c, c.sides[0]);
+    expect(c.sides[0].units.map((u) => [u.cardId, u.atk, u.hp])).toEqual([['dragon', 1, 1]]);
+    expect(pa.heroMem.brood).toBe(1);
+    for (let i = 0; i < 4; i++) heroHooks.onFriendlyDeath(c, c.sides[0]);
+    expect(c.sides[0].units[1].atk).toBe(2);
+  });
+
+  it('Trevor L gives Reborn after 5 friendly deaths', async () => {
+    const { heroHooks } = await import('../src/engine/heroes');
+    const g = newGame(8);
+    const pa = g.players[0], pb = g.players[1];
+    pa.powers = ['trevor_l']; pb.powers = [];
+    const c = new Combat(g, { p: pa, board: [makeUnit(g, 'ash')], slots: pa.slots, tier: 1, persistent: true }, { p: pb, board: [], slots: pb.slots, tier: 1, persistent: true });
+    const u = c.sides[0].units[0];
+    u.kw = [];
+    for (let i = 0; i < 5; i++) heroHooks.onFriendlyDeath(c, c.sides[0]);
+    expect(u.kw).toContain('reborn');
+  });
+
+  it('Abragail swaps Well-Studied for two other Hero Powers on turn 4', async () => {
+    const { g, p } = withPower('abragail');
+    const { startTurn, chooseDiscover } = await import('../src/engine/game');
+    g.round = 4;
+    startTurn(g, p);
+    expect(p.discovers.length).toBe(2);
+    chooseDiscover(g, p, 0);
+    chooseDiscover(g, p, 0);
+    expect(p.powers.length).toBe(2);
+    expect(p.powers).not.toContain('abragail');
   });
 });

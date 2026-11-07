@@ -73,24 +73,28 @@ When the card text was ambiguous, Hearthstone: Battlegrounds conventions were us
 Golden text was written for every card (see the updated spreadsheet's Golden Ability column and `tools/import_cards.py`). The convention: double stats and double the effect's numbers. "Trigger twice" is used where doubling a number doesn't make sense, and "Avenge (N)" is halved for some keyword-granting effects. Tribe-wide auras like Sarinee, Tom Judith and Gem Wizard go from 2× to 3×.
 
 ## Heroes
-Twelve Torrekin champions; you choose 1 of 4 at the start. Powers are either active (cost gold, once per turn) or passive.
+Fourteen Torrekin champions; you choose 1 of 4 at the start. Heroes tied to a tribe (Gelf: Azure, Bunny: Kindred, Omar: Cloister, Bill: Business Demons) are not offered when that tribe is banned, as in Battlegrounds. Active powers cost gold and work once per turn.
 
-| Hero | Power | Type | Effect |
+| Hero | Power | Type | How it plays |
 |---|---|---|---|
-| Andromeda Robin | Elemental Weave | 1 gold, target | Random Element on a friendly unit: Fire +3 Attack, Water +4 Health, Earth +1/+2 & Taunt, Wind +2/+2 |
-| Gelf Lanz | Lance Charge | Passive | Start of Combat: your left-most unit deals half its Attack to the enemy across from it |
-| Derby Pocket | Team Spirit | Passive | End of turn: a random friendly unit gets +1/+1 per different tribe in your army (max +3/+3) |
-| Bunny Wizard | Cuddle Spell | 1 gold, target | A friendly unit gets +1/+3; your hero heals 1 |
-| Croh Vosh | Abyssal Sweep | Passive | Start of Combat: deal damage equal to your Tavern Tier to 2 random enemies |
-| May Danaris | Root Access | 2 gold | Copy the strongest unit in your next opponent's army |
-| Locas Clare | Five-Finger Discount | Passive | Your first unit bought each turn costs 1 less |
-| Venice Gorn | Sow Seeds | 2 gold | Plant a seed; 2 turns later it becomes a random unit from 1 Tier above your Tavern |
-| Omar Evans | Leaf Cloak | Passive | Start of Combat: your right-most unit gets Stealth and +1/+1 per Tavern Tier |
-| Eve Williams | Wild Card | 1 gold, target | Transform a friendly unit into a random unit of the same Tier, then +3/+3 |
-| Abragail | Tutoring | 1 gold, target | A friendly unit gets +1/+1, plus +1/+1 for each other unit of its tribe in your army |
-| Bill Milton | Golden Parachute | Passive | Your units sell for 2 gold |
+| Andromeda Robin | Elemental Weave | Passive | Start with a 1/1 **Pumpkin** in hand. It counts as every tribe. Whenever any other unit with a Deathrattle dies in combat (either side), the Pumpkin permanently gains that Deathrattle (each once; Golden gives the Golden version). |
+| Gelf Lanz | Inspire | Passive | Once you've bought an Azure unit, your next Azure unit costs 1 less, and that re-arms with every Azure buy (so Azure units cost 2 from then on). |
+| Derby Pocket | Coffee Run | Passive | After you play 5 Battlecry units, your Battlecries trigger an extra time for the rest of the game. |
+| Bunny Wizard | Cuddle Spell | 1 gold | Discover a Kindred unit (your Tier or lower). Unlocks at Tavern Tier 4. |
+| Croh Vosh | Abyssal Sweep | Passive | Units summoned for you during combat get +1/+2 (Reborn isn't a summon). |
+| May Danaris | Root Access | 2 gold | Discover a unit (base stats) from the army of the last player you fought. |
+| Locas Clare | Five-Finger Discount | 10 gold, −1 per turn | Move every unit in the Tavern to your hand (as many as fit). The cost then goes back to 10 next turn. The sheet lists it as Passive; it is played as an active power because it has a cost. |
+| Venice Gorn | Sow Seeds | 2 gold | Plant a seed; in 2 turns it sprouts into a random unit from 1 Tier above your Tavern. |
+| Omar Evans | Leaf Cloak | Passive | Every 5 **Cloister** units you sell, get a random Cloister unit. "Zuzuni" in the sheet is read as Cloister (the ninja tribe) until told otherwise. |
+| Eve Williams | Wild Card | 1 gold, target | Transform a friendly unit into a random unit of the same Tier, then +3/+3. |
+| Abragail | Well-Studied | Passive | At the start of turn 4, Discover a Hero Power, then a second one; they replace Well-Studied and you keep both. |
+| Bill Milton | Golden Parachute | Passive | Whenever you play a Business Demon, gain 1 gold. |
+| Clover | Broodmother | Passive | Avenge (4): summon a 1/1 **Dragon** and improve this: each later Dragon is +1/+1 bigger, for the rest of the game. |
+| Trevor L | Party All Night | Passive | Avenge (5): give a random friendly unit (without it) Reborn. |
 
-In 600 simulated bot-only games, average placements ranged from 3.15 to 3.82 (3.5 is even).
+Hero Avenge counts friendly deaths in each combat and starts over every combat.
+
+In 800 bot-only games (45 Health, 3 tribes banned), average placements ranged from 3.15 (Clover) to 4.15 (Locas Clare); 3.5 is even. Locas is the outlier: bots don't time the steal well, and stealing earlier made them worse. Run `BALANCE=1 npx vitest run tests/balance.test.ts` to re-check.
 
 ## Trinkets
 The trinkets are still **placeholders**. A lesser trinket offer (4 options) arrives on turn 6 and a greater one on turn 9. You buy one with gold or skip.
