@@ -10,6 +10,7 @@ export interface Layout {
   H: number;
   cx: number; // horizontal centre
   small: boolean; // use small cards on the board (and in combat)
+  large?: boolean; // use large cards in combat (phones, small armies)
   cardW: number; // board / combat card size
   cardH: number;
   shopBig: boolean; // large cards in the shop and hand (portrait)
@@ -31,9 +32,21 @@ export interface Layout {
   shopDrop: number; // drag above this to sell / below it to buy
   boardTop: number;
   boardBottom: number;
-  leader: { x: number; y: number; w: number; h: number; horizontal: boolean; grid?: boolean };
-  /** tall phone screens (iPhone-shaped): two-row leaderboard and a bigger hero */
+  leader: { x: number; y: number; w: number; h: number; horizontal: boolean };
+  /** tall phone screens (iPhone-shaped): a little more room for everything */
   tall?: boolean;
+  /** phone-only pieces (portrait): sizes chosen for touch, see portraitLayout */
+  phone?: {
+    tavern: { kp: number; btn: number; up: number; refresh: number; freeze: number; btnTop: number };
+    heroSize: number;
+    pillY: number;
+    trinket: { x: number; y: number; size: number; step: number };
+    quest: { x: number; y: number; w: number };
+    turnLabel: { x: number; y: number; w: number };
+    endTurnW: number;
+    cardsW: number;
+    tribesH: number;
+  };
   endTurn: { x: number; y: number };
   gold: { x: number; y: number };
   gear: { x: number; y: number; size: number };
@@ -63,47 +76,65 @@ export const LANDSCAPE: Layout = {
 };
 
 /**
- * Portrait: sections are stacked top to bottom with fixed sizes, and whatever height is left over is
- * shared evenly between them, so nothing pools at the bottom. The stage is always 900 wide; its height
- * follows the screen's shape (1300 to 2000 stage pixels; an iPhone is about 1950). On tall screens the
- * leaderboard gets two rows with names and Health, and your hero gets bigger.
+ * Portrait is the phone layout. On a phone the 900-pixel-wide stage is shown about 390 points wide, so
+ * one point is roughly 2.3 stage pixels. Everything here follows phone guidelines at that scale:
+ * touch targets of at least 44 points (about 100 stage pixels) and text of at least 11 points (26 px).
+ *
+ * Sections are stacked top to bottom with fixed sizes and the leftover height is shared evenly between
+ * them. The stage height follows the screen's shape (1400 to 2000; a full-screen iPhone is about 1950,
+ * Safari's visible area about 1500). Tall screens get slightly bigger tavern and hero rows.
  */
 export const IPHONE_H = 1950; // 900 x 1950 = 9 : 19.5, the shape of a modern iPhone screen
 
 export function portraitLayout(H: number): Layout {
   const W = 900;
   const tall = H >= 1750;
-  const sizes = { leader: tall ? 236 : 140, tavern: 150, shop: 228, board: 214, hero: tall ? 210 : 170, hand: 228 };
-  const top = tall ? 16 : 10;
-  const fixed = top + Object.values(sizes).reduce((a, b) => a + b, 0) + (tall ? 40 : 24);
-  const gap = Math.max(12, (H - fixed) / 5);
+  const sizes = { strip: tall ? 196 : 184, tavern: tall ? 222 : 192, shop: 228, board: 214, hero: tall ? 290 : 250, hand: 228 };
+  const top = 10;
+  const tripTag = 26; // room above the shop for the "TRIPLE!" tag
+  const fixed = top + tripTag + Object.values(sizes).reduce((a, b) => a + b, 0) + 16;
+  const gap = Math.max(10, (H - fixed) / 5);
   let y = top;
-  const leaderY = y; y += sizes.leader + gap;
-  const tavernY = y; y += sizes.tavern + gap;
-  const shopY = y + 6; y += sizes.shop + gap;
+  const stripY = y; y += sizes.strip + gap;
+  const tavernY = y; y += sizes.tavern + gap + tripTag;
+  const shopY = y; y += sizes.shop + gap;
   const slotTop = y; y += sizes.board + gap;
   const heroTop = y; y += sizes.hero + gap;
-  const handY = y;
-  const heroMid = heroTop + sizes.hero / 2;
+  const handY = Math.min(y, H - sizes.hand - 16);
+  const heroSize = tall ? 200 : 170;
+  const kp = tall ? 172 : 150;
+  const btn = tall ? 128 : 116;
+  const btnSize = 88;
   return {
     portrait: true, tall, W, H, cx: 450, small: true, cardW: 120, cardH: 165,
     shopBig: true, shopCardW: 168, shopCardH: 228, handCardW: 168, handCardH: 228,
     slotX: (i) => 17 + i * 124, slotW: 122, slotTop, slotH: sizes.board,
     boardY: slotTop + 16, shopY, shopStep: 176, tavernY,
-    heroY: heroMid, handY, handWidth: 880,
+    heroY: heroTop + 4 + heroSize / 2, handY, handWidth: 880,
     shopDrop: slotTop - 14, boardTop: slotTop - 14, boardBottom: slotTop + sizes.board + 10,
-    leader: { x: 10, y: leaderY, w: tall ? 800 : 760, h: sizes.leader, horizontal: true, grid: tall },
-    endTurn: { x: 696, y: heroMid - 57 }, gold: { x: 30, y: heroMid - 67 },
-    gear: { x: 828, y: leaderY + 76, size: 58 }, mute: { x: 828, y: leaderY + 8, size: 58 },
-    tribes: { x: 30, y: heroMid + 19, w: 210 },
-    cardsBtn: { x: 720, y: heroMid + 33 },
-    targetBar: { x: 230, y: slotTop + sizes.board + 2, w: 440 },
+    leader: { x: 10, y: stripY, w: 790, h: sizes.strip, horizontal: true },
+    endTurn: { x: 626, y: heroTop + 38 }, gold: { x: 22, y: heroTop + 2 },
+    gear: { x: 808, y: stripY + btnSize + 8, size: btnSize }, mute: { x: 808, y: stripY, size: btnSize },
+    tribes: { x: 22, y: heroTop + sizes.hero - 100, w: 236 },
+    cardsBtn: { x: 626, y: heroTop + sizes.hero - 100 },
+    targetBar: { x: 40, y: slotTop + sizes.board + 4, w: 820 },
     popover: 'stack',
+    phone: {
+      tavern: { kp, btn, up: 450 - 228, refresh: 450 + 172, freeze: 450 + 312, btnTop: tavernY + kp / 2 - btn / 2 },
+      heroSize,
+      pillY: heroTop + 24 + heroSize,
+      trinket: { x: 270, y: heroTop + 10, size: 80, step: 96 },
+      quest: { x: 22, y: heroTop + 104, w: 236 },
+      turnLabel: { x: 626, y: heroTop, w: 252 },
+      endTurnW: 252,
+      cardsW: 252,
+      tribesH: 100,
+    },
     // on tall screens the whole fight sits a little lower so it is centred rather than top-heavy
     combat: ((o) => ({
-      enemyHero: { x: 450, y: Math.round(H * (0.13 + o)) }, enemyY: Math.round(H * (0.27 + o)), banner: Math.round(H * (0.44 + o)),
+      enemyHero: { x: 450, y: Math.round(H * (0.12 + o)) }, enemyY: Math.round(H * (0.26 + o)), banner: Math.round(H * (0.44 + o)),
       myY: Math.round(H * (0.52 + o)), myHero: { x: 450, y: Math.round(H * (0.76 + o)) }, step: 124,
-    }))(tall ? 0.045 : 0),
+    }))(tall ? 0.04 : 0),
   };
 }
 
@@ -124,6 +155,6 @@ export function currentLayout(): Layout {
   if (!portrait) return LANDSCAPE;
   // the Portrait toggle on a wide screen previews an iPhone-shaped screen; a real portrait screen uses its own shape
   const winH = 900 * (window.innerHeight / window.innerWidth);
-  const H = mode === 'portrait' && window.innerHeight <= window.innerWidth * 1.1 ? IPHONE_H : Math.round(Math.min(2000, Math.max(1300, winH)));
+  const H = mode === 'portrait' && window.innerHeight <= window.innerWidth * 1.1 ? IPHONE_H : Math.round(Math.min(2000, Math.max(1400, winH)));
   return portraitLayout(H);
 }

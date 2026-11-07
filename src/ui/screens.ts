@@ -22,7 +22,7 @@ export function tribesAnnounceHtml(g: GameState) {
     <h2 class="an-title">This Match</h2>
     <div class="an-label in">In play</div>
     <div class="an-row">${g.tribes.map((t, i) => badge(t, i, true)).join('')}</div>
-    <div class="hint" style="font-size:16px;margin-top:-6px">Neutral units are always in play.</div>
+    <div class="hint" style="margin-top:-6px">Neutral units are always in play.</div>
     <div class="an-label out">Banned</div>
     <div class="an-row small">${banned.map((t, i) => badge(t, i, false)).join('')}</div>
     <button class="btn big primary an-go" data-act="to-hero">Choose Your Hero</button>

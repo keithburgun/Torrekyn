@@ -8,7 +8,7 @@ import '@fontsource/nunito/latin-800.css';
 import './ui/styles.css';
 import { App } from './ui/app';
 import { initUpdates } from './ui/update';
-import { currentLayout, onLayoutChange } from './ui/layout';
+import { currentLayout, getMode, onLayoutChange } from './ui/layout';
 import type { GameState } from './engine/types';
 
 declare const __ARTIFACT__: boolean;
@@ -34,10 +34,30 @@ function fit() {
   lastSize = size;
   return changed;
 }
-window.addEventListener('resize', () => { if (fit()) appRef?.render(); });
+// Phones are laid out for portrait. A phone held sideways gets a prompt to turn it (desktops and
+// tablets are unaffected, and choosing a layout in Options turns the prompt off).
+const rotate = document.createElement('div');
+rotate.id = 'rotate-prompt';
+rotate.innerHTML = `<div class="rp-icon">📱</div><div class="rp-title">Turn your phone upright</div>
+  <div class="rp-text">Torrekin is laid out for portrait on phones, so everything is big enough to read and tap.</div>
+  <button class="btn" type="button">Play sideways anyway</button>`;
+document.body.appendChild(rotate);
+let sidewaysOk = false;
+try { sidewaysOk = sessionStorage.getItem('torrekin-sideways') === '1'; } catch { /* ignore */ }
+rotate.querySelector('button')!.addEventListener('click', () => {
+  sidewaysOk = true;
+  try { sessionStorage.setItem('torrekin-sideways', '1'); } catch { /* ignore */ }
+  checkRotate();
+});
+function checkRotate() {
+  const phone = window.matchMedia('(pointer: coarse)').matches && Math.min(window.screen.width, window.screen.height) < 520;
+  rotate.classList.toggle('show', phone && window.innerWidth > window.innerHeight && getMode() === 'auto' && !sidewaysOk);
+}
+checkRotate();
+window.addEventListener('resize', () => { checkRotate(); if (fit()) appRef?.render(); });
 fit();
 let appRef: App | null = null;
-onLayoutChange(() => { fit(); appRef?.render(); });
+onLayoutChange(() => { checkRotate(); fit(); appRef?.render(); });
 
 function start(data: { g?: GameState; screen?: string } = {}) {
   const app = new App(stage);

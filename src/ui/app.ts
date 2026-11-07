@@ -58,6 +58,8 @@ export class App {
   busy = false; // a ceremony is playing
   lastShopPos: { x: number; y: number } | null = null;
   showTribes = false; // tribes tooltip pinned open (tap on phones)
+  /** phones have no hover: tapping your hero or a trinket opens this sheet instead of a tooltip */
+  sheet: { kind: 'hero' } | { kind: 'trinket'; id: string } | null = null;
   seenBoards = new Map<number, CombatResult['frames'][number]['sides'][number]>();
   combat: CombatPlayer | null = null;
 
@@ -81,7 +83,7 @@ export class App {
     });
     onUnlock((a) => this.achievementToast(a));
     window.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape') { this.targeting = null; this.sel = null; this.viewer = null; this.achOpen = false; this.render(); }
+      if (e.key === 'Escape') { this.sheet = null; this.targeting = null; this.sel = null; this.viewer = null; this.achOpen = false; this.render(); }
     });
     this.render();
   }
@@ -198,13 +200,13 @@ export class App {
     const tribes = this.g!.tribes.map((t) => TRIBE_NAMES[t]).join(' · ') + `  (${7 - CONFIG.tribesPerGame} tribes banned)`;
     return `<div class="modal" style="background:rgba(255,255,255,.08)">
       <h2>Choose Your Hero</h2>
-      <div class="hint" style="font-size:17px">Tribes this game: ${esc(tribes)}</div>
+      <div class="hint lead">Tribes this game: ${esc(tribes)}</div>
       <div class="choices pairs">${offer.map((id) => {
         const h = heroDef(id)!;
         return `<div class="choice herocard" data-act="hero-pick" data-id="${id}">
           <div class="hero-portrait" style="background-image:url('${heroArt(h.id)}')"></div>
           <div class="hn">${esc(h.name)}</div>
-          <div class="pc" style="font-size:14px;margin-top:-8px;text-align:center">${esc(h.title)}</div>
+          <div class="pc htitle" style="font-size:14px;margin-top:-8px;text-align:center">${esc(h.title)}</div>
           <div class="pw">${esc(h.power)} ${h.passive ? '<span class="pc">(Passive)</span>' : `<span class="pc">(${h.cost} gold)</span>`}</div>
           <div class="pt">${esc(h.text)}</div>
         </div>`;
@@ -215,6 +217,20 @@ export class App {
   leaderboardHtml() {
     const g = this.g!;
     const order = [...g.players].sort((a, b) => (b.alive ? 1 : 0) - (a.alive ? 1 : 0) || b.health - a.health || a.placement - b.placement);
+    if (L.portrait) {
+      // phones: just a portrait, a health bar and the number; tap a player for the details
+      const chips = order.map((p) => {
+        const next = this.me.nextOpponent === p.id;
+        const pct = Math.max(0, Math.min(100, (p.health / CONFIG.startHealth) * 100));
+        return `<button class="pchip ${p.human ? 'me' : ''} ${next ? 'next' : ''} ${p.alive ? '' : 'dead'}" data-act="inspect" data-id="${p.id}" aria-label="${esc(p.name)}, ${p.health} Health">
+          <div class="avatar" style="background-image:url('${heroArt(p.hero)}')">${next ? '<span class="tag">NEXT</span>' : ''}${p.human ? '<span class="tag you">YOU</span>' : ''}${!p.alive ? `<span class="place">${ordinal(p.placement)}</span>` : ''}</div>
+          <div class="hpbar"><div style="width:${pct}%"></div></div>
+          <div class="hpn">${Math.max(0, p.health)}</div>
+        </button>`;
+      }).join('');
+      const b = L.leader;
+      return `<div class="abs pstrip" style="left:${b.x}px;top:${b.y}px;width:${b.w}px;height:${b.h}px">${chips}</div>`;
+    }
     const rows = order.map((p) => {
       const h = heroDef(p.hero);
       const next = this.me.nextOpponent === p.id;
@@ -233,7 +249,7 @@ export class App {
     }).join('');
     const ghostNext = this.me.nextOpponent === -1 ? '<div class="hint" style="margin-top:4px">Next: a ghost</div>' : '';
     const b = L.leader;
-    return `<div class="abs panel leader ${b.horizontal ? 'horizontal' : ''} ${b.grid ? 'grid' : ''}" style="left:${b.x}px;top:${b.y}px;width:${b.w}px;height:${b.h}px">${rows}${b.horizontal ? '' : ghostNext}</div>`;
+    return `<div class="abs panel leader ${b.horizontal ? 'horizontal' : ''}" style="left:${b.x}px;top:${b.y}px;width:${b.w}px;height:${b.h}px">${rows}${b.horizontal ? '' : ghostNext}</div>`;
   }
 
   shopHtml() {
@@ -292,21 +308,23 @@ export class App {
   tavernBarHtml() {
     const p = this.me;
     const upCost = p.tier >= CONFIG.maxTier ? null : p.upgradeCost;
+    const t = L.phone?.tavern;
+    const at = (cx: number, landX: number) => (t ? `left:${cx - t.btn / 2}px;top:${t.btnTop}px` : `left:${landX}px;top:${L.tavernY + 14}px`);
     return `
-      <div class="tavern-btn upgrade ${upCost === null || p.gold < upCost ? 'off' : ''}" data-act="upgrade" style="left:${L.cx - 175}px;top:${L.tavernY + 14}px" title="Upgrade the Tavern">
+      <div class="tavern-btn upgrade ${upCost === null || p.gold < upCost ? 'off' : ''}" data-act="upgrade" style="${at(t?.up ?? 0, L.cx - 175)}" title="Upgrade the Tavern">
         <div class="tb-icon">⬆</div>${upCost === null ? '' : `<div class="tb-cost">${upCost}</div>`}
         <div class="tb-label">${upCost === null ? 'Max Tier' : 'Upgrade'}</div>
       </div>
-      <div class="tavern-keeper" style="left:${L.cx - 66}px;top:${L.tavernY}px">
+      <div class="tavern-keeper" style="left:${t ? L.cx - t.kp / 2 : L.cx - 66}px;top:${L.tavernY}px">
         <div class="tk-portrait" style="background-image:url('${heroArt('tavern')}')"></div>
         <div class="tk-num">${p.tier}</div>
         <div class="tk-tier">${'★'.repeat(p.tier)}</div>
         <div class="tk-label">Tavern · Tier ${p.tier}</div>
       </div>
-      <div class="tavern-btn refresh ${p.gold < CONFIG.rerollCost ? 'off' : ''}" data-act="reroll" style="left:${L.cx + 87}px;top:${L.tavernY + 14}px" title="Refresh the Tavern">
+      <div class="tavern-btn refresh ${p.gold < CONFIG.rerollCost ? 'off' : ''}" data-act="reroll" style="${at(t?.refresh ?? 0, L.cx + 87)}" title="Refresh the Tavern">
         <div class="tb-icon">↻</div><div class="tb-cost">${CONFIG.rerollCost}</div><div class="tb-label">Refresh</div>
       </div>
-      <div class="tavern-btn freeze ${p.frozen ? 'on' : ''}" data-act="freeze" style="left:${L.cx + 187}px;top:${L.tavernY + 14}px" title="Freeze the Tavern">
+      <div class="tavern-btn freeze ${p.frozen ? 'on' : ''}" data-act="freeze" style="${at(t?.freeze ?? 0, L.cx + 187)}" title="Freeze the Tavern">
         <div class="tb-icon">❄</div><div class="tb-label">${p.frozen ? 'Frozen' : 'Freeze'}</div>
       </div>`;
   }
@@ -317,6 +335,23 @@ export class App {
     const hd = heroDef(p.hero);
     const canPower = !!hd && canUseHeroPower(this.g!, p);
     const state = !hd ? '' : hd.passive ? 'passive' : canPower ? 'ready' : 'spent';
+    const ph = L.phone;
+    if (ph) {
+      // phones: tapping the hero opens a sheet with the power and a Use button (there is no hover)
+      const hs = ph.heroSize;
+      let out = `<button class="my-hero ${state}" data-act="hero-info" aria-label="Your hero power" style="left:${L.cx - hs / 2}px;top:${L.heroY - hs / 2}px;width:${hs}px;height:${hs}px">
+        <div class="hero-portrait" style="width:${hs}px;height:${hs}px;background-image:url('${heroArt(p.hero)}')"><div class="hp">${p.health}</div></div>
+        ${hd && !hd.passive ? `<div class="tb-cost">${hd.cost}</div>` : ''}
+      </button>`;
+      if (hd) out += `<button class="power-pill ${state}" data-act="hero-info" style="left:${L.cx - 150}px;top:${ph.pillY}px;width:300px">${esc(hd.power)}${hd.passive ? '' : state === 'ready' ? ' · Tap' : p.heroUsed ? ' · Used' : ''}</button>`;
+      p.trinkets.forEach((tid, i) => {
+        const td = trinketDef(tid);
+        out += `<button class="trinket-orb ${td.greater ? 'greater' : ''}" data-act="trinket-info" data-id="${tid}" aria-label="${esc(td.name)}" style="left:${ph.trinket.x}px;top:${ph.trinket.y + i * ph.trinket.step}px;width:${ph.trinket.size}px;height:${ph.trinket.size}px"></button>`;
+      });
+      const qs = p.quests.filter((q) => q.have < q.need);
+      if (qs.length) out += `<div class="quest-chip" style="left:${ph.quest.x}px;top:${ph.quest.y}px;width:${ph.quest.w}px">${qs.map((q) => `${q.kind === 'bill' ? 'Demons' : 'Kindred'} ${q.have}/${q.need}`).join(' · ')}</div>`;
+      return out;
+    }
     let h = `<div class="my-hero ${state}" ${hd && !hd.passive ? 'data-act="hero-power"' : ''} style="left:${L.cx - 70}px;top:${L.heroY - 70}px">
       <div class="hero-portrait" style="background-image:url('${heroArt(p.hero)}')"><div class="hp">${p.health}</div></div>
       ${hd && !hd.passive ? `<div class="tb-cost">${hd.cost}</div>` : ''}
@@ -339,9 +374,10 @@ export class App {
     const p = this.me;
     const max = Math.min(CONFIG.maxGold, 2 + this.g!.round) + p.maxGoldBonus;
     const pips = Array.from({ length: Math.min(max, 12) }, (_, i) => `<span class="pip ${i < p.gold ? 'full' : ''}"></span>`).join('');
+    const ph = L.phone;
     return `
-      <div class="turn-label" style="left:${L.endTurn.x + 6}px;top:${L.endTurn.y - 30}px">Turn ${this.g!.round}</div>
-      <button class="end-turn" data-act="end-turn" style="left:${L.endTurn.x}px;top:${L.endTurn.y}px">End Turn</button>
+      <div class="turn-label" style="${ph ? `left:${ph.turnLabel.x}px;top:${ph.turnLabel.y}px;width:${ph.turnLabel.w}px` : `left:${L.endTurn.x + 6}px;top:${L.endTurn.y - 30}px`}">Turn ${this.g!.round}</div>
+      <button class="end-turn" data-act="end-turn" style="left:${L.endTurn.x}px;top:${L.endTurn.y}px${ph ? `;width:${ph.endTurnW}px` : ''}">End Turn</button>
       <div class="gold-bar" style="left:${L.gold.x}px;top:${L.gold.y}px">
         <div class="gold-display"><span class="coin"></span>${p.gold}<span class="gmax">/${max}</span></div>
         <div class="pips">${pips}</div>
@@ -349,7 +385,8 @@ export class App {
       </div>
       <button class="gear" data-act="options" style="left:${L.gear.x}px;top:${L.gear.y}px;width:${L.gear.size}px;height:${L.gear.size}px;font-size:${Math.round(L.gear.size * 0.5)}px" title="Options">⚙</button>
       ${this.tribesHtml()}
-      <button class="btn cards-btn" data-act="cards" style="left:${L.cardsBtn.x}px;top:${L.cardsBtn.y}px">📖 Cards</button>`;
+      <button class="btn cards-btn" data-act="cards" style="left:${L.cardsBtn.x}px;top:${L.cardsBtn.y}px${ph ? `;width:${ph.cardsW}px` : ''}">📖 Cards</button>
+      ${this.sheet ? this.sheetHtml() : ''}`;
   }
 
   /** Hover (or tap) to see which tribes are in this match. */
@@ -408,8 +445,9 @@ export class App {
         <button class="btn" data-act="right" ${s.idx >= p.board.length - 1 || u.mem.locked ? 'disabled' : ''}>▶</button>`;
     }
     // place it beside the card (above it for cards in hand)
-    const W = 210;
-    const H = 300 + (actions ? 54 : 0);
+    // phones get a much bigger card (zoomed in CSS) and big buttons; numbers here match styles.css
+    const W = L.portrait ? 342 : 210;
+    const H = L.portrait ? 493 + (actions ? 118 : 0) : 300 + (actions ? 54 : 0);
     let x: number;
     let y: number;
     if (L.popover === 'stack') {
@@ -436,6 +474,37 @@ export class App {
       <div class="pop-card">${bigCardHtml(v)}</div>${actions ? `<div class="actions">${actions}</div>` : ''}</div>`;
   }
 
+  /** Phones: details for your hero power or a trinket, with a big Use button where it applies. */
+  sheetHtml() {
+    const p = this.me;
+    const s = this.sheet!;
+    let title = '';
+    let sub = '';
+    let body = '';
+    let action = '';
+    if (s.kind === 'hero') {
+      const hd = heroDef(p.hero);
+      if (!hd) return '';
+      title = hd.power;
+      sub = `${hd.name} · ${hd.passive ? 'Passive' : `${hd.cost} gold, once per turn`}`;
+      body = hd.text;
+      if (!hd.passive) {
+        const can = canUseHeroPower(this.g!, p);
+        action = `<button class="btn big primary" data-act="hero-power" ${can ? '' : 'disabled'}>${p.heroUsed ? 'Used this turn' : `Use <span class="cost">${hd.cost}<span class="coin"></span></span>`}</button>`;
+      }
+    } else {
+      const td = trinketDef(s.id);
+      title = td.name;
+      sub = td.greater ? 'Greater Trinket' : 'Lesser Trinket';
+      body = td.text;
+    }
+    return `<div class="modal sheet-wrap" data-act="sheet-close"><div class="panel sheet">
+      <div class="sheet-title">${esc(title)}</div><div class="sheet-sub">${esc(sub)}</div>
+      <div class="sheet-body">${esc(body)}</div>
+      <div class="sheet-actions">${action}<button class="btn big" data-act="sheet-close">Close</button></div>
+    </div></div>`;
+  }
+
   discoverHtml() {
     const d = this.me.discovers[0];
     return `<div class="modal"><h2>${esc(d.reason)}</h2><div class="choices">${d.options.map((id, i) => {
@@ -450,7 +519,7 @@ export class App {
     const offer = p.trinketOffer!;
     const greater = trinketDef(offer[0]).greater;
     return `<div class="modal"><h2>${greater ? 'Greater' : 'Lesser'} Trinket</h2>
-      <div class="hint" style="font-size:17px">Choose one to buy. You have ${p.gold} gold. (Placeholder trinkets.)</div>
+      <div class="hint lead">Choose one to buy. You have ${p.gold} gold. (Placeholder trinkets.)</div>
       <div class="choices pairs">${offer.map((id) => {
         const t = trinketDef(id);
         return `<div class="choice trinketcard ${t.greater ? 'greater' : ''} ${t.cost > p.gold ? 'cant' : ''}" data-act="trinket" data-id="${id}">
@@ -471,7 +540,7 @@ export class App {
       <div class="panel inspect-panel" style="padding:24px 30px;display:flex;flex-direction:column;gap:14px;align-items:center;min-width:700px">
         <div style="display:flex;gap:18px;align-items:center">
           <div class="hero-portrait" style="width:96px;height:96px;background-image:url('${heroArt(p.hero)}')"><div class="hp">${p.health}</div></div>
-          <div><div style="font-family:var(--display);font-size:26px">${esc(p.name)}</div>
+          <div><div class="ip-name" style="font-family:var(--display);font-size:26px">${esc(p.name)}</div>
           <div class="hint" style="padding:0;text-align:left">${esc(h?.title ?? '')}<br>${esc(h?.power ?? '')}: ${esc(h?.text ?? '')}<br>Tavern Tier ${p.tier}${p.trinkets.length ? ' · Trinkets: ' + p.trinkets.map((t) => trinketDef(t).name).join(', ') : ''}</div></div>
         </div>
         <div class="hint">Army when you last fought:</div>
@@ -484,7 +553,7 @@ export class App {
     const p = this.me;
     const place = p.placement || 1;
     return `<div class="modal"><h2>${place === 1 ? 'Victory!' : `You finished ${ordinal(place)}`}</h2>
-      <div class="hint" style="font-size:18px">Rounds survived: ${this.g!.round}</div>
+      <div class="hint lead">Rounds survived: ${this.g!.round}</div>
       <div style="display:flex;gap:14px"><button class="btn big primary" data-act="new">Play Again</button><button class="btn big" data-act="title">Title</button></div></div>`;
   }
 
@@ -695,7 +764,11 @@ export class App {
       case 'discover': chooseDiscover(g!, p!, Number(el.dataset.idx)); sfx.buy(); bump('discovers'); noteGame('discover'); this.commit(); break;
       case 'trinket': if (!pickTrinket(g!, p!, el.dataset.id!)) this.toast('Not enough gold'); else { sfx.upgrade(); bump('trinkets'); } this.commit(); break;
       case 'trinket-skip': pickTrinket(g!, p!, null); this.commit(); break;
+      case 'hero-info': this.sel = null; this.sheet = { kind: 'hero' }; sfx.click(); this.render(); break;
+      case 'trinket-info': this.sel = null; this.sheet = { kind: 'trinket', id: el.dataset.id! }; sfx.click(); this.render(); break;
+      case 'sheet-close': if (e.target === el || el.tagName === 'BUTTON') { this.sheet = null; this.render(); } break;
       case 'hero-power': {
+        this.sheet = null;
         const h = heroDef(p!.hero);
         if (!h || h.passive) break;
         if (!canUseHeroPower(g!, p!)) { this.toast(p!.heroUsed ? 'Already used this turn' : 'Not enough gold'); break; }
@@ -719,7 +792,8 @@ export class App {
   }
 
   onHover(e: MouseEvent) {
-    if (this.screen !== 'shop' || this.dragging || this.sel) return;
+    // phones have no hover (a tap would fire it too), so previews there only come from selecting a card
+    if (this.screen !== 'shop' || this.dragging || this.sel || L.portrait) { if (L.portrait && this.hover) { this.hover = null; this.updateDetail(); } return; }
     const el = (e.target as HTMLElement).closest('.card[data-zone]') as HTMLElement | null;
     const next = el && ['shop', 'hand', 'board'].includes(el.dataset.zone!) ? { zone: el.dataset.zone as Zone, idx: Number(el.dataset.idx) } : null;
     if (JSON.stringify(next) === JSON.stringify(this.hover)) return;

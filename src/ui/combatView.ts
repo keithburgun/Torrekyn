@@ -24,6 +24,8 @@ export class CombatPlayer {
   layer: HTMLElement;
   fxLayer: HTMLElement;
   L: Layout = currentLayout();
+  /** hero portrait sizes in combat (bigger on phones; must match styles.css) */
+  av = this.L.portrait ? { enemy: 130, mine: 150 } : { enemy: 100, mine: 124 };
   private rowX(i: number, n: number) {
     const step = this.L.combat.step;
     const total = (n - 1) * step + this.L.cardW;
@@ -35,13 +37,16 @@ export class CombatPlayer {
     const meP = g.players[0];
     const oppId = me === 0 ? (r.b === -1 ? r.ghostOf! : r.b) : r.a;
     const opp = g.players[oppId];
+    // phones: when neither army ever has more than 5 units, use the bigger shop-size cards
+    const most = Math.max(0, ...r.frames.map((f) => Math.max(f.sides[0].length, f.sides[1].length)));
+    if (this.L.portrait && most <= 5) this.L = { ...this.L, small: false, large: true, cardW: 168, cardH: 228, combat: { ...this.L.combat, step: 176 } };
     placeBoardBg(stage, this.L, (this.L.combat.enemyY + this.L.combat.myY + this.L.cardH) / 2);
     stage.innerHTML = `
-      <div class="combat-name enemy" style="left:${this.L.combat.enemyHero.x - 50}px;top:${this.L.combat.enemyHero.y - 50}px"><div class="avatar" id="avatar-enemy" style="background-image:url('${heroArt(opp.hero)}')"><div class="hpb">${opp.health}</div></div>
+      <div class="combat-name enemy" style="left:${this.L.combat.enemyHero.x - this.av.enemy / 2}px;top:${this.L.combat.enemyHero.y - this.av.enemy / 2}px"><div class="avatar" id="avatar-enemy" style="background-image:url('${heroArt(opp.hero)}')"><div class="hpb">${opp.health}</div></div>
         <div>${r.b === -1 ? 'Ghost of ' : ''}${esc(opp.name)}<div class="hint" style="padding:0;text-align:left">${esc(heroDef(opp.hero)?.title ?? '')}</div></div></div>
-      <div class="combat-name mine" style="left:${this.L.combat.myHero.x - 62}px;top:${this.L.combat.myHero.y - 62}px"><div class="avatar" id="avatar-me" style="background-image:url('${heroArt(meP.hero)}')"><div class="hpb">${meP.health}</div></div><div>${esc(meP.name)}</div></div>
+      <div class="combat-name mine" style="left:${this.L.combat.myHero.x - this.av.mine / 2}px;top:${this.L.combat.myHero.y - this.av.mine / 2}px"><div class="avatar" id="avatar-me" style="background-image:url('${heroArt(meP.hero)}')"><div class="hpb">${meP.health}</div></div><div>${esc(meP.name)}</div></div>
       <div class="vs-banner" style="left:${this.L.cx}px;top:${this.L.combat.banner}px">ROUND ${round} · BATTLE</div>
-      <div class="abs" style="right:30px;bottom:30px;display:flex;gap:10px">
+      <div class="abs combat-ctl" style="right:30px;bottom:30px;display:flex;gap:10px">
         <button class="btn" data-cact="speed">Speed ×${this.speed}</button>
         <button class="btn" data-cact="skip">Skip</button>
       </div>
@@ -214,7 +219,7 @@ export class CombatPlayer {
 
     // 3. add new units / update existing ones
     for (const [id, { u, x, y }] of pos) {
-      const html = cardHtml(frameUnitView(u), { zone: 'combat', idx: 0, x, y, id, small: this.L.small });
+      const html = cardHtml(frameUnitView(u), { zone: 'combat', idx: 0, x, y, id, small: this.L.small, large: this.L.large });
       const tmp = document.createElement('div');
       tmp.innerHTML = html;
       const fresh = tmp.firstElementChild as HTMLElement;
