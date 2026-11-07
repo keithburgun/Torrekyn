@@ -63,3 +63,13 @@ The installer isn't code-signed yet, so Windows SmartScreen will warn on first i
 
 ## Building Windows locally (on a Windows PC)
 Install [Rust](https://rustup.rs) and Node 22, then `npm install` and `npm run tauri:build`.
+
+## Android test builds
+Every push to `main` builds an APK (`.github/workflows/android.yml`) and attaches it to the **android-latest**
+release. On your phone, open the repo's Releases page on github.com (signed in), tap **Torrekin.apk**, and install it.
+Android asks once to allow installs from your browser. Each build is signed with the same test key, so new builds
+install over old ones and keep your progress.
+
+Local build: `npm run build:android`, then open `android/` in Android Studio (or run `./gradlew assembleRelease` there).
+The Android app is a Capacitor wrapper around the web build (`capacitor.config.json`). App icons and the splash screen
+come from `assets/` via `npx @capacitor/assets generate --android`.

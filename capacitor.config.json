@@ -1,0 +1,8 @@
+{
+  "appId": "com.keithburgun.torrekin",
+  "appName": "Torrekin",
+  "webDir": "dist-android",
+  "android": {
+    "backgroundColor": "#141217"
+  }
+}

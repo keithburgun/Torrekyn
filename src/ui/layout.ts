@@ -150,11 +150,14 @@ export function setMode(m: LayoutMode) {
 }
 export function onLayoutChange(f: () => void) { listeners.add(f); }
 
+/** usable screen size in CSS pixels (inside notches and system bars); main.ts keeps it current */
+export const room = { w: typeof window === 'undefined' ? 1600 : window.innerWidth, h: typeof window === 'undefined' ? 900 : window.innerHeight };
+
 export function currentLayout(): Layout {
-  const portrait = mode === 'portrait' || (mode === 'auto' && window.innerHeight > window.innerWidth * 1.1);
+  const portrait = mode === 'portrait' || (mode === 'auto' && room.h > room.w * 1.1);
   if (!portrait) return LANDSCAPE;
   // the Portrait toggle on a wide screen previews an iPhone-shaped screen; a real portrait screen uses its own shape
-  const winH = 900 * (window.innerHeight / window.innerWidth);
-  const H = mode === 'portrait' && window.innerHeight <= window.innerWidth * 1.1 ? IPHONE_H : Math.round(Math.min(2000, Math.max(1400, winH)));
+  const winH = 900 * (room.h / room.w);
+  const H = mode === 'portrait' && room.h <= room.w * 1.1 ? IPHONE_H : Math.round(Math.min(2000, Math.max(1400, winH)));
   return portraitLayout(H);
 }

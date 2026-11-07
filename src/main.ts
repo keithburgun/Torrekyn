@@ -8,10 +8,10 @@ import '@fontsource/nunito/latin-800.css';
 import './ui/styles.css';
 import { App } from './ui/app';
 import { initUpdates } from './ui/update';
-import { currentLayout, getMode, onLayoutChange } from './ui/layout';
+import { currentLayout, getMode, onLayoutChange, room } from './ui/layout';
 import type { GameState } from './engine/types';
 
-declare const __ARTIFACT__: boolean;
+declare const __NO_UPDATES__: boolean;
 
 interface Hot {
   ready?: (start: (data: { g?: GameState; screen?: string }) => void) => void;
@@ -23,11 +23,19 @@ const hot = (window as unknown as { claude?: { hot?: Hot } }).claude?.hot;
 const stage = document.getElementById('stage')!;
 
 let lastSize: string | null = null;
+/** the space inside the safe area (the viewport's padding keeps clear of notches and system bars) */
+const viewport = document.getElementById('viewport')!;
+function measure() {
+  const cs = getComputedStyle(viewport);
+  room.w = Math.max(1, viewport.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight));
+  room.h = Math.max(1, viewport.clientHeight - parseFloat(cs.paddingTop) - parseFloat(cs.paddingBottom));
+}
 function fit() {
+  measure();
   const L = currentLayout();
   stage.style.width = `${L.W}px`;
   stage.style.height = `${L.H}px`;
-  const s = Math.min(window.innerWidth / L.W, window.innerHeight / L.H);
+  const s = Math.min(room.w / L.W, room.h / L.H);
   stage.style.transform = `scale(${s})`;
   const size = `${L.W}x${L.H}`;
   const changed = lastSize !== null && lastSize !== size;
@@ -71,4 +79,4 @@ function start(data: { g?: GameState; screen?: string } = {}) {
 if (hot?.ready) hot.ready(start);
 else start(hot?.data ?? {});
 
-if (!__ARTIFACT__) initUpdates();
+if (!__NO_UPDATES__) initUpdates();

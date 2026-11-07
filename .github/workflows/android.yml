@@ -1,0 +1,53 @@
+# Builds an Android APK on every push to main and puts it on the "android-latest" release, so the
+# newest test build can be downloaded straight to a phone from the repo's Releases page.
+# Every APK is signed with the same test key (android/torrekin-test.keystore), so each one installs
+# over the previous one without losing progress.
+name: Android APK
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: android-apk
+  cancel-in-progress: true
+
+jobs:
+  apk:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22, cache: npm }
+      - uses: actions/setup-java@v4
+        with: { distribution: temurin, java-version: 21, cache: gradle }
+      - uses: android-actions/setup-android@v3
+      - run: npm ci
+      - run: npm test
+      - name: Build the game for Android and copy it into the app
+        run: npm run build:android
+      - name: Build the APK
+        working-directory: android
+        run: |
+          chmod +x gradlew
+          VERSION=$(node -p "require('../package.json').version")
+          ./gradlew assembleRelease --no-daemon -PversionCode=${{ github.run_number }} -PversionName="$VERSION-build.${{ github.run_number }}"
+      - name: Name the APK
+        run: |
+          mkdir -p out
+          cp android/app/build/outputs/apk/release/app-release.apk out/Torrekin.apk
+          ls -la out
+      - uses: actions/upload-artifact@v4
+        with: { name: torrekin-apk, path: out/Torrekin.apk }
+      - name: Publish to the "android-latest" release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release delete android-latest --yes --cleanup-tag || true
+          gh release create android-latest out/Torrekin.apk \
+            --title "Android test build #${{ github.run_number }}" \
+            --notes "Latest Android test build from \`${GITHUB_SHA::7}\`. On your phone, tap **Torrekin.apk** below to download it, then open it to install (allow installs from your browser if Android asks). New builds install over the old one and keep your progress." \
+            --prerelease --target "$GITHUB_SHA"

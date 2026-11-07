@@ -16,7 +16,7 @@ import { bump, evaluate, newGameStarted, noteGame, onUnlock, recordCombat, recor
 import { currentLayout, getMode, LANDSCAPE, setMode, type Layout, type LayoutMode } from './layout';
 import { ALL_TRIBES } from '../engine/core';
 
-declare const __ARTIFACT__: boolean;
+declare const __NO_UPDATES__: boolean;
 
 type Zone = 'shop' | 'hand' | 'board';
 interface Sel { zone: Zone; idx: number }
@@ -167,7 +167,7 @@ export class App {
         <button class="btn big" data-act="options">Options</button>
       </div>
     </div>
-    <div class="version">v${APP_VERSION}${__ARTIFACT__ ? '' : ' · <a href="#" data-act="check-update" style="color:inherit">Check for updates</a>'}</div>`;
+    <div class="version">v${APP_VERSION}${__NO_UPDATES__ ? '' : ' · <a href="#" data-act="check-update" style="color:inherit">Check for updates</a>'}</div>`;
   }
 
   rulesHtml() {

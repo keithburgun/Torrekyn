@@ -47,7 +47,10 @@ html, body {
 button { font-family: var(--display); }
 b { font-weight: 800; }
 
-#viewport { position: fixed; inset: 0; display: flex; align-items: center; justify-content: center; background: #141217; }
+#viewport { position: fixed; inset: 0; display: flex; align-items: center; justify-content: center; background: #141217; box-sizing: border-box;
+  /* keep the game clear of notches, camera cutouts and system bars (phones and the Android app draw edge to edge) */
+  padding: max(env(safe-area-inset-top, 0px), var(--safe-area-inset-top, 0px)) max(env(safe-area-inset-right, 0px), var(--safe-area-inset-right, 0px))
+    max(env(safe-area-inset-bottom, 0px), var(--safe-area-inset-bottom, 0px)) max(env(safe-area-inset-left, 0px), var(--safe-area-inset-left, 0px)); }
 #stage {
   position: relative; width: 1600px; height: 900px; flex: none; transform-origin: center center;
   background: var(--charcoal) center/cover no-repeat; overflow: hidden; overflow: clip;

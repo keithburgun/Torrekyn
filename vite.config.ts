@@ -6,11 +6,14 @@ const pkg = JSON.parse(fs.readFileSync('package.json', 'utf8'));
 const isTauri = !!process.env.TAURI_ENV_PLATFORM;
 // `npm run build:artifact` makes a copy for playing inside Claude (no service worker, no update checks)
 const isArtifact = process.env.TORREKIN_TARGET === 'artifact';
+// `npm run build:android` makes the copy wrapped into the Android app (Capacitor, see capacitor.config.json)
+const isAndroid = process.env.TORREKIN_TARGET === 'android';
 
 export default defineConfig({
   base: './',
-  define: { __APP_VERSION__: JSON.stringify(pkg.version), __ARTIFACT__: JSON.stringify(isArtifact) },
-  build: { target: 'es2021', chunkSizeWarningLimit: 1500, outDir: isArtifact ? 'dist-artifact' : 'dist' },
+  // __NO_UPDATES__: copies that can't update themselves in place (inside Claude, the Android app)
+  define: { __APP_VERSION__: JSON.stringify(pkg.version), __NO_UPDATES__: JSON.stringify(isArtifact || isAndroid) },
+  build: { target: 'es2021', chunkSizeWarningLimit: 1500, outDir: isArtifact ? 'dist-artifact' : isAndroid ? 'dist-android' : 'dist' },
   server: { port: 5173, strictPort: true },
   plugins: [
     {
@@ -28,7 +31,7 @@ export default defineConfig({
       },
     },
     VitePWA({
-      disable: isTauri || isArtifact,
+      disable: isTauri || isArtifact || isAndroid,
       registerType: 'prompt',
       includeAssets: ['icon.svg', 'icon-192.png', 'icon-512.png'],
       workbox: {
@@ -44,7 +47,7 @@ export default defineConfig({
         theme_color: '#120d0a',
         background_color: '#07050a',
         display: 'fullscreen',
-        orientation: 'landscape',
+        orientation: 'any',
         start_url: './',
         icons: [
           { src: 'icon-192.png', sizes: '192x192', type: 'image/png' },
