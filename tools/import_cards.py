@@ -207,15 +207,25 @@ def main():
             tribe = t
         rows.append((r, tribe, name))
 
+    # the art workbook (tools/export_sheets.py) adds Card ID, Art source and Crop columns
+    head = {str(ws.cell(1, c).value or "").strip(): c for c in range(1, ws.max_column + 1)}
+    id_col = head.get("Card ID")
+    src_col = head.get("Art source")
+    crop_col = head.get("Crop (x, y, size)")
     names = [slug(n) for _, _, n in rows]
     cards = []
+    art_changes = {}
     for (r, tribe_key, name), base_slug in zip(rows, names):
         tid, _ = TRIBES[tribe_key]
         cid = base_slug if names.count(base_slug) == 1 else f"{base_slug}_{tid}"
+        if id_col and ws.cell(r, id_col).value:
+            cid = str(ws.cell(r, id_col).value).strip()  # keeps art and ability code attached through renames
+        if src_col and crop_col and ws.cell(r, src_col).value:
+            art_changes[cid] = (str(ws.cell(r, src_col).value).strip(), str(ws.cell(r, crop_col).value or "").strip())
         text = (ws.cell(r, 6).value or "").strip()
         text = TEXT_OVERRIDES.get(cid, text)
         golden_cell = ws.cell(r, 7).value
-        golden = GOLDEN.get(cid)
+        golden = (str(golden_cell).strip() if golden_cell else None) or GOLDEN.get(cid)
         if golden is None:
             raise SystemExit(f"missing golden text for {cid}")
         cards.append({
@@ -238,9 +248,42 @@ def main():
     with open("src/data/cards.json", "w") as f:
         json.dump({"tribes": tribes, "cards": cards}, f, indent=1)
     print(f"wrote {len(cards)} cards")
+    if art_changes:
+        update_art(art_changes)
     if out_golden:
         wb.save(out_golden)
         print("wrote", out_golden)
+
+
+FOLDERS = [("Images/UI/characterportraits/UnitUIIcons/", "U"), ("Images/UI/characterportraits/", "P"), ("Illustrations/Characters/", "C"),
+           ("Images/GemImages/", "G"), ("Images/NMB Intro/", "N"), ("Images/Units/", "S"), ("Images/Tiles/", "T"), ("Images/UI/", "UI"),
+           ("Images/", "M"), ("Illustrations/", "I"), ("RGB PNG/", "R"), ("Circle and square icons/", "K")]
+
+
+def update_art(changes):
+    """Write changed Art source / Crop cells back to tools/art_sources.json (then run tools/build_art.py)."""
+    path = "tools/art_sources.json"
+    data = json.load(open(path))
+    changed = []
+    for cid, (where, crop) in changes.items():
+        key = next((k + "/" + where[len(f):] for f, k in FOLDERS if where.startswith(f)), None)
+        if not key:
+            print(f"  {cid}: unknown art folder in {where!r}, skipped")
+            continue
+        spec = {"src": key}
+        if crop.startswith("pixel"):
+            spec["px"] = True
+            box = re.findall(r"\d+", crop)
+            if len(box) == 4:
+                spec["box"] = [int(b) for b in box]
+        else:
+            spec["crop"] = [float(v) for v in re.findall(r"[\d.]+", crop)[:3]]
+        if data["cards"].get(cid) != spec:
+            data["cards"][cid] = spec
+            changed.append(cid)
+    if changed:
+        json.dump(data, open(path, "w"), indent=1)
+        print(f"art changed for {len(changed)} cards: {', '.join(changed)} (run tools/build_art.py <assets>)")
 
 
 if __name__ == "__main__":

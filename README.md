@@ -34,7 +34,18 @@ npm test                                             # runs 150 simulated games
 ```
 New card **abilities** need code in `src/engine/effects.ts` (one entry per card id).
 
-## Replacing art
+## Art
+Cards and heroes use Keith's illustrations (Spellstorm, Gem Wizards Tactics, Dragon Bridge), cropped into
+`public/art/v2/`. Which image each card uses and how it is cropped is in `tools/art_sources.json`; rebuild with
+`python3 tools/build_art.py <folder with the unzipped art archives>`. The original generated placeholder art is
+still in `public/art/cards|heroes` and can be switched back on in Options → Card art → Classic (git tag `ai-art`
+marks the last version that used it everywhere).
+
+`python3 tools/export_sheets.py Torrekin_Art.xlsx heroes.json trinkets.json` writes a workbook with every card,
+hero and trinket and its art. `python3 tools/import_cards.py Torrekin_Art.xlsx` reads it back (names, stats,
+text, and changed Art source / Crop cells).
+
+## Replacing art (classic)
 Drop images in `public/art/cards/` (any of png/webp/jpg/svg). Then point the card at the file in `src/data/art.json`, for example `"lich": "art/cards/lich.png"`. Square images around 512×512 work best. Hero portraits are `public/art/heroes/<n>.svg`. The board is `public/art/board.svg` and the menu background is `public/art/menu.svg`.
 
 ## Making a new version

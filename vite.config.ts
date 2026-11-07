@@ -41,7 +41,7 @@ export default defineConfig({
       registerType: 'prompt',
       includeAssets: ['icon.svg', 'icon-192.png', 'icon-512.png'],
       workbox: {
-        globPatterns: ['**/*.{js,css,html,svg,png,woff,woff2}'],
+        globPatterns: ['**/*.{js,css,html,svg,png,webp,woff,woff2}'],
         globIgnores: ['downloads/**'],
         navigateFallbackDenylist: [/version\.json/],
         maximumFileSizeToCacheInBytes: 5 * 1024 * 1024,

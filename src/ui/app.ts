@@ -5,7 +5,7 @@ import {
 import { HEROES, buyCost, canUseHeroPower, heroDef, mainActive, pickTrinket, powerCost, powersOf, trinketDef, useHeroPower, type HeroDef } from '../engine/heroes';
 import type { CombatResult, GameState, Player } from '../engine/types';
 import { CombatPlayer } from './combatView';
-import { art, bigCardHtml, cardHtml, esc, heroArt, unitView, KEYWORD_HELP, KW_ICON } from './view';
+import { art, bigCardHtml, cardHtml, esc, getArtStyle, heroArt, setArtStyle, unitView, KEYWORD_HELP, KW_ICON, type ArtStyle } from './view';
 import { clearSave, loadSave, save } from './save';
 import { checkForUpdates, versionLabel } from './update';
 import { isMuted, setMuted, sfx } from './sfx';
@@ -582,6 +582,7 @@ export class App {
       <div class="opt-row"><span>Screen layout</span>${seg('layout', [['auto', 'Auto'], ['landscape', 'Landscape'], ['portrait', 'Portrait']], mode)}</div>
       <div class="hint" style="margin-top:-8px">Auto picks portrait when the window is taller than it is wide.</div>
       <div class="opt-row"><span>Sound</span>${seg('sound', [['on', 'On'], ['off', 'Off']], isMuted() ? 'off' : 'on')}</div>
+      <div class="opt-row"><span>Card art</span>${seg('art-style', [['illustrated', 'Illustrated'], ['classic', 'Classic']], getArtStyle())}</div>
       <div class="opt-row"><span>Battle speed</span>${seg('speed', [['1', '×1'], ['2', '×2'], ['4', '×4']], String(speed), 'v')}</div>
       <div style="display:flex;gap:12px;justify-content:center">
         <button class="btn" data-act="cards">Card Viewer</button>
@@ -1246,6 +1247,7 @@ export class App {
       case 'close-options': this.options = false; this.render(); break;
       case 'layout': setMode(el.dataset.mode as LayoutMode); break;
       case 'sound': setMuted(el.dataset.mode === 'off'); this.render(); break;
+      case 'art-style': setArtStyle(el.dataset.mode as ArtStyle); this.render(); break;
       case 'speed': try { localStorage.setItem('torrekin-speed', el.dataset.v!); } catch { /* ignore */ } this.render(); break;
       case 'tribes': this.showTribes = !this.showTribes; this.render(); break;
       case 'to-hero': sfx.click(); this.screen = 'hero'; this.render(); break;

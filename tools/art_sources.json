@@ -1,0 +1,903 @@
+{
+ "_about": "Card and hero art: source image (relative to the unzipped art folders), crop [centre x, centre y, side] as fractions (side = fraction of the shorter edge), or px:true for pixel sprites (first frame, scaled up sharp on a tribe-coloured backdrop). Build with: python3 tools/build_art.py <assets dir>",
+ "heroes": {
+  "andromeda_robin": {
+   "src": "P/advisor-andromeda.png",
+   "crop": [
+    0.33,
+    0.43,
+    0.56
+   ]
+  },
+  "gelf_lanz": {
+   "src": "P/gelf2.png",
+   "crop": [
+    0.52,
+    0.33,
+    0.58
+   ]
+  },
+  "derby_pocket": {
+   "src": "R/derby pose 3 rgb version NEW.png",
+   "crop": [
+    0.57,
+    0.33,
+    0.4
+   ]
+  },
+  "bunny_wizard": {
+   "src": "R/bunny 3 rgb version.png",
+   "crop": [
+    0.5,
+    0.32,
+    0.46
+   ]
+  },
+  "croh_vosh": {
+   "src": "R/croh 1 rgb version.png",
+   "crop": [
+    0.6,
+    0.43,
+    0.58
+   ]
+  },
+  "may_danaris": {
+   "src": "R/may 2 rgb version.png",
+   "crop": [
+    0.47,
+    0.56,
+    0.52
+   ]
+  },
+  "locas_clare": {
+   "src": "M/icon-512.png",
+   "crop": [
+    0.6,
+    0.45,
+    0.7
+   ]
+  },
+  "venice_gorn": {
+   "src": "P/gorn.png",
+   "crop": [
+    0.36,
+    0.4,
+    0.66
+   ]
+  },
+  "omar_evans": {
+   "src": "R/omar 2 rgb version.png",
+   "crop": [
+    0.49,
+    0.34,
+    0.4
+   ]
+  },
+  "eve_williams": {
+   "src": "R/eve 1 rgb version NEW.png",
+   "crop": [
+    0.68,
+    0.38,
+    0.5
+   ]
+  },
+  "abragail": {
+   "src": "R/abragail 3 rgb version NEW.png",
+   "crop": [
+    0.47,
+    0.5,
+    0.4
+   ]
+  },
+  "bill_milton": {
+   "src": "P/advisor-bill.png",
+   "crop": [
+    0.4,
+    0.33,
+    0.5
+   ]
+  },
+  "clover": {
+   "src": "R/dragon rgb version.png",
+   "crop": [
+    0.55,
+    0.42,
+    0.46
+   ]
+  },
+  "trevor_l": {
+   "src": "C/trevor lebbebedeh.jpg",
+   "crop": [
+    0.42,
+    0.31,
+    0.42
+   ]
+  }
+ },
+ "cards": {
+  "skeleton": {
+   "src": "P/skel.png",
+   "crop": [
+    0.5,
+    0.45,
+    1.0
+   ]
+  },
+  "skel": {
+   "src": "S/Skelly/skeletonarcher.png",
+   "px": true
+  },
+  "ash": {
+   "src": "K/fire rgb.png",
+   "crop": [
+    0.5,
+    0.5,
+    0.86
+   ]
+  },
+  "memory": {
+   "src": "G/daydreamingP4.png",
+   "crop": [
+    0.46,
+    0.83,
+    0.3
+   ]
+  },
+  "ashlie": {
+   "src": "U/ui-fanatic.png",
+   "px": true
+  },
+  "bramble": {
+   "src": "T/vineheart.png",
+   "px": true
+  },
+  "thicket": {
+   "src": "N/introScene3.png",
+   "crop": [
+    0.5,
+    0.5,
+    0.52
+   ]
+  },
+  "sickle": {
+   "src": "S/Potato/reaper-omni.png",
+   "px": true
+  },
+  "horseman": {
+   "src": "U/ui-reaper.png",
+   "px": true
+  },
+  "funeral": {
+   "src": "U/ui-coffin.png",
+   "px": true
+  },
+  "lich": {
+   "src": "U/ui-lich.png",
+   "px": true
+  },
+  "necromancer": {
+   "src": "S/Skelly/omnilich.png",
+   "px": true
+  },
+  "romance": {
+   "src": "R/eve 3 rgb version new.png",
+   "crop": [
+    0.5,
+    0.42,
+    0.8
+   ]
+  },
+  "ancient_name_neverending": {
+   "src": "R/scene 1 rgb version.png",
+   "crop": [
+    0.5,
+    0.45,
+    0.8
+   ]
+  },
+  "returner": {
+   "src": "N/Finale/cutscene-eve1.png",
+   "crop": [
+    0.5,
+    0.5,
+    0.75
+   ]
+  },
+  "abandon": {
+   "src": "M/caravan.png",
+   "crop": [
+    0.5,
+    0.5,
+    1.0
+   ]
+  },
+  "lake": {
+   "src": "N/introScene2.png",
+   "crop": [
+    0.5,
+    0.5,
+    0.52
+   ]
+  },
+  "shield_azure": {
+   "src": "U/ui-orderinfantry.png",
+   "px": true
+  },
+  "tourmaline": {
+   "src": "N/gemBluegem.png",
+   "crop": [
+    0.5,
+    0.5,
+    1.0
+   ]
+  },
+  "command": {
+   "src": "C/gelf-transparent.png",
+   "crop": [
+    0.55,
+    0.42,
+    0.85
+   ]
+  },
+  "royal_guard": {
+   "src": "U/ui-royalguardgold.png",
+   "px": true
+  },
+  "message": {
+   "src": "S/rescuez.png",
+   "px": true
+  },
+  "front_and_center": {
+   "src": "S/Order/infantry_animated-gold.png",
+   "px": true
+  },
+  "knight": {
+   "src": "U/ui-ordercavalry.png",
+   "px": true
+  },
+  "longbow": {
+   "src": "U/ui-orderarcher.png",
+   "px": true
+  },
+  "time_cannot_destroy": {
+   "src": "U/ui-ordericeelemental.png",
+   "px": true
+  },
+  "catapult": {
+   "src": "U/ui-catapult.png",
+   "px": true
+  },
+  "remember": {
+   "src": "P/icewizard.png",
+   "crop": [
+    0.5,
+    0.45,
+    1.0
+   ]
+  },
+  "gelf_lanz": {
+   "src": "U/ui-ordergelf.png",
+   "px": true
+  },
+  "ocean_sky": {
+   "src": "R/oren 3 rgb version.png",
+   "crop": [
+    0.5,
+    0.45,
+    0.85
+   ]
+  },
+  "commitment": {
+   "src": "S/Order/icemage-crystal.png",
+   "px": true
+  },
+  "doctor": {
+   "src": "U/ui-bunnymerc.png",
+   "px": true
+  },
+  "librarian": {
+   "src": "C/lori davis transparent.png",
+   "crop": [
+    0.5,
+    0.45,
+    0.95
+   ]
+  },
+  "architect": {
+   "src": "S/Order/builderbunny.png",
+   "px": true
+  },
+  "patchwork": {
+   "src": "R/bunny 1 rgb version.png",
+   "crop": [
+    0.55,
+    0.42,
+    0.7
+   ]
+  },
+  "hug": {
+   "src": "I/Icons/bunny promo.jpg",
+   "crop": [
+    0.86,
+    0.5,
+    0.82
+   ]
+  },
+  "pink_gem": {
+   "src": "N/gemPinkgem.png",
+   "crop": [
+    0.5,
+    0.5,
+    1.0
+   ]
+  },
+  "therapist": {
+   "src": "P/Agneth Sparrow.png",
+   "crop": [
+    0.5,
+    0.45,
+    1.0
+   ]
+  },
+  "vulnerability": {
+   "src": "R/bunny 2 rgb version.png",
+   "crop": [
+    0.5,
+    0.42,
+    0.7
+   ]
+  },
+  "builder": {
+   "src": "U/ui-bulldozer.png",
+   "px": true
+  },
+  "1000_miles": {
+   "src": "R/map rgb version.png",
+   "crop": [
+    0.5,
+    0.5,
+    1.0
+   ]
+  },
+  "barton": {
+   "src": "P/potato.png",
+   "crop": [
+    0.5,
+    0.45,
+    1.0
+   ]
+  },
+  "life": {
+   "src": "I/Icons/heart.png",
+   "crop": [
+    0.5,
+    0.5,
+    1.0
+   ]
+  },
+  "restore": {
+   "src": "C/Bunny.jpg",
+   "crop": [
+    0.5,
+    0.5,
+    0.95
+   ]
+  },
+  "honeysuckle_kindred": {
+   "src": "N/gemPurplegem.png",
+   "crop": [
+    0.5,
+    0.5,
+    1.0
+   ]
+  },
+  "devotion": {
+   "src": "N/introScene4.png",
+   "crop": [
+    0.5,
+    0.5,
+    0.52
+   ]
+  },
+  "sapling": {
+   "src": "U/ui-spudling.png",
+   "px": true
+  },
+  "rootling": {
+   "src": "U/ui-turtlepult.png",
+   "px": true
+  },
+  "farmer": {
+   "src": "P/farmer.png",
+   "crop": [
+    0.5,
+    0.45,
+    1.0
+   ]
+  },
+  "organizer": {
+   "src": "C/corn farmer2.jpg",
+   "crop": [
+    0.5,
+    0.42,
+    0.8
+   ]
+  },
+  "honeysuckle_brambor": {
+   "src": "S/Potato/spore1-crystal.png",
+   "px": true
+  },
+  "roll_guard": {
+   "src": "U/ui-patroll.png",
+   "px": true
+  },
+  "root": {
+   "src": "I/potato.jpg",
+   "crop": [
+    0.12,
+    0.5,
+    0.85
+   ]
+  },
+  "splashmaster": {
+   "src": "P/splashmaster.png",
+   "crop": [
+    0.5,
+    0.45,
+    1.0
+   ]
+  },
+  "elder": {
+   "src": "P/advisor-gorn.png",
+   "crop": [
+    0.5,
+    0.45,
+    1.0
+   ]
+  },
+  "cursed_vines": {
+   "src": "R/croh 2 rgb version.png",
+   "crop": [
+    0.5,
+    0.45,
+    0.85
+   ]
+  },
+  "witch": {
+   "src": "UI/Splash_Art_Color - smaller.png",
+   "crop": [
+    0.12,
+    0.62,
+    0.6
+   ]
+  },
+  "warlock": {
+   "src": "S/Demons/wizard.png",
+   "px": true
+  },
+  "distant_land": {
+   "src": "M/GWT MAP_ PNG.png",
+   "crop": [
+    0.5,
+    0.5,
+    1.0
+   ]
+  },
+  "ancient_name_brambor": {
+   "src": "N/gemBrowngem.png",
+   "crop": [
+    0.5,
+    0.5,
+    1.0
+   ]
+  },
+  "chosen_name": {
+   "src": "UI/GWT COVER IMAGE3_.png",
+   "crop": [
+    0.5,
+    0.5,
+    1.0
+   ]
+  },
+  "andromeda_robin": {
+   "src": "C/andromeda.jpg",
+   "crop": [
+    0.5,
+    0.6,
+    0.85
+   ]
+  },
+  "green_gem": {
+   "src": "N/gemGreengem.png",
+   "crop": [
+    0.5,
+    0.5,
+    1.0
+   ]
+  },
+  "storyteller": {
+   "src": "C/Abragail.jpg",
+   "crop": [
+    0.5,
+    0.42,
+    0.85
+   ]
+  },
+  "disciple": {
+   "src": "U/ui-ninja.png",
+   "px": true
+  },
+  "hunter": {
+   "src": "U/ui-skeletonarcher.png",
+   "px": true
+  },
+  "orange_ninja": {
+   "src": "U/ui-skirmisher.png",
+   "px": true
+  },
+  "owl": {
+   "src": "P/convo-spiritarcher.png",
+   "crop": [
+    0.5,
+    0.5,
+    1.0
+   ]
+  },
+  "secret": {
+   "src": "R/omar 3 rgb version.png",
+   "crop": [
+    0.45,
+    0.45,
+    0.8
+   ]
+  },
+  "white_ninja": {
+   "src": "S/Order/icedemon-alt.png",
+   "px": true
+  },
+  "songstress": {
+   "src": "U/ui-guitar.png",
+   "px": true
+  },
+  "red_sea_snake": {
+   "src": "U/ui-dragon.png",
+   "px": true
+  },
+  "larva": {
+   "src": "S/Generic/sandgolem.png",
+   "px": true,
+   "box": [
+    0,
+    0,
+    64,
+    64
+   ]
+  },
+  "ambush": {
+   "src": "M/ambush sketch.png",
+   "crop": [
+    0.5,
+    0.5,
+    1.0
+   ]
+  },
+  "shadow_place": {
+   "src": "R/may 1 rgb version.png",
+   "crop": [
+    0.45,
+    0.45,
+    0.85
+   ]
+  },
+  "omar_evans": {
+   "src": "C/omarevans-square.jpg",
+   "crop": [
+    0.5,
+    0.56,
+    0.74
+   ]
+  },
+  "shine_like_a_knife": {
+   "src": "R/omar 1 rgb version.png",
+   "crop": [
+    0.55,
+    0.5,
+    0.8
+   ]
+  },
+  "left_twinbot": {
+   "src": "S/Alcove/twinbot.png",
+   "px": true
+  },
+  "right_twinbot": {
+   "src": "S/Alcove/twinbot-sheet2.png",
+   "px": true
+  },
+  "tinker": {
+   "src": "S/Alcove/engineer.png",
+   "px": true
+  },
+  "sniper": {
+   "src": "R/oren 1 rgb version.png",
+   "crop": [
+    0.5,
+    0.48,
+    0.75
+   ]
+  },
+  "mod": {
+   "src": "S/Alcove/hacker.png",
+   "px": true
+  },
+  "chaos": {
+   "src": "R/box art.jpg",
+   "crop": [
+    0.5,
+    0.32,
+    0.6
+   ]
+  },
+  "aerial_drone": {
+   "src": "S/Alcove/mech.png",
+   "px": true
+  },
+  "computer": {
+   "src": "S/Alcove/reactor.png",
+   "px": true
+  },
+  "virus": {
+   "src": "K/destroygem rgb keithedit.png",
+   "crop": [
+    0.5,
+    0.5,
+    0.86
+   ]
+  },
+  "robot_boy": {
+   "src": "P/robotboy.png",
+   "crop": [
+    0.5,
+    0.45,
+    1.0
+   ]
+  },
+  "scientist": {
+   "src": "C/december.png",
+   "crop": [
+    0.4,
+    0.4,
+    0.75
+   ]
+  },
+  "paradox": {
+   "src": "I/Icons/teleport.png",
+   "crop": [
+    0.5,
+    0.5,
+    1.0
+   ]
+  },
+  "warmech": {
+   "src": "S/Alcove/tank.png",
+   "px": true
+  },
+  "may_danaris": {
+   "src": "P/advisor-may.png",
+   "crop": [
+    0.5,
+    0.45,
+    1.0
+   ]
+  },
+  "golden_light": {
+   "src": "R/may 3 rgb version.png",
+   "crop": [
+    0.5,
+    0.42,
+    0.75
+   ]
+  },
+  "phoenix": {
+   "src": "R/eve 2 rgb version.png",
+   "crop": [
+    0.5,
+    0.45,
+    0.8
+   ]
+  },
+  "drill_sgt": {
+   "src": "U/ui-drillgold.png",
+   "px": true
+  },
+  "shopkeep": {
+   "src": "U/ui-zeppole.png",
+   "px": true
+  },
+  "intern": {
+   "src": "P/convo-derby.png",
+   "crop": [
+    0.5,
+    0.5,
+    1.0
+   ]
+  },
+  "pyro": {
+   "src": "R/derpy 1 rgb version NEW.png",
+   "crop": [
+    0.45,
+    0.5,
+    0.8
+   ]
+  },
+  "jeweler": {
+   "src": "K/gaingem rgb.png",
+   "crop": [
+    0.5,
+    0.5,
+    0.86
+   ]
+  },
+  "treasure": {
+   "src": "T/treasurechest.png",
+   "px": true
+  },
+  "biker": {
+   "src": "U/ui-demonbiker.png",
+   "px": true
+  },
+  "investor": {
+   "src": "P/businessdemon.png",
+   "crop": [
+    0.5,
+    0.45,
+    1.0
+   ]
+  },
+  "red_gem": {
+   "src": "N/gemRedgem.png",
+   "crop": [
+    0.5,
+    0.5,
+    1.0
+   ]
+  },
+  "purveyor": {
+   "src": "U/ui-rollerdemon.png",
+   "px": true
+  },
+  "gargoil": {
+   "src": "U/ui-gargoil.png",
+   "px": true
+  },
+  "miner": {
+   "src": "S/Demons/demon_bulldozer.png",
+   "px": true,
+   "box": [
+    0,
+    0,
+    32,
+    24
+   ]
+  },
+  "bill_milton": {
+   "src": "C/bill milton.jpg",
+   "crop": [
+    0.47,
+    0.45,
+    0.72
+   ]
+  },
+  "gem_wizard": {
+   "src": "R/oren 2 rgb version.png",
+   "crop": [
+    0.5,
+    0.5,
+    0.85
+   ]
+  },
+  "exploit": {
+   "src": "K/bump rgb.png",
+   "crop": [
+    0.5,
+    0.5,
+    0.86
+   ]
+  },
+  "sword": {
+   "src": "UI/stats.png",
+   "px": true,
+   "box": [
+    64,
+    0,
+    128,
+    64
+   ]
+  },
+  "shield_neutral": {
+   "src": "UI/stats.png",
+   "px": true,
+   "box": [
+    0,
+    0,
+    64,
+    64
+   ]
+  },
+  "pickaxe": {
+   "src": "K/goldcoin rgb.png",
+   "crop": [
+    0.5,
+    0.5,
+    0.86
+   ]
+  },
+  "scout": {
+   "src": "S/Order/longbow-crystal.png",
+   "px": true
+  },
+  "silver_banner": {
+   "src": "S/flag-blue-animated.png",
+   "px": true
+  },
+  "gold_banner": {
+   "src": "S/flag-brown-animated.png",
+   "px": true
+  },
+  "poison": {
+   "src": "S/Demons/toxicwaste.png",
+   "px": true
+  },
+  "vampire": {
+   "src": "U/ui-vampire.png",
+   "px": true
+  },
+  "locas": {
+   "src": "M/icon-512.png",
+   "crop": [
+    0.5,
+    0.5,
+    1.0
+   ]
+  },
+  "spoonful": {
+   "src": "U/ui-roadie.png",
+   "px": true
+  },
+  "grief": {
+   "src": "N/Finale/cutscene-derby1.png",
+   "crop": [
+    0.5,
+    0.5,
+    0.8
+   ]
+  },
+  "sarinee": {
+   "src": "C/Eve.jpg",
+   "crop": [
+    0.5,
+    0.45,
+    0.95
+   ]
+  },
+  "broken_land": {
+   "src": "K/earth rgb.png",
+   "crop": [
+    0.5,
+    0.5,
+    0.86
+   ]
+  },
+  "tom_judith": {
+   "src": "U/ui-amp.png",
+   "px": true
+  },
+  "omni_gem": {
+   "src": "N/gemOmnigem.png",
+   "crop": [
+    0.5,
+    0.5,
+    1.0
+   ]
+  }
+ }
+}

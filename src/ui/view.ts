@@ -1,4 +1,5 @@
 import artManifest from '../data/art.json';
+import artV2 from '../data/artV2.json';
 import { def, effStats, TRIBE_NAMES } from '../engine/core';
 import { EFFECTS } from '../engine/effects';
 import type { Keyword, Player, Unit, CombatFrameUnit } from '../engine/types';
@@ -6,8 +7,20 @@ import { unitCounter } from '../engine/fx';
 
 export const BASE = import.meta.env.BASE_URL;
 export const art = (path: string) => BASE + path;
-export const cardArt = (id: string) => art((artManifest as Record<string, string>)[id] ?? `art/cards/${id}.svg`);
-export const heroArt = (id: string | undefined) => art(`art/heroes/${id ?? 'unknown'}.svg`);
+/**
+ * Art style: "illustrated" (Keith's art from Spellstorm, Gem Wizards Tactics and Dragon Bridge, public/art/v2,
+ * built by tools/build_art.py) or "classic" (the original generated placeholder art, public/art/cards|heroes).
+ */
+export type ArtStyle = 'illustrated' | 'classic';
+let artStyle: ArtStyle = (() => { try { return localStorage.getItem('torrekin-art') === 'classic' ? 'classic' : 'illustrated'; } catch { return 'illustrated'; } })();
+export const getArtStyle = () => artStyle;
+export function setArtStyle(s: ArtStyle) {
+  artStyle = s;
+  try { localStorage.setItem('torrekin-art', s); } catch { /* ignore */ }
+}
+const V2 = artV2 as Record<string, string>;
+export const cardArt = (id: string) => art((artStyle === 'illustrated' && V2[`card:${id}`]) || ((artManifest as Record<string, string>)[id] ?? `art/cards/${id}.svg`));
+export const heroArt = (id: string | undefined) => art((artStyle === 'illustrated' && id && V2[`hero:${id}`]) || `art/heroes/${id ?? 'unknown'}.svg`);
 
 export const esc = (s: string) => s.replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]!);
 
