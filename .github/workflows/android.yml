@@ -24,7 +24,8 @@ jobs:
         with: { node-version: 22, cache: npm }
       - uses: actions/setup-java@v4
         with: { distribution: temurin, java-version: 21, cache: gradle }
-      - uses: android-actions/setup-android@v3
+      # the ubuntu runner already has the Android SDK (ANDROID_HOME); Gradle fetches any missing platform
+      - run: echo "sdk.dir=$ANDROID_HOME" > android/local.properties
       - run: npm ci
       - run: npm test
       - name: Build the game for Android and copy it into the app
