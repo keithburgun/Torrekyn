@@ -6,7 +6,7 @@
 import { addKw, cloneUnit, def, effStats, log, makeUnit, pick, sample, tribeOf, CONFIG } from './core';
 import type { GameState, Player, Unit } from './types';
 import type { Side, Combat } from './combat';
-import { drawFromPool, gainCard, gainNew, queueDiscover, discoverOptions, randomCardOfTier } from './game';
+import { drawFromPool, gainCard, gainNew, randomCardOfTier } from './game';
 
 export interface HeroDef {
   id: string;
@@ -147,9 +147,15 @@ export const HEROES: HeroDef[] = [
     },
   },
   {
-    id: 'abragail', name: 'Abragail', title: 'Scholar of the Azura Academy', power: 'Pop Quiz', avatar: 10, cost: 2,
-    text: 'Discover a unit from your Tavern Tier.',
-    use: (g, p) => queueDiscover(g, p, discoverOptions(g, (id) => def(id).tier === p.tier), 'Pop Quiz: Discover a unit'),
+    id: 'abragail', name: 'Abragail', title: 'Scholar of the Azura Academy', power: 'Tutoring', avatar: 10, cost: 1, target: true,
+    text: 'Give a friendly unit +1/+1, plus +1/+1 for each other unit of its tribe in your army.',
+    use: (g, p, t) => {
+      if (!t) return;
+      const tribe = tribeOf(t);
+      const n = 1 + (tribe === 'neutral' ? 0 : p.board.filter((u) => u !== t && tribeOf(u) === tribe).length);
+      t.atk += n;
+      t.hp += n;
+    },
   },
   {
     id: 'bill_milton', name: 'Bill Milton', title: 'CEO of the Business Demons', power: 'Golden Parachute', avatar: 11, passive: true,

@@ -235,11 +235,11 @@ export class App {
         <div class="pn">${esc(hd.power)} ${hd.passive ? '' : `<span class="cost">${hd.cost}<span class="coin"></span></span>`}</div>
         <div class="pt">${esc(hd.text)}</div></div>` : ''}
       ${trink ? `<div class="trinkets">${trink}</div>` : ''}
-      <div class="gold-display"><span class="coin"></span>${p.gold}<span style="font-size:16px;color:var(--plum-soft)">/ ${Math.min(CONFIG.maxGold, 2 + this.g!.round) + p.maxGoldBonus}</span></div>
-      <div style="font-size:14px;color:var(--plum-soft)">Round ${this.g!.round}${p.goldNextTurn ? ` · +${p.goldNextTurn} gold next turn` : ''}</div>
+      <div class="gold-display"><span class="coin"></span>${p.gold}<span style="font-size:16px;color:var(--ink-soft)">/ ${Math.min(CONFIG.maxGold, 2 + this.g!.round) + p.maxGoldBonus}</span></div>
+      <div style="font-size:14px;color:var(--ink-soft)">Round ${this.g!.round}${p.goldNextTurn ? ` · +${p.goldNextTurn} gold next turn` : ''}</div>
       <button class="btn big primary" data-act="end-turn" style="width:100%">End Turn</button>
       <div id="detail" class="detail">${this.detailHtml()}</div>
-      <div style="position:absolute;bottom:10px;display:flex;gap:8px"><button class="btn" data-act="menu" style="font-size:13px;padding:5px 10px">Menu</button></div>
+      <button class="btn" data-act="menu" style="position:absolute;top:12px;left:12px;font-size:13px;padding:4px 10px">Menu</button>
     </div>`;
   }
 
@@ -249,7 +249,7 @@ export class App {
     if (!s) {
       const next = p.nextOpponent === -1 ? 'a ghost' : p.nextOpponent !== null ? this.g!.players[p.nextOpponent].name : '?';
       const quests = p.quests.filter((q) => q.have < q.need).map((q) => `<div class="hint">Quest: ${q.kind === 'bill' ? 'Buy Business Demons' : 'Buy Kindred'} ${q.have}/${q.need}</div>`).join('');
-      return `<div class="hint" style="margin-top:20px">Next opponent:<br><b style="color:var(--plum);font-size:17px">${esc(next)}</b></div>
+      return `<div class="hint" style="margin-top:20px">Next opponent:<br><b style="color:var(--ink);font-size:17px">${esc(next)}</b></div>
         ${quests}
         <div class="hint" style="margin-top:16px">Drag a Tavern unit down to buy it. Drag from your hand into your army to play it. Drag an army unit up to the Tavern to sell it.<br><br>Or tap a card to see it and act.</div>`;
     }
@@ -265,7 +265,7 @@ export class App {
         <button class="btn primary" data-act="sell" ${u.mem.locked ? 'disabled' : ''}>Sell <span class="cost">+${sellValue(u, p)}<span class="coin"></span></span></button>
         <button class="btn" data-act="right" ${s.idx >= p.board.length - 1 || u.mem.locked ? 'disabled' : ''}>▶</button>`;
     }
-    return `<div style="transform:scale(.88);transform-origin:top center;margin-bottom:-36px">${bigCardHtml(v)}</div><div class="actions">${actions}</div>`;
+    return `<div style="transform:scale(.84);transform-origin:top center;margin-bottom:-50px">${bigCardHtml(v)}</div><div class="actions">${actions}</div>`;
   }
 
   discoverHtml() {

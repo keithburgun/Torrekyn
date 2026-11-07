@@ -87,7 +87,7 @@ Twelve Torrekin champions; you choose 1 of 4 at the start. Powers are either act
 | Venice Gorn | Sow Seeds | 2 gold | Plant a seed; 2 turns later it becomes a random unit from 1 Tier above your Tavern |
 | Omar Evans | Leaf Cloak | Passive | Start of Combat: your right-most unit gets Stealth and +1/+1 per Tavern Tier |
 | Eve Williams | Wild Card | 1 gold, target | Transform a friendly unit into a random unit of the same Tier, then +3/+3 |
-| Abragail | Pop Quiz | 2 gold | Discover a unit from your Tavern Tier |
+| Abragail | Tutoring | 1 gold, target | A friendly unit gets +1/+1, plus +1/+1 for each other unit of its tribe in your army |
 | Bill Milton | Golden Parachute | Passive | Your units sell for 2 gold |
 
 In 600 simulated bot-only games, average placements ranged from 3.15 to 3.82 (3.5 is even).

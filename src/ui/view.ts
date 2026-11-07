@@ -77,6 +77,7 @@ export function cardHtml(u: { cardId: string; golden: boolean; atk: number; hp: 
   const icons = kw.filter((k) => k !== 'taunt' && k !== 'divineShield').map((k) => `<span title="${KW_ICON[k][1]}">${KW_ICON[k][0]}</span>`).join('');
   const tags = abilityTags(u.cardId).slice(0, 2).map((t) => `<i>${t}</i>`).join('');
   return `<div class="${cls}" data-zone="${o.zone}" data-idx="${o.idx}" ${o.id !== undefined ? `data-id="${o.id}"` : ''} style="left:${o.x}px;top:${o.y}px">
+  <div class="face"></div>
   <div class="art" style="background-image:url('${cardArt(u.cardId)}')"></div>
   <div class="tier">${'★'.repeat(d.tier)}</div>
   <div class="kws">${icons}</div>
@@ -97,13 +98,12 @@ export function bigCardHtml(u: { cardId: string; golden: boolean; atk: number; h
   const d = def(u.cardId);
   const text = u.golden ? d.goldenText : d.text;
   const kwExtra = u.kw.filter((k) => !d.keywords.includes(k)).map((k) => KW_ICON[k][1]);
-  const full = [text, kwExtra.length ? `<i>Has ${kwExtra.join(', ')}.</i>` : ''].filter(Boolean).join(' ');
   return `<div class="bigcard t-${d.tribe} ${u.golden ? 'golden' : ''} ${extra}">
   <div class="art" style="background-image:url('${cardArt(u.cardId)}')"></div>
   <div class="tier">Tier ${d.tier}</div>
   <div class="name">${u.golden ? 'Golden ' : ''}${esc(d.name)}</div>
   <div class="tribe">${esc(TRIBE_NAMES[d.tribe] ?? d.tribe)}${d.token ? ' · Token' : ''}</div>
-  <div class="text">${full ? formatText(text) + (kwExtra.length ? `<br><i>Also has ${kwExtra.join(', ')}.</i>` : '') : '<i>No ability.</i>'}</div>
+  <div class="text"><div>${text ? formatText(text) : kwExtra.length ? '' : '<i>No ability.</i>'}${kwExtra.length ? `${text ? '<br>' : ''}<i>Also has ${kwExtra.join(', ')}.</i>` : ''}</div></div>
   <div class="stat atk">${u.atk}</div>
   <div class="stat hp">${u.hp}</div>
 </div>`;

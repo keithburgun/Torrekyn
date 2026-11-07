@@ -268,42 +268,45 @@ ${sparkle(cx + 70, 70, 9, '#ffffff', 0.95)}${sparkle(cx - 74, 178, 6, '#ffffff',
 
 for (const c of data.cards) fs.writeFileSync(path.join(outCards, `${c.id}.svg`), cardSvg(c));
 
-// ---------------- battle board: a dreamy pastel arena ----------------
+// ---------------- battle board: charcoal night arena with pink & lavender glow ----------------
 function boardSvg() {
   const r = rng('board');
   const W = 1600, H = 900;
-  const clouds = [];
-  for (let i = 0; i < 14; i++) {
+  const haze = [];
+  for (let i = 0; i < 12; i++) {
     const x = r() < 0.5 ? r() * 330 : W - r() * 330;
-    clouds.push(cloud(x, 60 + r() * 780, 160 + r() * 160, '#ffffff', 0.45 + r() * 0.35));
+    haze.push(cloud(x, 60 + r() * 780, 180 + r() * 180, r() < 0.5 ? '#3a3346' : '#33303b', 0.55 + r() * 0.3));
   }
-  for (let i = 0; i < 5; i++) clouds.push(cloud(400 + r() * 800, 40 + r() * 70, 200 + r() * 120, '#ffffff', 0.35));
   const sparks = [];
-  for (let i = 0; i < 90; i++) sparks.push(sparkle(r() * W, r() * H, 2 + r() * 7, r() < 0.3 ? '#ffd1ec' : '#ffffff', 0.35 + r() * 0.55));
+  for (let i = 0; i < 110; i++) sparks.push(sparkle(r() * W, r() * H, 1.5 + r() * 6, r() < 0.35 ? '#ff9fd0' : r() < 0.5 ? '#c9b3ff' : '#ffffff', 0.25 + r() * 0.55));
   const hearts = [];
-  for (let i = 0; i < 18; i++) hearts.push(heart(r() * W, r() * H, 5 + r() * 8, r() < 0.5 ? '#ffb6dc' : '#e2ccff', 0.45 + r() * 0.35));
+  for (let i = 0; i < 16; i++) hearts.push(heart(r() * W, r() * H, 5 + r() * 8, r() < 0.5 ? '#ff7fbf' : '#b79cf2', 0.25 + r() * 0.3));
   const ring = [];
   for (let i = 0; i < 20; i++) {
     const a = (i / 20) * Math.PI * 2;
     const x = 800 + Math.cos(a) * 300, y = 450 + Math.sin(a) * 138;
-    ring.push(i % 2 ? sparkle(x, y, 7, '#ffffff', 0.9) : heart(x, y, 6, '#ff9ccf', 0.75));
+    ring.push(i % 2 ? sparkle(x, y, 7, '#e9dcff', 0.85) : heart(x, y, 6, '#ff7fbf', 0.8));
   }
   let hill1 = `M0 ${H}L0 760`; for (let x = 0; x <= W + 200; x += 200) hill1 += `Q${x + 100} ${700 + r() * 40} ${x + 200} ${750 + r() * 40}`;
   let hill2 = `M0 ${H}L0 830`; for (let x = 0; x <= W + 160; x += 160) hill2 += `Q${x + 80} ${790 + r() * 30} ${x + 160} ${820 + r() * 30}`;
   return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${W} ${H}" width="${W}" height="${H}" preserveAspectRatio="xMidYMid slice">
 <defs>
-<linearGradient id="sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#cbb8ff"/><stop offset=".45" stop-color="#f1dcff"/><stop offset=".8" stop-color="#ffdcef"/><stop offset="1" stop-color="#ffeef7"/></linearGradient>
-<radialGradient id="center" cx=".5" cy=".5" r=".5"><stop offset="0" stop-color="#ffffff" stop-opacity=".85"/><stop offset=".7" stop-color="#ffffff" stop-opacity=".2"/><stop offset="1" stop-color="#ffffff" stop-opacity="0"/></radialGradient>
-<radialGradient id="vig" cx=".5" cy=".5" r=".75"><stop offset=".6" stop-color="#b48ce6" stop-opacity="0"/><stop offset="1" stop-color="#9a6fd8" stop-opacity=".35"/></radialGradient>
+<linearGradient id="sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#1b1920"/><stop offset=".5" stop-color="#25222b"/><stop offset="1" stop-color="#1d1b22"/></linearGradient>
+<radialGradient id="center" cx=".5" cy=".5" r=".5"><stop offset="0" stop-color="#ff8fc8" stop-opacity=".22"/><stop offset=".5" stop-color="#b79cf2" stop-opacity=".12"/><stop offset="1" stop-color="#b79cf2" stop-opacity="0"/></radialGradient>
+<radialGradient id="glowL" cx=".1" cy=".15" r=".45"><stop offset="0" stop-color="#7d5bd0" stop-opacity=".28"/><stop offset="1" stop-color="#7d5bd0" stop-opacity="0"/></radialGradient>
+<radialGradient id="glowR" cx=".92" cy=".85" r=".45"><stop offset="0" stop-color="#e2569e" stop-opacity=".22"/><stop offset="1" stop-color="#e2569e" stop-opacity="0"/></radialGradient>
+<radialGradient id="vig" cx=".5" cy=".5" r=".75"><stop offset=".6" stop-color="#000" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity=".5"/></radialGradient>
 </defs>
 <rect width="${W}" height="${H}" fill="url(#sky)"/>
-${clouds.join('')}
-<ellipse cx="800" cy="450" rx="640" ry="330" fill="url(#center)"/>
-<ellipse cx="800" cy="450" rx="300" ry="138" fill="none" stroke="#ffffff" stroke-width="4" opacity=".8"/>
-<ellipse cx="800" cy="450" rx="270" ry="120" fill="none" stroke="#f3a6d2" stroke-width="2" stroke-dasharray="4 12" stroke-linecap="round" opacity=".9"/>
+<rect width="${W}" height="${H}" fill="url(#glowL)"/>
+<rect width="${W}" height="${H}" fill="url(#glowR)"/>
+${haze.join('')}
+<ellipse cx="800" cy="450" rx="660" ry="340" fill="url(#center)"/>
+<ellipse cx="800" cy="450" rx="300" ry="138" fill="none" stroke="#c9b3ff" stroke-width="3" opacity=".55"/>
+<ellipse cx="800" cy="450" rx="270" ry="120" fill="none" stroke="#ff7fbf" stroke-width="2" stroke-dasharray="4 12" stroke-linecap="round" opacity=".7"/>
 ${ring.join('')}
-<path d="${hill1}L${W} ${H}z" fill="#e7d3ff" opacity=".9"/>
-<path d="${hill2}L${W} ${H}z" fill="#f7cfe6" opacity=".9"/>
+<path d="${hill1}L${W} ${H}z" fill="#2c2735"/>
+<path d="${hill2}L${W} ${H}z" fill="#24202b"/>
 ${hearts.join('')}
 ${sparks.join('')}
 <rect width="${W}" height="${H}" fill="url(#vig)"/>
@@ -311,23 +314,23 @@ ${sparks.join('')}
 }
 fs.writeFileSync(path.join(root, 'public/art/board.svg'), boardSvg());
 
-// ---------------- menu background ----------------
+// ---------------- menu background: dark sky, pink moon ----------------
 function menuSvg() {
   const r = rng('menu');
   const W = 1600, H = 900;
-  const sparks = Array.from({ length: 140 }, () => sparkle(r() * W, r() * 560, 1.5 + r() * 6, '#ffffff', 0.3 + r() * 0.7)).join('');
-  const clouds = Array.from({ length: 12 }, () => cloud(r() * W, 460 + r() * 260, 220 + r() * 220, '#ffffff', 0.5 + r() * 0.4)).join('');
+  const sparks = Array.from({ length: 160 }, () => sparkle(r() * W, r() * 600, 1.5 + r() * 6, r() < 0.3 ? '#ff9fd0' : '#ffffff', 0.25 + r() * 0.7)).join('');
+  const clouds = Array.from({ length: 12 }, () => cloud(r() * W, 470 + r() * 260, 220 + r() * 220, '#3a3346', 0.6 + r() * 0.3)).join('');
   let ridge1 = `M0 ${H}L0 690`; for (let x = 0; x <= W + 200; x += 200) ridge1 += `Q${x + 100} ${620 + r() * 60} ${x + 200} ${680 + r() * 50}`;
   let ridge2 = `M0 ${H}L0 790`; for (let x = 0; x <= W + 160; x += 160) ridge2 += `Q${x + 80} ${740 + r() * 40} ${x + 160} ${780 + r() * 40}`;
   return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${W} ${H}" width="${W}" height="${H}" preserveAspectRatio="xMidYMid slice">
-<defs><linearGradient id="s" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#8f74e0"/><stop offset=".45" stop-color="#d7a8f0"/><stop offset=".75" stop-color="#ffc2df"/><stop offset="1" stop-color="#fff0f7"/></linearGradient>
-<radialGradient id="m" cx=".5" cy=".5" r=".5"><stop offset="0" stop-color="#ffffff"/><stop offset=".35" stop-color="#fff4fb" stop-opacity=".7"/><stop offset="1" stop-color="#ffe0f2" stop-opacity="0"/></radialGradient></defs>
+<defs><linearGradient id="s" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#141217"/><stop offset=".55" stop-color="#26212e"/><stop offset=".85" stop-color="#3b2a3d"/><stop offset="1" stop-color="#2a2430"/></linearGradient>
+<radialGradient id="m" cx=".5" cy=".5" r=".5"><stop offset="0" stop-color="#ffd6ec" stop-opacity=".9"/><stop offset=".3" stop-color="#ff8fc8" stop-opacity=".35"/><stop offset="1" stop-color="#b79cf2" stop-opacity="0"/></radialGradient></defs>
 <rect width="${W}" height="${H}" fill="url(#s)"/>${sparks}
-<circle cx="800" cy="400" r="300" fill="url(#m)"/><circle cx="800" cy="400" r="78" fill="#fffaf2"/><circle cx="828" cy="384" r="70" fill="#fdeefb" opacity=".55"/>
-<path d="${ridge1}L${W} ${H}z" fill="#c9a8ef"/>
+<circle cx="800" cy="400" r="320" fill="url(#m)"/><circle cx="800" cy="400" r="80" fill="#fff1f8"/><circle cx="830" cy="384" r="72" fill="#ffd3e8" opacity=".5"/>
+<path d="${ridge1}L${W} ${H}z" fill="#2b2633"/>
 ${clouds}
-<g fill="#b48fe6"><path d="M1240 720v-130l16-22 16 22v-40l16-30 16 30v40l16-22 16 22v130z"/><path d="M1284 530v-22l16 7-16 7z" fill="#ff9ccf"/><rect x="1278" y="640" width="12" height="18" rx="6" fill="#fff4c4"/></g>
-<path d="${ridge2}L${W} ${H}z" fill="#f2c4e4"/>
+<g fill="#3d3549"><path d="M1240 720v-130l16-22 16 22v-40l16-30 16 30v40l16-22 16 22v130z"/><path d="M1284 530v-22l16 7-16 7z" fill="#ff7fbf"/><rect x="1278" y="640" width="12" height="18" rx="6" fill="#ffc6e0"/></g>
+<path d="${ridge2}L${W} ${H}z" fill="#1f1c25"/>
 </svg>`;
 }
 fs.writeFileSync(path.join(root, 'public/art/menu.svg'), menuSvg());
