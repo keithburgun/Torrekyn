@@ -21,6 +21,23 @@ function fight(g: GameState, a: Unit[], b: Unit[]) {
 }
 
 describe('mechanics', () => {
+  it('Pyro\'s excess damage hits one neighbour (both if Golden) and does not chain', async () => {
+    for (const golden of [false, true]) {
+      const g = newGame(7);
+      const pyro = makeUnit(g, 'pyro'); pyro.atk = 40; pyro.hp = 40; pyro.golden = golden;
+      const enemies = [0, 1, 2, 3, 4, 5, 6].map(() => { const u = makeUnit(g, 'skel'); u.atk = 1; u.hp = 1; return u; });
+      const pa = g.players[0], pb = g.players[1];
+      pa.hero = undefined; pb.hero = undefined; pa.powers = []; pb.powers = [];
+      const c = new Combat(g, { p: pa, board: [pyro], slots: pa.slots, tier: 1, persistent: false },
+        { p: pb, board: enemies, slots: pb.slots, tier: 1, persistent: false });
+      const mine = c.sides[0].units[0];
+      const theirs = c.sides[1].units;
+      c.damage(theirs[3], 40, mine);
+      const dead = theirs.filter((u) => u.hp <= 0).length;
+      expect(dead).toBe(golden ? 3 : 2);
+    }
+  });
+
   it('damage cap is 15', () => {
     expect(combatDamage(5, 30, 0)).toBe(15);
     expect(combatDamage(2, 3, 1)).toBe(6);

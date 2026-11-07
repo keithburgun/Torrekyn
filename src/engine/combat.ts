@@ -186,7 +186,8 @@ export class Combat {
     this.addFx({ k: 'kill', to: t.id, from: source?.id });
   }
 
-  damage(t: CUnit | undefined, amount: number, source?: CUnit) {
+  /** `spill`: this is Pyro's excess damage, which doesn't spill again (it used to chain through a whole army) */
+  damage(t: CUnit | undefined, amount: number, source?: CUnit, spill = false) {
     if (!t || t.hp <= 0 || amount <= 0) return;
     if (!this.inExchange) this.addFx({ k: 'hit', to: t.id, from: source?.id, fromSide: source ? undefined : this.heroSide });
     if (has(t, 'divineShield')) {
@@ -206,12 +207,12 @@ export class Combat {
     }
     if (t.hp <= 0 && source && !t.killedBy) t.killedBy = source;
     if (t.hp > 0) EFFECTS[t.cardId]?.onDamaged?.(this.ctx(t));
-    if (t.hp <= 0 && source?.cardId === 'pyro' && source.hp > 0) {
+    if (t.hp <= 0 && !spill && source?.cardId === 'pyro' && source.hp > 0) {
       const excess = amount - before;
       if (excess > 0) {
         const adj = this.adjacent(t);
         const targets = source.golden ? adj : sample(this.g, adj, 1);
-        for (const a of targets) this.damage(a, excess, source);
+        for (const a of targets) this.damage(a, excess, source, true);
       }
     }
   }
