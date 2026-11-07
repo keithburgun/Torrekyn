@@ -525,7 +525,7 @@ export const EFFECTS: Record<string, Effect> = {
       for (let i = 0; i < c.m; i++) {
         const live = c.c.enemy(c.side).units.filter((u) => u.hp > 0);
         const t = live[live.length - 1];
-        if (t) c.c.damage(t, 50, c.self);
+        if (t) c.c.damage(t, 12, c.self);
       }
     },
   },

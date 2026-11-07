@@ -113,7 +113,7 @@ GOLDEN = {
     "left_twinbot": "Rally: Give the unit to the right of this +4/+4 and Reborn.",
     "right_twinbot": "Start of Combat: Give the unit to the left of this Reborn and +4/+4.",
     "tinker": "Alcove units in the shop have +2/+2 for the rest of this game.",
-    "sniper": "Start of battle: Deal 50 damage to the opponent's right-most minion twice.",
+    "sniper": "Start of battle: Deal 12 damage to the opponent's right-most minion twice.",
     "mod": "Battlecry: Give this unit's stats to the unit to the right of it.",
     "chaos": "Start of Turn: Give your left-most unit +6/+6. Repeat for each Battlecry you played this turn.",
     "aerial_drone": "Whenever you trigger a Battlecry, gain +4/+8.",

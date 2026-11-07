@@ -900,8 +900,8 @@
    "tier": 2,
    "atk": 25,
    "hp": 1,
-   "text": "Start of battle: Deal 50 damage to the opponent's right-most minion.",
-   "goldenText": "Start of battle: Deal 50 damage to the opponent's right-most minion twice.",
+   "text": "Start of battle: Deal 12 damage to the opponent's right-most minion.",
+   "goldenText": "Start of battle: Deal 12 damage to the opponent's right-most minion twice.",
    "keywords": []
   },
   {
