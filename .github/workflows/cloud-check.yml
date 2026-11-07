@@ -1,0 +1,27 @@
+# Checks the cloud-save server (Supabase) is set up: the game_saves table exists and strangers can't write to it.
+# Results are in the run's summary. It never fails the build; see docs/cloud-saves.md for the setup.
+name: Cloud save check
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check the game_saves table
+        run: |
+          URL=$(grep -o "supabaseUrl: '[^']*'" src/config.ts | cut -d"'" -f2)
+          KEY=$(grep -o "supabaseKey: '[^']*'" src/config.ts | cut -d"'" -f2)
+          read_code=$(curl -s -o read.txt -w '%{http_code}' "$URL/rest/v1/game_saves?select=game&limit=1" -H "apikey: $KEY")
+          write_code=$(curl -s -o write.txt -w '%{http_code}' -X POST "$URL/rest/v1/game_saves" -H "apikey: $KEY" -H 'Content-Type: application/json' \
+            -d '{"user_id":"00000000-0000-0000-0000-000000000000","game":"check","data":{}}')
+          echo "read: $read_code $(cat read.txt)"; echo "write (should be refused): $write_code $(cat write.txt)"
+          {
+            echo "### Cloud save server"
+            if [ "$read_code" = 200 ]; then echo "- ✅ game_saves table exists"; else echo "- ❌ game_saves table: HTTP $read_code \`$(head -c 300 read.txt)\`"; fi
+            if [ "$write_code" = 401 ] || [ "$write_code" = 403 ]; then echo "- ✅ signed-out writes are refused (row-level security is on)"
+            else echo "- ❌ signed-out write returned HTTP $write_code \`$(head -c 300 write.txt)\`"; fi
+          } >> "$GITHUB_STEP_SUMMARY"
