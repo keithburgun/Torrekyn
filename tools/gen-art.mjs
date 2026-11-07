@@ -1,10 +1,11 @@
 // Generates placeholder SVG art for every card, the battle board background and hero portraits.
 // Output: public/art/cards/<id>.svg, public/art/board.svg, public/art/menu.svg, public/art/heroes/<n>.svg
 // Replace any file with your own art (same name, or edit src/data/art.json to point to a .png/.webp).
+import { fileURLToPath } from 'node:url';
 import fs from 'node:fs';
 import path from 'node:path';
 
-const root = path.resolve(path.dirname(new URL(import.meta.url).pathname), '..');
+const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..'); // fileURLToPath: also right on Windows
 const data = JSON.parse(fs.readFileSync(path.join(root, 'src/data/cards.json'), 'utf8'));
 // hero-power tokens defined in src/engine/core.ts (not in the spreadsheet)
 data.cards.push({ id: 'pumpkin', tribe: 'neutral', tier: 1 }, { id: 'dragon', tribe: 'neutral', tier: 1 });
