@@ -89,6 +89,7 @@ export class App {
     });
     onUnlock((a) => this.achievementToast(a));
     window.addEventListener('keydown', (e) => {
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'z' && !e.shiftKey) { e.preventDefault(); this.undo(); return; }
       if (e.key === 'Escape') { this.sheet = null; this.targeting = null; this.sel = null; this.viewer = null; this.achOpen = false; this.render(); }
     });
     this.render();
@@ -195,11 +196,9 @@ export class App {
     const canContinue = saved && saved.phase !== 'over';
     return `<div class="title-wrap">
       <h1 class="logo">TORREKIN</h1>
-      <div class="subtitle">An Autobattler</div>
-      ${this.ratingBadge()}
       <div class="menu">
         ${canContinue ? `<button class="btn big primary" data-act="continue">Continue (Round ${saved!.round})</button>` : ''}
-        <button class="btn big ${canContinue ? '' : 'primary'}" data-act="new">New Game</button>
+        <div class="new-row"><button class="btn big ${canContinue ? '' : 'primary'}" data-act="new">New Game</button>${this.ratingBadge()}</div>
         <button class="btn big" data-act="rules">How to Play</button>
         <button class="btn big" data-act="achievements">Achievements</button>
         <button class="btn big" data-act="options">Options</button>
@@ -210,9 +209,8 @@ export class App {
 
   ratingBadge() {
     const r = getRating();
-    return `<div class="rating-badge" title="Your rating. The Expert bot is ${EXPERT_ELO}.">
-      <span class="rb-label">Rating</span><span class="rb-num">${r.rating}</span>
-      <span class="rb-sub">${isProvisional(r) ? `Provisional · ${r.games}/10 games` : `${r.games} games · best ${r.peak}`}</span></div>`;
+    return `<div class="rating-badge" title="Your rating. The Expert bot is ${EXPERT_ELO}. ${isProvisional(r) ? `Provisional: ${r.games}/10 games played.` : `${r.games} games, best ${r.peak}.`}">
+      <span class="rb-label">Rating</span><span class="rb-num">${r.rating}</span></div>`;
   }
 
   rulesHtml() {
@@ -387,6 +385,19 @@ export class App {
     return { ready: canUseHeroPower(g, p, h.id), note: prog ?? '' };
   }
 
+  /** a counter badge on your hero (e.g. "2/5"); turns gold once the power is switched on */
+  heroCountHtml() {
+    const g = this.g!;
+    const p = this.me;
+    for (const h of powersOf(p)) {
+      const t = h.progress?.(g, p);
+      if (!t) continue;
+      const on = t === 'Active';
+      return `<div class="hero-count ${on ? 'on' : ''}" title="${esc(h.power)}">${on ? '★ Active' : esc(t)}</div>`;
+    }
+    return '';
+  }
+
   /** Bottom centre: your hero (it carries your Hero Powers), trinkets beside it. */
   heroAreaHtml() {
     const g = this.g!;
@@ -394,7 +405,8 @@ export class App {
     const powers = powersOf(p);
     const main = mainActive(p);
     const canPower = powers.some((h) => !h.passive && canUseHeroPower(g, p, h.id));
-    const state = !powers.length ? '' : !main ? 'passive' : canPower ? 'ready' : 'spent';
+    const powered = powers.some((h) => h.progress?.(g, p) === 'Active');
+    const state = `${!powers.length ? '' : !main ? 'passive' : canPower ? 'ready' : 'spent'}${powered ? ' powered' : ''}`;
     const costBadge = main ? `<div class="tb-cost">${powerCost(g, p, main)}</div>` : '';
     const ph = L.phone;
     if (ph) {
@@ -402,7 +414,7 @@ export class App {
       const hs = ph.heroSize;
       let out = `<button class="my-hero ${state}" data-act="hero-info" aria-label="Your hero powers" style="left:${L.cx - hs / 2}px;top:${L.heroY - hs / 2}px;width:${hs}px;height:${hs}px">
         <div class="hero-portrait" style="width:${hs}px;height:${hs}px;background-image:url('${heroArt(p.hero)}')"><div class="hp">${p.health}</div></div>
-        ${costBadge}
+        ${costBadge}${this.heroCountHtml()}
       </button>`;
       if (powers.length) {
         const one = powers[0];
@@ -427,11 +439,9 @@ export class App {
     const hint = powers.length > 1 ? 'Click your hero to choose a power.' : main ? (p.usedPowers.includes(main.id) ? 'Used this turn.' : 'Click your hero to use it.') : '';
     let h = `<div class="my-hero ${state}" ${act} style="left:${L.cx - 70}px;top:${L.heroY - 70}px">
       <div class="hero-portrait" style="background-image:url('${heroArt(p.hero)}')"><div class="hp">${p.health}</div></div>
-      ${costBadge}
+      ${costBadge}${this.heroCountHtml()}
       ${powers.length ? `<div class="tip">${tipRows}${hint ? `<i>${hint}</i>` : ''}</div>` : ''}
     </div>`;
-    const prog = powers.map((hd) => { const t = hd.progress?.(g, p); return t ? `${hd.power} ${t}` : ''; }).filter(Boolean).join(' · ');
-    if (prog) h += `<div class="hero-chip" style="left:${L.cx + 80}px;top:${L.heroY - 18}px">${esc(prog)}</div>`;
     p.trinkets.forEach((t, i) => {
       const td = trinketDef(t);
       h += `<div class="trinket-orb ${td.greater ? 'greater' : ''}" style="left:${L.cx - 150 - i * 70}px;top:${L.heroY - 30}px">
@@ -460,7 +470,9 @@ export class App {
       </div>
       <button class="gear" data-act="options" style="left:${L.gear.x}px;top:${L.gear.y}px;width:${L.gear.size}px;height:${L.gear.size}px;font-size:${Math.round(L.gear.size * 0.5)}px" title="Options">⚙</button>
       ${this.tribesHtml()}
-      <button class="btn cards-btn" data-act="cards" style="left:${L.cardsBtn.x}px;top:${L.cardsBtn.y}px${ph ? `;width:${ph.cardsW}px` : ''}">📖 Cards</button>
+      <button class="btn cards-btn" data-act="cards" style="left:${L.cardsBtn.x}px;top:${L.cardsBtn.y}px${ph ? `;width:${ph.cardsW - 104}px` : ''}">📖 Cards</button>
+      <button class="btn undo-btn" data-act="undo" ${this.canUndo() ? '' : 'disabled'} title="Undo (Ctrl+Z). Anything that showed you something new, like a Refresh or a random effect, can't be undone." aria-label="Undo"
+        style="${ph ? `left:${L.cardsBtn.x + ph.cardsW - 92}px;top:${L.cardsBtn.y}px;width:92px` : `left:${L.cardsBtn.x}px;top:${L.cardsBtn.y + 56}px`}">${ph ? '↶' : '↶ Undo'}</button>
       ${this.sheet ? this.sheetHtml() : ''}`;
   }
 
@@ -678,6 +690,7 @@ export class App {
     save(this.g);
     const events = this.screen === 'shop' ? (this.me.tripleEvents?.splice(0) ?? []) : [];
     const fx = this.screen === 'shop' ? this.takeFx() : [];
+    this.trackUndo();
     // remember where the copies were before they disappear from the screen
     const where = new Map<number, { x: number; y: number }>();
     for (const e of events) for (const uid of e.uids) {
@@ -708,6 +721,43 @@ export class App {
       })();
     }
     evaluate(this.g);
+  }
+
+  // ---------------- undo ----------------
+  /** saved states you can go back to this turn, newest last */
+  private undoStack: string[] = [];
+  private undoAt: { json: string; rng: number; round: number } | null = null;
+
+  /**
+   * Called on every change in the shop. A change that drew a random number (rerolls, random targets,
+   * Discovers, random cards) showed you something new, so everything before it is locked in;
+   * anything else (playing a card with a fixed target, moving, selling, freezing) can be undone.
+   */
+  private trackUndo() {
+    const g = this.g;
+    if (!g || g.phase !== 'shop' || this.screen !== 'shop') { this.undoStack = []; this.undoAt = null; return; }
+    const json = JSON.stringify(g);
+    const prev = this.undoAt;
+    if (!prev || prev.round !== g.round || prev.rng !== g.rng) this.undoStack = [];
+    else if (prev.json !== json) { this.undoStack.push(prev.json); if (this.undoStack.length > 40) this.undoStack.shift(); }
+    this.undoAt = { json, rng: g.rng, round: g.round };
+  }
+
+  canUndo() { return this.undoStack.length > 0 && this.screen === 'shop' && !this.busy; }
+
+  undo() {
+    if (!this.canUndo()) return;
+    const json = this.undoStack.pop()!;
+    const g = JSON.parse(json) as GameState;
+    this.g = g;
+    this.undoAt = { json, rng: g.rng, round: g.round };
+    this.sel = null;
+    this.targeting = null;
+    this.sheet = null;
+    this.pendingFx = [];
+    save(g);
+    sfx.click();
+    this.render();
   }
 
   /** effect events still to show: carried over from end of turn (after battle) plus anything new */
@@ -743,6 +793,17 @@ export class App {
     // new cards stay hidden until they arrive
     for (const e of events) for (const uid of [...e.gains, ...e.summons]) { const el = card(uid); if (el) el.style.visibility = 'hidden'; }
     try {
+      if (stale) {
+        // end of turn: say so, then go through the effects one by one
+        const ban = document.createElement('div');
+        ban.className = 'eot-banner';
+        ban.textContent = 'End of Turn';
+        ban.style.left = `${L.cx}px`;
+        ban.style.top = `${L.slotTop - 70}px`;
+        this.stage.appendChild(ban);
+        setTimeout(() => ban.remove(), 1100);
+        await wait(650);
+      }
       for (const e of events) {
         const heroEl = e.hero ? (this.stage.querySelector('.my-hero') as HTMLElement | null) : null;
         const srcEl = heroEl ?? (e.src !== undefined ? card(e.src) : null);
@@ -759,7 +820,6 @@ export class App {
         lab.style.left = `${src.x}px`;
         lab.style.top = `${src.y - src.h / 2 - 8}px`;
         this.stage.appendChild(lab);
-        setTimeout(() => lab.remove(), this.fxHurry ? 400 : 1500);
         for (const c of e.counters) this.popCounter(c.key, c.text, stale, !e.hero);
         sfx.click();
         await wait(300);
@@ -807,8 +867,12 @@ export class App {
           g?.classList.remove('count-pop'); void g?.offsetWidth; g?.classList.add('count-pop');
           sfx.buy();
         }
-        await wait(Math.max(longest, 150) + 280);
+        await wait(Math.max(longest, 150) + (stale ? 520 : 280));
         srcEl?.classList.remove('fx-src');
+        // each effect finishes before the next starts
+        lab.classList.add('out');
+        setTimeout(() => lab.remove(), 250);
+        await wait(stale ? 140 : 60);
       }
     } finally {
       this.stage.removeEventListener('pointerdown', hurry);
@@ -888,8 +952,11 @@ export class App {
           setTimeout(() => lab.remove(), this.fxHurry ? 400 : 1500);
         }
       }
-      this.stage.querySelectorAll<HTMLElement>('.hero-chip, .power-pill').forEach((e) => els.push(e));
-      if (stale) this.stage.querySelectorAll<HTMLElement>('.hero-chip').forEach((e) => { e.textContent = text; });
+      this.stage.querySelectorAll<HTMLElement>('.hero-count, .power-pill').forEach((e) => els.push(e));
+      if (stale) {
+        const short = text.split(' · ')[0].replace(/^.*? (?=\S+$)/, '');
+        this.stage.querySelectorAll<HTMLElement>('.hero-count').forEach((e) => { e.textContent = short === 'Active' ? '★ Active' : short; e.classList.toggle('on', short === 'Active'); });
+      }
     } else if (key === 'quest') {
       this.stage.querySelectorAll<HTMLElement>('.quest-chip').forEach((e) => els.push(e));
     } else {
@@ -975,6 +1042,8 @@ export class App {
   /** Pick up a game handed over by a live page update (Claude artifact). */
   resume(g: GameState) {
     this.g = g;
+    this.undoStack = [];
+    this.undoAt = null;
     for (const pl of g.players) pl.fx = [];
     this.screen = g.phase === 'hero' ? 'hero' : g.phase === 'over' ? 'over' : 'shop';
     this.render();
@@ -1109,6 +1178,7 @@ export class App {
       case 'ach-close': this.achOpen = false; this.render(); break;
       case 'check-update': e.preventDefault(); checkForUpdates(true); break;
       case 'hero-pick': selectHero(g!, el.dataset.id!); this.screen = 'shop'; this.commit(); break;
+      case 'undo': this.undo(); break;
       case 'upgrade': this.result(upgrade(g!, p!), sfx.upgrade, 'upgrades'); this.commit(); break;
       case 'reroll': this.result(reroll(g!, p!), sfx.refresh, 'rerolls'); this.sel = null; this.commit(); break;
       case 'freeze': toggleFreeze(p!); sfx.click(); if (p!.frozen) bump('freezes'); this.commit(); break;
