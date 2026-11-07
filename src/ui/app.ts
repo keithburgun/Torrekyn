@@ -11,7 +11,7 @@ import { APP_VERSION, checkForUpdates } from './update';
 import { isMuted, setMuted, sfx } from './sfx';
 import { achievementsHtml, cardGridHtml, cardViewerHtml, filteredCards, tribesAnnounceHtml, type ViewerState } from './screens';
 import { playTriple } from './ceremony';
-import { placeHud } from './hud';
+import { placeBoardBg, placeHud } from './hud';
 import { bump, evaluate, newGameStarted, noteGame, onUnlock, recordCombat, recordGameEnd, type AchievementDef } from './achievements';
 import { currentLayout, getMode, LANDSCAPE, setMode, type Layout, type LayoutMode } from './layout';
 import { ALL_TRIBES } from '../engine/core';
@@ -92,8 +92,10 @@ export class App {
   render() {
     L = currentLayout();
     this.stage.classList.toggle('portrait', L.portrait);
+    this.stage.classList.toggle('tall', !!L.tall);
     this.stage.classList.toggle('menu-bg', this.screen === 'title' || this.screen === 'rules' || this.screen === 'hero' || this.screen === 'tribes');
     this.stage.style.backgroundImage = `url('${art(this.stage.classList.contains('menu-bg') ? 'art/menu.svg' : 'art/board.svg')}')`;
+    placeBoardBg(this.stage, L, null);
     if (this.screen === 'combat') return; // combat view owns the stage
     let html = '';
     if (this.screen === 'title') html = this.titleHtml();
@@ -231,7 +233,7 @@ export class App {
     }).join('');
     const ghostNext = this.me.nextOpponent === -1 ? '<div class="hint" style="margin-top:4px">Next: a ghost</div>' : '';
     const b = L.leader;
-    return `<div class="abs panel leader ${b.horizontal ? 'horizontal' : ''}" style="left:${b.x}px;top:${b.y}px;width:${b.w}px;height:${b.h}px">${rows}${b.horizontal ? '' : ghostNext}</div>`;
+    return `<div class="abs panel leader ${b.horizontal ? 'horizontal' : ''} ${b.grid ? 'grid' : ''}" style="left:${b.x}px;top:${b.y}px;width:${b.w}px;height:${b.h}px">${rows}${b.horizontal ? '' : ghostNext}</div>`;
   }
 
   shopHtml() {

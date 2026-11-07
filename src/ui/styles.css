@@ -532,6 +532,17 @@ b { font-weight: 800; }
 #stage.portrait .leader.horizontal .nums { justify-content: center; font-size: 13px; margin-top: 2px; }
 #stage.portrait .leader.horizontal .tag { top: 2px; right: 2px; font-size: 9px; padding: 0 5px; }
 #stage.portrait .leader.horizontal .place { bottom: auto; top: 4px; right: 6px; font-size: 16px; }
+/* tall (iPhone-shaped) portrait: two rows of three on the leaderboard, laid out like the PC rows */
+#stage.portrait .leader.horizontal.grid { display: grid; grid-template-columns: repeat(3, 1fr); grid-template-rows: 1fr 1fr; gap: 8px; padding: 10px; }
+#stage.portrait .leader.grid .row { flex-direction: row; text-align: left; justify-content: flex-start; gap: 10px; padding: 6px 10px; height: auto; }
+#stage.portrait .leader.grid .avatar { width: 64px; height: 64px; }
+#stage.portrait .leader.grid .meta { flex: 1; width: auto; }
+#stage.portrait .leader.grid .nm { font-size: 17px; }
+#stage.portrait .leader.grid .hero-nm { display: block; font-size: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+#stage.portrait .leader.grid .hpbar { height: 9px; }
+#stage.portrait .leader.grid .nums { justify-content: flex-start; font-size: 14px; }
+#stage.tall .my-hero { width: 170px; height: 170px; margin: -15px 0 0 -15px; }
+#stage.tall .my-hero .hero-portrait { width: 170px; height: 170px; }
 #stage.portrait .tribes-tip { bottom: auto; top: calc(100% + 10px); }
 #stage.portrait .modal .choices { flex-wrap: wrap; justify-content: center; max-width: 860px; gap: 22px; }
 #stage.portrait .modal .choices.pairs { max-width: 560px; }
@@ -568,6 +579,8 @@ b { font-weight: 800; }
 /* ---------------- card viewer & achievements ---------------- */
 .cv, .achv { display: flex; flex-direction: column; gap: 12px; padding: 20px 24px; width: 1500px; height: 840px; }
 #stage.portrait .cv, #stage.portrait .achv { width: 870px; height: 1540px; }
+#stage.tall .cv, #stage.tall .achv { height: 1820px; }
+#stage.tall .rules { max-height: 1700px; }
 .cv-head { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
 .cv-head h2 { font-size: 34px; margin: 0 8px 0 0; }
 .cv-head .btn { margin-left: auto; }

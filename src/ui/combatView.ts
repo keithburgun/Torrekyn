@@ -3,7 +3,7 @@ import type { CombatFrame, CombatFrameUnit, CombatFx, CombatResult, GameState } 
 import { cardHtml, esc, frameUnitView, heroArt } from './view';
 import { sfx } from './sfx';
 import { currentLayout, type Layout } from './layout';
-import { placeHud } from './hud';
+import { placeBoardBg, placeHud } from './hud';
 
 
 /** base time each frame stays on screen (ms at speed ×1) */
@@ -35,6 +35,7 @@ export class CombatPlayer {
     const meP = g.players[0];
     const oppId = me === 0 ? (r.b === -1 ? r.ghostOf! : r.b) : r.a;
     const opp = g.players[oppId];
+    placeBoardBg(stage, this.L, (this.L.combat.enemyY + this.L.combat.myY + this.L.cardH) / 2);
     stage.innerHTML = `
       <div class="combat-name enemy" style="left:${this.L.combat.enemyHero.x - 50}px;top:${this.L.combat.enemyHero.y - 50}px"><div class="avatar" id="avatar-enemy" style="background-image:url('${heroArt(opp.hero)}')"><div class="hpb">${opp.health}</div></div>
         <div>${r.b === -1 ? 'Ghost of ' : ''}${esc(opp.name)}<div class="hint" style="padding:0;text-align:left">${esc(heroDef(opp.hero)?.title ?? '')}</div></div></div>
