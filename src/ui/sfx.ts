@@ -142,6 +142,34 @@ export const sfx = {
   reborn() {
     [392, 523, 659, 784, 1047].forEach((f, i) => tone({ f, t: i * 0.06, d: 0.4, type: 'sine', v: 0.18 }));
   },
+  /** three copies rushing together */
+  tripleCharge() {
+    tone({ f: 220, f2: 880, d: 0.65, type: 'sawtooth', v: 0.07 });
+    tone({ f: 330, f2: 1320, d: 0.65, type: 'triangle', v: 0.16 });
+    noise({ d: 0.6, v: 0.1, lp: 6000, hp: 2000 });
+  },
+  /** the golden reveal */
+  triple() {
+    noise({ d: 0.35, v: 0.35, lp: 4000 });
+    tone({ f: 110, f2: 55, d: 0.5, type: 'sine', v: 0.7 });
+    [523, 659, 784].forEach((f) => tone({ f, d: 1.3, type: 'triangle', v: 0.22, a: 0.02 }));
+    [1047, 1319, 1568, 2093].forEach((f, i) => tone({ f, t: 0.12 + i * 0.08, d: 0.6, type: 'sine', v: 0.14 }));
+    [2637, 3136, 3951].forEach((f, i) => tone({ f, t: 0.5 + i * 0.07, d: 0.4, type: 'sine', v: 0.08 }));
+  },
+  achievement() {
+    tone({ f: 1175, d: 0.18, type: 'triangle', v: 0.3 });
+    tone({ f: 1568, t: 0.1, d: 0.35, type: 'triangle', v: 0.3 });
+    tone({ f: 2349, t: 0.18, d: 0.4, type: 'sine', v: 0.12 });
+  },
+  /** a banned tribe gets stamped */
+  ban() {
+    tone({ f: 140, f2: 50, d: 0.25, type: 'square', v: 0.18 });
+    noise({ d: 0.15, v: 0.3, lp: 900 });
+  },
+  reveal() {
+    tone({ f: 784, d: 0.15, type: 'triangle', v: 0.25 });
+    tone({ f: 1175, t: 0.06, d: 0.25, type: 'sine', v: 0.18 });
+  },
   win() {
     [523, 659, 784, 1047, 1319].forEach((f, i) => tone({ f, t: i * 0.09, d: 0.35, type: 'triangle', v: 0.3 }));
   },

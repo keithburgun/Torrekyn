@@ -9,6 +9,9 @@ import { art, bigCardHtml, cardHtml, esc, heroArt, unitView, KEYWORD_HELP } from
 import { clearSave, loadSave, save } from './save';
 import { APP_VERSION, checkForUpdates } from './update';
 import { isMuted, setMuted, sfx } from './sfx';
+import { achievementsHtml, cardGridHtml, cardViewerHtml, filteredCards, tribesAnnounceHtml, type ViewerState } from './screens';
+import { playTriple } from './ceremony';
+import { bump, evaluate, newGameStarted, noteGame, onUnlock, recordCombat, recordGameEnd, type AchievementDef } from './achievements';
 import { currentLayout, getMode, LANDSCAPE, setMode, type Layout, type LayoutMode } from './layout';
 import { ALL_TRIBES } from '../engine/core';
 
@@ -38,7 +41,7 @@ const ordinal = (n: number) => n + (n === 1 ? 'st' : n === 2 ? 'nd' : n === 3 ? 
 export class App {
   stage: HTMLElement;
   g: GameState | null = null;
-  screen: 'title' | 'rules' | 'hero' | 'shop' | 'combat' | 'over' = 'title';
+  screen: 'title' | 'rules' | 'tribes' | 'hero' | 'shop' | 'combat' | 'over' = 'title';
   sel: Sel | null = null;
   hover: Sel | null = null;
   press: Press | null = null;
@@ -48,6 +51,10 @@ export class App {
   targeting: Targeting | HeroTargeting | null = null;
   inspect: number | null = null; // player id shown in rival modal
   options = false; // options window open
+  viewer: ViewerState | null = null; // card viewer open
+  achOpen = false; // achievements window open
+  busy = false; // a ceremony is playing
+  lastShopPos: { x: number; y: number } | null = null;
   showTribes = false; // tribes tooltip pinned open (tap on phones)
   seenBoards = new Map<number, CombatResult['frames'][number]['sides'][number]>();
   combat: CombatPlayer | null = null;
@@ -61,8 +68,18 @@ export class App {
     stage.addEventListener('click', (e) => this.onClick(e));
     stage.addEventListener('mouseover', (e) => this.onHover(e));
     stage.addEventListener('contextmenu', (e) => e.preventDefault());
+    stage.addEventListener('input', (e) => {
+      const t = e.target as HTMLInputElement;
+      if (t.id !== 'cv-search' || !this.viewer) return;
+      this.viewer.q = t.value;
+      const grid = stage.querySelector('#cv-grid');
+      if (grid) grid.innerHTML = cardGridHtml(this.viewer, this.g);
+      const c = stage.querySelector('#cv-count');
+      if (c) c.textContent = `${filteredCards(this.viewer, this.g).length} cards`;
+    });
+    onUnlock((a) => this.achievementToast(a));
     window.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape') { this.targeting = null; this.sel = null; this.render(); }
+      if (e.key === 'Escape') { this.targeting = null; this.sel = null; this.viewer = null; this.achOpen = false; this.render(); }
     });
     this.render();
   }
@@ -73,16 +90,19 @@ export class App {
   render() {
     L = currentLayout();
     this.stage.classList.toggle('portrait', L.portrait);
-    this.stage.classList.toggle('menu-bg', this.screen === 'title' || this.screen === 'rules' || this.screen === 'hero');
+    this.stage.classList.toggle('menu-bg', this.screen === 'title' || this.screen === 'rules' || this.screen === 'hero' || this.screen === 'tribes');
     this.stage.style.backgroundImage = `url('${art(this.stage.classList.contains('menu-bg') ? 'art/menu.svg' : 'art/board.svg')}')`;
     if (this.screen === 'combat') return; // combat view owns the stage
     let html = '';
     if (this.screen === 'title') html = this.titleHtml();
     else if (this.screen === 'rules') html = this.rulesHtml();
     else if (this.screen === 'hero') html = this.heroSelectHtml();
+    else if (this.screen === 'tribes') html = tribesAnnounceHtml(this.g!);
     else if (this.screen === 'shop') html = this.shopHtml();
     else if (this.screen === 'over') html = this.shopHtml() + this.overHtml();
     if (this.options) html += this.optionsHtml();
+    if (this.viewer) html += cardViewerHtml(this.viewer, this.g);
+    if (this.achOpen) html += achievementsHtml();
     this.stage.innerHTML = html;
     if (this.screen === 'shop') this.shopFeedback();
   }
@@ -136,6 +156,7 @@ export class App {
         ${canContinue ? `<button class="btn big primary" data-act="continue">Continue (Round ${saved!.round})</button>` : ''}
         <button class="btn big ${canContinue ? '' : 'primary'}" data-act="new">New Game</button>
         <button class="btn big" data-act="rules">How to Play</button>
+        <button class="btn big" data-act="achievements">Achievements</button>
         <button class="btn big" data-act="options">Options</button>
       </div>
     </div>
@@ -169,7 +190,7 @@ export class App {
 
   heroSelectHtml() {
     const offer = this.me.heroOffer ?? HEROES.slice(0, 4).map((h) => h.id);
-    const tribes = this.g!.tribes.map((t) => TRIBE_NAMES[t]).join(' · ');
+    const tribes = this.g!.tribes.map((t) => TRIBE_NAMES[t]).join(' · ') + '  (4 tribes banned)';
     return `<div class="modal" style="background:rgba(255,255,255,.08)">
       <h2>Choose Your Hero</h2>
       <div class="hint" style="font-size:17px">Tribes this game: ${esc(tribes)}</div>
@@ -316,7 +337,8 @@ export class App {
         ${p.goldNextTurn ? `<div class="hint" style="padding:0">+${p.goldNextTurn} gold next turn</div>` : ''}
       </div>
       <button class="gear" data-act="options" style="left:${L.gear.x}px;top:${L.gear.y}px" title="Options">⚙</button>
-      ${this.tribesHtml()}`;
+      ${this.tribesHtml()}
+      <button class="btn cards-btn" data-act="cards" style="left:${L.cardsBtn.x}px;top:${L.cardsBtn.y}px">📖 Cards</button>`;
   }
 
   /** Hover (or tap) to see which tribes are in this match. */
@@ -346,6 +368,10 @@ export class App {
       <div class="hint" style="margin-top:-8px">Auto picks portrait when the window is taller than it is wide.</div>
       <div class="opt-row"><span>Sound</span>${seg('sound', [['on', 'On'], ['off', 'Off']], isMuted() ? 'off' : 'on')}</div>
       <div class="opt-row"><span>Battle speed</span>${seg('speed', [['1', '×1'], ['2', '×2'], ['4', '×4']], String(speed), 'v')}</div>
+      <div style="display:flex;gap:12px;justify-content:center">
+        <button class="btn" data-act="cards">Card Viewer</button>
+        <button class="btn" data-act="achievements">Achievements</button>
+      </div>
       <div style="display:flex;gap:12px;justify-content:center;margin-top:8px">
         <button class="btn big primary" data-act="close-options">Done</button>
         ${this.screen === 'shop' ? '<button class="btn big" data-act="menu">Quit to Title</button>' : ''}
@@ -463,12 +489,58 @@ export class App {
 
   // ---------------- state changes ----------------
   commit() {
-    if (this.g) save(this.g);
+    if (!this.g) return this.render();
+    save(this.g);
+    const events = this.screen === 'shop' ? (this.me.tripleEvents?.splice(0) ?? []) : [];
+    // remember where the copies were before they disappear from the screen
+    const where = new Map<number, { x: number; y: number }>();
+    for (const e of events) for (const uid of e.uids) {
+      const el = this.stage.querySelector(`.card[data-id="${uid}"]`) as HTMLElement | null;
+      if (el) where.set(uid, { x: parseFloat(el.style.left), y: parseFloat(el.style.top) });
+    }
     this.render();
+    if (events.length) {
+      bump('triples', events.length);
+      noteGame('triple', this.g);
+      void this.celebrate(events, where);
+    }
+    evaluate(this.g);
   }
 
-  result(r: { ok: boolean; reason?: string }, sound?: () => void) {
+  /** Play the triple ceremony for each triple, one after another. */
+  async celebrate(events: { cardId: string; uids: number[]; goldenUid: number }[], where: Map<number, { x: number; y: number }>) {
+    this.busy = true;
+    save(this.g!);
+    for (const e of events) {
+      const fallback = this.lastShopPos ?? { x: L.cx - L.cardW / 2, y: L.shopY };
+      const sources = e.uids.map((uid, i) => where.get(uid) ?? { x: fallback.x + (i - 1) * 30, y: fallback.y });
+      const golden = this.me.hand.find((u) => u.uid === e.goldenUid);
+      const view = golden ? unitView(this.me, golden, 'hand', 0) : { cardId: e.cardId, golden: true, atk: def(e.cardId).atk * 2, hp: def(e.cardId).hp * 2, kw: [...def(e.cardId).keywords] };
+      const handEl = this.stage.querySelector(`.card[data-id="${e.goldenUid}"]`) as HTMLElement | null;
+      await playTriple(this.stage, L, e.cardId, sources, view, handEl, this.me.tier);
+    }
+    this.busy = false;
+  }
+
+  achievementToast(a: AchievementDef) {
+    sfx.achievement();
+    const holder = document.getElementById('ach-toasts') ?? (() => {
+      const d = document.createElement('div');
+      d.id = 'ach-toasts';
+      document.body.appendChild(d);
+      return d;
+    })();
+    const t = document.createElement('div');
+    t.className = 'ach-toast';
+    t.innerHTML = `<div class="ach-icon">🏆</div><div><div class="at-label">Achievement unlocked</div><div class="at-name">${esc(a.name)}</div><div class="at-desc">${esc(a.desc)}</div></div>`;
+    holder.appendChild(t);
+    setTimeout(() => t.classList.add('out'), 3600);
+    setTimeout(() => t.remove(), 4200);
+  }
+
+  result(r: { ok: boolean; reason?: string }, sound?: () => void, stat?: string) {
     if (r.ok) sound?.();
+    if (r.ok && stat) bump(stat);
     if (!r.ok && r.reason) this.toast(r.reason);
   }
 
@@ -478,8 +550,13 @@ export class App {
     this.sel = null;
     this.targeting = null;
     this.seenBoards.clear();
-    this.screen = 'hero';
+    newGameStarted();
+    this.screen = 'tribes';
     this.commit();
+    // sounds timed with the announcement animation
+    const inN = this.g.tribes.length;
+    for (let i = 0; i < inN; i++) setTimeout(() => this.screen === 'tribes' && sfx.reveal(), 260 + i * 220);
+    for (let i = 0; i < 7 - inN; i++) setTimeout(() => this.screen === 'tribes' && sfx.ban(), 1300 + i * 260);
   }
 
   /** Pick up a game handed over by a live page update (Claude artifact). */
@@ -508,7 +585,7 @@ export class App {
       this.render();
       return;
     }
-    this.result(play(this.g!, p, handIdx, pos), sfx.deploy);
+    this.result(play(this.g!, p, handIdx, pos), sfx.deploy, 'played');
     this.sel = null;
     this.commit();
   }
@@ -526,7 +603,8 @@ export class App {
     const mine = results.find((r) => r.a === 0 || r.b === 0);
     if (!mine) {
       this.screen = g.phase === 'over' ? 'over' : 'shop';
-      return this.render();
+      if (g.phase === 'over') recordGameEnd(g);
+      return this.commit();
     }
     const meSide = mine.a === 0 ? 0 : 1;
     const oppId = meSide === 0 ? (mine.b === -1 ? mine.ghostOf! : mine.b) : mine.a;
@@ -535,13 +613,21 @@ export class App {
     this.combat = new CombatPlayer(this.stage, g, mine, meSide, round, () => {
       this.combat = null;
       this.screen = g.phase === 'over' ? 'over' : 'shop';
-      this.render();
+      const last = mine.frames[mine.frames.length - 1];
+      recordCombat(g, {
+        won: mine.winner === meSide, lost: mine.winner === 1 - meSide, tie: mine.winner === -1, damage: mine.damage,
+        myUnits: mine.frames[0]?.sides[meSide].length ?? 0, oppUnits: mine.frames[0]?.sides[1 - meSide].length ?? 0,
+        survivors: last?.sides[meSide].length ?? 0, ghost: mine.b === -1,
+      });
+      if (g.phase === 'over') recordGameEnd(g);
+      this.commit();
     });
     this.combat.play();
   }
 
   // ---------------- input ----------------
   onClick(e: MouseEvent) {
+    if (this.busy) return;
     const el = (e.target as HTMLElement).closest('[data-act]') as HTMLElement | null;
     if (!el) return;
     const act = el.dataset.act!;
@@ -560,15 +646,25 @@ export class App {
       case 'sound': setMuted(el.dataset.mode === 'off'); this.render(); break;
       case 'speed': try { localStorage.setItem('torrekin-speed', el.dataset.v!); } catch { /* ignore */ } this.render(); break;
       case 'tribes': this.showTribes = !this.showTribes; this.render(); break;
+      case 'to-hero': sfx.click(); this.screen = 'hero'; this.render(); break;
+      case 'cards': this.options = false; this.viewer = { fromGame: this.screen === 'shop' && !!this.g, onlyMatch: this.screen === 'shop', tribe: '', tier: 0, ability: '', golden: false, q: '' }; this.render(); break;
+      case 'cv-close': this.viewer = null; this.render(); break;
+      case 'cv-tribe': if (this.viewer) { this.viewer.tribe = el.dataset.v!; this.render(); } break;
+      case 'cv-tier': if (this.viewer) { this.viewer.tier = Number(el.dataset.v); this.render(); } break;
+      case 'cv-ab': if (this.viewer) { this.viewer.ability = el.dataset.v!; this.render(); } break;
+      case 'cv-golden': if (this.viewer) { this.viewer.golden = (el as HTMLInputElement).checked; this.render(); } break;
+      case 'cv-match': if (this.viewer) { this.viewer.onlyMatch = (el as HTMLInputElement).checked; this.render(); } break;
+      case 'achievements': this.options = false; this.achOpen = true; this.render(); break;
+      case 'ach-close': this.achOpen = false; this.render(); break;
       case 'check-update': e.preventDefault(); checkForUpdates(true); break;
       case 'hero-pick': selectHero(g!, el.dataset.id!); this.screen = 'shop'; this.commit(); break;
-      case 'upgrade': this.result(upgrade(g!, p!), sfx.upgrade); this.commit(); break;
-      case 'reroll': this.result(reroll(g!, p!), sfx.refresh); this.sel = null; this.commit(); break;
-      case 'freeze': toggleFreeze(p!); sfx.click(); this.commit(); break;
+      case 'upgrade': this.result(upgrade(g!, p!), sfx.upgrade, 'upgrades'); this.commit(); break;
+      case 'reroll': this.result(reroll(g!, p!), sfx.refresh, 'rerolls'); this.sel = null; this.commit(); break;
+      case 'freeze': toggleFreeze(p!); sfx.click(); if (p!.frozen) bump('freezes'); this.commit(); break;
       case 'end-turn': sfx.click(); this.endTurn(); break;
-      case 'buy': if (this.sel) { this.result(buy(g!, p!, this.sel.idx), sfx.buy); this.sel = null; this.commit(); } break;
+      case 'buy': if (this.sel) { this.lastShopPos = { x: shopX(this.sel.idx, p!.shop.length), y: L.shopY }; this.result(buy(g!, p!, this.sel.idx), sfx.buy, 'bought'); this.sel = null; this.commit(); } break;
       case 'play': if (this.sel) this.doPlay(this.sel.idx, p!.board.length); break;
-      case 'sell': if (this.sel) { this.result(sell(g!, p!, this.sel.idx), sfx.sell); this.sel = null; this.commit(); } break;
+      case 'sell': if (this.sel) { this.result(sell(g!, p!, this.sel.idx), sfx.sell, 'sold'); this.sel = null; this.commit(); } break;
       case 'left': case 'right': if (this.sel) {
         const to = this.sel.idx + (act === 'left' ? -1 : 1);
         const r = move(p!, this.sel.idx, to);
@@ -576,8 +672,8 @@ export class App {
         this.result(r);
         this.commit();
       } break;
-      case 'discover': chooseDiscover(g!, p!, Number(el.dataset.idx)); sfx.buy(); this.commit(); break;
-      case 'trinket': if (!pickTrinket(g!, p!, el.dataset.id!)) this.toast('Not enough gold'); else sfx.upgrade(); this.commit(); break;
+      case 'discover': chooseDiscover(g!, p!, Number(el.dataset.idx)); sfx.buy(); bump('discovers'); noteGame('discover'); this.commit(); break;
+      case 'trinket': if (!pickTrinket(g!, p!, el.dataset.id!)) this.toast('Not enough gold'); else { sfx.upgrade(); bump('trinkets'); } this.commit(); break;
       case 'trinket-skip': pickTrinket(g!, p!, null); this.commit(); break;
       case 'hero-power': {
         const h = heroDef(p!.hero);
@@ -587,13 +683,13 @@ export class App {
           if (!p!.board.length) { this.toast('You need a unit in your army'); break; }
           this.targeting = { kind: 'hero' };
           this.render();
-        } else { if (useHeroPower(g!, p!)) sfx.power(); this.commit(); }
+        } else { if (useHeroPower(g!, p!)) { sfx.power(); bump('heroPowers'); noteGame('heroPower'); } this.commit(); }
         break;
       }
       case 'no-target': if (this.targeting?.kind === 'play') {
         const t = this.targeting;
         this.targeting = null;
-        this.result(play(g!, p!, t.handIdx, t.pos), sfx.deploy);
+        this.result(play(g!, p!, t.handIdx, t.pos), sfx.deploy, 'played');
         this.commit();
       } break;
       case 'cancel-target': this.targeting = null; this.render(); break;
@@ -618,7 +714,7 @@ export class App {
   }
 
   onDown(e: PointerEvent) {
-    if (this.screen !== 'shop' || e.button > 0) return;
+    if (this.screen !== 'shop' || e.button > 0 || this.busy || this.viewer || this.achOpen || this.options) return;
     const el = (e.target as HTMLElement).closest('.card[data-zone]') as HTMLElement | null;
     if (!el) return;
     const zone = el.dataset.zone as Zone;
@@ -702,10 +798,10 @@ export class App {
         if (t.kind === 'play') {
           if (!validTargets(p, p.hand[t.handIdx].cardId).includes(u)) return;
           this.targeting = null;
-          this.result(play(g, p, t.handIdx, t.pos, u.uid), sfx.deploy);
+          this.result(play(g, p, t.handIdx, t.pos, u.uid), sfx.deploy, 'played');
         } else {
           this.targeting = null;
-          if (useHeroPower(g, p, u)) sfx.power();
+          if (useHeroPower(g, p, u)) { sfx.power(); bump('heroPowers'); noteGame('heroPower'); }
         }
         this.commit();
         return;
@@ -718,14 +814,14 @@ export class App {
     }
     // a drag
     if (press.zone === 'shop') {
-      if (pt.y > L.shopDrop) this.result(buy(g, p, press.idx), sfx.buy);
+      if (pt.y > L.shopDrop) { this.lastShopPos = { x: shopX(press.idx, p.shop.length), y: L.shopY }; this.result(buy(g, p, press.idx), sfx.buy, 'bought'); }
     } else if (press.zone === 'hand') {
       if (pt.y > L.boardTop && pt.y < L.boardBottom) {
         this.doPlay(press.idx, this.boardIndexAt(pt.x));
         return;
       }
     } else if (press.zone === 'board') {
-      if (pt.y < L.shopDrop) this.result(sell(g, p, press.idx), sfx.sell);
+      if (pt.y < L.shopDrop) this.result(sell(g, p, press.idx), sfx.sell, 'sold');
       else if (pt.y < L.boardBottom) this.result(move(p, press.idx, this.boardIndexAt(pt.x, press.idx)), sfx.click);
     }
     this.sel = null;

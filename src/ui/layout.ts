@@ -31,6 +31,7 @@ export interface Layout {
   gold: { x: number; y: number };
   gear: { x: number; y: number };
   tribes: { x: number; y: number; w: number };
+  cardsBtn: { x: number; y: number };
   targetBar: { x: number; y: number; w: number };
   popover: 'beside' | 'dock';
   dockY: number;
@@ -46,6 +47,7 @@ export const LANDSCAPE: Layout = {
   leader: { x: 14, y: 14, w: 228, h: 800, horizontal: false },
   endTurn: { x: 1410, y: 360 }, gold: { x: 1150, y: 812 }, gear: { x: 1540, y: 842 },
   tribes: { x: 14, y: 826, w: 228 },
+  cardsBtn: { x: 1436, y: 470 },
   targetBar: { x: 250, y: 640, w: 440 },
   popover: 'beside', dockY: 0,
   combat: { enemyY: 168, myY: 452, enemyHero: { x: 800, y: 62 }, myHero: { x: 800, y: 742 }, banner: 411, step: 154 },
@@ -60,6 +62,7 @@ export const PORTRAIT: Layout = {
   leader: { x: 10, y: 10, w: 760, h: 120, horizontal: true },
   endTurn: { x: 690, y: 846 }, gold: { x: 36, y: 846 }, gear: { x: 840, y: 1540 },
   tribes: { x: 36, y: 920, w: 220 },
+  cardsBtn: { x: 720, y: 940 },
   targetBar: { x: 230, y: 1210, w: 440 },
   popover: 'dock', dockY: 1192,
   combat: { enemyY: 420, myY: 840, enemyHero: { x: 450, y: 250 }, myHero: { x: 450, y: 1150 }, banner: 712, step: 124 },

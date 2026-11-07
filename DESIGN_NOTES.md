@@ -8,7 +8,7 @@ When the card text was ambiguous, Hearthstone: Battlegrounds conventions were us
 - Shop size by tier: 3 / 4 / 4 / 5 / 5. Units cost 3, sell for 1, Refresh costs 1, Freeze is free.
 - Gold: 3 on turn 1, +1 per turn, max 10 (plus Investor/trinket bonuses).
 - Card pool copies per tier: 15 / 13 / 11 / 9 / 7 (scaled down from HS for 6 players).
-- 5 of the 6 tribes are used each game, picked at random (Neutral is always in).
+- 4 of the 7 tribes are banned each game, so 3 are in play, picked at random (Neutral is always in). The game announces them at the start.
 - Triples: 3 copies → Golden (double base stats + all buffs from the copies). Playing it lets you Discover a unit from Tavern Tier +1.
 - Matchmaking avoids your last opponent where possible. With an odd number alive, one player fights the ghost of the most recently eliminated player.
 - Board 7, hand 10.

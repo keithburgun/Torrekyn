@@ -237,6 +237,7 @@ export function checkTriples(g: GameState, p: Player) {
     }
     gold.mem.tripleReward = 1;
     p.hand.push(gold);
+    if (p.human) (p.tripleEvents ??= []).push({ cardId: d.id, uids: three.map((u) => u.uid), goldenUid: gold.uid });
     log(p, `Tripled ${d.name}! Golden ${d.name} added to hand.`);
   }
 }

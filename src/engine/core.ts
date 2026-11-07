@@ -15,7 +15,8 @@ export const CONFIG = {
   upgradeCost: [0, 0, 5, 7, 8, 9],
   shopSize: [0, 3, 4, 4, 5, 5],
   copiesPerTier: [0, 15, 13, 11, 9, 7],
-  tribesPerGame: 5,
+  /** 7 tribes exist; 4 are banned each match, so 3 are in play (plus Neutral) */
+  tribesPerGame: 3,
   maxGold: 10,
   heroChoices: 4,
 };

@@ -91,6 +91,8 @@ export interface Player {
   heroOffer?: string[];
   trinkets: string[];
   trinketOffer: string[] | null;
+  /** triples made by the human player, waiting to be celebrated by the UI */
+  tripleEvents?: { cardId: string; uids: number[]; goldenUid: number }[];
   /** snapshot of the board used when this player is a ghost */
   ghost?: { board: Unit[]; slots: Slot[]; tier: number };
   log: string[];
