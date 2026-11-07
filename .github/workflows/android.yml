@@ -3,9 +3,8 @@
 # Every APK is signed with the same test key (android/torrekin-test.keystore), so each one installs
 # over the previous one without losing progress.
 #
-# In-app updates: when the BUILDS_TOKEN secret is set, each build is also published (Torrekin.apk +
-# version.json) to the public repo keithburgun/torrekin-builds, where the Android app checks for updates.
-# The token needs Contents: read and write on that repo only (see README "Android updates").
+# In-app updates: the release also carries version.json (build number + APK link); the Android app reads
+# it to see whether a newer build is out (src/ui/update.ts).
 name: Android APK
 on:
   push:
@@ -23,8 +22,6 @@ jobs:
   apk:
     runs-on: ubuntu-latest
     env:
-      BUILDS_REPO: keithburgun/torrekin-builds
-      BUILDS_TOKEN: ${{ secrets.BUILDS_TOKEN }}
       TORREKIN_BUILD: ${{ github.run_number }}
     steps:
       - uses: actions/checkout@v4
@@ -54,10 +51,10 @@ jobs:
             const fs = require('fs');
             fs.writeFileSync('out/version.json', JSON.stringify({
               version: process.argv[1], build: Number(process.argv[2]), date: new Date().toISOString(),
-              apk: 'https://github.com/' + process.argv[3] + '/releases/download/b' + process.argv[2] + '/Torrekin.apk',
+              apk: 'https://github.com/' + process.argv[3] + '/releases/download/android-latest/Torrekin.apk',
               notes: process.argv[4],
             }, null, 1));
-          " "$VERSION" "$TORREKIN_BUILD" "$BUILDS_REPO" "$NOTES"
+          " "$VERSION" "$TORREKIN_BUILD" "${{ github.repository }}" "$NOTES"
           cat out/version.json
           ls -la out
       - uses: actions/upload-artifact@v4
@@ -67,22 +64,7 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           gh release delete android-latest --yes --cleanup-tag || true
-          gh release create android-latest out/Torrekin.apk \
+          gh release create android-latest out/Torrekin.apk out/version.json \
             --title "Android test build #${{ github.run_number }}" \
             --notes "Latest Android test build from \`${GITHUB_SHA::7}\`. On your phone, tap **Torrekin.apk** below to download it, then open it to install (allow installs from your browser if Android asks). New builds install over the old one and keep your progress." \
             --prerelease --target "$GITHUB_SHA"
-      - name: Publish to the public builds repo (in-app updates)
-        if: env.BUILDS_TOKEN != ''
-        env:
-          GH_TOKEN: ${{ secrets.BUILDS_TOKEN }}
-        run: |
-          gh release create "b$TORREKIN_BUILD" out/Torrekin.apk out/version.json -R "$BUILDS_REPO" \
-            --title "Torrekin build $TORREKIN_BUILD" --latest \
-            --notes "Torrekin build $TORREKIN_BUILD. The Android app updates itself from here; you can also download Torrekin.apk below and install it."
-          # keep the 10 newest builds
-          gh release list -R "$BUILDS_REPO" --limit 100 --json tagName -q '.[10:][].tagName' | while read -r t; do
-            gh release delete "$t" -R "$BUILDS_REPO" --cleanup-tag --yes || true
-          done
-      - name: In-app updates not set up yet
-        if: env.BUILDS_TOKEN == ''
-        run: echo "::notice::BUILDS_TOKEN is not set, so this build was not published for in-app updates. See README 'Android updates'."

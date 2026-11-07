@@ -4,7 +4,7 @@
  *    version is deployed we show a banner and reload into it.
  *  - Windows (Tauri): we fetch version.json from the update site; if it is newer we offer to download
  *    and run the new installer, then the app closes so the installer can replace it.
- *  - Android app: we read version.json from the public builds repo; if its build number is higher we
+ *  - Android app: we read version.json from the android-latest release; if its build number is higher we
  *    download the new APK inside the app (ApkUpdaterPlugin.java) and hand it to Android's installer.
  *    Your progress is kept (it lives in the app's storage, which an update doesn't touch).
  */
@@ -73,7 +73,7 @@ async function fetchVersion(): Promise<VersionInfo | null> {
 
 const hide = () => document.getElementById('update-banner')?.classList.remove('show');
 
-/** Android: is a newer build waiting in the public builds repo? */
+/** Android: is a newer build waiting on the android-latest release? */
 async function checkAndroid(manual: boolean) {
   let info: VersionInfo;
   try {

@@ -66,7 +66,7 @@ Install [Rust](https://rustup.rs) and Node 22, then `npm install` and `npm run t
 
 ## Android test builds
 Every push to `main` builds an APK (`.github/workflows/android.yml`) and attaches it to the **android-latest**
-release. On your phone, open the repo's Releases page on github.com (signed in), tap **Torrekin.apk**, and install it.
+release. On your phone, open https://github.com/keithburgun/Torrekyn/releases/tag/android-latest, tap **Torrekin.apk**, and install it.
 Android asks once to allow installs from your browser. Each build is signed with the same test key, so new builds
 install over old ones and keep your progress.
 
@@ -79,14 +79,7 @@ The Android app checks for new builds at launch, and whenever you tap "Check for
 When a newer build exists it offers **Update**: it downloads the new APK inside the app and opens Android's
 installer. The first time, Android asks you to allow installs from Torrekin. Your progress is kept.
 
-New builds come from the public repo **keithburgun/torrekin-builds**. It holds only `Torrekin.apk` and
-`version.json`; the game code stays private. One-time setup:
-1. Create a **public** repo named `torrekin-builds` on GitHub, ticking "Add a README file" (a release needs at least one commit).
-2. Create a fine-grained personal access token (GitHub → Settings → Developer settings → Fine-grained tokens):
-   Repository access = only `torrekin-builds`; Permissions → Contents = Read and write.
-3. In the Torrekyn repo: Settings → Secrets and variables → Actions → New repository secret, named
-   `BUILDS_TOKEN`, with the token as its value.
-
-From then on every push to main publishes a numbered build there (the 10 newest are kept). Apps from builds
-before this was set up don't have the updater: install the newest APK by hand once, and it updates itself
-after that.
+New builds come from the repo's **android-latest** release, which CI replaces on every push to main
+(`Torrekin.apk` plus `version.json` with the build number). This needs the repo to be public, so phones can
+download without signing in. Apps from builds before the updater existed need one manual install of the
+newest APK; after that they update themselves.
