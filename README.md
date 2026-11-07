@@ -73,3 +73,20 @@ install over old ones and keep your progress.
 Local build: `npm run build:android`, then open `android/` in Android Studio (or run `./gradlew assembleRelease` there).
 The Android app is a Capacitor wrapper around the web build (`capacitor.config.json`). App icons and the splash screen
 come from `assets/` via `npx @capacitor/assets generate --android`.
+
+## Android updates (in-app)
+The Android app checks for new builds at launch, and whenever you tap "Check for updates" on the title screen.
+When a newer build exists it offers **Update**: it downloads the new APK inside the app and opens Android's
+installer. The first time, Android asks you to allow installs from Torrekin. Your progress is kept.
+
+New builds come from the public repo **keithburgun/torrekin-builds**. It holds only `Torrekin.apk` and
+`version.json`; the game code stays private. One-time setup:
+1. Create a **public** repo named `torrekin-builds` on GitHub, ticking "Add a README file" (a release needs at least one commit).
+2. Create a fine-grained personal access token (GitHub → Settings → Developer settings → Fine-grained tokens):
+   Repository access = only `torrekin-builds`; Permissions → Contents = Read and write.
+3. In the Torrekyn repo: Settings → Secrets and variables → Actions → New repository secret, named
+   `BUILDS_TOKEN`, with the token as its value.
+
+From then on every push to main publishes a numbered build there (the 10 newest are kept). Apps from builds
+before this was set up don't have the updater: install the newest APK by hand once, and it updates itself
+after that.

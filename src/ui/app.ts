@@ -7,7 +7,7 @@ import type { CombatResult, GameState, Player } from '../engine/types';
 import { CombatPlayer } from './combatView';
 import { art, bigCardHtml, cardHtml, esc, heroArt, unitView, KEYWORD_HELP } from './view';
 import { clearSave, loadSave, save } from './save';
-import { APP_VERSION, checkForUpdates } from './update';
+import { checkForUpdates, versionLabel } from './update';
 import { isMuted, setMuted, sfx } from './sfx';
 import { achievementsHtml, cardGridHtml, cardViewerHtml, filteredCards, tribesAnnounceHtml, type ViewerState } from './screens';
 import { playTriple } from './ceremony';
@@ -204,7 +204,7 @@ export class App {
         <button class="btn big" data-act="options">Options</button>
       </div>
     </div>
-    <div class="version">v${APP_VERSION}${__NO_UPDATES__ ? '' : ' · <a href="#" data-act="check-update" style="color:inherit">Check for updates</a>'}</div>`;
+    <div class="version">${versionLabel()}${__NO_UPDATES__ ? '' : ' · <a href="#" data-act="check-update" style="color:inherit">Check for updates</a>'}</div>`;
   }
 
   ratingBadge() {

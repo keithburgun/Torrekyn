@@ -11,8 +11,14 @@ const isAndroid = process.env.TORREKIN_TARGET === 'android';
 
 export default defineConfig({
   base: './',
-  // __NO_UPDATES__: copies that can't update themselves in place (inside Claude, the Android app)
-  define: { __APP_VERSION__: JSON.stringify(pkg.version), __NO_UPDATES__: JSON.stringify(isArtifact || isAndroid) },
+  // __NO_UPDATES__: the copy inside Claude (it can't update itself). __ANDROID__: the Android app, which updates
+  // from the public builds repo. __BUILD__: CI run number (TORREKIN_BUILD), how the Android app tells builds apart.
+  define: {
+    __APP_VERSION__: JSON.stringify(pkg.version),
+    __NO_UPDATES__: JSON.stringify(isArtifact),
+    __ANDROID__: JSON.stringify(isAndroid),
+    __BUILD__: JSON.stringify(Number(process.env.TORREKIN_BUILD ?? 0)),
+  },
   build: { target: 'es2021', chunkSizeWarningLimit: 1500, outDir: isArtifact ? 'dist-artifact' : isAndroid ? 'dist-android' : 'dist' },
   server: { port: 5173, strictPort: true },
   plugins: [

@@ -4,14 +4,33 @@
  *    version is deployed we show a banner and reload into it.
  *  - Windows (Tauri): we fetch version.json from the update site; if it is newer we offer to download
  *    and run the new installer, then the app closes so the installer can replace it.
+ *  - Android app: we read version.json from the public builds repo; if its build number is higher we
+ *    download the new APK inside the app (ApkUpdaterPlugin.java) and hand it to Android's installer.
+ *    Your progress is kept (it lives in the app's storage, which an update doesn't touch).
  */
-import { UPDATE_BASE_URL } from '../config';
+import { registerPlugin } from '@capacitor/core';
+import { ANDROID_VERSION_URL, UPDATE_BASE_URL } from '../config';
 
 declare const __APP_VERSION__: string;
+declare const __ANDROID__: boolean;
+declare const __BUILD__: number;
 export const APP_VERSION: string = __APP_VERSION__;
+export const BUILD: number = __BUILD__;
+
+interface ApkUpdater {
+  canInstall(): Promise<{ allowed: boolean }>;
+  openInstallSettings(): Promise<void>;
+  fetchText(o: { url: string }): Promise<{ text: string }>;
+  downloadAndInstall(o: { url: string }): Promise<void>;
+  addListener(ev: 'progress', fn: (d: { percent: number }) => void): Promise<{ remove: () => Promise<void> }>;
+}
+const apk = __ANDROID__ ? registerPlugin<ApkUpdater>('ApkUpdater') : null;
+
+/** a short version label: "v0.1.0" on PC/web, "v0.1.0 · build 42" in the Android app */
+export const versionLabel = () => `v${APP_VERSION}${__ANDROID__ && BUILD ? ` · build ${BUILD}` : ''}`;
 export const isTauri = typeof window !== 'undefined' && '__TAURI_INTERNALS__' in window;
 
-interface VersionInfo { version: string; date?: string; windows?: string; notes?: string }
+interface VersionInfo { version: string; build?: number; date?: string; windows?: string; apk?: string; notes?: string }
 
 let swUpdate: ((reload?: boolean) => Promise<void>) | null = null;
 
@@ -52,7 +71,53 @@ async function fetchVersion(): Promise<VersionInfo | null> {
   }
 }
 
+const hide = () => document.getElementById('update-banner')?.classList.remove('show');
+
+/** Android: is a newer build waiting in the public builds repo? */
+async function checkAndroid(manual: boolean) {
+  let info: VersionInfo;
+  try {
+    const r = await apk!.fetchText({ url: `${ANDROID_VERSION_URL}?t=${Date.now()}` });
+    info = JSON.parse(r.text) as VersionInfo;
+  } catch {
+    if (manual) banner('Could not reach the update server.', 'OK', hide);
+    return;
+  }
+  if (!info.build || !info.apk || info.build <= BUILD) {
+    if (manual) banner(`You have the latest version (${versionLabel()}).`, 'OK', hide);
+    return;
+  }
+  const notes = info.notes ? ` ${info.notes}` : '';
+  banner(`A new version of Torrekin is ready (build ${info.build}).${notes}`, 'Update', () => void installAndroid(info.apk!));
+}
+
+async function installAndroid(url: string) {
+  const { allowed } = await apk!.canInstall();
+  if (!allowed) {
+    // Android asks once: allow Torrekin to install its own updates
+    banner('Android needs your OK to let Torrekin install updates. Turn on "Allow from this source", then come back and tap Update.', 'Open settings', async () => {
+      await apk!.openInstallSettings();
+      banner('Ready when you are.', 'Update', () => void installAndroid(url));
+    });
+    return;
+  }
+  banner('Downloading update… 0%', '…', () => undefined);
+  const sub = await apk!.addListener('progress', ({ percent }) => {
+    const span = document.querySelector('#update-banner span');
+    if (span) span.textContent = `Downloading update… ${percent}%`;
+  });
+  try {
+    await apk!.downloadAndInstall({ url });
+    banner('Tap Install on the next screen. Torrekin restarts with your progress kept.', 'OK', hide);
+  } catch (e) {
+    banner(`Update failed: ${(e as Error).message ?? e}`, 'Try again', () => void installAndroid(url));
+  } finally {
+    await sub.remove();
+  }
+}
+
 export async function checkForUpdates(manual = false) {
+  if (apk) return checkAndroid(manual);
   const info = await fetchVersion();
   if (!info) {
     if (manual) banner('Could not reach the update server.', 'OK', () => document.getElementById('update-banner')?.classList.remove('show'));
@@ -83,7 +148,7 @@ export async function checkForUpdates(manual = false) {
 }
 
 export async function initUpdates() {
-  if (!isTauri && 'serviceWorker' in navigator && import.meta.env.PROD) {
+  if (!isTauri && !__ANDROID__ && 'serviceWorker' in navigator && import.meta.env.PROD) {
     try {
       const { registerSW } = await import('virtual:pwa-register');
       swUpdate = registerSW({

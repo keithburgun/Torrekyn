@@ -1022,3 +1022,10 @@ button.trinket-orb { appearance: none; border: 0; padding: 0; cursor: pointer; }
 .scene-tx.battle .tx-name em { font-style: normal; font-family: var(--text); font-size: 20px; font-weight: 700; opacity: 0.8; }
 .scene-tx.battle.portrait .tx-name em { font-size: 28px; }
 .ach-toast { pointer-events: auto; cursor: pointer; }
+/* update banner: wraps on narrow screens (long Android messages), clear of the notch, comfortable to tap */
+#update-banner { max-width: calc(100vw - 24px); flex-wrap: wrap; justify-content: center; text-align: center; top: calc(10px + env(safe-area-inset-top, 0px)); z-index: 6000; }
+@media (max-width: 700px) {
+  #update-banner { border-radius: 22px; padding: 12px 14px; font-size: 15px; width: calc(100vw - 24px); }
+  #update-banner span { flex-basis: 100%; }
+  #update-banner button { min-height: 44px; font-size: 16px; padding: 0 20px; }
+}
