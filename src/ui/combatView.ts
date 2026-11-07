@@ -2,9 +2,9 @@ import { heroDef } from '../engine/heroes';
 import type { CombatFrame, CombatFrameUnit, CombatFx, CombatResult, GameState } from '../engine/types';
 import { cardHtml, esc, frameUnitView, heroArt } from './view';
 import { sfx } from './sfx';
+import { currentLayout, type Layout } from './layout';
 
-const ENEMY_Y = 168;
-const MY_Y = 452;
+
 /** base time each frame stays on screen (ms at speed ×1) */
 const DUR: Record<CombatFrame['kind'], number> = {
   start: 800, trigger: 420, attack: 420, hit: 380, death: 900, resolve: 160, end: 500,
@@ -12,10 +12,7 @@ const DUR: Record<CombatFrame['kind'], number> = {
 const DEATH_FADE = 900;
 const REBORN_FADE = 1100;
 
-function rowX(i: number, n: number) {
-  const total = n * 154 - 4;
-  return 800 - total / 2 + i * 154 + 5;
-}
+
 
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
@@ -25,6 +22,12 @@ export class CombatPlayer {
   skip = false;
   layer: HTMLElement;
   fxLayer: HTMLElement;
+  L: Layout = currentLayout();
+  private rowX(i: number, n: number) {
+    const step = this.L.combat.step;
+    const total = (n - 1) * step + this.L.cardW;
+    return this.L.cx - total / 2 + i * step;
+  }
 
   constructor(private stage: HTMLElement, private g: GameState, private r: CombatResult, private me: 0 | 1, private round: number, private done: () => void) {
     try { this.speed = Number(localStorage.getItem('torrekin-speed')) || 1; } catch { /* storage unavailable */ }
@@ -32,10 +35,10 @@ export class CombatPlayer {
     const oppId = me === 0 ? (r.b === -1 ? r.ghostOf! : r.b) : r.a;
     const opp = g.players[oppId];
     stage.innerHTML = `
-      <div class="combat-name enemy" style="left:${800 - 50}px;top:12px"><div class="avatar" id="avatar-enemy" style="background-image:url('${heroArt(opp.hero)}')"><div class="hpb">${opp.health}</div></div>
+      <div class="combat-name enemy" style="left:${this.L.combat.enemyHero.x - 50}px;top:${this.L.combat.enemyHero.y - 50}px"><div class="avatar" id="avatar-enemy" style="background-image:url('${heroArt(opp.hero)}')"><div class="hpb">${opp.health}</div></div>
         <div>${r.b === -1 ? 'Ghost of ' : ''}${esc(opp.name)}<div class="hint" style="padding:0;text-align:left">${esc(heroDef(opp.hero)?.title ?? '')}</div></div></div>
-      <div class="combat-name mine" style="left:${800 - 62}px;top:${742 - 62}px"><div class="avatar" id="avatar-me" style="background-image:url('${heroArt(meP.hero)}')"><div class="hpb">${meP.health}</div></div><div>${esc(meP.name)}</div></div>
-      <div class="vs-banner">ROUND ${round} · BATTLE</div>
+      <div class="combat-name mine" style="left:${this.L.combat.myHero.x - 62}px;top:${this.L.combat.myHero.y - 62}px"><div class="avatar" id="avatar-me" style="background-image:url('${heroArt(meP.hero)}')"><div class="hpb">${meP.health}</div></div><div>${esc(meP.name)}</div></div>
+      <div class="vs-banner" style="left:${this.L.cx}px;top:${this.L.combat.banner}px">ROUND ${round} · BATTLE</div>
       <div class="abs" style="right:30px;bottom:30px;display:flex;gap:10px">
         <button class="btn" data-cact="speed">Speed ×${this.speed}</button>
         <button class="btn" data-cact="skip">Skip</button>
@@ -72,8 +75,8 @@ export class CombatPlayer {
     const map = new Map<number, { u: CombatFrameUnit; x: number; y: number; side: 0 | 1 }>();
     const mine = f.sides[this.me];
     const theirs = f.sides[1 - this.me];
-    mine.forEach((u, i) => map.set(u.id, { u, x: rowX(i, mine.length), y: MY_Y, side: this.me }));
-    theirs.forEach((u, i) => map.set(u.id, { u, x: rowX(i, theirs.length), y: ENEMY_Y, side: (1 - this.me) as 0 | 1 }));
+    mine.forEach((u, i) => map.set(u.id, { u, x: this.rowX(i, mine.length), y: this.L.combat.myY, side: this.me }));
+    theirs.forEach((u, i) => map.set(u.id, { u, x: this.rowX(i, theirs.length), y: this.L.combat.enemyY, side: (1 - this.me) as 0 | 1 }));
     return map;
   }
 
@@ -82,11 +85,11 @@ export class CombatPlayer {
     if (id === undefined) return null;
     const el = this.els.get(id);
     if (!el) return null;
-    return { x: parseFloat(el.style.left) + 70, y: parseFloat(el.style.top) + 95 };
+    return { x: parseFloat(el.style.left) + this.L.cardW / 2, y: parseFloat(el.style.top) + this.L.cardH / 2 };
   }
 
   private heroCenter(side: 0 | 1) {
-    return side === this.me ? { x: 800, y: 742 } : { x: 800, y: 62 };
+    return side === this.me ? this.L.combat.myHero : this.L.combat.enemyHero;
   }
 
   private spot(cls: string, x: number, y: number, life: number, text = '') {
@@ -127,8 +130,8 @@ export class CombatPlayer {
     const d = document.createElement('div');
     d.className = `float-num ${cls}`;
     d.textContent = text;
-    d.style.left = `${x + 70}px`;
-    d.style.top = `${y + 70}px`;
+    d.style.left = `${x + this.L.cardW / 2}px`;
+    d.style.top = `${y + this.L.cardH * 0.37}px`;
     d.style.animationDuration = `${this.t(1000)}ms`;
     this.layer.appendChild(d);
     setTimeout(() => d.remove(), this.t(1050));
@@ -208,7 +211,7 @@ export class CombatPlayer {
 
     // 3. add new units / update existing ones
     for (const [id, { u, x, y }] of pos) {
-      const html = cardHtml(frameUnitView(u), { zone: 'combat', idx: 0, x, y, id });
+      const html = cardHtml(frameUnitView(u), { zone: 'combat', idx: 0, x, y, id, small: this.L.small });
       const tmp = document.createElement('div');
       tmp.innerHTML = html;
       const fresh = tmp.firstElementChild as HTMLElement;
@@ -222,12 +225,12 @@ export class CombatPlayer {
             sfx.reborn();
             el.classList.add('reborn-in');
             el.style.setProperty('--life', `${this.t(REBORN_FADE)}ms`);
-            this.spot('reborn-burst', x + 70, y + 95, this.t(REBORN_FADE));
+            this.spot('reborn-burst', x + this.L.cardW / 2, y + this.L.cardH / 2, this.t(REBORN_FADE));
           } else if (fxFor(id, 'summon') || prev) {
             sfx.deploy();
             el.classList.add('summon-in');
             el.style.setProperty('--life', `${this.t(650)}ms`);
-            this.spot('summon-burst', x + 70, y + 95, this.t(650));
+            this.spot('summon-burst', x + this.L.cardW / 2, y + this.L.cardH / 2, this.t(650));
           }
         }
         this.layer.appendChild(el);
@@ -246,16 +249,16 @@ export class CombatPlayer {
         if (u.hp < before.hp) this.float(x, y, `-${before.hp - u.hp}`, 'dmg');
         else if (u.hp > before.hp || u.atk > before.atk) {
           this.float(x, y, `+${Math.max(0, u.atk - before.atk)}/+${Math.max(0, u.hp - before.hp)}`, 'buff');
-          this.spot('buff-glow', x + 70, y + 95, this.t(700));
+          this.spot('buff-glow', x + this.L.cardW / 2, y + this.L.cardH / 2, this.t(700));
         } else if (u.atk < before.atk) this.float(x, y, `${u.atk - before.atk} atk`, 'dmg');
-        if (before.kw.includes('divineShield') && !u.kw.includes('divineShield')) this.shatter(x + 70, y + 95);
-        if (!before.kw.includes('divineShield') && u.kw.includes('divineShield')) this.spot('shield-gain', x + 70, y + 95, this.t(650));
-        if (!before.kw.includes('taunt') && u.kw.includes('taunt')) this.spot('kw-gain', x + 70, y + 30, this.t(800), '🛡');
-        if (!before.kw.includes('reborn') && u.kw.includes('reborn')) this.spot('kw-gain', x + 70, y + 30, this.t(800), '☥');
-        if (!before.kw.includes('venomous') && u.kw.includes('venomous')) this.spot('kw-gain', x + 70, y + 30, this.t(800), '☠');
+        if (before.kw.includes('divineShield') && !u.kw.includes('divineShield')) this.shatter(x + this.L.cardW / 2, y + this.L.cardH / 2);
+        if (!before.kw.includes('divineShield') && u.kw.includes('divineShield')) this.spot('shield-gain', x + this.L.cardW / 2, y + this.L.cardH / 2, this.t(650));
+        if (!before.kw.includes('taunt') && u.kw.includes('taunt')) this.spot('kw-gain', x + this.L.cardW / 2, y + 30, this.t(800), '🛡');
+        if (!before.kw.includes('reborn') && u.kw.includes('reborn')) this.spot('kw-gain', x + this.L.cardW / 2, y + 30, this.t(800), '☥');
+        if (!before.kw.includes('venomous') && u.kw.includes('venomous')) this.spot('kw-gain', x + this.L.cardW / 2, y + 30, this.t(800), '☠');
       }
-      if (fxFor(id, 'venom')) this.spot('venom-pop', x + 70, y + 95, this.t(700));
-      if (fxFor(id, 'kill')) this.spot('kill-pop', x + 70, y + 95, this.t(700), '✖');
+      if (fxFor(id, 'venom')) this.spot('venom-pop', x + this.L.cardW / 2, y + this.L.cardH / 2, this.t(700));
+      if (fxFor(id, 'kill')) this.spot('kill-pop', x + this.L.cardW / 2, y + this.L.cardH / 2, this.t(700), '✖');
     }
     if (instant) return;
 
@@ -271,7 +274,7 @@ export class CombatPlayer {
           [{ transform: 'none' }, { transform: `translate(${dx * 0.12}px, ${dy * 0.12 - (dy > 0 ? 14 : -14)}px) scale(1.1)`, offset: 0.4 },
             { transform: `translate(${dx * 0.82}px, ${dy * 0.82}px) scale(1.06)`, offset: 0.7 }, { transform: 'none' }],
           { duration: this.t(DUR.attack + 140), easing: 'ease-in-out' });
-        setTimeout(() => { sfx.hit(); this.spot('impact big', parseFloat(t.style.left) + 70, parseFloat(t.style.top) + 95, this.t(380)); }, this.t((DUR.attack + 140) * 0.7));
+        setTimeout(() => { sfx.hit(); this.spot('impact big', parseFloat(t.style.left) + this.L.cardW / 2, parseFloat(t.style.top) + this.L.cardH / 2, this.t(380)); }, this.t((DUR.attack + 140) * 0.7));
         await anim.finished.catch(() => undefined);
         a.style.zIndex = '';
         return;
@@ -284,8 +287,8 @@ export class CombatPlayer {
       const n = document.createElement('div');
       n.className = 'trigger-note';
       n.textContent = f.note;
-      n.style.left = src ? `${parseFloat(src.style.left) + 70}px` : '800px';
-      n.style.top = src ? `${parseFloat(src.style.top) - 30}px` : '420px';
+      n.style.left = src ? `${parseFloat(src.style.left) + this.L.cardW / 2}px` : `${this.L.cx}px`;
+      n.style.top = src ? `${parseFloat(src.style.top) - 30}px` : `${this.L.combat.banner}px`;
       n.style.animationDuration = `${this.t(1200)}ms`;
       this.layer.appendChild(n);
       setTimeout(() => n.remove(), this.t(1250));
