@@ -18,6 +18,8 @@ export const CONFIG = {
   /** 7 tribes exist; 3 are banned each match, so 4 are in play (plus Neutral) */
   tribesPerGame: 4,
   maxGold: 10,
+  /** ceiling for maximum Gold including Investor / Warlord's Horn bonuses (they used to grow without limit) */
+  maxGoldCap: 20,
   heroChoices: 4,
 };
 

@@ -6,7 +6,7 @@ import { runCombat } from './combat';
 import { aiTakeTurn, aiChooseDiscover } from './ai';
 import { setFxPhase, withFx } from './fx';
 import { PERSONAS, matchPersonas, personaProfile } from './personas';
-import { HEROES, buyCost, gainPower, heroDef, heroEndTurn, heroHooks, hasTrinket, offerTrinkets, shopBonus, GREATER_TRINKET_TURN, LESSER_TRINKET_TURN } from './heroes';
+import { HEROES, heroHealth, buyCost, gainPower, heroDef, heroEndTurn, heroHooks, hasTrinket, offerTrinkets, shopBonus, GREATER_TRINKET_TURN, LESSER_TRINKET_TURN } from './heroes';
 import type { Discover, GameState, Player, Slot, Tribe, Unit } from './types';
 
 export const SAVE_VERSION = 4;
@@ -67,7 +67,7 @@ export function selectHero(g: GameState, heroId: string) {
   p.hero = heroId;
   p.avatar = heroDef(heroId)?.avatar ?? 0;
   p.heroOffer = undefined;
-  for (const pl of g.players) if (pl.hero) gainPower(g, pl, pl.hero);
+  for (const pl of g.players) if (pl.hero) { pl.health = heroHealth(pl.hero); gainPower(g, pl, pl.hero); }
   startRound(g);
 }
 
@@ -141,9 +141,14 @@ function pairOpponents(g: GameState) {
   }
 }
 
+/** a player's maximum Gold this turn (round-based, plus bonuses, up to the cap) */
+export function maxGoldFor(g: GameState, p: Player): number {
+  return Math.min(CONFIG.maxGoldCap, Math.min(CONFIG.maxGold, 2 + g.round) + p.maxGoldBonus);
+}
+
 export function startTurn(g: GameState, p: Player) {
   if (g.round > 1) p.upgradeCost = Math.max(0, p.upgradeCost - 1);
-  const base = Math.min(CONFIG.maxGold, 2 + g.round) + p.maxGoldBonus;
+  const base = maxGoldFor(g, p);
   p.gold = base + p.goldNextTurn;
   p.goldNextTurn = 0;
   p.battlecriesLastTurn = p.battlecriesThisTurn;

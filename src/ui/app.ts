@@ -5,9 +5,9 @@ import { friendly, supabase } from '../save/providers/supabase';
 import { reloadAchievements } from './achievements';
 import { reloadArtStyle } from './view';
 import {
-  buy, chooseDiscover, endTurn, move, needsTarget, newGame, play, reroll, selectHero, sell, sellValue, toggleFreeze, upgrade, validTargets,
+  buy, chooseDiscover, endTurn, maxGoldFor, move, needsTarget, newGame, play, reroll, selectHero, sell, sellValue, toggleFreeze, upgrade, validTargets,
 } from '../engine/game';
-import { HEROES, buyCost, canUseHeroPower, heroDef, mainActive, pickTrinket, powerCost, powersOf, trinketDef, useHeroPower, type HeroDef } from '../engine/heroes';
+import { HEROES, buyCost, canUseHeroPower, heroDef, heroHealth, mainActive, pickTrinket, powerCost, powersOf, trinketDef, useHeroPower, type HeroDef } from '../engine/heroes';
 import type { CombatResult, GameState, Player } from '../engine/types';
 import { CombatPlayer } from './combatView';
 import { art, bigCardHtml, cardHtml, esc, getArtStyle, heroArt, setArtStyle, unitView, KEYWORD_HELP, KW_ICON, type ArtStyle } from './view';
@@ -320,7 +320,7 @@ export class App {
     const kws = Object.entries(KEYWORD_HELP).map(([k, v]) => `<b>${k}</b>: ${v}`).join('<br>');
     return `<div class="title-wrap"><div class="panel rules">
       <h3>The Goal</h3>
-      Six players draft armies of units and battle automatically each round. Everyone starts at ${CONFIG.startHealth} Health.
+      Six players draft armies of units and battle automatically each round. Everyone starts at about ${CONFIG.startHealth} Health (stronger heroes start with less).
       Lose a battle and you take damage equal to the winner's Tavern Tier plus the tiers of their surviving units, never more than ${CONFIG.damageCap}.
       Be the last one standing.
       <h3>Your Turn</h3>
@@ -350,7 +350,7 @@ export class App {
       <div class="choices pairs">${offer.map((id) => {
         const h = heroDef(id)!;
         return `<div class="choice herocard" data-act="hero-pick" data-id="${id}">
-          <div class="hero-portrait" style="background-image:url('${heroArt(h.id)}')"></div>
+          <div class="hero-portrait" style="background-image:url('${heroArt(h.id)}')"><div class="hp">${heroHealth(h.id)}</div></div>
           <div class="hn">${esc(h.name)}</div>
           <div class="pc htitle" style="font-size:14px;margin-top:-8px;text-align:center">${esc(h.title)}</div>
           <div class="pw">${esc(h.power)} ${h.passive ? '<span class="pc">(Passive)</span>' : `<span class="pc">(${h.costFn ? 'starts at 10 gold' : `${h.cost} gold`})</span>`}</div>
@@ -367,7 +367,7 @@ export class App {
       // phones: just a portrait, a health bar and the number; tap a player for the details
       const chips = order.map((p) => {
         const next = this.me.nextOpponent === p.id;
-        const pct = Math.max(0, Math.min(100, (p.health / CONFIG.startHealth) * 100));
+        const pct = Math.max(0, Math.min(100, (p.health / heroHealth(p.hero)) * 100));
         return `<button class="pchip ${p.human ? 'me' : ''} ${next ? 'next' : ''} ${p.alive ? '' : 'dead'}" data-act="inspect" data-id="${p.id}" aria-label="${esc(p.name)}, ${p.health} Health">
           <div class="avatar" style="background-image:url('${heroArt(p.hero)}')">${next ? '<span class="tag">NEXT</span>' : ''}${p.human ? '<span class="tag you">YOU</span>' : ''}${!p.alive ? `<span class="place">${ordinal(p.placement)}</span>` : ''}</div>
           <div class="hpbar"><div style="width:${pct}%"></div></div>
@@ -380,14 +380,14 @@ export class App {
     const rows = order.map((p) => {
       const h = heroDef(p.hero);
       const next = this.me.nextOpponent === p.id;
-      const pct = Math.max(0, Math.min(100, (p.health / CONFIG.startHealth) * 100));
+      const pct = Math.max(0, Math.min(100, (p.health / heroHealth(p.hero)) * 100));
       return `<div class="row ${p.human ? 'me' : ''} ${next ? 'next' : ''} ${p.alive ? '' : 'dead'}" data-act="inspect" data-id="${p.id}">
         <div class="avatar" style="background-image:url('${heroArt(p.hero)}')"></div>
         <div class="meta">
           <div class="nm">${esc(p.name)}</div>
           <div class="hero-nm">${esc(h?.name ?? '')}${p.human ? '' : ` · ${seatRating(this.g!, p.id)}`}</div>
           <div class="hpbar"><div style="width:${pct}%"></div></div>
-          <div class="nums"><span>❤ ${p.health}</span><span>★ ${p.tier}</span></div>
+          <div class="nums"><span>❤ ${Math.max(0, p.health)}</span><span>★ ${p.tier}</span></div>
         </div>
         ${next ? '<div class="tag">NEXT</div>' : ''}
         ${!p.alive ? `<div class="place">${ordinal(p.placement)}</div>` : ''}
@@ -560,12 +560,12 @@ export class App {
   /** Right edge: End Turn in the middle, gold at the bottom right, menu gear in the corner. */
   rightSideHtml() {
     const p = this.me;
-    const max = Math.min(CONFIG.maxGold, 2 + this.g!.round) + p.maxGoldBonus;
+    const max = maxGoldFor(this.g!, p);
     const pips = Array.from({ length: Math.min(max, 12) }, (_, i) => `<span class="pip ${i < p.gold ? 'full' : ''}"></span>`).join('');
     const ph = L.phone;
     return `
       <div class="turn-label" style="${ph ? `left:${ph.turnLabel.x}px;top:${ph.turnLabel.y}px;width:${ph.turnLabel.w}px` : `left:${L.endTurn.x + 6}px;top:${L.endTurn.y - 30}px`}">Turn ${this.g!.round}</div>
-      <button class="end-turn" data-act="end-turn" style="left:${L.endTurn.x}px;top:${L.endTurn.y}px${ph ? `;width:${ph.endTurnW}px` : ''}">End Turn</button>
+      <button class="end-turn" data-act="end-turn" style="left:${L.endTurn.x}px;top:${L.endTurn.y}px${ph ? `;width:${ph.endTurnW}px` : ''}">Begin Battle</button>
       <div class="gold-bar" style="left:${L.gold.x}px;top:${L.gold.y}px">
         <div class="gold-display"><span class="coin"></span>${p.gold}<span class="gmax">/${max}</span></div>
         <div class="pips">${pips}</div>
@@ -893,6 +893,36 @@ export class App {
       })();
     }
     evaluate(this.g);
+  }
+
+  /** Freezing the shop: frost sweeps over every shop card and snowflakes drift down off them */
+  private freezeFx() {
+    const cards = [...this.stage.querySelectorAll<HTMLElement>('.card[data-zone="shop"]')];
+    cards.forEach((el, i) => {
+      const ice = document.createElement('div');
+      ice.className = 'freeze-sheet';
+      ice.style.animationDelay = `${i * 70}ms`;
+      el.appendChild(ice);
+      setTimeout(() => ice.remove(), 1400 + i * 70);
+      const x = parseFloat(el.style.left);
+      const y = parseFloat(el.style.top);
+      const w = el.offsetWidth;
+      const h = el.offsetHeight;
+      for (let k = 0; k < 9; k++) {
+        const f = document.createElement('div');
+        f.className = 'snowflake';
+        f.textContent = k % 3 ? '❄' : '•';
+        f.style.left = `${x + 10 + Math.random() * (w - 20)}px`;
+        f.style.top = `${y + h * (0.55 + Math.random() * 0.4)}px`;
+        f.style.setProperty('--dx', `${(Math.random() - 0.5) * 50}px`);
+        f.style.setProperty('--dy', `${70 + Math.random() * 80}px`);
+        f.style.setProperty('--rot', `${(Math.random() - 0.5) * 360}deg`);
+        f.style.fontSize = `${12 + Math.random() * 14}px`;
+        f.style.animationDelay = `${i * 70 + 250 + Math.random() * 500}ms`;
+        this.stage.appendChild(f);
+        setTimeout(() => f.remove(), 2400);
+      }
+    });
   }
 
   // ---------------- undo ----------------
@@ -1322,7 +1352,12 @@ export class App {
   onClick(e: MouseEvent) {
     if (this.busy) return;
     const el = (e.target as HTMLElement).closest('[data-act]') as HTMLElement | null;
-    if (!el) return;
+    if (!el) {
+      // clicking anywhere else closes the enlarged card
+      const t = e.target as HTMLElement;
+      if (this.sel && !t.closest('#popover, .card, .sheet')) { this.sel = null; this.render(); }
+      return;
+    }
     const act = el.dataset.act!;
     if ((el as HTMLButtonElement).disabled) return;
     const g = this.g;
@@ -1362,7 +1397,7 @@ export class App {
       case 'undo': this.undo(); break;
       case 'upgrade': this.result(upgrade(g!, p!), sfx.upgrade, 'upgrades'); this.commit(); break;
       case 'reroll': this.result(reroll(g!, p!), sfx.refresh, 'rerolls'); this.sel = null; this.commit(); break;
-      case 'freeze': toggleFreeze(p!); sfx.click(); if (p!.frozen) bump('freezes'); this.commit(); break;
+      case 'freeze': toggleFreeze(p!); sfx.click(); if (p!.frozen) bump('freezes'); this.commit(); if (p!.frozen) this.freezeFx(); break;
       case 'end-turn': sfx.click(); this.endTurn(); break;
       case 'buy': if (this.sel) { this.lastShopPos = { x: shopX(this.sel.idx, p!.shop.length), y: L.shopY }; this.result(buy(g!, p!, this.sel.idx), sfx.buy, 'bought'); this.sel = null; this.commit(); } break;
       case 'play': if (this.sel) this.doPlay(this.sel.idx, p!.board.length); break;

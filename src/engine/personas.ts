@@ -44,21 +44,23 @@ export interface Persona {
 }
 
 export const PERSONAS: Persona[] = [
-  { id: 'tavernking', name: 'xX_TavernKing_Xx', skill: 1, style: 'Plays like the house always wins. Because it does.' },
-  { id: 'goldengremlin', name: 'golden_gremlin', skill: 0.85, style: 'Will sell their grandmother for a triple.', quirk: { x: { trip2: 80, trip1: 16 } } },
-  { id: 'slotmachine', name: 'sl0t_machine', skill: 0.7, style: 'Thinks about positioning more than is healthy.' },
-  { id: 'rerollandpray', name: 'rerollandpray', skill: 0.62, style: 'Never met a Refresh button they didn\'t like.', quirk: { x: { rerollBar: 1.5 } } },
-  { id: 'divineshieldboi', name: 'DivineShieldBoi', skill: 0.56, style: 'Steady, sensible, a little smug about it.' },
-  { id: 'questlogqueen', name: 'QuestLogQueen', skill: 0.5, style: 'Reads every card. Twice.' },
-  { id: 'midrangemaddie', name: 'MidRangeMaddie', skill: 0.45, style: 'Never first, never last, always fine.' },
-  { id: 'potatowitch', name: 'potato_witch_irl', skill: 0.4, style: 'Kindred or bust. Usually bust.', quirk: { tribe: 'kindred' } },
-  { id: 'freezeframe', name: 'Freeze_Frame', skill: 0.35, style: 'Levels up fast and asks questions later.', quirk: { x: { lvl3: 4, lvl4: 6, lvl5: 8 } } },
-  { id: 'notaunt', name: 'NoTauntNoProblem', skill: 0.3, style: 'Confident. Unclear why.' },
-  { id: 'skeletordad', name: 'skel3tor_dad', skill: 0.25, style: 'Plays Neverending whenever it shows up.', quirk: { tribe: 'neverending' } },
-  { id: 'bunnyhop', name: 'bunnyhop_99', skill: 0.18, style: 'Clicks fast. Thinks later.' },
-  { id: 'itsjustaphase', name: 'ItsJustAPhase', skill: 0.12, style: 'Sure this strategy will work eventually.' },
-  { id: 'sixthplacesteve', name: 'sixthplacesteve', skill: 0.06, style: 'The name is a prophecy.' },
-  { id: 'ctrlaltdefeat', name: 'ctrl_alt_defeat', skill: 0, style: 'Just happy to be here.' },
+  // best first
+  { id: 'norikajims', name: 'norikajims', skill: 1, style: 'Plays like the house always wins. Because it does.' },
+  { id: 'sturmjurglers', name: 'sturmJurglers', skill: 0.85, style: 'Will sell their grandmother for a triple.', quirk: { x: { trip2: 80, trip1: 16 } } },
+  { id: 'mint', name: 'mint', skill: 0.7, style: 'Thinks about positioning more than is healthy.' },
+  { id: 'robodavids', name: 'robodavids_', skill: 0.62, style: 'Never met a Refresh button they didn\'t like.', quirk: { x: { rerollBar: 1.5 } } },
+  { id: 'urchidscrawley', name: 'UrchidScrawley', skill: 0.56, style: 'Steady, sensible, a little smug about it.' },
+  { id: 'jjessicasax', name: 'jjessica_sax', skill: 0.5, style: 'Reads every card. Twice.' },
+  { id: 'dbrenners', name: 'D.brenners', skill: 0.45, style: 'Never first, never last, always fine.' },
+  { id: 'rothazar08', name: 'Rothazar08', skill: 0.4, style: 'Plays Neverending whenever it shows up.', quirk: { tribe: 'neverending' } },
+  { id: 'bogman', name: 'BOGMAN_', skill: 0.35, style: 'Brambor or bust. Usually bust.', quirk: { tribe: 'brambor' } },
+  { id: 'dirchgavels', name: 'dirch-gavels-dds', skill: 0.3, style: 'Levels up fast and asks questions later.', quirk: { x: { lvl3: 4, lvl4: 6, lvl5: 8 } } },
+  { id: 'fhowitt', name: 'f.howitt', skill: 0.25, style: 'Confident. Unclear why.' },
+  { id: 'orbath', name: 'orbath', skill: 0.2, style: 'Kindred forever.', quirk: { tribe: 'kindred' } },
+  { id: 'chocadillydoo', name: 'chocadillydoo', skill: 0.15, style: 'Clicks fast. Thinks later.' },
+  { id: 'vivi001', name: 'vivi_001', skill: 0.1, style: 'Sure this strategy will work eventually.' },
+  { id: 'mintyclyve', name: 'mintyclyve', skill: 0.05, style: 'Here for the art.' },
+  { id: 'bunnihooligan', name: 'bunnihooligan', skill: 0, style: 'Just happy to be here.' },
 ];
 
 export function personaById(id: string | undefined): Persona | undefined {

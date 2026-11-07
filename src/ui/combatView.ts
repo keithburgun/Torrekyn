@@ -34,19 +34,28 @@ export class CombatPlayer {
     return this.L.cx - total / 2 + i * step;
   }
 
+  private hpBefore: (id: number) => number = () => 0;
+  private ghost = false;
+  private oppId = 0;
+
   constructor(private stage: HTMLElement, private g: GameState, private r: CombatResult, private me: 0 | 1, private round: number, private done: () => void) {
     this.speed = Number(store.get('torrekin-speed')) || 1;
     const meP = g.players[0];
     const oppId = me === 0 ? (r.b === -1 ? r.ghostOf! : r.b) : r.a;
     const opp = g.players[oppId];
+    // health shown at the start: the damage from this fight has already been applied, so add it back
+    const loserId = r.winner === -1 ? -2 : r.winner === 0 ? r.b : r.a;
+    this.hpBefore = (id: number) => g.players[id].health + (id === loserId ? r.damage : 0);
+    this.ghost = r.b === -1;
+    this.oppId = oppId;
     // phones: when neither army ever has more than 5 units, use the bigger shop-size cards
     const most = Math.max(0, ...r.frames.map((f) => Math.max(f.sides[0].length, f.sides[1].length)));
     if (this.L.portrait && most <= 5) this.L = { ...this.L, small: false, large: true, cardW: 168, cardH: 228, combat: { ...this.L.combat, step: 176 } };
     placeBoardBg(stage, this.L, (this.L.combat.enemyY + this.L.combat.myY + this.L.cardH) / 2);
     stage.innerHTML = `
-      <div class="combat-name enemy" style="left:${this.L.combat.enemyHero.x - this.av.enemy / 2}px;top:${this.L.combat.enemyHero.y - this.av.enemy / 2}px"><div class="avatar" id="avatar-enemy" style="background-image:url('${heroArt(opp.hero)}')"><div class="hpb">${opp.health}</div></div>
+      <div class="combat-name enemy" style="left:${this.L.combat.enemyHero.x - this.av.enemy / 2}px;top:${this.L.combat.enemyHero.y - this.av.enemy / 2}px"><div class="avatar" id="avatar-enemy" style="background-image:url('${heroArt(opp.hero)}')"><div class="hpb">${this.ghost ? '💀' : Math.max(0, this.hpBefore(oppId))}</div></div>
         <div>${r.b === -1 ? 'Ghost of ' : ''}${esc(opp.name)}<div class="hint" style="padding:0;text-align:left">${esc(heroDef(opp.hero)?.name ?? '')}</div></div></div>
-      <div class="combat-name mine" style="left:${this.L.combat.myHero.x - this.av.mine / 2}px;top:${this.L.combat.myHero.y - this.av.mine / 2}px"><div class="avatar" id="avatar-me" style="background-image:url('${heroArt(meP.hero)}')"><div class="hpb">${meP.health}</div></div><div>${esc(meP.name)}</div></div>
+      <div class="combat-name mine" style="left:${this.L.combat.myHero.x - this.av.mine / 2}px;top:${this.L.combat.myHero.y - this.av.mine / 2}px"><div class="avatar" id="avatar-me" style="background-image:url('${heroArt(meP.hero)}')"><div class="hpb">${Math.max(0, this.hpBefore(0))}</div></div><div>${esc(meP.name)}</div></div>
       <div class="vs-banner" style="left:${this.L.cx}px;top:${this.L.combat.banner}px">ROUND ${round} · BATTLE</div>
       <div class="abs combat-ctl" style="right:30px;bottom:30px;display:flex;gap:10px">
         <button class="btn" data-cact="speed">Speed ×${this.speed}</button>
@@ -78,7 +87,83 @@ export class CombatPlayer {
       prev = f;
     }
     if (frames.length) await this.show(frames[frames.length - 1], prev, true);
+    await this.heroHit();
     this.finish();
+  }
+
+  /**
+   * The loser's hero takes the hit: the winner's surviving units zap them, their health counts down, and if it
+   * reaches 0 their portrait shatters and "<HERO> DEFEATED" fills the screen.
+   */
+  private async heroHit() {
+    const r = this.r;
+    if (r.winner === -1 || !r.damage) return;
+    const fast = this.skip ? 0.25 : 1;
+    const ms = (n: number) => this.t(n) * fast;
+    const loserSide = (1 - r.winner) as 0 | 1;
+    const loserIsMe = loserSide === this.me;
+    if (!loserIsMe && this.ghost) return; // a ghost takes no damage
+    const loserId = loserIsMe ? 0 : this.oppId;
+    const loser = this.g.players[loserId];
+    const from = this.hpBefore(loserId);
+    const to = loser.health;
+    const av = this.stage.querySelector(loserIsMe ? '#avatar-me' : '#avatar-enemy') as HTMLElement | null;
+    const hpb = av?.querySelector('.hpb') as HTMLElement | null;
+    const target = this.heroCenter(loserSide);
+    av?.classList.add('hp-focus');
+    await sleep(ms(350));
+    // zaps from each surviving unit of the winner
+    const last = r.frames[r.frames.length - 1];
+    const shooters = (last?.sides[r.winner] ?? []).filter((u) => !u.dead).map((u) => this.center(u.id)).filter((c): c is { x: number; y: number } => !!c);
+    if (!shooters.length) shooters.push(this.heroCenter(r.winner as 0 | 1));
+    sfx.zap();
+    const flight = ms(420);
+    await Promise.all(shooters.slice(0, 7).map((c, i) => {
+      const b = document.createElement('div');
+      b.className = 'fx bolt hero-bolt';
+      b.style.left = `${c.x}px`;
+      b.style.top = `${c.y}px`;
+      this.fxLayer.appendChild(b);
+      return b.animate([{ transform: 'translate(-50%, -50%) scale(0.6)' }, { transform: `translate(calc(-50% + ${target.x - c.x}px), calc(-50% + ${target.y - c.y}px)) scale(1.2)` }],
+        { duration: flight, delay: i * ms(70), easing: 'cubic-bezier(.5, 0, .9, .6)', fill: 'both' }).finished.then(() => b.remove()).catch(() => b.remove());
+    }));
+    // health counts down
+    av?.classList.add('hit');
+    const fl = document.createElement('div');
+    fl.className = 'float-num dmg hero-dmg';
+    fl.textContent = `-${r.damage}`;
+    // beside the portrait, toward the middle of the screen (the enemy sits at the top, you at the bottom)
+    fl.style.left = `${target.x - 120}px`;
+    fl.style.top = `${target.y + (loserIsMe ? -150 : 40)}px`;
+    this.fxLayer.appendChild(fl);
+    setTimeout(() => fl.remove(), ms(1400));
+    const steps = Math.min(from - Math.max(to, 0), 15);
+    for (let i = 1; i <= steps; i++) {
+      if (hpb) {
+        hpb.textContent = String(Math.max(0, Math.round(from - ((from - Math.max(to, 0)) * i) / steps)));
+        hpb.classList.remove('tick'); void hpb.offsetWidth; hpb.classList.add('tick');
+      }
+      sfx.click();
+      await sleep(ms(Math.max(45, 700 / steps)));
+    }
+    if (hpb) hpb.textContent = String(Math.max(0, to));
+    av?.classList.remove('hit');
+    await sleep(ms(500));
+    if (to > 0 || !av) { av?.classList.remove('hp-focus'); return; }
+    // eliminated: the portrait shatters
+    sfx.shieldBreak();
+    av.classList.add('ko');
+    this.shatter(target.x, target.y);
+    puff(this.fxLayer, target.x, target.y, ms(900), 1.6);
+    await sleep(ms(450));
+    const name = heroDef(loser.hero)?.name ?? loser.name;
+    const ko = document.createElement('div');
+    ko.className = 'ko-banner';
+    ko.innerHTML = `<b>${esc(name.toUpperCase())}</b><span>DEFEATED</span>`;
+    this.stage.appendChild(ko);
+    await sleep(ms(1900));
+    ko.classList.add('out');
+    setTimeout(() => ko.remove(), 400);
   }
 
   private pos(f: CombatFrame) {
@@ -326,7 +411,8 @@ export class CombatPlayer {
     const b = document.createElement('div');
     b.className = `result-banner ${!tie && !myWin ? 'lose' : ''}`;
     b.innerHTML = `<h2>${tie ? 'Draw' : myWin ? 'Victory' : 'Defeat'}</h2>
-      <p>${tie ? 'No damage dealt.' : myWin ? `You dealt ${r.damage} damage.` : `You took ${r.damage} damage. ${me.health > 0 ? `${me.health} Health left.` : ''}`}</p>
+      <p>${tie ? 'No damage dealt.' : myWin ? `You dealt ${r.damage} damage.` : `You took ${r.damage} damage.`}</p>
+      <div class="rb-health"><div class="rb-heart">${Math.max(0, me.health)}</div><span>Your Health</span></div>
       <button class="btn big primary">Continue</button>`;
     this.stage.appendChild(b);
     b.querySelector('button')!.addEventListener('click', () => this.done());

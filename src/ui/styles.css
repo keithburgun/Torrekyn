@@ -32,7 +32,7 @@
   --t-cloister: #2f7d4a;
   --t-alcove: #f2c419;
   --t-demons: #d63a3a;
-  --t-neutral: #8d8496;
+  --t-neutral: #2f2c2c;
   --display: 'Fredoka', 'Nunito', 'Trebuchet MS', system-ui, sans-serif;
   --text: 'Nunito', 'Segoe UI', system-ui, sans-serif;
   color-scheme: dark;
@@ -419,7 +419,7 @@ b { font-weight: 800; }
 .quest-chip { position: absolute; width: 110px; font-size: 12px; font-weight: 800; color: var(--ink); background: var(--slate); border: 2px solid #ffcf4a; border-radius: 12px; padding: 4px 8px; text-align: center; }
 
 .end-turn {
-  position: absolute; width: 172px; height: 76px; border-radius: 50%; cursor: pointer; font-family: var(--display); font-weight: 700; font-size: 25px; color: #fff;
+  position: absolute; width: 172px; height: 76px; border-radius: 50%; cursor: pointer; font-family: var(--display); font-weight: 700; font-size: 23px; line-height: 1.05; color: #fff;
   border: 3px solid #ffb6dc; background: linear-gradient(#ff9fd0, var(--pink-deep)); text-shadow: 0 2px 0 rgba(120, 20, 70, 0.4);
   box-shadow: 0 6px 0 #a83373, 0 0 28px rgba(255, 127, 191, 0.55); transition: filter 0.12s, transform 0.08s;
 }
@@ -789,7 +789,7 @@ button.trinket-orb { appearance: none; border: 0; padding: 0; cursor: pointer; }
 #stage.portrait .trow .tstate { font-size: 22px; padding: 2px 14px; }
 #stage.portrait .tribes-chip:hover .tribes-tip { display: none; }
 #stage.portrait .tribes-chip.open .tribes-tip { display: block; }
-#stage.portrait .end-turn { height: 106px; border-radius: 53px; font-size: 42px; }
+#stage.portrait .end-turn { height: 106px; border-radius: 53px; font-size: 36px; }
 #stage.portrait .turn-label { font-size: 26px; }
 #stage.portrait .cards-btn { min-height: 98px; font-size: 32px; }
 #stage.portrait .gear { box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4); }
@@ -1116,3 +1116,47 @@ svg.aim-arrow.locked .aim-ring { opacity: 0.9; animation: aim-ring 0.9s ease-in-
 #stage.portrait .panel.account h2 { font-size: 44px !important; }
 #stage.portrait .cloud-info { font-size: 26px; }
 #stage.portrait .cloud-info #cloud-status { font-size: 22px; }
+
+/* ---- hero takes the hit after a battle ---- */
+.combat-name .avatar.hp-focus .hpb { transform: scale(2.1); transform-origin: 70% 70%; z-index: 5; transition: transform 0.3s cubic-bezier(.3, 1.5, .5, 1); }
+.combat-name .avatar .hpb { transition: transform 0.3s; }
+.combat-name .avatar .hpb.tick { animation: hp-tick 0.18s ease-out; }
+@keyframes hp-tick { 40% { filter: brightness(1.6); } }
+.combat-name .avatar.hit { animation: hero-hit 0.35s ease-in-out infinite; }
+@keyframes hero-hit { 0%, 100% { transform: translateX(0); filter: none; } 25% { transform: translateX(-7px); filter: brightness(1.4) saturate(1.6) hue-rotate(-20deg); } 75% { transform: translateX(7px); } }
+.combat-name .avatar.ko { animation: hero-ko 0.5s ease-in forwards; }
+@keyframes hero-ko { 30% { transform: scale(1.15); filter: brightness(2); } 100% { transform: scale(0.2); opacity: 0; filter: brightness(3); } }
+.fx.hero-bolt { width: 26px; height: 26px; border-radius: 50%; background: radial-gradient(circle, #fff 0 30%, #ffd36b 55%, rgba(255, 140, 60, 0) 72%); box-shadow: 0 0 22px 8px rgba(255, 190, 90, 0.7); }
+.float-num.hero-dmg { font-size: 64px; animation-duration: 1.4s; }
+.ko-banner { position: absolute; left: 50%; top: 50%; z-index: 70; transform: translate(-50%, -50%); display: flex; flex-direction: column; align-items: center; pointer-events: none;
+  padding: 26px 70px; border-radius: 30px; background: rgba(20, 12, 24, 0.82); box-shadow: 0 0 0 4px var(--pink), 0 20px 60px rgba(0, 0, 0, 0.6);
+  animation: ko-in 0.45s cubic-bezier(.2, 1.4, .4, 1) both; }
+.ko-banner b { font-family: var(--display); font-size: 64px; font-weight: 700; color: #fff; letter-spacing: 0.04em; line-height: 1; text-shadow: 0 4px 0 rgba(140, 30, 90, 0.6); }
+.ko-banner span { font-family: var(--display); font-size: 40px; font-weight: 700; color: var(--pink); letter-spacing: 0.3em; margin-top: 6px; }
+.ko-banner.out { opacity: 0; transition: opacity 0.35s; }
+@keyframes ko-in { from { opacity: 0; transform: translate(-50%, -50%) scale(1.6); } }
+.rb-health { display: flex; align-items: center; justify-content: center; gap: 14px; margin: 0 0 18px; font-family: var(--display); font-size: 22px; font-weight: 600; color: var(--ink-soft); }
+.rb-heart { width: 92px; height: 86px; display: flex; align-items: center; justify-content: center; padding-bottom: 8px;
+  font-family: var(--display); font-weight: 700; font-size: 38px; color: #fff; text-shadow: 0 2px 0 rgba(80, 30, 80, 0.4);
+  background: radial-gradient(circle at 35% 30%, #ffc4da, var(--hp) 60%, #e23a76);
+  -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Cpath d='M20 37C6 27 1 20 1 12.5 1 6.5 5.5 2 11 2c4 0 7 2 9 5.5C22 4 25 2 29 2c5.5 0 10 4.5 10 10.5C39 20 34 27 20 37z'/%3E%3C/svg%3E") center/contain no-repeat;
+  mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Cpath d='M20 37C6 27 1 20 1 12.5 1 6.5 5.5 2 11 2c4 0 7 2 9 5.5C22 4 25 2 29 2c5.5 0 10 4.5 10 10.5C39 20 34 27 20 37z'/%3E%3C/svg%3E") center/contain no-repeat; }
+#stage.portrait .rb-heart { width: 130px; height: 122px; font-size: 54px; }
+#stage.portrait .rb-health { font-size: 30px; }
+#stage.portrait .ko-banner b { font-size: 76px; }
+#stage.portrait .ko-banner span { font-size: 48px; }
+#stage.portrait .ko-banner { padding: 30px 40px; width: 780px; box-sizing: border-box; text-align: center; }
+
+/* ---- freezing the shop ---- */
+.freeze-sheet { position: absolute; inset: 0; border-radius: inherit; pointer-events: none; z-index: 8; overflow: hidden;
+  background: linear-gradient(160deg, rgba(220, 250, 255, 0.85), rgba(150, 220, 245, 0.55) 45%, rgba(220, 250, 255, 0.8));
+  box-shadow: inset 0 0 0 3px #e6fbff, inset 0 0 30px #8fdcf2; animation: freeze-sheet 1.3s ease-out both; }
+.freeze-sheet::after { content: ''; position: absolute; inset: -40%; background: linear-gradient(115deg, transparent 40%, rgba(255, 255, 255, 0.95) 50%, transparent 60%);
+  animation: freeze-shine 0.9s ease-in-out both; animation-delay: inherit; }
+@keyframes freeze-sheet { 0% { clip-path: inset(0 0 100% 0); opacity: 1; } 35% { clip-path: inset(0 0 0 0); opacity: 1; } 100% { clip-path: inset(0 0 0 0); opacity: 0; } }
+@keyframes freeze-shine { from { transform: translateX(-60%); } to { transform: translateX(60%); } }
+.snowflake { position: absolute; z-index: 30; color: #eafcff; pointer-events: none; text-shadow: 0 0 8px #7fd7ee; opacity: 0;
+  animation: snow-fall 1.5s ease-in both; }
+@keyframes snow-fall { 0% { opacity: 0; transform: translate(0, 0) rotate(0); } 15% { opacity: 1; } 100% { opacity: 0; transform: translate(var(--dx), var(--dy)) rotate(var(--rot)); } }
+#stage.portrait .snowflake { font-size: 30px !important; }
+@media (prefers-reduced-motion: reduce) { .snowflake { display: none; } }

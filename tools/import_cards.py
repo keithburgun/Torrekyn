@@ -117,7 +117,7 @@ GOLDEN = {
     "mod": "Battlecry: Give this unit's stats to the unit to the right of it.",
     "chaos": "Start of Turn: Give your left-most unit +6/+6. Repeat for each Battlecry you played this turn.",
     "aerial_drone": "Whenever you trigger a Battlecry, gain +4/+8.",
-    "computer": "Taunt. Deathrattle: Tech up. Gain 3 gold next turn.",
+    "computer": "Taunt. Deathrattle: It costs 2 less gold to upgrade the shop.",
     "virus": "Battlecry: Each Rival's left-most slot gains -5/-5, and each Rival gains a Virus to their hand.",
     "robot_boy": "End of Turn: Gain 2 random Neutral cards of any tier.",
     "scientist": "Battlecry: For the rest of this tower level, Alcove units have +6 Attack.",
@@ -125,7 +125,7 @@ GOLDEN = {
     "warmech": "Divine Shield. Reborn. This unit has +8/+4 for each Battlecry you've triggered this game.",
     "may_danaris": "Deathrattle: Summon a 200/200 Phoenix.",
     "golden_light": "Deathrattle. You take 1 damage.",
-    "drill_sgt": "Start of Combat: If you are tier 3 or lower, gain +10/+10",
+    "drill_sgt": "Start of Combat: If you are tier 3 or lower, gain +10 Attack.",
     "shopkeep": "After you buy 4 units, gain 2 random Tier 1 cards.",
     "intern": "Whenever you sell a tier 3 unit, gain 2 random tier 2 units.",
     "pyro": "When this kills a unit, it deals excess damage to both adjacent units.",
@@ -173,7 +173,7 @@ TOKENS = [
 
 
 # cards renamed after launch keep their original ID (their ability code and art are keyed by it)
-RENAMED = {"forest_abomination": "white_ninja"}
+RENAMED = {"forest_abomination": "white_ninja", "green_ninja": "orange_ninja"}
 
 
 def slug(s):

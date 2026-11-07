@@ -32,7 +32,7 @@ def roots(a):
 TRIBE_BG = {
     'neverending': ('#b9a3e8', '#4b2f7a'), 'azure': ('#9cc3ff', '#1f3a85'), 'kindred': ('#ffc2df', '#a8457a'),
     'brambor': ('#e6c49a', '#6b4422'), 'cloister': ('#a8dba0', '#2f6b35'), 'alcove': ('#fff1a0', '#b38a12'),
-    'demons': ('#ffb0a0', '#8a2020'), 'neutral': ('#e0dcea', '#6a6480'), 'hero': ('#d8ccf5', '#4a3d70'),
+    'demons': ('#ffb0a0', '#8a2020'), 'neutral': ('#ffffff', '#262424'), 'hero': ('#d8ccf5', '#4a3d70'),
 }
 
 def hexrgb(h):

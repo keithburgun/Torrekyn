@@ -5,9 +5,9 @@ import { PERSONAS, personaElo, personaProfile, profileForSkill } from '../src/en
 vi.stubGlobal('localStorage', { getItem: () => null, setItem: () => undefined });
 
 describe('personas and rating', () => {
-  it('15 personas with unique names; rivals get personas', () => {
-    expect(PERSONAS.length).toBe(15);
-    expect(new Set(PERSONAS.map((p) => p.name)).size).toBe(15);
+  it('16 personas with unique names; rivals get personas', () => {
+    expect(PERSONAS.length).toBe(16);
+    expect(new Set(PERSONAS.map((p) => p.name)).size).toBe(16);
     const g = newGame(3);
     selectHero(g, human(g).heroOffer![0]);
     const rivals = g.players.slice(1);
@@ -26,7 +26,7 @@ describe('personas and rating', () => {
     const b = profileForSkill(0);
     expect(b.noise).toBeGreaterThan(2);
     expect(b.f!.arrange).toBe(false);
-    expect(personaProfile(PERSONAS[7]).tribe).toBe('kindred');
+    expect(personaProfile(PERSONAS[11]).tribe).toBe('kindred');
   });
 
   it('rating moves by placement and lobby strength', async () => {

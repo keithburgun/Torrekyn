@@ -1,8 +1,8 @@
 /**
  * Elo calibration for bots. Skipped normally.
  *  SKILLS=1     one lobby seat per skill level (0, 0.2 … 1): average placement and Elo gaps, to check the dial.
- *  CALIBRATE=1  random lobbies of the 15 personas; fits everyone's Elo from who finished above whom,
- *               anchored so the Expert (xX_TavernKing_Xx) is 2000; writes src/data/personaElo.json.
+ *  CALIBRATE=1  random lobbies of the personas; fits everyone's Elo from who finished above whom,
+ *               anchored so the Expert (the best persona) is EXPERT_ELO; writes src/data/personaElo.json.
  *               Also places the original (pre-improvement) bot on the same scale for reference.
  */
 import { describe, it } from 'vitest';
@@ -57,7 +57,7 @@ describe.skipIf(!process.env.SKILLS)('skill ladder', () => {
 describe.skipIf(!process.env.CALIBRATE)('persona Elo', () => {
   it('random persona lobbies', () => {
     const games = Number(process.env.GAMES ?? 2000);
-    // index 15 = the original bot, for reference
+    // last index = the original bot, for reference
     const profiles: BotProfile[] = [...PERSONAS.map(personaProfile), BASELINE];
     const n = profiles.length;
     const w = profiles.map(() => profiles.map(() => 0));

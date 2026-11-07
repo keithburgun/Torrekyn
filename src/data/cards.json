@@ -732,7 +732,7 @@
   },
   {
    "id": "orange_ninja",
-   "name": "Orange Ninja",
+   "name": "Green Ninja",
    "tribe": "cloister",
    "tier": 2,
    "atk": 8,
@@ -944,8 +944,8 @@
    "tier": 3,
    "atk": 10,
    "hp": 10,
-   "text": "Taunt. Deathrattle: Tech up.",
-   "goldenText": "Taunt. Deathrattle: Tech up. Gain 3 gold next turn.",
+   "text": "Taunt. Deathrattle: It costs 1 less gold to upgrade the shop.",
+   "goldenText": "Taunt. Deathrattle: It costs 2 less gold to upgrade the shop.",
    "keywords": [
     "taunt"
    ]
@@ -1037,8 +1037,8 @@
    "tier": 1,
    "atk": 2,
    "hp": 2,
-   "text": "Start of Combat: If you are tier 3 or lower, gain +5/+5",
-   "goldenText": "Start of Combat: If you are tier 3 or lower, gain +10/+10",
+   "text": "Start of Combat: If you are tier 3 or lower, gain +5 Attack.",
+   "goldenText": "Start of Combat: If you are tier 3 or lower, gain +10 Attack.",
    "keywords": []
   },
   {

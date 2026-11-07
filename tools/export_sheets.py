@@ -120,15 +120,15 @@ def main():
 
     # ---- Heroes ----
     wh = wb.create_sheet('Heroes')
-    style_sheet(wh, ['Hero', 'Identity', 'Hero Power', 'Type', 'Cost (gold)', 'Effect', 'Portrait', 'Hero ID', 'Art source', 'Crop (x, y, size)'],
-                [18, 26, 20, 9, 9, 50, 17, 18, 46, 16])
+    style_sheet(wh, ['Hero', 'Identity', 'Hero Power', 'Type', 'Cost (gold)', 'Effect', 'Portrait', 'Hero ID', 'Art source', 'Crop (x, y, size)', 'Starting Health'],
+                [18, 26, 20, 9, 9, 50, 17, 18, 46, 16, 10])
     r = 2
     for h in heroes:
         spec = src['heroes'].get(h['id'])
         vals = [h['name'], h['title'], h['power'], 'Passive' if h.get('passive') else 'Active', '—' if h.get('passive') else h.get('cost', 0),
-                h['text'], None, h['id'], where(spec) if spec else '', crop_text(spec) if spec else '']
+                h['text'], None, h['id'], where(spec) if spec else '', crop_text(spec) if spec else '', h.get('health', 45)]
         for i, v in enumerate(vals, 1):
-            body(wh.cell(r, i, v), center=i in (4, 5))
+            body(wh.cell(r, i, v), center=i in (4, 5, 11))
         wh.row_dimensions[r].height = ROW_PT
         art = os.path.join(ROOT, 'public/art/v2/heroes', f"{h['id']}.webp")
         if os.path.exists(art):

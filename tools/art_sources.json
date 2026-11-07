@@ -525,15 +525,19 @@
    ]
   },
   "disciple": {
-   "src": "U/ui-ninja.png",
-   "px": true
+   "src": "P/Eve-smallGWT.png",
+   "crop": [
+    0.5,
+    0.5,
+    1.0
+   ]
   },
   "hunter": {
    "src": "U/ui-skeletonarcher.png",
    "px": true
   },
   "orange_ninja": {
-   "src": "U/ui-skirmisher.png",
+   "src": "U/ui-ninja.png",
    "px": true
   },
   "owl": {
@@ -723,12 +727,8 @@
    ]
   },
   "pyro": {
-   "src": "R/derpy 1 rgb version NEW.png",
-   "crop": [
-    0.45,
-    0.5,
-    0.8
-   ]
+   "src": "U/ui-skirmisher.png",
+   "px": true
   },
   "jeweler": {
    "src": "K/gaingem rgb.png",

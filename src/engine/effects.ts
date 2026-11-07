@@ -547,10 +547,8 @@ export const EFFECTS: Record<string, Effect> = {
   computer: {
     deathrattle: (c) => {
       if (!c.side.persistent) return;
-      c.c.after(c.side, () => {
-        techUpFree(c.p);
-        if (c.m === 2) c.p.goldNextTurn += 3;
-      });
+      // upgrading the shop costs less (1, or 2 if Golden); never below 0
+      c.c.after(c.side, () => { c.p.upgradeCost = Math.max(0, c.p.upgradeCost - c.m); });
     },
   },
   virus: {
@@ -594,7 +592,7 @@ export const EFFECTS: Record<string, Effect> = {
 
   // ===== Business Demons =====
   drill_sgt: {
-    soc: (c) => { if (c.side.tier <= 3) buff(c.self, 5 * c.m, 5 * c.m); },
+    soc: (c) => { if (c.side.tier <= 3) buff(c.self, 5 * c.m, 0); },
   },
   shopkeep: {
     onBuy: (c) => {
@@ -760,15 +758,6 @@ export const EFFECTS: Record<string, Effect> = {
     },
   },
 };
-
-function techUpFree(p: Player) {
-  if (p.tier >= CONFIG.maxTier) return;
-  p.tier++;
-  p.upgradeCost = CONFIG.upgradeCost[p.tier + 1] ?? 0;
-  p.alcoveAtkThisTier = 0;
-  p.tinkerThisTier = 0;
-  log(p, `Computer: teched up to tier ${p.tier}.`);
-}
 
 export function hasBattlecry(id: string) {
   return !!EFFECTS[id]?.battlecry;

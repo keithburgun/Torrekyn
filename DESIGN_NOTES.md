@@ -120,28 +120,41 @@ Tried and dropped (no gain): faster or slower leveling curves (the 5/8/10 curve 
 `profileForSkill(0…1)` switches the Expert's habits on as skill rises (most valuable last), and below that adds evaluation noise, blunders, lazy shopping (ending a turn with gold unspent), holding weak units, and late leveling. Fifteen personas sit on that dial, some with quirks (always Kindred, always Neverending, triple-hungry, reroll-happy, fast leveler). Each new game seats 5 of them, chosen by matchmaking (below), each playing a random champion.
 
 ### Elo
-Ratings are standard Elo (400 points = 10:1 odds) applied to Battlegrounds-style results: each rival in the lobby counts as a head-to-head match, won if you finished above them. **Persona ratings are measured, not assigned**: 3,600 lobbies of randomly chosen personas, fitted with Bradley-Terry maximum likelihood (`CALIBRATE=1 npx vitest run tests/calibrate.test.ts` → `src/data/personaElo.json`), anchored so the **Expert bot = 1500**. The weakest bot lands at **1000**; the original bot would sit at 1281.
+Ratings are standard Elo (400 points = 10:1 odds) applied to Battlegrounds-style results: each rival in the lobby counts as a head-to-head match, won if you finished above them. **Persona ratings are measured, not assigned**: 2,400 lobbies of randomly chosen personas, fitted with Bradley-Terry maximum likelihood (`CALIBRATE=1 npx vitest run tests/calibrate.test.ts` → `src/data/personaElo.json`), anchored so the **Expert bot = 1500**. The weakest bot lands at **1000**; the original bot would sit at 1281.
 
 | Persona | Skill | Elo |
 |---|---|---|
-| xX_TavernKing_Xx (Expert) | 1.00 | 1500 |
-| golden_gremlin | 0.85 | 1487 |
-| sl0t_machine | 0.70 | 1454 |
-| rerollandpray | 0.62 | 1370 |
-| DivineShieldBoi | 0.56 | 1333 |
-| QuestLogQueen | 0.50 | 1299 |
-| MidRangeMaddie | 0.45 | 1288 |
-| potato_witch_irl | 0.40 | 1253 |
-| Freeze_Frame | 0.35 | 1154 |
-| NoTauntNoProblem | 0.30 | 1147 |
-| skel3tor_dad | 0.25 | 1112 |
-| bunnyhop_99 | 0.18 | 1064 |
-| ItsJustAPhase | 0.12 | 1025 |
-| sixthplacesteve | 0.06 | 1008 |
-| ctrl_alt_defeat (weakest) | 0.00 | 1000 |
+| norikajims (Expert) | 1.00 | 1500 |
+| sturmJurglers | 0.85 | 1474 |
+| mint | 0.70 | 1424 |
+| robodavids_ | 0.62 | 1367 |
+| UrchidScrawley | 0.56 | 1309 |
+| jjessica_sax | 0.50 | 1297 |
+| D.brenners | 0.45 | 1272 |
+| Rothazar08 | 0.40 | 1219 |
+| BOGMAN_ | 0.35 | 1149 |
+| dirch-gavels-dds | 0.30 | 1124 |
+| f.howitt | 0.25 | 1116 |
+| orbath | 0.20 | 1070 |
+| chocadillydoo | 0.15 | 1051 |
+| vivi_001 | 0.10 | 1007 |
+| mintyclyve | 0.05 | 1005 |
+| bunnihooligan (weakest) | 0.00 | 987 |
 
 The spread (500 points) is narrower than chess because a 6-player autobattler has a lot of luck: even so, the Expert finishes above the weakest bot about 95% of the time.
 
 **Your rating** (src/ui/rating.ts, stored in the browser) starts at 1000, level with the weakest bot. After each game: change = K × Σ(result − expected) / 5 over the five rivals, K = 48 (96 for your first 10 "provisional" games). Winning a lobby of equal-rated players gains about +24; finishing last loses about −24; beating a strong lobby gains more, losing to a weak one costs more. Shown on the title screen and at game over.
 
 **Matchmaking:** each new game draws your 5 rivals with a strong preference for personas near your rating (the chance falls off with distance, roughly halving every 90 points, with a small floor so lobbies still vary). `matchPersonas` in personas.ts.
+
+
+## Hero starting Health
+Heroes start with different Health to even out their power: stronger heroes start lower. Measured with the Expert
+bot in every seat (docs/balance.md): at 45 Health each, average placement ranged from 2.99 (May Danaris, Clover,
+Abragail) to 4.14 (Locas Clare). 10 Health is worth about 0.55 places, so each hero's Health was moved by
+(placement − 3.5) / 0.055. Afterwards every hero averages 3.44–3.59. Health is set per hero in `heroes.ts`
+(`health`), shown on the hero choice, and CONFIG.startHealth (45) is the default.
+
+## Maximum Gold cap
+Investor and Warlord's Horn raise maximum Gold permanently; that used to have no ceiling (Investors kept on the
+board, especially Golden or with Sarinee, could reach 50 Gold a turn). Maximum Gold now stops at 20.

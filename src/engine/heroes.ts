@@ -17,6 +17,8 @@ export interface HeroDef {
   power: string;
   text: string;
   avatar: number;
+  /** starting Health (balance: stronger heroes start lower); CONFIG.startHealth when not set */
+  health?: number;
   cost?: number; // active powers only
   /** cost that changes during the game (Locas Clare); overrides `cost` */
   costFn?(g: GameState, p: Player): number;
@@ -63,37 +65,37 @@ function heroAvenge(s: Side, id: string, n: number): boolean {
 
 export const HEROES: HeroDef[] = [
   {
-    id: 'andromeda_robin', name: 'Andromeda Robin', title: 'Potato witch', power: 'Elemental Weave', avatar: 0, passive: true,
+    id: 'andromeda_robin', name: 'Andromeda Robin', title: 'Potato witch', power: 'Elemental Weave', avatar: 0, health: 45, passive: true,
     text: 'Start the game with a 1/1 Pumpkin. It has every tribe and permanently gains the Deathrattle of any other unit that dies in combat.',
     onGain: (g, p) => { gainNew(g, p, 'pumpkin'); },
   },
   {
-    id: 'gelf_lanz', name: 'Gelf Lanz', title: 'Leader of the Azure Order', power: 'Inspire', avatar: 1, passive: true, needsTribe: 'azure',
+    id: 'gelf_lanz', name: 'Gelf Lanz', title: 'Leader of the Azure Order', power: 'Inspire', avatar: 1, health: 47, passive: true, needsTribe: 'azure',
     text: 'After you buy an Azure unit, your next Azure unit costs 1 less.',
     discount: (p, cardId) => (p.heroMem.inspired && isTribe(cardId, 'azure') ? 1 : 0),
     onBuy: (g, p, u) => { if (isTribe(u, 'azure')) p.heroMem.inspired = 1; },
     progress: (g, p) => (p.heroMem.inspired ? 'Next Azure −1' : null),
   },
   {
-    id: 'derby_pocket', name: 'Derby Pocket', title: 'Ex-Business Demon intern', power: 'Coffee Run', avatar: 2, passive: true,
+    id: 'derby_pocket', name: 'Derby Pocket', title: 'Ex-Business Demon intern', power: 'Coffee Run', avatar: 2, health: 50, passive: true,
     text: `After you play ${BATTLECRIES_FOR_COFFEE} Battlecry units, your Battlecries trigger an extra time.`,
     onPlay: (g, p, u) => { if (hasBattlecry(u.cardId)) p.heroMem.coffee = (p.heroMem.coffee ?? 0) + 1; },
     battlecryTimes: (p) => ((p.heroMem.coffee ?? 0) >= BATTLECRIES_FOR_COFFEE ? 2 : 1),
     progress: (g, p) => ((p.heroMem.coffee ?? 0) >= BATTLECRIES_FOR_COFFEE ? 'Active' : `${p.heroMem.coffee ?? 0}/${BATTLECRIES_FOR_COFFEE}`),
   },
   {
-    id: 'bunny_wizard', name: 'Bunny Wizard', title: 'A very soft healer', power: 'Cuddle Spell', avatar: 3, cost: 1, needsTribe: 'kindred',
+    id: 'bunny_wizard', name: 'Bunny Wizard', title: 'A very soft healer', power: 'Cuddle Spell', avatar: 3, health: 52, cost: 1, needsTribe: 'kindred',
     text: 'Discover a Kindred unit. (Unlocks at Tavern Tier 4.)',
     locked: (g, p) => (p.tier < 4 ? 'Unlocks at Tavern Tier 4' : null),
     use: (g, p) => queueDiscover(g, p, discoverOptions(g, (id) => isTribe(id, 'kindred') && def(id).tier <= p.tier), 'Cuddle Spell: Discover a Kindred unit'),
   },
   {
-    id: 'croh_vosh', name: 'Croh Vosh', title: 'The drowned lich', power: 'Abyssal Sweep', avatar: 4, passive: true,
+    id: 'croh_vosh', name: 'Croh Vosh', title: 'The drowned lich', power: 'Abyssal Sweep', avatar: 4, health: 50, passive: true,
     text: 'Units you summon during combat get +1/+2.',
     onSummon: (c, s, u) => { u.atk += 1; u.hp += 2; },
   },
   {
-    id: 'may_danaris', name: 'May Danaris', title: 'Hacker from the neon district', power: 'Root Access', avatar: 5, cost: 2,
+    id: 'may_danaris', name: 'May Danaris', title: 'Hacker from the neon district', power: 'Root Access', avatar: 5, health: 36, cost: 2,
     text: "Discover a unit from your last opponent's army.",
     locked: (g, p) => (p.lastOpponentBoard.length ? null : 'No opponent fought yet'),
     use: (g, p) => {
@@ -102,7 +104,7 @@ export const HEROES: HeroDef[] = [
     },
   },
   {
-    id: 'locas_clare', name: 'Locas Clare', title: 'Prankster and lockpick', power: 'Five-Finger Discount', avatar: 6,
+    id: 'locas_clare', name: 'Locas Clare', title: 'Prankster and lockpick', power: 'Five-Finger Discount', avatar: 6, health: 57,
     text: 'Steal every unit in the Tavern (they go to your hand), then this resets to 10. Costs 1 less each turn.',
     costFn: (g, p) => Math.max(0, 10 - (g.round - (p.heroMem.locasFrom ?? 1))),
     locked: (g, p) => (!p.shop.length ? 'The Tavern is empty' : p.hand.length >= CONFIG.handSize ? 'Your hand is full' : null),
@@ -113,7 +115,7 @@ export const HEROES: HeroDef[] = [
     },
   },
   {
-    id: 'venice_gorn', name: 'Venice Gorn', title: 'Potato farmer', power: 'Sow Seeds', avatar: 7, cost: 2,
+    id: 'venice_gorn', name: 'Venice Gorn', title: 'Potato farmer', power: 'Sow Seeds', avatar: 7, health: 43, cost: 2,
     text: 'Plant a seed. In 2 turns it sprouts into a random unit from 1 Tier higher than your Tavern.',
     use: (g, p) => { p.heroSeeds.push(2); },
     startTurn: (g, p) => {
@@ -127,7 +129,7 @@ export const HEROES: HeroDef[] = [
     progress: (g, p) => (p.heroSeeds.length ? `${p.heroSeeds.length} planted` : null),
   },
   {
-    id: 'omar_evans', name: 'Omar Evans', title: 'Bug ninja of the green', power: 'Leaf Cloak', avatar: 8, passive: true, needsTribe: ZUZUNI,
+    id: 'omar_evans', name: 'Omar Evans', title: 'Bug ninja of the green', power: 'Leaf Cloak', avatar: 8, health: 50, passive: true, needsTribe: ZUZUNI,
     text: `After you sell ${SALES_FOR_LEAVES} Cloister units, get a random Cloister unit. (Repeats.)`,
     onSell: (g, p, u) => {
       if (!isTribe(u, ZUZUNI)) return;
@@ -140,7 +142,7 @@ export const HEROES: HeroDef[] = [
     progress: (g, p) => `${p.heroMem.leaves ?? 0}/${SALES_FOR_LEAVES}`,
   },
   {
-    id: 'eve_williams', name: 'Eve Williams', title: 'The grinning skeleton', power: 'Wild Card', avatar: 9, cost: 1, target: true,
+    id: 'eve_williams', name: 'Eve Williams', title: 'The grinning skeleton', power: 'Wild Card', avatar: 9, health: 48, cost: 1, target: true,
     text: 'Transform a friendly unit into a random unit of the same Tier, then give it +3/+3.',
     use: (g, p, t) => {
       if (!t || t.mem.locked) return;
@@ -157,7 +159,7 @@ export const HEROES: HeroDef[] = [
     },
   },
   {
-    id: 'abragail', name: 'Abragail', title: 'Scholar of the Azura Academy', power: 'Well-Studied', avatar: 10, passive: true,
+    id: 'abragail', name: 'Abragail', title: 'Scholar of the Azura Academy', power: 'Well-Studied', avatar: 10, health: 36, passive: true,
     text: 'At the start of turn 4, Discover two Hero Powers to replace this one.',
     startTurn: (g, p) => {
       if (g.round < 4 || p.heroMem.studied) return;
@@ -170,12 +172,12 @@ export const HEROES: HeroDef[] = [
     progress: (g, p) => (g.round < 4 ? `Turn ${g.round}/4` : null),
   },
   {
-    id: 'bill_milton', name: 'Bill Milton', title: 'CEO of the Business Demons', power: 'Golden Parachute', avatar: 11, passive: true, needsTribe: 'demons',
+    id: 'bill_milton', name: 'Bill Milton', title: 'CEO of the Business Demons', power: 'Golden Parachute', avatar: 11, health: 49, passive: true, needsTribe: 'demons',
     text: 'Whenever you play a Business Demon, gain 1 gold.',
     onPlay: (g, p, u) => { if (isTribe(u, 'demons')) p.gold += 1; },
   },
   {
-    id: 'clover', name: 'Clover', title: 'Dragon of Dragon Bridge', power: 'Broodmother', avatar: 12, passive: true,
+    id: 'clover', name: 'Clover', title: 'Dragon of Dragon Bridge', power: 'Broodmother', avatar: 12, health: 36, passive: true,
     text: 'Avenge (4): Summon a 1/1 Dragon, and improve this (+1/+1 to future Dragons).',
     onFriendlyDeath: (c, s) => {
       if (!heroAvenge(s, 'clover', 4)) return;
@@ -188,7 +190,7 @@ export const HEROES: HeroDef[] = [
     progress: (g, p) => `Dragons ${1 + (p.heroMem.brood ?? 0)}/${1 + (p.heroMem.brood ?? 0)}`,
   },
   {
-    id: 'trevor_l', name: 'Trevor L', title: 'Rock and roll skeleton', power: 'Party All Night', avatar: 13, passive: true,
+    id: 'trevor_l', name: 'Trevor L', title: 'Rock and roll skeleton', power: 'Party All Night', avatar: 13, health: 42, passive: true,
     text: 'Avenge (5): Give a random friendly unit Reborn.',
     onFriendlyDeath: (c, s) => {
       if (!heroAvenge(s, 'trevor_l', 5)) return;
@@ -277,6 +279,9 @@ function everyOther(p: Player, id: string): boolean {
 
 export const LESSER_TRINKET_TURN = 6;
 export const GREATER_TRINKET_TURN = 9;
+
+/** a hero's starting Health */
+export const heroHealth = (id: string | undefined) => heroDef(id)?.health ?? CONFIG.startHealth;
 
 export function heroDef(id: string | undefined): HeroDef | undefined {
   return HEROES.find((h) => h.id === id);
