@@ -6,7 +6,8 @@
 import { addKw, def, effStats, isTribe, log, makeUnit, pick, sample, CONFIG } from './core';
 import type { GameState, Player, Tribe, Unit } from './types';
 import type { CUnit, Side, Combat } from './combat';
-import { hasBattlecry } from './effects';
+import { EFFECTS, hasBattlecry } from './effects';
+import { fxHooks, withFx } from './fx';
 import { discoverOptions, drawFromPool, gainCard, gainNew, queueDiscover, queuePowerDiscover, randomCardOfTier } from './game';
 
 export interface HeroDef {
@@ -209,28 +210,70 @@ export interface TrinketDef {
   endTurn?(g: GameState, p: Player): void;
   soc?(c: Combat, s: Side): void;
   shopBonus?: number;
+  startTurn?(g: GameState, p: Player): void;
+  onPlay?(g: GameState, p: Player): void;
+  /** combat: a friendly unit died (Avenge) */
+  onFriendlyDeath?(c: Combat, s: Side): void;
+  /** turn counter shown on the trinket */
+  progress?(p: Player): string;
 }
 
 export const TRINKETS: TrinketDef[] = [
   // lesser (offered at the start of turn 6)
-  { id: 'bronze_compass', name: 'Bronze Compass', cost: 2, text: 'Your shop offers 1 extra unit.', shopBonus: 1 },
-  { id: 'lucky_coin', name: 'Lucky Coin', cost: 4, text: 'Increase your maximum Gold by 1.', onGain: (g, p) => { p.maxGoldBonus += 1; } },
-  { id: 'whetstone', name: 'Whetstone', cost: 1, text: 'Start of Combat: Your left-most unit gains +5 Attack.', soc: (c, s) => { const u = s.units[0]; if (u) u.atk += 5; } },
+  { id: 'healing_draught', name: 'Teched Up', cost: 0, text: 'Gain 3 Gold. Your shop no longer offers cards from Tier 1 or 2.', onGain: (g, p) => { p.gold += 3; } },
+  { id: 'whetstone', name: 'Crop Circle', cost: 1, text: 'At the end of each turn, get a random Brambor.', endTurn: (g, p) => {
+    const id = drawFromPool(g, (cid) => def(cid).tribe === 'brambor' && def(cid).tier <= p.tier);
+    if (id) gainNew(g, p, id);
+  } },
+  { id: 'old_map', name: 'Old Map', cost: 1, text: 'At the end of every 2 turns, gain 2 Gold and Discover a Tier 5 unit.',
+    endTurn: (g, p) => {
+      if (!everyOther(p, 'old_map')) return;
+      p.goldNextTurn += 2;
+      p.heroMem.old_map_discover = 1; // discovered at the start of next turn, when you can choose
+    },
+    startTurn: (g, p) => {
+      if (!p.heroMem.old_map_discover) return;
+      p.heroMem.old_map_discover = 0;
+      queueDiscover(g, p, discoverOptions(g, (id) => def(id).tier === 5), 'Old Map: Discover a Tier 5 unit');
+    },
+    progress: (p) => `${p.heroMem.t_old_map ?? 0}/2` },
+  { id: 'bronze_compass', name: 'Bronze Compass', cost: 2, text: 'Your Neverending units have +12 Attack.' }, // see effStats
   { id: 'iron_bracer', name: 'Iron Bracer', cost: 2, text: 'Your left-most slot gains Taunt.', onGain: (g, p) => addKw(p.slots[0], 'taunt') },
-  { id: 'healing_draught', name: 'Healing Draught', cost: 0, text: 'Restore 8 Health to your hero.', onGain: (g, p) => { p.health += 8; } },
-  { id: 'spare_parts', name: 'Spare Parts', cost: 3, text: 'At the end of your turn, give a random unit in your hand +2/+2.', endTurn: (g, p) => { const u = pick(g, p.hand); if (u) { u.atk += 2; u.hp += 2; } } },
-  { id: 'old_map', name: 'Old Map', cost: 1, text: 'Get a random Tier 2 unit.', onGain: (g, p) => gainNew(g, p, randomCardOfTier(g, 2)) },
+  { id: 'spare_parts', name: 'Spare Parts', cost: 3, text: 'Every time you play a unit, give a random unit in your hand +2/+2.', onPlay: (g, p) => { const u = pick(g, p.hand); if (u) { u.atk += 2; u.hp += 2; } } },
   { id: 'war_drum', name: 'War Drum', cost: 3, text: 'Start of Combat: Give your units +2 Attack.', soc: (c, s) => { for (const u of s.units) u.atk += 2; } },
+  { id: 'lucky_coin', name: 'Lucky Coin', cost: 0, text: 'Gain 8 Gold.', onGain: (g, p) => { p.gold += 8; } },
   // greater (offered at the start of turn 9)
-  { id: 'crown_of_echoes', name: 'Crown of Echoes', cost: 7, greater: true, text: 'Your Battlecries trigger twice.' },
-  { id: 'gravebell', name: 'Gravebell', cost: 6, greater: true, text: 'Your Deathrattles trigger an extra time.' },
-  { id: 'aegis_charm', name: 'Aegis Charm', cost: 4, greater: true, text: 'Start of Combat: Give your 2 left-most units Divine Shield.', soc: (c, s) => { for (const u of s.units.slice(0, 2)) addKw(u, 'divineShield'); } },
-  { id: 'golden_lantern', name: 'Golden Lantern', cost: 6, greater: true, text: 'Make a random non-golden unit in your army Golden.', onGain: (g, p) => makeGolden(g, p) },
   { id: 'bannerlords_standard', name: "Bannerlord's Standard", cost: 3, greater: true, text: 'Give all your slots +3/+3.', onGain: (g, p) => { for (const s of p.slots) { s.atk += 3; s.hp += 3; } } },
-  { id: 'hourglass_of_plenty', name: 'Hourglass of Plenty', cost: 4, greater: true, text: 'Increase your maximum Gold by 2.', onGain: (g, p) => { p.maxGoldBonus += 2; } },
+  { id: 'aegis_charm', name: 'Aegis Charm', cost: 4, greater: true, text: 'Start of Combat: Give your 2 left-most units Divine Shield.', soc: (c, s) => { for (const u of s.units.slice(0, 2)) addKw(u, 'divineShield'); } },
+  { id: 'hourglass_of_plenty', name: 'Hourglass of Plenty', cost: 4, greater: true, text: 'Avenge (6): Summon a random Deathrattle unit.',
+    onFriendlyDeath: (c, s) => {
+      if (!heroAvenge(s, 'hourglass_of_plenty', 6)) return;
+      const ids = Object.keys(c.g.pool).filter((id) => EFFECTS[id]?.deathrattle && !def(id).token && def(id).tier <= s.owner.tier);
+      const id = pick(c.g, ids);
+      if (id && c.spawn(s, id, false, s.units.length)) c.snap('trigger', { note: `Hourglass of Plenty: Summon ${def(id).name}` });
+    } },
   { id: 'phoenix_feather', name: 'Phoenix Feather', cost: 5, greater: true, text: 'Your left-most slot gains Reborn.', onGain: (g, p) => addKw(p.slots[0], 'reborn') },
-  { id: 'warlords_horn', name: "Warlord's Horn", cost: 5, greater: true, text: 'Start of Combat: Give your units +8/+8.', soc: (c, s) => { for (const u of s.units) { u.atk += 8; u.hp += 8; } } },
+  { id: 'warlords_horn', name: "Warlord's Horn", cost: 5, greater: true, text: 'Avenge (8): Increase your maximum Gold by 1.',
+    onFriendlyDeath: (c, s) => {
+      if (!heroAvenge(s, 'warlords_horn', 8)) return;
+      if (s.persistent) s.owner.maxGoldBonus += 1;
+      c.snap('trigger', { note: "Warlord's Horn: +1 maximum Gold" });
+    } },
+  { id: 'gravebell', name: 'Gravebell', cost: 6, greater: true, text: 'Your Deathrattles trigger an extra time.' },
+  { id: 'golden_lantern', name: 'Golden Lantern', cost: 6, greater: true, text: 'At the end of every other turn, make a random non-golden unit in your army Golden.',
+    endTurn: (g, p) => { if (everyOther(p, 'golden_lantern')) makeGolden(g, p); },
+    progress: (p) => `${p.heroMem.t_golden_lantern ?? 0}/2` },
+  { id: 'crown_of_echoes', name: 'Crown of Echoes', cost: 7, greater: true, text: 'Your Battlecries trigger an extra time.' },
 ];
+
+/** counts turns for "every 2 turns" trinkets; true on every second one */
+function everyOther(p: Player, id: string): boolean {
+  const k = `t_${id}`;
+  p.heroMem[k] = (p.heroMem[k] ?? 0) + 1;
+  if (p.heroMem[k] < 2) return false;
+  p.heroMem[k] = 0;
+  return true;
+}
 
 export const LESSER_TRINKET_TURN = 6;
 export const GREATER_TRINKET_TURN = 9;
@@ -294,7 +337,7 @@ export function useHeroPower(g: GameState, p: Player, target?: Unit, id?: string
   if (h.target && !target) return false;
   p.gold -= powerCost(g, p, h);
   p.usedPowers.push(h.id);
-  h.use(g, p, target);
+  heroFx(g, p, h, () => h.use!(g, p, target));
   return true;
 }
 
@@ -308,15 +351,29 @@ export function gainPower(g: GameState, p: Player, id: string, replace?: string)
 }
 
 /** Hero-power hooks, run for every power the player has. */
+/** run a hero-power hook as a visible effect (the UI shows your hero doing it) */
+const heroFx = (g: GameState, p: Player, h: HeroDef, fn: () => void) => withFx(g, p, { hero: true, name: h.power }, 'Hero Power', fn);
+const trinketFx = (g: GameState, p: Player, t: TrinketDef, fn: () => void) => withFx(g, p, { name: t.name }, 'Trinket', fn);
+const trinketsOf = (p: Player) => (p.trinkets ?? []).map((id) => TRINKETS.find((t) => t.id === id)).filter((t): t is TrinketDef => !!t);
+
 export const heroHooks = {
   discount: (p: Player, cardId: string) => powersOf(p).reduce((s, h) => s + (h.discount?.(p, cardId) ?? 0), 0),
-  onBuy: (g: GameState, p: Player, u: Unit) => { for (const h of powersOf(p)) h.onBuy?.(g, p, u); },
-  onPlay: (g: GameState, p: Player, u: Unit) => { for (const h of powersOf(p)) h.onPlay?.(g, p, u); },
-  onSell: (g: GameState, p: Player, u: Unit) => { for (const h of powersOf(p)) h.onSell?.(g, p, u); },
+  onBuy: (g: GameState, p: Player, u: Unit) => { for (const h of powersOf(p)) if (h.onBuy) heroFx(g, p, h, () => h.onBuy!(g, p, u)); },
+  onPlay: (g: GameState, p: Player, u: Unit) => {
+    for (const h of powersOf(p)) if (h.onPlay) heroFx(g, p, h, () => h.onPlay!(g, p, u));
+    for (const t of trinketsOf(p)) if (t.onPlay) trinketFx(g, p, t, () => t.onPlay!(g, p));
+  },
+  onSell: (g: GameState, p: Player, u: Unit) => { for (const h of powersOf(p)) if (h.onSell) heroFx(g, p, h, () => h.onSell!(g, p, u)); },
   battlecryTimes: (p: Player) => powersOf(p).reduce((s, h) => s * (h.battlecryTimes?.(p) ?? 1), 1),
-  startTurn: (g: GameState, p: Player) => { for (const h of powersOf(p)) h.startTurn?.(g, p); },
+  startTurn: (g: GameState, p: Player) => {
+    for (const h of powersOf(p)) if (h.startTurn) heroFx(g, p, h, () => h.startTurn!(g, p));
+    for (const t of trinketsOf(p)) if (t.startTurn) trinketFx(g, p, t, () => t.startTurn!(g, p));
+  },
   onSummon: (c: Combat, s: Side, u: CUnit) => { for (const h of powersOf(s.owner)) h.onSummon?.(c, s, u); },
-  onFriendlyDeath: (c: Combat, s: Side) => { for (const h of powersOf(s.owner)) h.onFriendlyDeath?.(c, s); },
+  onFriendlyDeath: (c: Combat, s: Side) => {
+    for (const h of powersOf(s.owner)) h.onFriendlyDeath?.(c, s);
+    for (const t of trinketsOf(s.owner)) t.onFriendlyDeath?.(c, s);
+  },
 };
 
 export function pickTrinket(g: GameState, p: Player, id: string | null): boolean {
@@ -341,8 +398,8 @@ export function buyCost(p: Player, cardId?: string): number {
 }
 
 export function heroEndTurn(g: GameState, p: Player) {
-  for (const h of powersOf(p)) h.endTurn?.(g, p);
-  for (const t of p.trinkets) trinketDef(t).endTurn?.(g, p);
+  for (const h of powersOf(p)) if (h.endTurn) heroFx(g, p, h, () => h.endTurn!(g, p));
+  for (const t of trinketsOf(p)) if (t.endTurn) trinketFx(g, p, t, () => t.endTurn!(g, p));
 }
 
 export function heroSoc(c: Combat, s: Side) {
@@ -352,3 +409,6 @@ export function heroSoc(c: Combat, s: Side) {
 
 export const hasTrinket = (p: Player, id: string) => p.trinkets.includes(id);
 export { effStats };
+
+// hero progress for the effect events (e.g. "Coffee Run 2/5"); kept here so fx.ts doesn't import heroes
+fxHooks.heroProgress = (g, p) => powersOf(p).map((h) => { const t = h.progress?.(g, p); return t ? `${h.power} ${t}` : ''; }).filter(Boolean).join(' · ');

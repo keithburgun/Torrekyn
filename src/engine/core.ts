@@ -120,6 +120,7 @@ export function effStats(p: Player, u: Unit, zone: 'board' | 'hand' | 'shop', in
   let hp = u.hp;
   const kw = [...u.kw];
   atk += tribeAtkFor(p, u.cardId);
+  if (p.trinkets?.includes('bronze_compass') && isTribe(u, 'neverending')) atk += 12; // Bronze Compass
   if (isTribe(u, 'alcove')) atk += p.alcoveAtkThisTier;
   if (zone === 'shop' && isTribe(u, 'alcove')) {
     atk += p.tinkerThisTier;

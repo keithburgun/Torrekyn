@@ -56,3 +56,22 @@ describe('Torrekin simulation', () => {
     expect(alivePlayers(g).length).toBe(6);
   });
 });
+
+describe('trinkets', () => {
+  it('games where everyone holds every trinket run cleanly', async () => {
+    const { TRINKETS } = await import('../src/engine/heroes');
+    for (let s = 1; s <= 20; s++) {
+      const g = newGame(s * 104729);
+      selectHero(g, human(g).heroOffer![0]);
+      for (const p of g.players) p.trinkets = TRINKETS.map((t) => t.id);
+      let rounds = 0;
+      while (g.phase !== 'over' && rounds < 60) {
+        aiTakeTurn(g, human(g));
+        endTurn(g);
+        check(g);
+        rounds++;
+      }
+      expect(g.phase).toBe('over');
+    }
+  });
+});

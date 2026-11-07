@@ -4,6 +4,7 @@ import {
 import { EFFECTS, battlecryTimes, hasBattlecry } from './effects';
 import { runCombat } from './combat';
 import { aiTakeTurn, aiChooseDiscover } from './ai';
+import { setFxPhase, withFx } from './fx';
 import { PERSONAS, matchPersonas, personaProfile } from './personas';
 import { HEROES, buyCost, gainPower, heroDef, heroEndTurn, heroHooks, hasTrinket, offerTrinkets, shopBonus, GREATER_TRINKET_TURN, LESSER_TRINKET_TURN } from './heroes';
 import type { Discover, GameState, Player, Slot, Tribe, Unit } from './types';
@@ -148,14 +149,18 @@ export function startTurn(g: GameState, p: Player) {
   p.battlecriesLastTurn = p.battlecriesThisTurn;
   p.battlecriesThisTurn = 0;
   p.usedPowers = [];
+  setFxPhase('start');
   heroHooks.startTurn(g, p);
   if (g.round === LESSER_TRINKET_TURN) offerTrinkets(g, p, false);
   if (g.round === GREATER_TRINKET_TURN) offerTrinkets(g, p, true);
   // start-of-turn effects
-  for (const u of [...p.board]) EFFECTS[u.cardId]?.startTurn?.({ g, p, self: u, m: mult(u), board: p.board });
-  for (const u of [...p.hand, ...p.board]) if (u.cardId === 'scout') u.mem.age = (u.mem.age ?? 0) + 1;
+  for (const u of [...p.board]) {
+    const e = EFFECTS[u.cardId]?.startTurn;
+    if (e) withFx(g, p, { unit: u }, 'Start of turn', () => e({ g, p, self: u, m: mult(u), board: p.board }));
+  }
+  for (const u of [...p.hand, ...p.board]) if (u.cardId === 'scout') withFx(g, p, { unit: u }, 'Growing up', () => { u.mem.age = (u.mem.age ?? 0) + 1; });
   for (const u of [...p.hand]) {
-    if (u.cardId === 'larva') {
+    if (u.cardId === 'larva') withFx(g, p, { unit: u }, 'Growing', () => {
       u.mem.turns = (u.mem.turns ?? 0) + 1;
       if (u.mem.turns >= (u.golden ? 2 : 3)) {
         const i = p.hand.indexOf(u);
@@ -167,8 +172,9 @@ export function startTurn(g: GameState, p: Player) {
           log(p, `Larva hatched into ${displayName(nu)}!`);
         }
       }
-    }
+    });
   }
+  setFxPhase('shop');
   if (p.frozen) p.frozen = false;
   else rollShop(g, p);
 }
@@ -178,7 +184,9 @@ export function rollShop(g: GameState, p: Player) {
   p.shop = [];
   const n = CONFIG.shopSize[p.tier] + shopBonus(p);
   for (let i = 0; i < n; i++) {
-    const id = drawFromPool(g, (cid) => def(cid).tier <= p.tier);
+    // Teched Up: no Tier 1 or 2 (a Tier 1-2 tavern still sees Tier 3)
+    const teched = hasTrinket(p, 'healing_draught');
+    const id = drawFromPool(g, (cid) => (teched ? def(cid).tier >= 3 && def(cid).tier <= Math.max(3, p.tier) : def(cid).tier <= p.tier));
     if (id) p.shop.push(makeUnit(g, id));
   }
 }
@@ -190,7 +198,10 @@ export function gainCard(g: GameState, p: Player, u: Unit, how: 'buy' | 'gain' =
     return false;
   }
   p.hand.push(u);
-  for (const b of [...p.board]) EFFECTS[b.cardId]?.onGain?.({ g, p, self: b, m: mult(b), board: p.board }, u, how);
+  for (const b of [...p.board]) {
+    const e = EFFECTS[b.cardId]?.onGain;
+    if (e) withFx(g, p, { unit: b }, 'Ability', () => e({ g, p, self: b, m: mult(b), board: p.board }, u, how));
+  }
   if (how === 'buy') {
     for (const q of p.quests) {
       if (q.have >= q.need) continue;
@@ -315,7 +326,10 @@ export function buy(g: GameState, p: Player, shopIdx: number): ActionResult {
     u.hp += p.tinkerThisTier;
   }
   gainCard(g, p, u, 'buy');
-  for (const b of [...p.board]) EFFECTS[b.cardId]?.onBuy?.({ g, p, self: b, m: mult(b), board: p.board }, u);
+  for (const b of [...p.board]) {
+    const e = EFFECTS[b.cardId]?.onBuy;
+    if (e) withFx(g, p, { unit: b }, 'Ability', () => e({ g, p, self: b, m: mult(b), board: p.board }, u));
+  }
   return OK;
 }
 
@@ -339,9 +353,13 @@ export function sellUnit(g: GameState, p: Player, u: Unit) {
   p.board.splice(i, 1);
   p.gold += sellValue(u, p);
   returnToPool(g, u);
-  EFFECTS[u.cardId]?.onSell?.({ g, p, self: u, m: mult(u), board: p.board });
+  const onSell = EFFECTS[u.cardId]?.onSell;
+  if (onSell) withFx(g, p, { unit: u }, 'Sold', () => onSell({ g, p, self: u, m: mult(u), board: p.board }));
   heroHooks.onSell(g, p, u);
-  for (const b of [...p.board]) EFFECTS[b.cardId]?.onSellOther?.({ g, p, self: b, m: mult(b), board: p.board }, u);
+  for (const b of [...p.board]) {
+    const e = EFFECTS[b.cardId]?.onSellOther;
+    if (e) withFx(g, p, { unit: b }, 'Ability', () => e({ g, p, self: b, m: mult(b), board: p.board }, u));
+  }
 }
 
 /** Remove a unit from the board without selling it (destroyed / consumed). */
@@ -371,14 +389,16 @@ export function play(g: GameState, p: Player, handIdx: number, pos: number, targ
   p.board.splice(pos, 0, u);
   const target = targetUid !== undefined ? p.board.find((b) => b.uid === targetUid) : undefined;
   if (hasBattlecry(u.cardId)) runBattlecry(g, p, u, target);
-  EFFECTS[u.cardId]?.onPlay?.({ g, p, self: u, m: mult(u), board: p.board });
+  const onPlay = EFFECTS[u.cardId]?.onPlay;
+  if (onPlay) withFx(g, p, { unit: u }, 'Played', () => onPlay({ g, p, self: u, m: mult(u), board: p.board }));
   if (u.golden && u.mem.tripleReward) {
     delete u.mem.tripleReward;
     const tier = Math.min(CONFIG.maxTier, p.tier + 1);
     queueDiscover(g, p, discoverOptions(g, (id) => def(id).tier === tier), `Triple reward: Discover a Tier ${tier} unit`);
   }
   for (const b of [...p.board]) {
-    if (b !== u) EFFECTS[b.cardId]?.onPlayOther?.({ g, p, self: b, m: mult(b), board: p.board }, u);
+    const e = EFFECTS[b.cardId]?.onPlayOther;
+    if (b !== u && e) withFx(g, p, { unit: b }, 'Ability', () => e({ g, p, self: b, m: mult(b), board: p.board }, u));
   }
   heroHooks.onPlay(g, p, u);
   return OK;
@@ -390,7 +410,7 @@ export function runBattlecry(g: GameState, p: Player, u: Unit, target?: Unit) {
   const times = battlecryTimes(p, u) * (hasTrinket(p, 'crown_of_echoes') ? 2 : 1) * heroHooks.battlecryTimes(p);
   for (let i = 0; i < times; i++) {
     if (!p.board.includes(u) && i > 0) break;
-    e.battlecry({ g, p, self: u, m: mult(u), board: p.board, target });
+    withFx(g, p, { unit: u }, i === 0 ? 'Battlecry' : 'Battlecry again!', () => e.battlecry!({ g, p, self: u, m: mult(u), board: p.board, target }));
     onBattlecryTriggered(g, p);
   }
 }
@@ -398,7 +418,10 @@ export function runBattlecry(g: GameState, p: Player, u: Unit, target?: Unit) {
 export function onBattlecryTriggered(g: GameState, p: Player) {
   p.battlecriesThisTurn++;
   p.battlecriesGame++;
-  for (const b of [...p.board]) EFFECTS[b.cardId]?.onBattlecry?.({ g, p, self: b, m: mult(b), board: p.board });
+  for (const b of [...p.board]) {
+    const e = EFFECTS[b.cardId]?.onBattlecry;
+    if (e) withFx(g, p, { unit: b }, 'Ability', () => e({ g, p, self: b, m: mult(b), board: p.board }));
+  }
 }
 
 export function move(p: Player, from: number, to: number): ActionResult {
@@ -445,12 +468,13 @@ export function techUp(p: Player) {
 export function endTurnEffects(g: GameState, p: Player) {
   let times = 1;
   for (const u of p.board) if (u.cardId === 'sarinee') times = Math.max(times, u.golden ? 3 : 2);
+  setFxPhase('end');
   for (const u of [...p.board]) {
     const e = EFFECTS[u.cardId]?.endTurn;
     if (!e) continue;
     for (let i = 0; i < times; i++) {
       if (!p.board.includes(u)) break;
-      e({ g, p, self: u, m: mult(u), board: p.board });
+      withFx(g, p, { unit: u }, 'End of turn', () => e({ g, p, self: u, m: mult(u), board: p.board }));
     }
   }
   heroEndTurn(g, p);
@@ -466,6 +490,7 @@ export function endTurn(g: GameState): CombatResult[] {
     while (p.discovers.length) chooseDiscover(g, p, 0);
   }
   g.phase = 'combat';
+  setFxPhase('combat');
   const results: CombatResult[] = [];
   const done = new Set<number>();
   const aliveBefore = alivePlayers(g).length;

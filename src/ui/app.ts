@@ -5,7 +5,7 @@ import {
 import { HEROES, buyCost, canUseHeroPower, heroDef, mainActive, pickTrinket, powerCost, powersOf, trinketDef, useHeroPower, type HeroDef } from '../engine/heroes';
 import type { CombatResult, GameState, Player } from '../engine/types';
 import { CombatPlayer } from './combatView';
-import { art, bigCardHtml, cardHtml, esc, heroArt, unitView, KEYWORD_HELP } from './view';
+import { art, bigCardHtml, cardHtml, esc, heroArt, unitView, KEYWORD_HELP, KW_ICON } from './view';
 import { clearSave, loadSave, save } from './save';
 import { checkForUpdates, versionLabel } from './update';
 import { isMuted, setMuted, sfx } from './sfx';
@@ -13,6 +13,7 @@ import { achievementsHtml, cardGridHtml, cardViewerHtml, filteredCards, tribesAn
 import { playTriple } from './ceremony';
 import { placeBoardBg, placeHud } from './hud';
 import { puff } from './fx';
+import type { FxEvent } from '../engine/fx';
 import { battleIntro, recruitWipe } from './transitions';
 import { getRating, isProvisional, rateGame, seatRating } from './rating';
 import { EXPERT_ELO, personaById } from '../engine/personas';
@@ -163,7 +164,7 @@ export class App {
     if (!prev) return;
     for (const [uid, now] of units) {
       const el = this.stage.querySelector(`.card[data-id="${uid}"]`) as HTMLElement | null;
-      if (!el) continue;
+      if (!el || this.fxSkip.has(uid)) continue;
       const before = prev.units.get(uid);
       if (!before || (before.zone !== now.zone && now.zone === 'board')) {
         el.classList.add('summon-in');
@@ -429,10 +430,12 @@ export class App {
       ${costBadge}
       ${powers.length ? `<div class="tip">${tipRows}${hint ? `<i>${hint}</i>` : ''}</div>` : ''}
     </div>`;
+    const prog = powers.map((hd) => { const t = hd.progress?.(g, p); return t ? `${hd.power} ${t}` : ''; }).filter(Boolean).join(' · ');
+    if (prog) h += `<div class="hero-chip" style="left:${L.cx + 80}px;top:${L.heroY - 18}px">${esc(prog)}</div>`;
     p.trinkets.forEach((t, i) => {
       const td = trinketDef(t);
       h += `<div class="trinket-orb ${td.greater ? 'greater' : ''}" style="left:${L.cx - 150 - i * 70}px;top:${L.heroY - 30}px">
-        <div class="tip"><b>${esc(td.name)}</b><br>${esc(td.text)}</div></div>`;
+        <div class="tip"><b>${esc(td.name)}</b><br>${esc(td.text)}${td.progress ? `<br><i>${esc(td.progress(p))}</i>` : ""}</div></div>`;
     });
     const quests = p.quests.filter((q) => q.have < q.need);
     if (quests.length) {
@@ -570,7 +573,7 @@ export class App {
       const td = trinketDef(s.id);
       title = td.name;
       sub = td.greater ? 'Greater Trinket' : 'Lesser Trinket';
-      body = td.text;
+      body = td.text + (td.progress ? ` (${td.progress(this.me)})` : "");
     }
     return `<div class="modal sheet-wrap" data-act="sheet-close"><div class="panel sheet">
       <div class="sheet-title">${esc(title)}</div><div class="sheet-sub">${esc(sub)}</div>
@@ -674,19 +677,226 @@ export class App {
     if (!this.g) return this.render();
     save(this.g);
     const events = this.screen === 'shop' ? (this.me.tripleEvents?.splice(0) ?? []) : [];
+    const fx = this.screen === 'shop' ? this.takeFx() : [];
     // remember where the copies were before they disappear from the screen
     const where = new Map<number, { x: number; y: number }>();
     for (const e of events) for (const uid of e.uids) {
       const el = this.stage.querySelector(`.card[data-id="${uid}"]`) as HTMLElement | null;
       if (el) where.set(uid, { x: parseFloat(el.style.left), y: parseFloat(el.style.top) });
     }
+    // units that effect playback animates itself are left alone by the generic feedback
+    this.fxSkip = new Set(fx.flatMap((e) => [...e.buffs.map((b) => b.uid), ...e.gains, ...e.summons]));
+    for (const e of events) this.fxSkip.delete(e.goldenUid);
     this.render();
+    this.fxSkip = new Set();
     if (events.length) {
       bump('triples', events.length);
       noteGame('triple', this.g);
-      void this.celebrate(events, where);
+    }
+    if (fx.length || events.length) {
+      // shop effects don't lock the shop (keep buying while they play); triples still do
+      // new cards wait hidden for their moment (e.g. behind the Recruit transition)
+      for (const e of fx) for (const uid of [...e.gains, ...e.summons]) {
+        const el = this.stage.querySelector(`.card[data-id="${uid}"]`) as HTMLElement | null;
+        if (el) el.style.visibility = 'hidden';
+      }
+      const gate = this.fxGate;
+      void (async () => {
+        await gate;
+        if (fx.length) await this.playFx(fx.filter((e) => !events.some((t) => e.gains.includes(t.goldenUid) && e.gains.length === 1)), false);
+        if (events.length) await this.celebrate(events, where);
+      })();
     }
     evaluate(this.g);
+  }
+
+  /** effect events still to show: carried over from end of turn (after battle) plus anything new */
+  private pendingFx: FxEvent[] = [];
+  /** effect playback waits for this (the Recruit transition) */
+  private fxGate: Promise<void> = Promise.resolve();
+  private fxSkip = new Set<number>();
+  private fxHurry = false;
+  private takeFx(): FxEvent[] {
+    const out = [...this.pendingFx, ...(this.me.fx?.splice(0) ?? [])];
+    this.pendingFx = [];
+    return out;
+  }
+
+  /** stage-coordinate centre of an element positioned on the stage */
+  private centre(el: HTMLElement) {
+    return { x: parseFloat(el.style.left) + el.offsetWidth / 2, y: parseFloat(el.style.top) + el.offsetHeight / 2, h: el.offsetHeight };
+  }
+
+  /**
+   * Show effects happening, one after another: the card (or your hero) that does it lights up with a
+   * label, glowing orbs fly to what it buffs, cards it gives you fly into your hand, gold and counters
+   * pop. `stale`: the screen still shows the shop from before the battle (end-of-turn effects), so
+   * numbers are updated by hand and new cards fly toward the hand without landing.
+   */
+  async playFx(events: FxEvent[], stale: boolean) {
+    if (!events.length) return;
+    this.fxHurry = false;
+    const hurry = () => { this.fxHurry = true; };
+    this.stage.addEventListener('pointerdown', hurry);
+    const wait = (ms: number) => new Promise<void>((r) => setTimeout(r, this.fxHurry ? ms * 0.2 : ms));
+    const card = (uid: number) => this.stage.querySelector(`.card[data-id="${uid}"]:not(.ghost)`) as HTMLElement | null;
+    // new cards stay hidden until they arrive
+    for (const e of events) for (const uid of [...e.gains, ...e.summons]) { const el = card(uid); if (el) el.style.visibility = 'hidden'; }
+    try {
+      for (const e of events) {
+        const heroEl = e.hero ? (this.stage.querySelector('.my-hero') as HTMLElement | null) : null;
+        const srcEl = heroEl ?? (e.src !== undefined ? card(e.src) : null);
+        const src = srcEl ? this.centre(srcEl) : { x: L.cx, y: L.slotTop - 30, h: 0 };
+        const counter = e.counters.find((c) => (e.hero ? c.key === 'hero' : c.key === `u${e.src}`)) ?? e.counters.find((c) => c.key === 'quest');
+        // 1. the source lights up and says what it's doing
+        srcEl?.classList.remove('fx-src');
+        void srcEl?.offsetWidth;
+        srcEl?.classList.add('fx-src');
+        const lab = document.createElement('div');
+        lab.className = 'fx-label';
+        const short = (t: string) => { const one = t.split(' · ').find((x) => x.startsWith(e.name)) ?? t.split(' · ').pop() ?? t; return one.startsWith(e.name) ? one.slice(e.name.length).trim() : one; };
+        lab.innerHTML = `<b>${esc(e.name)}</b>${counter ? `<span class="fx-count">${esc(short(counter.text))}</span>` : `<span>${esc(e.label)}</span>`}`;
+        lab.style.left = `${src.x}px`;
+        lab.style.top = `${src.y - src.h / 2 - 8}px`;
+        this.stage.appendChild(lab);
+        setTimeout(() => lab.remove(), this.fxHurry ? 400 : 1500);
+        for (const c of e.counters) this.popCounter(c.key, c.text, stale, !e.hero);
+        sfx.click();
+        await wait(300);
+        // 2. orbs fly to each target; buffs, new units and new cards land
+        let longest = 0;
+        const targets: { uid: number; kind: 'buff' | 'gain' | 'summon'; b?: FxEvent['buffs'][number] }[] = [
+          ...e.buffs.map((b) => ({ uid: b.uid, kind: 'buff' as const, b })), ...e.summons.map((uid) => ({ uid, kind: 'summon' as const })), ...e.gains.map((uid) => ({ uid, kind: 'gain' as const })),
+        ];
+        targets.forEach((t, i) => {
+          const el = card(t.uid);
+          const dur = this.fxHurry ? 120 : t.kind === 'gain' ? 520 : 340;
+          const delay = (this.fxHurry ? 20 : 70) * i;
+          longest = Math.max(longest, dur + delay);
+          if (t.kind === 'gain') { this.flyCard(t.uid, src, el, dur, delay, stale); return; }
+          if (!el) return;
+          const to = this.centre(el);
+          this.orb(src, to, dur, delay);
+          setTimeout(() => {
+            if (t.kind === 'summon') {
+              el.style.visibility = '';
+              el.classList.add('summon-in');
+              puff(this.stage, to.x, to.y, 650);
+              sfx.puff();
+              return;
+            }
+            const b = t.b!;
+            el.classList.remove('buff-flash');
+            void el.offsetWidth;
+            el.classList.add('buff-flash');
+            const parts = [b.atk || b.hp ? `${b.atk >= 0 ? '+' : ''}${b.atk}/${b.hp >= 0 ? '+' : ''}${b.hp}` : '', ...b.kw.map((k) => KW_ICON[k as keyof typeof KW_ICON]?.[1] ?? k)].filter(Boolean);
+            this.floatText(to.x, to.y - to.h / 2 + 30, parts.join(' '), b.atk < 0 || b.hp < 0 ? 'down' : 'buff');
+            if (stale) {
+              const a = el.querySelector('.stat.atk'); const h = el.querySelector('.stat.hp');
+              if (a) a.textContent = String(Number(a.textContent) + b.atk);
+              if (h) h.textContent = String(Number(h.textContent) + b.hp);
+            }
+            sfx.zap();
+          }, dur + delay);
+        });
+        if (e.gold || e.goldNext) {
+          const g = this.stage.querySelector('.gold-display') as HTMLElement | null;
+          const at = g ? { x: parseFloat((g.parentElement as HTMLElement).style.left) + 60, y: parseFloat((g.parentElement as HTMLElement).style.top) } : { x: L.cx, y: L.heroY };
+          if (e.gold) this.floatText(at.x, at.y, `${e.gold > 0 ? '+' : ''}${e.gold} gold`, 'gold');
+          if (e.goldNext) this.floatText(at.x, at.y + 34, `+${e.goldNext} gold next turn`, 'gold');
+          g?.classList.remove('count-pop'); void g?.offsetWidth; g?.classList.add('count-pop');
+          sfx.buy();
+        }
+        await wait(Math.max(longest, 150) + 280);
+        srcEl?.classList.remove('fx-src');
+      }
+    } finally {
+      this.stage.removeEventListener('pointerdown', hurry);
+      for (const e of events) for (const uid of [...e.gains, ...e.summons]) { const el = card(uid); if (el) el.style.visibility = ''; }
+    }
+  }
+
+  private orb(from: { x: number; y: number }, to: { x: number; y: number }, dur: number, delay: number) {
+    const o = document.createElement('div');
+    o.className = 'fx-orb';
+    o.style.left = `${from.x}px`;
+    o.style.top = `${from.y}px`;
+    this.stage.appendChild(o);
+    const mid = { x: (from.x + to.x) / 2, y: Math.min(from.y, to.y) - 60 };
+    o.animate([
+      { transform: 'translate(-50%, -50%) scale(0.6)', opacity: 0 },
+      { transform: `translate(calc(-50% + ${mid.x - from.x}px), calc(-50% + ${mid.y - from.y}px)) scale(1.1)`, opacity: 1, offset: 0.5 },
+      { transform: `translate(calc(-50% + ${to.x - from.x}px), calc(-50% + ${to.y - from.y}px)) scale(0.8)`, opacity: 1 },
+    ], { duration: dur, delay, easing: 'cubic-bezier(.4, 0, .4, 1)', fill: 'both' }).finished.then(() => o.remove()).catch(() => o.remove());
+  }
+
+  /** a gained card flies from the source into your hand */
+  private flyCard(uid: number, from: { x: number; y: number }, el: HTMLElement | null, dur: number, delay: number, stale: boolean) {
+    const u = this.me.hand.find((x) => x.uid === uid);
+    if (!u) return;
+    const tmp = document.createElement('div');
+    tmp.innerHTML = cardHtml(unitView(this.me, u, 'hand', 0), { zone: 'fx', idx: 0, x: 0, y: 0, small: !(L.handCardW > L.cardW), large: L.handCardW > L.cardW });
+    const fly = tmp.firstElementChild as HTMLElement;
+    fly.classList.add('fx-gain-fly');
+    this.stage.appendChild(fly);
+    const w = fly.offsetWidth;
+    const h = fly.offsetHeight;
+    const to = el ? this.centre(el) : { x: L.cx, y: L.handY + h / 2, h };
+    fly.style.left = `${to.x - w / 2}px`;
+    fly.style.top = `${to.y - h / 2}px`;
+    fly.animate([
+      { transform: `translate(${from.x - to.x}px, ${from.y - to.y}px) scale(0.25) rotate(-12deg)`, opacity: 0 },
+      { transform: `translate(${(from.x - to.x) * 0.4}px, ${(from.y - to.y) * 0.4 - 80}px) scale(1.15) rotate(4deg)`, opacity: 1, offset: 0.55 },
+      { transform: 'none', opacity: stale ? 0 : 1 },
+    ], { duration: dur, delay, easing: 'cubic-bezier(.3, .7, .3, 1)', fill: 'both' }).finished.then(() => {
+      fly.remove();
+      if (el) {
+        el.style.visibility = '';
+        el.classList.remove('buff-flash'); void el.offsetWidth; el.classList.add('buff-flash');
+      }
+    }).catch(() => fly.remove());
+    setTimeout(() => { this.floatText(to.x, to.y - h / 2, '+1 card', 'card'); sfx.deploy(); }, dur + delay - 60);
+  }
+
+  private floatText(x: number, y: number, text: string, kind: 'buff' | 'down' | 'gold' | 'card') {
+    if (!text) return;
+    const f = document.createElement('div');
+    f.className = `float-num fx-float ${kind}`;
+    f.textContent = text;
+    f.style.left = `${x}px`;
+    f.style.top = `${y}px`;
+    this.stage.appendChild(f);
+    setTimeout(() => f.remove(), 1300);
+  }
+
+  /** a counter ticked up: pop it (and make your hero glow for hero counters) */
+  private popCounter(key: string, text: string, stale: boolean, label = false) {
+    const els: HTMLElement[] = [];
+    if (key === 'hero') {
+      const hero = this.stage.querySelector('.my-hero') as HTMLElement | null;
+      if (hero) {
+        hero.classList.remove('fx-glow'); void hero.offsetWidth; hero.classList.add('fx-glow');
+        if (label) {
+          // something else moved your hero's counter: say so over the hero too
+          const c = this.centre(hero);
+          const lab = document.createElement('div');
+          lab.className = 'fx-label';
+          lab.innerHTML = `<span class="fx-count">${esc(text)}</span>`;
+          lab.style.left = `${c.x}px`;
+          lab.style.top = `${c.y - c.h / 2 - 8}px`;
+          this.stage.appendChild(lab);
+          setTimeout(() => lab.remove(), this.fxHurry ? 400 : 1500);
+        }
+      }
+      this.stage.querySelectorAll<HTMLElement>('.hero-chip, .power-pill').forEach((e) => els.push(e));
+      if (stale) this.stage.querySelectorAll<HTMLElement>('.hero-chip').forEach((e) => { e.textContent = text; });
+    } else if (key === 'quest') {
+      this.stage.querySelectorAll<HTMLElement>('.quest-chip').forEach((e) => els.push(e));
+    } else {
+      const c = this.stage.querySelector(`.card[data-id="${key.slice(1)}"] .counter`) as HTMLElement | null;
+      if (c) { if (stale) c.textContent = text; els.push(c); }
+    }
+    for (const e of els) { e.classList.remove('count-pop'); void e.offsetWidth; e.classList.add('count-pop'); }
   }
 
   /** Play the triple ceremony for each triple, one after another. */
@@ -765,6 +975,7 @@ export class App {
   /** Pick up a game handed over by a live page update (Claude artifact). */
   resume(g: GameState) {
     this.g = g;
+    for (const pl of g.players) pl.fx = [];
     this.screen = g.phase === 'hero' ? 'hero' : g.phase === 'over' ? 'over' : 'shop';
     this.render();
   }
@@ -803,6 +1014,21 @@ export class App {
     const round = g.round;
     const results = endTurn(g);
     save(g);
+    // end-of-turn effects play on the shop before the battle; the rest wait until you're back
+    const all = p.fx?.splice(0) ?? [];
+    const endFx = all.filter((e) => e.phase === 'end');
+    this.pendingFx.push(...all.filter((e) => e.phase !== 'end'));
+    if (endFx.length) {
+      this.busy = true;
+      void this.playFx(endFx, true).then(() => { this.busy = false; this.afterEndTurn(results, round); });
+      return;
+    }
+    this.afterEndTurn(results, round);
+  }
+
+  private afterEndTurn(results: CombatResult[], round: number) {
+    const g = this.g!;
+    const p = this.me;
     const mine = results.find((r) => r.a === 0 || r.b === 0);
     if (!mine) {
       this.screen = g.phase === 'over' ? 'over' : 'shop';
@@ -843,7 +1069,9 @@ export class App {
       if (g.phase === 'over') toShop();
       else {
         this.busy = true;
-        void recruitWipe(this.stage, g.round, toShop).then(() => { this.busy = false; });
+        let open!: () => void;
+        this.fxGate = new Promise<void>((r) => { open = r; });
+        void recruitWipe(this.stage, g.round, toShop).then(() => { this.busy = false; open(); this.fxGate = Promise.resolve(); });
       }
     });
   }
@@ -1011,7 +1239,7 @@ export class App {
       if (zone === 'board') { order.splice(this.press!.idx, 1); order.splice(target, 0, this.press!.idx); }
       else order.splice(target, 0, -1);
     }
-    for (const el of this.stage.querySelectorAll<HTMLElement>('.card[data-zone="board"]')) {
+    for (const el of this.stage.querySelectorAll<HTMLElement>('.card[data-zone="board"]:not(.ghost)')) {
       const i = Number(el.dataset.idx);
       const to = order.indexOf(i); // (the faded original of a dragged unit shows where it will land)
       el.classList.toggle('sliding', target >= 0 && to !== i);
@@ -1025,7 +1253,7 @@ export class App {
   cancelDrag() {
     this.ghost?.remove();
     this.ghost = null;
-    for (const el of this.stage.querySelectorAll<HTMLElement>('.card[data-zone="board"]')) { el.style.transform = ''; el.classList.remove('sliding'); }
+    for (const el of this.stage.querySelectorAll<HTMLElement>('.card[data-zone="board"]:not(.ghost)')) { el.style.transform = ''; el.classList.remove('sliding'); }
     this.stage.querySelectorAll('.slot-plate.drop-target').forEach((e) => e.classList.remove('drop-target'));
     this.stage.classList.remove('board-full-drag');
     this.press?.el.classList.remove('dragging');

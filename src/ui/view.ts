@@ -2,6 +2,7 @@ import artManifest from '../data/art.json';
 import { def, effStats, TRIBE_NAMES } from '../engine/core';
 import { EFFECTS } from '../engine/effects';
 import type { Keyword, Player, Unit, CombatFrameUnit } from '../engine/types';
+import { unitCounter } from '../engine/fx';
 
 export const BASE = import.meta.env.BASE_URL;
 export const art = (path: string) => BASE + path;
@@ -10,7 +11,7 @@ export const heroArt = (id: string | undefined) => art(`art/heroes/${id ?? 'unkn
 
 export const esc = (s: string) => s.replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]!);
 
-const KW_ICON: Record<Keyword, [string, string]> = {
+export const KW_ICON: Record<Keyword, [string, string]> = {
   taunt: ['🛡', 'Taunt'],
   divineShield: ['✦', 'Divine Shield'],
   reborn: ['☥', 'Reborn'],
@@ -92,6 +93,7 @@ export function cardHtml(u: { cardId: string; golden: boolean; atk: number; hp: 
   <div class="abil">${tags}</div>
   <div class="name">${esc(d.name)}</div>
   <div class="tribe-plate ${(TRIBE_SHORT[d.tribe] ?? d.tribe).length > 8 ? 'long' : ''}">${TRIBE_SHORT[d.tribe] ?? d.tribe}</div>${o.badge ?? ''}
+  ${(() => { const c = u.mem && (o.zone === "board" || o.zone === "combat") ? unitCounter(u as Unit) : null; return c ? `<div class="counter">${c}</div>` : ''; })()}
   <div class="stat atk ${atk > baseAtk ? 'buffed' : ''}">${atk}</div>
   <div class="stat hp ${hp > baseHp ? 'buffed' : hp < baseHp ? 'hurt' : ''}">${hp}</div>
 </div>`;

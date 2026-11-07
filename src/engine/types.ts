@@ -79,6 +79,8 @@ export interface Player {
   bot?: BotProfile;
   /** which persona is playing this seat (personas.ts) */
   persona?: string;
+  /** effect events waiting to be shown (human only; src/engine/fx.ts) */
+  fx?: import('./fx').FxEvent[];
   name: string;
   human: boolean;
   avatar: number;
@@ -131,6 +133,8 @@ export interface Player {
 export interface CombatFrameUnit {
   id: number;
   dead?: boolean; // dealt lethal damage, about to be removed
+  /** damage past 0 Health (so a 15 damage hit on a 1 Health unit can show -15) */
+  over?: number;
   cardId: string;
   golden: boolean;
   atk: number;

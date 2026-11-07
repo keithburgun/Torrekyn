@@ -9,6 +9,7 @@ import { addKw, cloneUnit, def, effStats, has, mult, pick, rand, removeKw, sampl
 import { EFFECTS, hasBattlecry, battlecryTimes, type CCtx } from './effects';
 import { gainNew, combatDamage, onBattlecryTriggered } from './game';
 import { heroHooks, heroSoc } from './heroes';
+import { withFx } from './fx';
 import type { Body, CombatFrame, CombatFrameUnit, CombatFx, CombatResult, GameState, Keyword, Player, Slot, Unit } from './types';
 
 export interface CUnit extends Body {
@@ -97,7 +98,7 @@ export class Combat {
   snap(kind: CombatFrame['kind'], extra: Partial<CombatFrame> = {}) {
     const f = (s: Side): CombatFrameUnit[] =>
       s.units.filter((u) => !u.processed).map((u) => ({
-        id: u.id, cardId: u.cardId, golden: u.golden, atk: u.atk, hp: Math.max(0, u.hp), kw: [...u.kw], ...(u.hp <= 0 ? { dead: true } : {}),
+        id: u.id, cardId: u.cardId, golden: u.golden, atk: u.atk, hp: Math.max(0, u.hp), kw: [...u.kw], ...(u.hp <= 0 ? { dead: true, ...(u.hp < 0 ? { over: -u.hp } : {}) } : {}),
       }));
     const frame: CombatFrame = { kind, sides: [f(this.sides[0]), f(this.sides[1])], ...extra };
     if (this.fx.length) {
@@ -439,7 +440,9 @@ export function runCombat(g: GameState, a: Player, b: Player, bIsGhost: boolean)
   const c = new Combat(g,
     { p: a, board: a.board, slots: a.slots, tier: a.tier, persistent: true },
     { p: bIsGhost ? ghostPlayer(b) : b, board: bBoard, slots: bSlots, tier: bTier, persistent: !bIsGhost });
-  const winner = c.run();
+  // anything the battle permanently gave you (cards, growth) is shown when you're back in the shop
+  const you = [a, b].find((x) => x.human);
+  const winner = you ? withFx(g, you, { name: 'Battle' }, 'From the battle', () => c.run()) : c.run();
   let damage = 0;
   if (winner !== -1) {
     const ws = c.sides[winner];
@@ -453,13 +456,16 @@ export function runCombat(g: GameState, a: Player, b: Player, bIsGhost: boolean)
     if (!s.persistent) continue;
     for (const u of s.units) {
       if (u.hp > 0 && u.cardId === 'root') {
-        for (let i = 0; i < mult(u); i++) {
-          const id = pickTribe(g, s.owner, 'brambor');
-          if (id) gainNew(g, s.owner, id);
-        }
+        const src = s.owner.board.find((x) => x.uid === u.src);
+        withFx(g, s.owner, { unit: src, name: 'Root' }, 'After the battle', () => {
+          for (let i = 0; i < mult(u); i++) {
+            const id = pickTribe(g, s.owner, 'brambor');
+            if (id) gainNew(g, s.owner, id);
+          }
+        });
       }
     }
-    for (const fn of s.afterFns) fn();
+    for (const fn of s.afterFns) withFx(g, s.owner, { name: 'Battle' }, 'After the battle', fn);
   }
   // remember boards for Remember / scouting
   a.lastFightBoard = a.board.map(cloneUnit);

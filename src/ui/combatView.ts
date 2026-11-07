@@ -263,7 +263,7 @@ export class CombatPlayer {
       if (instant) continue;
       const before = prevPos.get(id)?.u;
       if (before) {
-        if (u.hp < before.hp) this.float(x, y, `-${before.hp - u.hp}`, 'dmg');
+        if (u.hp < before.hp) this.float(x, y, `-${before.hp - u.hp + (u.over ?? 0) - (before.over ?? 0)}`, 'dmg');
         else if (u.hp > before.hp || u.atk > before.atk) {
           this.float(x, y, `+${Math.max(0, u.atk - before.atk)}/+${Math.max(0, u.hp - before.hp)}`, 'buff');
           this.spot('buff-glow', x + this.L.cardW / 2, y + this.L.cardH / 2, this.t(700));
