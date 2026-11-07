@@ -18,6 +18,8 @@ fi
 out=$(./butler/butler push "$SRC" "$ITCH_GAME:$CH" --userversion "$VERSION" 2>&1); rc=$?; echo "$out"
 if [ $rc -ne 0 ]; then
   msg=$(echo "$out" | grep -v '^\s*$' | tail -4 | tr '\n' ' ' | cut -c1-600)
+  case "$out" in *"invalid target"*|*"bad user"*|*"not found"*)
+    msg="$msg — ITCH_GAME is \"$ITCH_GAME\"; it must be <itch username>/<page name>, as in the page URL https://<username>.itch.io/<page name>, and the page must exist.";; esac
   echo "::error title=itch.io upload failed: $CH::$msg"; summary "- ❌ itch.io **$CH**: \`$msg\`"; exit 1
 fi
 summary "- ✅ itch.io **$CH** uploaded as $VERSION ($ITCH_GAME)"
