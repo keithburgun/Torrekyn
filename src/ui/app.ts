@@ -125,8 +125,8 @@ export class App {
     this.stage.classList.toggle('portrait', L.portrait);
     this.stage.classList.toggle('tall', !!L.tall);
     this.stage.classList.toggle('menu-bg', this.screen === 'title' || this.screen === 'rules' || this.screen === 'hero' || this.screen === 'tribes');
-    // one night-sky backdrop for every screen: starry sky tiled above, the snowy hills along the bottom
-    this.stage.style.backgroundImage = `url('${art('art/bg-hills.png')}'), url('${art('art/bg-sky.png')}')`;
+    // one night-sky backdrop for every screen, drawn once, very large and blurred (styles.css #stage::before)
+    this.stage.style.setProperty('--bg', `url('${art('art/bg.png')}')`);
     placeBoardBg(this.stage, L, null);
     if (this.screen === 'combat') return; // combat view owns the stage
     let html = '';

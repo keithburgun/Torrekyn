@@ -52,13 +52,14 @@ b { font-weight: 800; }
   padding: max(env(safe-area-inset-top, 0px), var(--safe-area-inset-top, 0px)) max(env(safe-area-inset-right, 0px), var(--safe-area-inset-right, 0px))
     max(env(safe-area-inset-bottom, 0px), var(--safe-area-inset-bottom, 0px)) max(env(safe-area-inset-left, 0px), var(--safe-area-inset-left, 0px)); }
 #stage {
-  position: relative; width: 1600px; height: 900px; flex: none; transform-origin: center center;
+  position: relative; width: 1600px; height: 900px; flex: none; transform-origin: center center; isolation: isolate;
   overflow: hidden; overflow: clip;
-  /* night-sky pixel art at 8x: hills (560px tile) along the bottom, starry sky (336px tile) repeated above them */
-  background-color: #171f2c; background-repeat: repeat-x, repeat; background-size: 560px 560px, 560px 336px;
-  background-position: center bottom, center calc(100% - 560px); image-rendering: pixelated;
+  background-color: #171f2c;
 }
-#stage * { image-rendering: auto; }
+/* the night-sky backdrop: one copy filling the whole screen (hills along the bottom), softly blurred.
+   It sits a little past the edges so the blur doesn't fade them; z-index -1 keeps it under everything on the stage. */
+#stage::before { content: ''; position: absolute; inset: -40px; z-index: -1; pointer-events: none;
+  background: var(--bg) center bottom / cover no-repeat; filter: blur(7px); }
 #stage .logo img { image-rendering: pixelated; }
 
 .abs { position: absolute; }
