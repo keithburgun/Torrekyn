@@ -239,10 +239,16 @@ export class App {
       : tgt?.kind === 'hero' ? new Set(p.board.map((u) => u.uid)) : null;
     let h = this.leaderboardHtml();
     h += this.tavernBarHtml();
+    // copies you already own (hand + army, not Golden): 1 = shimmer, 2 = the triple is one buy away
+    const owned = new Map<string, number>();
+    for (const u of [...p.hand, ...p.board]) if (!u.golden) owned.set(u.cardId, (owned.get(u.cardId) ?? 0) + 1);
     p.shop.forEach((u, i) => {
       const sel = this.sel?.zone === 'shop' && this.sel.idx === i ? 'selected' : '';
       const v = unitView(p, u, 'shop', i);
-      h += cardHtml(v, { zone: 'shop', idx: i, x: shopX(i, p.shop.length), y: L.shopY, small: L.small, extraClass: `${sel} ${p.gold < buyCost(p) ? 'unaffordable' : ''} ${p.frozen ? 'frozen' : ''}` });
+      const have = owned.get(u.cardId) ?? 0;
+      const hint = have >= 2 ? 'triple-hint' : have === 1 ? 'pair-hint' : '';
+      h += cardHtml(v, { zone: 'shop', idx: i, x: shopX(i, p.shop.length), y: L.shopY, small: L.small, extraClass: `${sel} ${hint} ${p.gold < buyCost(p) ? 'unaffordable' : ''} ${p.frozen ? 'frozen' : ''}`,
+        badge: have >= 2 ? '<div class="trip-tag">TRIPLE!</div>' : '' });
     });
     if (!p.shop.length) h += `<div class="hint abs" style="left:${L.cx - 240}px;top:${L.shopY + 70}px;width:480px">The Tavern is empty. Refresh for new units.</div>`;
     // army slots

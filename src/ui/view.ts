@@ -53,7 +53,14 @@ export function abilityTags(cardId: string): string[] {
   return tags;
 }
 
+/** short tribe names for the plate at the bottom of each card */
+export const TRIBE_SHORT: Record<string, string> = {
+  neverending: 'Neverending', azure: 'Azure', kindred: 'Kindred', brambor: 'Brambor', cloister: 'Cloister', alcove: 'Alcove', demons: 'Demons', neutral: 'Neutral',
+};
+
 export interface CardViewOpts {
+  /** extra markup placed inside the card (e.g. a hint badge) */
+  badge?: string;
   zone: string;
   idx: number;
   x: number;
@@ -83,6 +90,7 @@ export function cardHtml(u: { cardId: string; golden: boolean; atk: number; hp: 
   <div class="kws">${icons}</div>
   <div class="abil">${tags}</div>
   <div class="name">${esc(d.name)}</div>
+  <div class="tribe-plate">${TRIBE_SHORT[d.tribe] ?? d.tribe}</div>${o.badge ?? ''}
   <div class="stat atk ${atk > baseAtk ? 'buffed' : ''}">${atk}</div>
   <div class="stat hp ${hp > baseHp ? 'buffed' : hp < baseHp ? 'hurt' : ''}">${hp}</div>
 </div>`;
@@ -102,7 +110,7 @@ export function bigCardHtml(u: { cardId: string; golden: boolean; atk: number; h
   <div class="art" style="background-image:url('${cardArt(u.cardId)}')"></div>
   <div class="tier">Tier ${d.tier}</div>
   <div class="name">${u.golden ? 'Golden ' : ''}${esc(d.name)}</div>
-  <div class="tribe">${esc(TRIBE_NAMES[d.tribe] ?? d.tribe)}${d.token ? ' · Token' : ''}</div>
+  <div class="tribe"><span>${esc(TRIBE_NAMES[d.tribe] ?? d.tribe)}${d.token ? ' · Token' : ''}</span></div>
   <div class="text"><div>${text ? formatText(text) : kwExtra.length ? '' : '<i>No ability.</i>'}${kwExtra.length ? `${text ? '<br>' : ''}<i>Also has ${kwExtra.join(', ')}.</i>` : ''}</div></div>
   <div class="stat atk">${u.atk}</div>
   <div class="stat hp">${u.hp}</div>

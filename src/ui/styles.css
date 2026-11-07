@@ -22,14 +22,17 @@
   --atk: #ffc23d;
   --hp: #ff5c93;
   --coin: #ffc93d;
-  --t-neverending: #a48ae6;
-  --t-azure: #7fb0ff;
-  --t-kindred: #ff92ba;
-  --t-brambor: #6fcf9f;
-  --t-cloister: #ef7aa6;
-  --t-alcove: #5fcde0;
-  --t-demons: #ff9f7e;
-  --t-neutral: #b4a8dc;
+  --card-hi: #efe8e1;       /* warm grey card face */
+  --card-lo: #c9bfb5;
+  --card-edge: #9c9087;
+  --t-neverending: #8a6ad8;
+  --t-azure: #4f8fe6;
+  --t-kindred: #e8648f;
+  --t-brambor: #3fae74;
+  --t-cloister: #c9406a;
+  --t-alcove: #2aa6bd;
+  --t-demons: #e8733f;
+  --t-neutral: #8d8496;
   --display: 'Fredoka', 'Nunito', 'Trebuchet MS', system-ui, sans-serif;
   --text: 'Nunito', 'Segoe UI', system-ui, sans-serif;
   color-scheme: dark;
@@ -83,9 +86,9 @@ b { font-weight: 800; }
 /* the card's face is its own layer so effects like the Taunt shield can sit behind it */
 .card .face {
   position: absolute; inset: 0; border-radius: inherit;
-  background: linear-gradient(170deg, #ffffff 30%, color-mix(in srgb, var(--tc) 45%, #fff));
-  border: 4px solid var(--tc);
-  box-shadow: 0 0 0 3px #fff, 0 8px 18px rgba(0, 0, 0, 0.4);
+  background: linear-gradient(170deg, var(--card-hi) 20%, var(--card-lo));
+  border: 4px solid var(--card-edge);
+  box-shadow: 0 0 0 3px #f4eee8, 0 8px 18px rgba(0, 0, 0, 0.4);
   transition: box-shadow 0.15s;
 }
 .card:hover { transform: translateY(-6px) scale(1.05) rotate(-1deg); z-index: 5; }
@@ -101,7 +104,7 @@ b { font-weight: 800; }
 .card.small .name { font-size: 13px; }
 .card .tier {
   position: absolute; top: -12px; left: 50%; transform: translateX(-50%); display: flex; gap: 1px; white-space: nowrap;
-  background: #fff; border: 2px solid var(--tc); border-radius: 999px; padding: 0 7px; font-size: 11px; color: var(--pink-deep); line-height: 17px;
+  background: #f7f2ec; border: 2px solid var(--card-edge); border-radius: 999px; padding: 0 7px; font-size: 11px; color: var(--pink-deep); line-height: 17px;
 }
 .card .stat {
   position: absolute; bottom: -10px; width: 42px; height: 42px; display: flex; align-items: center; justify-content: center;
@@ -124,7 +127,13 @@ b { font-weight: 800; }
   background: #fff; color: var(--lilac-deep); box-shadow: 0 1px 4px rgba(110, 70, 170, 0.35);
 }
 .card .abil { position: absolute; bottom: 28px; left: 0; right: 0; display: flex; justify-content: center; gap: 3px; }
-.card .abil i { font-style: normal; font-size: 11px; font-weight: 700; background: color-mix(in srgb, var(--tc) 25%, #fff); color: var(--plum-soft); border-radius: 999px; padding: 0 6px; }
+.card .abil i { font-style: normal; font-size: 11px; font-weight: 700; background: rgba(255, 255, 255, 0.55); color: #6b5f57; border-radius: 999px; padding: 0 6px; }
+/* tribe nameplate at the bottom of every card */
+.card .tribe-plate { position: absolute; bottom: 6px; left: 20px; right: 20px; height: 18px; border-radius: 6px; display: flex; align-items: center; justify-content: center;
+  font-size: 10px; font-weight: 800; letter-spacing: 0.03em; text-transform: uppercase; color: #fff; white-space: nowrap; overflow: hidden;
+  background: var(--tc); box-shadow: inset 0 -2px 0 rgba(0, 0, 0, 0.18), 0 1px 2px rgba(0, 0, 0, 0.25); text-shadow: 0 1px 1px rgba(0, 0, 0, 0.35); }
+.card.small .tribe-plate { bottom: 5px; left: 17px; right: 17px; height: 16px; font-size: 9px; }
+.card.small .tribe-plate { letter-spacing: 0.02em; }
 .card.small .abil { bottom: 23px; }
 
 .card.golden .face {
@@ -177,14 +186,16 @@ b { font-weight: 800; }
 
 /* big card (detail / discover) */
 .bigcard {
-  position: relative; width: 236px; height: 340px; border-radius: 30px; --tc: var(--t-neutral);
-  background: linear-gradient(170deg, #ffffff 35%, color-mix(in srgb, var(--tc) 45%, #fff));
-  border: 5px solid var(--tc); box-shadow: 0 0 0 4px #fff, 0 12px 30px rgba(110, 70, 170, 0.3);
+  position: relative; width: 236px; height: 340px; border-radius: 30px;
+  background: linear-gradient(170deg, var(--card-hi) 25%, var(--card-lo));
+  border: 5px solid var(--card-edge); box-shadow: 0 0 0 4px #f4eee8, 0 12px 30px rgba(0, 0, 0, 0.35);
 }
 .bigcard.golden { border-color: #ffc93d; background: linear-gradient(160deg, #fffbe6, #ffe28a 50%, #ffc2e2); box-shadow: 0 0 0 4px #fff, 0 0 30px rgba(255, 200, 80, 0.8); }
 .bigcard .art { position: absolute; left: 7px; right: 7px; top: 7px; height: 148px; border-radius: 22px; background-size: cover; background-position: center; }
 .bigcard .name { position: absolute; top: 160px; left: 8px; right: 8px; text-align: center; font-family: var(--display); font-weight: 700; font-size: 22px; color: var(--plum); }
-.bigcard .tribe { position: absolute; top: 189px; left: 0; right: 0; text-align: center; font-size: 12px; font-weight: 800; letter-spacing: 0.1em; text-transform: uppercase; color: color-mix(in srgb, var(--tc) 70%, var(--plum)); }
+.bigcard .tribe { position: absolute; top: 187px; left: 0; right: 0; text-align: center; }
+.bigcard .tribe span { display: inline-block; font-size: 11px; font-weight: 800; letter-spacing: 0.1em; text-transform: uppercase; color: #fff; padding: 1px 12px; border-radius: 6px;
+  background: var(--tc); box-shadow: inset 0 -2px 0 rgba(0, 0, 0, 0.18); text-shadow: 0 1px 1px rgba(0, 0, 0, 0.35); }
 .bigcard .text {
   position: absolute; top: 210px; left: 14px; right: 14px; bottom: 34px; display: flex; align-items: center; justify-content: center;
   text-align: center; font-size: 15px; line-height: 1.22; color: var(--plum); background: rgba(255, 255, 255, 0.8); border-radius: 16px; padding: 6px 8px;
@@ -195,7 +206,7 @@ b { font-weight: 800; }
 .bigcard .stat.hp { right: -12px; padding-bottom: 5px; background: radial-gradient(circle at 35% 30%, #ffc4da, var(--hp) 60%, #e23a76);
   -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Cpath d='M20 37C6 27 1 20 1 12.5 1 6.5 5.5 2 11 2c4 0 7 2 9 5.5C22 4 25 2 29 2c5.5 0 10 4.5 10 10.5C39 20 34 27 20 37z'/%3E%3C/svg%3E") center/contain no-repeat;
   mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Cpath d='M20 37C6 27 1 20 1 12.5 1 6.5 5.5 2 11 2c4 0 7 2 9 5.5C22 4 25 2 29 2c5.5 0 10 4.5 10 10.5C39 20 34 27 20 37z'/%3E%3C/svg%3E") center/contain no-repeat; }
-.bigcard .tier { position: absolute; top: -14px; left: 50%; transform: translateX(-50%); background: #fff; border: 3px solid var(--tc); border-radius: 999px; padding: 0 10px; color: var(--pink-deep); font-size: 13px; font-weight: 800; }
+.bigcard .tier { position: absolute; top: -14px; left: 50%; transform: translateX(-50%); background: #f7f2ec; border: 3px solid var(--card-edge); border-radius: 999px; padding: 0 10px; color: var(--pink-deep); font-size: 13px; font-weight: 800; }
 
 /* ---------------- shop layout ---------------- */
 .slot-plate {
@@ -626,3 +637,26 @@ b { font-weight: 800; }
 .triple-sub { position: absolute; transform: translateX(-50%); text-align: center; white-space: nowrap; pointer-events: none; transition: opacity 0.3s;
   font-family: var(--display); font-weight: 700; font-size: 30px; color: #ffe38a; text-shadow: 0 3px 8px #000; animation: badge-in 0.5s 0.35s both; }
 .triple-sub span { font-family: var(--text); font-size: 18px; font-weight: 700; color: var(--ink); }
+
+/* ---------------- triple reminders in the shop ---------------- */
+/* you own one copy: a gentle shimmer */
+.card.pair-hint .face { box-shadow: 0 0 0 3px #f4eee8, 0 0 0 6px rgba(183, 156, 242, 0.75), 0 8px 18px rgba(0, 0, 0, 0.4); }
+.card.pair-hint .face::after, .card.triple-hint .face::after {
+  content: ''; position: absolute; inset: -4px; border-radius: inherit; pointer-events: none;
+  background: linear-gradient(110deg, transparent 30%, rgba(255, 255, 255, 0.55) 45%, rgba(255, 240, 255, 0.15) 55%, transparent 65%) 0 0 / 260% 100%;
+  animation: shimmer-sweep 3.4s ease-in-out infinite;
+}
+@keyframes shimmer-sweep { 0% { background-position: 130% 0; } 60%, 100% { background-position: -130% 0; } }
+/* you own two copies: the third glows hard */
+.card.triple-hint { z-index: 4; }
+.card.triple-hint .face { animation: triple-glow 1.1s ease-in-out infinite; }
+.card.triple-hint .face::after { animation-duration: 1.6s; background-image: linear-gradient(110deg, transparent 28%, rgba(255, 246, 200, 0.85) 45%, rgba(255, 220, 120, 0.3) 55%, transparent 68%); }
+@keyframes triple-glow {
+  0%, 100% { box-shadow: 0 0 0 3px #fff6d8, 0 0 0 7px #ffcf4a, 0 0 26px 6px rgba(255, 207, 74, 0.75), 0 8px 18px rgba(0, 0, 0, 0.4); }
+  50% { box-shadow: 0 0 0 3px #fff6d8, 0 0 0 9px #ffe38a, 0 0 46px 16px rgba(255, 207, 74, 0.95), 0 8px 18px rgba(0, 0, 0, 0.4); }
+}
+.trip-tag { position: absolute; top: -30px; left: 50%; transform: translateX(-50%); z-index: 3; white-space: nowrap; pointer-events: none;
+  font-family: var(--display); font-weight: 700; font-size: 15px; color: #5a3a00; padding: 1px 12px; border-radius: 999px;
+  background: linear-gradient(#fff3b8, #ffcf4a); box-shadow: 0 0 14px rgba(255, 207, 74, 0.9); animation: tag-bob 1.1s ease-in-out infinite; }
+@keyframes tag-bob { 50% { transform: translateX(-50%) translateY(-4px); } }
+@media (prefers-reduced-motion: reduce) { .card.pair-hint .face::after, .card.triple-hint .face, .card.triple-hint .face::after, .trip-tag { animation: none !important; } }
