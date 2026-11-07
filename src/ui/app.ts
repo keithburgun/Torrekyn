@@ -125,7 +125,8 @@ export class App {
     this.stage.classList.toggle('portrait', L.portrait);
     this.stage.classList.toggle('tall', !!L.tall);
     this.stage.classList.toggle('menu-bg', this.screen === 'title' || this.screen === 'rules' || this.screen === 'hero' || this.screen === 'tribes');
-    this.stage.style.backgroundImage = `url('${art(this.stage.classList.contains('menu-bg') ? 'art/menu.svg' : 'art/board.svg')}')`;
+    // one night-sky backdrop for every screen: starry sky tiled above, the snowy hills along the bottom
+    this.stage.style.backgroundImage = `url('${art('art/bg-hills.png')}'), url('${art('art/bg-sky.png')}')`;
     placeBoardBg(this.stage, L, null);
     if (this.screen === 'combat') return; // combat view owns the stage
     let html = '';
@@ -298,7 +299,7 @@ export class App {
     const saved = loadSave();
     const canContinue = saved && saved.phase !== 'over';
     return `<div class="title-wrap">
-      <h1 class="logo">TORREKIN</h1>
+      <h1 class="logo"><img src="${art('art/logo.png')}" alt="Torrekin" draggable="false"></h1>
       <div class="menu">
         ${canContinue ? `<button class="btn big primary" data-act="continue">Continue (Round ${saved!.round})</button>` : ''}
         <div class="new-row"><button class="btn big ${canContinue ? '' : 'primary'}" data-act="new">New Game</button>${this.ratingBadge()}</div>

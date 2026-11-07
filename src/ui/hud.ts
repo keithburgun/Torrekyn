@@ -25,18 +25,8 @@ export function placeHud(stage: HTMLElement, L: Layout) {
   stage.appendChild(muteBtn);
 }
 
-/**
- * Centres the board art's arena on the army (shop) or between the two armies (combat). The art is drawn
- * for landscape; on tall portrait screens it is enlarged a little so the arena can be moved.
- */
-export function placeBoardBg(stage: HTMLElement, L: Layout, centerY: number | null) {
-  if (!L.portrait || centerY === null) {
-    stage.style.backgroundSize = '';
-    stage.style.backgroundPosition = '';
-    return;
-  }
-  const h = L.H * 1.3;
-  const top = Math.min(0, Math.max(L.H - h, centerY - h / 2));
-  stage.style.backgroundSize = `auto ${Math.round(h)}px`;
-  stage.style.backgroundPosition = `center ${Math.round(top)}px`;
+/** The night-sky backdrop tiles to fit any screen shape, so it no longer moves; this just clears old inline sizing. */
+export function placeBoardBg(stage: HTMLElement, _L: Layout, _centerY: number | null) {
+  stage.style.backgroundSize = '';
+  stage.style.backgroundPosition = '';
 }

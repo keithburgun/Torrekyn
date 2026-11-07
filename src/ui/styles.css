@@ -53,8 +53,13 @@ b { font-weight: 800; }
     max(env(safe-area-inset-bottom, 0px), var(--safe-area-inset-bottom, 0px)) max(env(safe-area-inset-left, 0px), var(--safe-area-inset-left, 0px)); }
 #stage {
   position: relative; width: 1600px; height: 900px; flex: none; transform-origin: center center;
-  background: var(--charcoal) center/cover no-repeat; overflow: hidden; overflow: clip;
+  overflow: hidden; overflow: clip;
+  /* night-sky pixel art at 8x: hills (560px tile) along the bottom, starry sky (336px tile) repeated above them */
+  background-color: #171f2c; background-repeat: repeat-x, repeat; background-size: 560px 560px, 560px 336px;
+  background-position: center bottom, center calc(100% - 560px); image-rendering: pixelated;
 }
+#stage * { image-rendering: auto; }
+#stage .logo img { image-rendering: pixelated; }
 
 .abs { position: absolute; }
 .panel {
@@ -326,7 +331,8 @@ b { font-weight: 800; }
 /* ---------------- title ---------------- */
 .title-wrap { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 18px; }
 .logo { font-family: var(--display); font-weight: 700; font-size: 150px; letter-spacing: 0.02em; margin: 0; color: #fff;
-  text-shadow: 0 5px 0 var(--pink), 0 10px 0 var(--lilac-deep), 0 18px 40px rgba(110, 70, 170, 0.45); transform: rotate(-2deg); }
+  line-height: 0; }
+.logo img { display: block; width: 576px; height: 288px; filter: drop-shadow(0 0 22px rgba(255, 120, 190, 0.3)) drop-shadow(0 12px 24px rgba(0, 0, 0, 0.45)); }
 .subtitle { font-family: var(--display); font-weight: 600; font-size: 22px; letter-spacing: 0.3em; color: #fff; text-transform: uppercase; margin-top: -4px;
   background: var(--pink); padding: 4px 20px; border-radius: 999px; box-shadow: 0 4px 0 var(--pink-deep); }
 .title-wrap .menu { display: flex; flex-direction: column; gap: 16px; margin-top: 26px; min-width: 340px; }
@@ -834,7 +840,7 @@ button.trinket-orb { appearance: none; border: 0; padding: 0; cursor: pointer; }
 #stage.portrait .trinketcard { zoom: 1.45; height: auto; min-height: 280px; }
 #stage.portrait .trinketcard .tn { font-size: 22px; }
 #stage.portrait .trinketcard .tt { font-size: 18px; }
-#stage.portrait .logo { font-size: 132px; }
+#stage.portrait .logo img { width: 768px; height: 384px; }
 #stage.portrait .subtitle { font-size: 30px; }
 #stage.portrait .title-wrap .menu { min-width: 600px; gap: 22px; }
 #stage.portrait .version { font-size: 24px; right: 28px; bottom: 24px; }
