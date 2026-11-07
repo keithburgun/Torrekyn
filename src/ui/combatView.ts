@@ -249,8 +249,16 @@ export class CombatPlayer {
         el.className = fresh.className;
         for (const c of keep) el.classList.add(c);
         el.innerHTML = fresh.innerHTML;
+        const ox = parseFloat(el.style.left);
+        const oy = parseFloat(el.style.top);
         el.style.left = `${x}px`;
         el.style.top = `${y}px`;
+        // units closing a gap (or making room) slide over instead of jumping; deaths start fading first
+        if (!instant && (ox !== x || oy !== y)) {
+          const deaths = f.kind === 'death' || f.kind === 'resolve';
+          el.animate([{ translate: `${ox - x}px ${oy - y}px` }, { translate: '0px 0px' }],
+            { duration: this.t(450), delay: deaths ? this.t(220) : 0, easing: 'cubic-bezier(.3, .8, .35, 1)', fill: 'backwards' });
+        }
       }
       if (instant) continue;
       const before = prevPos.get(id)?.u;

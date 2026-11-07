@@ -110,9 +110,39 @@ export class App {
     if (this.options) html += this.optionsHtml();
     if (this.viewer) html += cardViewerHtml(this.viewer, this.g);
     if (this.achOpen) html += achievementsHtml();
+    const before = this.cardCentres();
     this.stage.innerHTML = html;
     placeHud(this.stage, L);
+    this.slideCards(before);
     if (this.screen === 'shop') this.shopFeedback();
+  }
+
+  /** Where each unit's card is on screen (its centre in stage pixels), keyed by unit id. */
+  private cardCentres() {
+    const m = new Map<string, { x: number; y: number; zone: string }>();
+    const sr = this.stage.getBoundingClientRect();
+    const k = sr.width / (this.stage.offsetWidth || 1);
+    for (const el of this.stage.querySelectorAll<HTMLElement>('.card[data-id]')) {
+      if (el.classList.contains('ghost') || !['shop', 'hand', 'board'].includes(el.dataset.zone ?? '')) continue;
+      const r = el.getBoundingClientRect();
+      m.set(el.dataset.id!, { x: (r.left + r.width / 2 - sr.left) / k, y: (r.top + r.height / 2 - sr.top) / k, zone: el.dataset.zone ?? '' });
+    }
+    return m;
+  }
+
+  /** After a redraw, cards that changed place slide there from where they were (instead of jumping). */
+  private slideCards(before: Map<string, { x: number; y: number; zone: string }>) {
+    if (!before.size || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    for (const el of this.stage.querySelectorAll<HTMLElement>('.card[data-id]')) {
+      const old = before.get(el.dataset.id!);
+      const zone = el.dataset.zone ?? '';
+      // played from hand onto the army: that one appears in a puff where it lands instead
+      if (!old || (old.zone === 'hand' && zone === 'board')) continue;
+      const dx = old.x - (parseFloat(el.style.left) + el.offsetWidth / 2);
+      const dy = old.y - (parseFloat(el.style.top) + el.offsetHeight / 2);
+      if (Math.abs(dx) < 1 && Math.abs(dy) < 1) continue;
+      el.animate([{ translate: `${dx}px ${dy}px` }, { translate: '0px 0px' }], { duration: 300, easing: 'cubic-bezier(.3, .85, .35, 1)' });
+    }
   }
 
   /** Last seen stats of your units, so changes can be animated after each action. */
@@ -270,7 +300,7 @@ export class App {
       const v = unitView(p, u, 'shop', i);
       const have = owned.get(u.cardId) ?? 0;
       const hint = have >= 2 ? 'triple-hint' : have === 1 ? 'pair-hint' : '';
-      h += cardHtml(v, { zone: 'shop', idx: i, x: shopX(i, p.shop.length), y: L.shopY, small: L.small && !L.shopBig, large: L.shopBig, extraClass: `${sel} ${hint} ${p.gold < buyCost(p, u.cardId) ? 'unaffordable' : ''} ${p.frozen ? 'frozen' : ''}`,
+      h += cardHtml(v, { zone: 'shop', idx: i, id: u.uid, x: shopX(i, p.shop.length), y: L.shopY, small: L.small && !L.shopBig, large: L.shopBig, extraClass: `${sel} ${hint} ${p.gold < buyCost(p, u.cardId) ? 'unaffordable' : ''} ${p.frozen ? 'frozen' : ''}`,
         badge: have >= 2 ? '<div class="trip-tag">TRIPLE!</div>' : '' });
     });
     if (!p.shop.length) h += `<div class="hint abs" style="left:${L.cx - 240}px;top:${L.shopY + 70}px;width:480px">The Tavern is empty. Refresh for new units.</div>`;

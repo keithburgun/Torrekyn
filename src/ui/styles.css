@@ -180,6 +180,7 @@ b { font-weight: 800; }
 .card.targetable .face { animation: pulse 0.9s ease-in-out infinite; }
 .card.locked .art::before { content: '🔒'; position: absolute; left: 6px; top: 6px; font-size: 16px; }
 .card.dragging { opacity: 0.25; }
+.card[data-zone="combat"] { transition: transform 0.15s, opacity 0.25s; } /* combat slides are animated in combatView.ts */
 .card.ghost { pointer-events: none; z-index: 100; transform: rotate(-5deg) scale(1.1); transition: none; opacity: 0.96; }
 .card.unaffordable .art { filter: saturate(0.6) brightness(0.95); }
 .card.frozen .art { box-shadow: inset 0 0 26px #b8f1ff, inset 0 0 0 3px #d8f8ff; }
