@@ -20,16 +20,16 @@
   "derby_pocket": {
    "src": "R/derby pose 3 rgb version NEW.png",
    "crop": [
-    0.57,
-    0.33,
-    0.4
+    0.7,
+    0.35,
+    0.36
    ]
   },
   "bunny_wizard": {
    "src": "R/bunny 3 rgb version.png",
    "crop": [
-    0.5,
-    0.32,
+    0.48,
+    0.43,
     0.46
    ]
   },
@@ -92,9 +92,9 @@
   "bill_milton": {
    "src": "P/advisor-bill.png",
    "crop": [
-    0.4,
-    0.33,
-    0.5
+    0.52,
+    0.26,
+    0.46
    ]
   },
   "clover": {
