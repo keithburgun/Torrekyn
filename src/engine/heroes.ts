@@ -66,7 +66,7 @@ function heroAvenge(s: Side, id: string, n: number): boolean {
 
 export const HEROES: HeroDef[] = [
   {
-    id: 'andromeda_robin', name: 'Andromeda Robin', title: 'Potato witch', power: 'Elemental Weave', avatar: 0, health: 40, passive: true,
+    id: 'andromeda_robin', name: 'Andromeda Robin', title: 'Potato witch', power: 'Pumpkin Buddy', avatar: 0, health: 40, passive: true,
     text: 'Start the game with a 1/1 Pumpkin. It has every tribe and permanently gains the Deathrattle of any other unit that dies in combat.',
     onGain: (g, p) => { gainNew(g, p, 'pumpkin'); },
   },
@@ -85,7 +85,7 @@ export const HEROES: HeroDef[] = [
     progress: (g, p) => ((p.heroMem.coffee ?? 0) >= BATTLECRIES_FOR_COFFEE ? 'Active' : `${p.heroMem.coffee ?? 0}/${BATTLECRIES_FOR_COFFEE}`),
   },
   {
-    id: 'bunny_wizard', name: 'Bunny Wizard', title: 'A very soft healer', power: 'Cuddle Spell', avatar: 3, health: 46, cost: 1, needsTribe: 'kindred',
+    id: 'bunny_wizard', name: 'Bunny Wizard', title: 'A very soft healer', power: 'New Friends', avatar: 3, health: 46, cost: 1, needsTribe: 'kindred',
     text: 'Discover a Kindred unit. (Unlocks at Tavern Tier 4.)',
     locked: (g, p) => (p.tier < 4 ? 'Unlocks at Tavern Tier 4' : null),
     use: (g, p) => queueDiscover(g, p, discoverOptions(g, (id) => isTribe(id, 'kindred') && def(id).tier <= p.tier), 'Cuddle Spell: Discover a Kindred unit'),
@@ -187,14 +187,14 @@ export const HEROES: HeroDef[] = [
     progress: (g, p) => `Dragons ${1 + (p.heroMem.brood ?? 0)}/${1 + (p.heroMem.brood ?? 0)}`,
   },
   {
-    id: 'mazrael_bettencourt', name: 'Mazrael Bettencourt', title: 'Vampire of the Secret Arts', power: 'Long Game', avatar: 14, passive: true,
+    id: 'mazrael_bettencourt', name: 'Mazrael Bettencourt', title: 'Vampire of the Secret Arts', power: '1000 Years Old', avatar: 14, passive: true,
     text: 'Skip your first turn. Discover a Tier 3, a Tier 4 and a Tier 5 unit. Each unlocks once your Tavern reaches its Tier.',
     startTurn: (g, p) => {
       if (g.round !== 1 || p.heroMem.longGame) return;
       p.heroMem.longGame = 1;
       p.heroMem.skipRound = g.round; // game.ts startTurn empties the shop and the gold
       for (const t of [3, 4, 5]) {
-        queueDiscover(g, p, discoverOptions(g, (id) => def(id).tier === t), `Long Game: Discover a Tier ${t} unit (unlocks at Tavern Tier ${t})`, false, t);
+        queueDiscover(g, p, discoverOptions(g, (id) => def(id).tier === t), `1000 Years Old: Discover a Tier ${t} unit (unlocks at Tavern Tier ${t})`, false, t);
       }
     },
     progress: (g, p) => {
