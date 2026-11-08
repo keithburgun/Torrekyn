@@ -78,10 +78,21 @@ export class App {
 
   constructor(stage: HTMLElement) {
     this.stage = stage;
-    stage.addEventListener('pointerdown', (e) => this.onDown(e));
-    window.addEventListener('pointermove', (e) => this.onMove(e));
-    window.addEventListener('pointerup', (e) => this.onUp(e));
-    window.addEventListener('pointercancel', () => this.cancelDrag());
+    // a fault in a drag mustn't fail silently (the card would just snap back): show it, and reset the drag
+    const safe = (f: (e: PointerEvent) => void) => (e: PointerEvent) => {
+      try { f(e); } catch (err) { this.cancelDrag(); this.reportError(err); }
+    };
+    stage.addEventListener('pointerdown', safe((e) => this.onDown(e)));
+    window.addEventListener('pointermove', safe((e) => this.onMove(e)));
+    window.addEventListener('pointerup', safe((e) => this.onUp(e)));
+    // the browser took the pointer away mid-drag (e.g. it started scrolling the page around the game):
+    // drop the card where it was last seen instead of throwing the drag away
+    window.addEventListener('pointercancel', safe((e) => {
+      if (this.dragging && this.press && e.pointerId === this.press.pointerId && this.lastPt) this.drop(this.lastPt);
+      else this.cancelDrag();
+    }));
+    window.addEventListener('error', (e) => this.reportError(e.error ?? e.message));
+    window.addEventListener('unhandledrejection', (e) => this.reportError(e.reason));
     stage.addEventListener('click', (e) => this.onClick(e));
     stage.addEventListener('mouseover', (e) => this.onHover(e));
     stage.addEventListener('contextmenu', (e) => e.preventDefault());
@@ -142,7 +153,11 @@ export class App {
     if (this.viewer) html += cardViewerHtml(this.viewer, this.g);
     if (this.achOpen) html += achievementsHtml();
     const before = this.cardCentres();
+    // messages on screen survive the redraw (a failed buy is followed straight away by one, which used to wipe
+    // its "Not enough gold" / "Your hand is full" message, so the card just seemed to snap back)
+    const toasts = [...this.stage.querySelectorAll('.toast')];
     this.stage.innerHTML = html;
+    for (const t of toasts) this.stage.appendChild(t);
     placeHud(this.stage, L);
     this.slideCards(before);
     if (this.screen === 'shop') this.shopFeedback();
@@ -1497,7 +1512,10 @@ export class App {
       this.ghost.classList.remove('selected');
       this.stage.appendChild(this.ghost);
       this.press.el.classList.add('dragging');
+      // keep getting this pointer's events even if it leaves the game's frame (itch.io shows the game in a frame)
+      try { this.stage.setPointerCapture(this.press.pointerId); } catch { /* not supported */ }
     }
+    this.lastPt = pt;
     const w = this.press.el.offsetWidth;
     const hgt = this.press.el.offsetHeight;
     this.ghost!.style.left = `${pt.x - w / 2}px`;
@@ -1558,11 +1576,32 @@ export class App {
     this.dragging = false;
   }
 
+  /** shown on screen (and in the console) so a player can tell us what went wrong */
+  private lastError = 0;
+  reportError(err: unknown) {
+    console.error('[torrekin]', err);
+    if (Date.now() - this.lastError < 3000) return;
+    this.lastError = Date.now();
+    const msg = err instanceof Error ? err.message : String(err ?? 'unknown');
+    this.toast(`Something went wrong: ${msg.slice(0, 120)}`);
+  }
+
+  private lastPt: { x: number; y: number } | null = null;
+
+  /** finish a drag at a stage point (as if released there) */
+  drop(pt: { x: number; y: number }) {
+    const press = this.press!;
+    this.finish(press, pt, true);
+  }
+
   onUp(e: PointerEvent) {
     const press = this.press;
     if (!press || e.pointerId !== press.pointerId) return;
-    const pt = this.toStage(e);
-    const wasDrag = this.dragging;
+    this.finish(press, this.toStage(e), this.dragging);
+  }
+
+  private finish(press: Press, pt: { x: number; y: number }, wasDrag: boolean) {
+    this.lastPt = null;
     this.cancelDrag();
     const g = this.g!;
     const p = this.me;
@@ -1591,6 +1630,7 @@ export class App {
     // a drag
     if (press.zone === 'shop') {
       if (pt.y > L.shopDrop) { this.lastShopPos = { x: shopX(press.idx, p.shop.length), y: L.shopY }; this.result(buy(g, p, press.idx), sfx.buy, 'bought'); }
+      else if (Math.hypot(pt.x - press.x, pt.y - press.y) > 80) this.toast('Drag it down onto your army to buy it (or tap it, then Buy)');
     } else if (press.zone === 'hand') {
       if (pt.y > L.boardTop && pt.y < L.boardBottom) {
         this.press = press; // dropIndex reads the zone being dragged
