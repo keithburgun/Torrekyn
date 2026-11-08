@@ -190,7 +190,7 @@ export const HEROES: HeroDef[] = [
     progress: (g, p) => `Dragons ${1 + (p.heroMem.brood ?? 0)}/${1 + (p.heroMem.brood ?? 0)}`,
   },
   {
-    id: 'mazrael_bettencourt', name: 'Mazrael Bettencourt', title: 'The patient blade', power: 'Long Game', avatar: 14, passive: true,
+    id: 'mazrael_bettencourt', name: 'Mazrael Bettencourt', title: 'Vampire of the Secret Arts', power: 'Long Game', avatar: 14, passive: true,
     text: 'Skip your first turn. Discover a Tier 3, a Tier 4 and a Tier 5 unit. Each unlocks once your Tavern reaches its Tier.',
     startTurn: (g, p) => {
       if (g.round !== 1 || p.heroMem.longGame) return;
