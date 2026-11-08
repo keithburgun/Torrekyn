@@ -9,7 +9,7 @@ import {
 } from '../engine/game';
 import { HEROES, buyCost, canUseHeroPower, heroDef, heroHealth, mainActive, pickTrinket, powerCost, powersOf, trinketDef, useHeroPower, type HeroDef } from '../engine/heroes';
 import type { CombatResult, GameState, Player } from '../engine/types';
-import { CombatPlayer } from './combatView';
+import { CombatPlayer, SPEEDS, speedSetting } from './combatView';
 import { art, bigCardHtml, cardHtml, esc, getArtStyle, heroArt, setArtStyle, unitView, KEYWORD_HELP, KW_ICON, type ArtStyle } from './view';
 import { clearSave, loadSave, save } from './save';
 import { debugOn, setDebug } from './debug';
@@ -624,8 +624,7 @@ export class App {
 
   optionsHtml() {
     const mode = getMode();
-    let speed = 1;
-    speed = Number(store.get('torrekin-speed')) || 1;
+    const speed = speedSetting();
     const seg = (act: string, items: [string, string][], cur: string, key = 'mode') => `<div class="seg">${items.map(([v, label]) =>
       `<button class="btn ${cur === v ? 'on' : ''}" data-act="${act}" data-${key}="${v}">${label}</button>`).join('')}</div>`;
     return `<div class="modal" style="z-index:80"><div class="panel options">
@@ -635,7 +634,7 @@ export class App {
       <div class="opt-row"><span>Sound</span>${seg('sound', [['on', 'On'], ['off', 'Off']], isMuted() ? 'off' : 'on')}</div>
       ${this.cloudRowHtml()}
       <div class="opt-row"><span>Card art</span>${seg('art-style', [['illustrated', 'Illustrated'], ['classic', 'Classic']], getArtStyle())}</div>
-      <div class="opt-row"><span>Battle speed</span>${seg('speed', [['1', '×1'], ['2', '×2'], ['4', '×4']], String(speed), 'v')}</div>
+      <div class="opt-row"><span>Battle speed</span>${seg('speed', SPEEDS.map((s) => [String(s.v), s.label]), String(speed), 'v')}</div>
       <div class="opt-row"><span>Debug mode (errors on screen)</span>${seg('debug', [['on', 'On'], ['off', 'Off']], debugOn() ? 'on' : 'off')}</div>
       <div style="display:flex;gap:12px;justify-content:center">
         <button class="btn" data-act="cards">Card Viewer</button>

@@ -8,6 +8,16 @@ import { placeBoardBg, placeHud } from './hud';
 import { puff } from './fx';
 
 
+/** battle speeds: Normal, then > (1.5x as fast) and >> (2.5x as fast); Normal itself runs 15% faster than the old ×1 */
+export const BASE_SPEED = 1.15;
+export const SPEEDS = [{ v: 1, label: 'Normal' }, { v: 1.5, label: '>' }, { v: 2.5, label: '>>' }];
+export const speedLabel = (v: number) => SPEEDS.find((s) => s.v === v)?.label ?? 'Normal';
+/** the saved setting (older saves stored 2 and 4 for the old ×2 and ×4) */
+export function speedSetting(): number {
+  const v = Number(store.get('torrekin-speed')) || 1;
+  return v >= 4 ? 2.5 : v >= 2 ? 1.5 : SPEEDS.some((s) => s.v === v) ? v : 1;
+}
+
 /** base time each frame stays on screen (ms at speed ×1) */
 const DUR: Record<CombatFrame['kind'], number> = {
   start: 800, trigger: 420, attack: 420, hit: 380, death: 900, resolve: 160, end: 500,
@@ -39,7 +49,7 @@ export class CombatPlayer {
   private oppId = 0;
 
   constructor(private stage: HTMLElement, private g: GameState, private r: CombatResult, private me: 0 | 1, private round: number, private done: () => void) {
-    this.speed = Number(store.get('torrekin-speed')) || 1;
+    this.speed = speedSetting();
     const meP = g.players[0];
     const oppId = me === 0 ? (r.b === -1 ? r.ghostOf! : r.b) : r.a;
     const opp = g.players[oppId];
@@ -58,7 +68,7 @@ export class CombatPlayer {
       <div class="combat-name mine" style="left:${this.L.combat.myHero.x - this.av.mine / 2}px;top:${this.L.combat.myHero.y - this.av.mine / 2}px"><div class="avatar" id="avatar-me" style="background-image:url('${heroArt(meP.hero)}')"><div class="hpb">${Math.max(0, this.hpBefore(0))}</div></div><div>${esc(meP.name)}</div></div>
       <div class="vs-banner" style="left:${this.L.cx}px;top:${this.L.combat.banner}px">ROUND ${round} · BATTLE</div>
       <div class="abs combat-ctl" style="right:30px;bottom:30px;display:flex;gap:10px">
-        <button class="btn" data-cact="speed">Speed ×${this.speed}</button>
+        <button class="btn" data-cact="speed">Speed ${speedLabel(this.speed)}</button>
         <button class="btn" data-cact="skip">Skip</button>
       </div>
       <div id="clayer" class="abs" style="inset:0;pointer-events:none"></div>
@@ -67,15 +77,16 @@ export class CombatPlayer {
     placeHud(stage, this.L);
     this.fxLayer = stage.querySelector('#fxlayer') as HTMLElement;
     stage.querySelector('[data-cact="speed"]')!.addEventListener('click', (e) => {
-      this.speed = this.speed >= 4 ? 1 : this.speed * 2;
+      const i = SPEEDS.findIndex((s) => s.v === this.speed);
+      this.speed = SPEEDS[(i + 1) % SPEEDS.length].v;
       store.set('torrekin-speed', String(this.speed));
-      (e.target as HTMLElement).textContent = `Speed ×${this.speed}`;
+      (e.target as HTMLElement).textContent = `Speed ${speedLabel(this.speed)}`;
     });
     stage.querySelector('[data-cact="skip"]')!.addEventListener('click', () => { this.skip = true; });
   }
 
   private t(ms: number) {
-    return ms / this.speed;
+    return ms / (BASE_SPEED * this.speed);
   }
 
   async play() {
