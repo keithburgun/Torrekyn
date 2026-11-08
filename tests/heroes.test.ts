@@ -157,15 +157,36 @@ describe('hero powers', () => {
     expect(p.heroMem.leaves).toBe(0);
   });
 
-  it('Eve Williams: transforms a friendly unit into another of the same Tier with +3/+3', () => {
+  it('Eve Williams: Doom Bauble loads a Tavern unit and fires it in the next battle with room, then it is gone', () => {
     const { g, p } = setup('eve_williams');
-    const id = firstOf((x) => def(x).tier === 2);
-    p.board = [unit(g, id)];
-    expect(useHeroPower(g, p, p.board[0])).toBe(true);
-    const nu = p.board[0];
-    expect(nu.cardId).not.toBe(id);
-    expect(def(nu.cardId).tier).toBe(2);
-    expect([nu.atk, nu.hp]).toEqual([def(nu.cardId).atk + 3, def(nu.cardId).hp + 3]);
+    const shopUnit = unit(g, firstOf((x) => !EFFECTS[x] && def(x).tier === 1), 7, 1);
+    p.shop = [shopUnit];
+    const gold = p.gold;
+    expect(useHeroPower(g, p, shopUnit)).toBe(true);
+    expect(p.gold).toBe(gold - 1);
+    expect(p.shop.length).toBe(0);
+    expect(p.bauble).toEqual([shopUnit]);
+    // a full army: it waits
+    const plain = firstOf((x) => !EFFECTS[x] && def(x).tier === 1);
+    const full = combat(g, p, Array.from({ length: 7 }, () => unit(g, plain, 0, 100)), [unit(g, plain, 0, 50)]);
+    full.fireBaubles(full.sides[0]);
+    expect(p.bauble?.length).toBe(1);
+    // room: summoned, attacks a random enemy at once (ignoring Taunt), and isn't kept
+    p.board = [unit(g, plain, 0, 100)];
+    const foes = [unit(g, plain, 0, 50), unit(g, plain, 0, 50)];
+    foes[0].kw = ['taunt'];
+    const hits = new Set<number>();
+    for (let k = 0; k < 30; k++) {
+      p.bauble = [unit(g, shopUnit.cardId, 7, 1)];
+      const c = combat(g, p, p.board, foes.map((f) => ({ ...f, kw: [...f.kw] })));
+      c.fireBaubles(c.sides[0]);
+      expect(p.bauble.length).toBe(0);
+      const enemy = c.sides[1].units;
+      enemy.forEach((u, i) => { if (u.hp < 50) hits.add(i); });
+      expect(c.sides[0].units.length).toBe(2); // the army's unit plus the fired one
+    }
+    expect(hits.has(1)).toBe(true); // not only the Taunt
+    expect(p.board.length).toBe(1);
   });
 
   it('Abragail: on turn 4, Discovers two Hero Powers that replace hers', () => {

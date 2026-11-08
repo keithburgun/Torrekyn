@@ -273,7 +273,7 @@ export function aiTakeTurn(g: GameState, p: Player) {
   // Hero Powers that pay off over time go first, as long as a buy is still affordable afterwards
   if (on(p, 'powerFirst') && !blunder) {
     for (const h of powersOf(p)) {
-      if (h.passive || h.target || h.id === 'locas_clare' || !canUseHeroPower(g, p, h.id)) continue;
+      if (h.passive || h.target || h.targetShop || h.id === 'locas_clare' || !canUseHeroPower(g, p, h.id)) continue;
       if (p.gold - powerCost(g, p, h) < CONFIG.buyCost && g.round > 2) continue;
       useHeroPower(g, p, undefined, h.id);
       while (p.discovers.length) chooseDiscover(g, p, aiChooseDiscover(g, p, p.discovers[0]));
@@ -353,16 +353,12 @@ function useHeroPowers(g: GameState, p: Player) {
     if (on(p, 'hero')) {
       // Locas: only when it's a real steal
       if (h.id === 'locas_clare' && (p.shop.length * CONFIG.buyCost < powerCost(g, p, h) + 3 || CONFIG.handSize - p.hand.length < p.shop.length)) continue;
-      // Eve: only gamble on a weak unit
-      if (h.id === 'eve_williams') {
-        const weak = [...p.board].filter((u) => !u.mem.locked && !u.golden).sort((a, b) => unitScore(p, a, 'board') - unitScore(p, b, 'board'))[0];
-        if (weak) useHeroPower(g, p, weak, h.id);
-        continue;
-      }
     } else if (h.id === 'locas_clare' && (p.shop.length < 3 || CONFIG.handSize - p.hand.length < 2)) continue;
     const weakest = [...p.board].filter((u) => !u.mem.locked).sort((a, b) => unitScore(p, a, 'board') - unitScore(p, b, 'board'))[0];
-    const target = h.target ? (h.id === 'eve_williams' ? weakest : p.board[0]) : undefined;
-    if (!h.target || target) useHeroPower(g, p, target, h.id);
+    // Doom Bauble: load the hardest-hitting unit in the Tavern
+    const shopPick = h.targetShop ? [...p.shop].sort((a, b) => effStats(p, b, 'shop').atk - effStats(p, a, 'shop').atk)[0] : undefined;
+    const target = h.targetShop ? shopPick : h.target ? weakest : undefined;
+    if (!(h.target || h.targetShop) || target) useHeroPower(g, p, target, h.id);
     while (p.discovers.length) chooseDiscover(g, p, aiChooseDiscover(g, p, p.discovers[0]));
   }
 }

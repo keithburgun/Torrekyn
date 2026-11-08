@@ -328,16 +328,35 @@ export class Combat {
     return pick(this.g, taunts.length ? taunts : visible);
   }
 
-  attackNow(a: CUnit) {
+  attackNow(a: CUnit, forced?: CUnit) {
     if (this.depth > 6 || a.hp <= 0) return;
     this.depth++;
-    this.attackOnce(a);
+    this.attackOnce(a, forced);
     this.depth--;
   }
 
-  private attackOnce(a: CUnit) {
+  /**
+   * Eve Williams' Doom Bauble: while this side has room, each loaded unit is summoned and attacks a random enemy
+   * at once (Taunt doesn't protect). It's a temporary copy: once fired it's used up and goes back to the pool.
+   */
+  fireBaubles(s: Side) {
+    const ammo = s.owner.bauble;
+    if (!s.persistent || !ammo?.length) return;
+    const live = (x: Side) => x.units.filter((u) => u.hp > 0);
+    while (ammo.length && live(s).length < CONFIG.boardSize && live(this.enemy(s)).length) {
+      const u = ammo.shift()!;
+      const cu = this.spawnUnit(s, u, s.units.length);
+      if (!cu) { ammo.unshift(u); return; }
+      if (!def(u.cardId).token && this.g.pool[u.cardId] !== undefined) this.g.pool[u.cardId] += u.golden ? 3 : 1;
+      this.snap('trigger', { source: cu.id, note: `Doom Bauble: FIRE ${def(u.cardId).name}!` });
+      this.attackNow(cu, pick(this.g, live(this.enemy(s))));
+      this.resolveDeaths();
+    }
+  }
+
+  private attackOnce(a: CUnit, forced?: CUnit) {
     if (++this.steps > MAX_STEPS) return;
-    let t = this.chooseTarget(a);
+    let t = forced && forced.hp > 0 ? forced : this.chooseTarget(a);
     if (!t) return;
     const side = this.sides[a.side];
     removeKw(a, 'stealth');
@@ -394,6 +413,7 @@ export class Combat {
       }
     }
     while (this.steps < MAX_STEPS) {
+      for (const s of [this.sides[this.attacking], this.sides[1 - this.attacking]]) this.fireBaubles(s);
       const live = (s: Side) => s.units.filter((u) => u.hp > 0);
       if (!live(A).length || !live(B).length) break;
       const canAttack = (s: Side) => live(s).some((u) => u.atk > 0);

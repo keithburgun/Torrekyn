@@ -139,7 +139,8 @@ describe('heroes', () => {
       p.board = [makeUnit(g, 'ash'), makeUnit(g, 'lich')];
       p.lastOpponentBoard = [makeUnit(g, 'skeleton'), makeUnit(g, 'knight')]; // May Danaris
       expect(canUseHeroPower(g, p, h.id), h.id).toBe(true);
-      expect(useHeroPower(g, p, h.target ? p.board[0] : undefined, h.id), h.id).toBe(true);
+      if (!p.shop.length) p.shop = [makeUnit(g, 'ash')];
+      expect(useHeroPower(g, p, h.target ? p.board[0] : h.targetShop ? p.shop[0] : undefined, h.id), h.id).toBe(true);
     }
   });
 

@@ -24,6 +24,7 @@ export interface HeroDef {
   costFn?(g: GameState, p: Player): number;
   passive?: boolean;
   target?: boolean; // active power needs a friendly target
+  targetShop?: boolean; // active power needs a unit in the Tavern
   /** not offered when this tribe is banned (HS convention for tribe heroes) */
   needsTribe?: Tribe;
   canUse?(g: GameState, p: Player): boolean;
@@ -142,21 +143,17 @@ export const HEROES: HeroDef[] = [
     progress: (g, p) => `${p.heroMem.leaves ?? 0}/${SALES_FOR_LEAVES}`,
   },
   {
-    id: 'eve_williams', name: 'Eve Williams', title: 'The grinning skeleton', power: 'Wild Card', avatar: 9, health: 48, cost: 1, target: true,
-    text: 'Transform a friendly unit into a random unit of the same Tier, then give it +3/+3.',
+    id: 'eve_williams', name: 'Eve Williams', title: 'Revolutionary', power: 'Doom Bauble', avatar: 9, health: 48, cost: 1, targetShop: true,
+    text: 'Select a unit in the Tavern. When you have space in a battle, FIRE it at a random enemy. (It is summoned and attacks at once; you don\u2019t keep it.)',
+    locked: (g, p) => (!p.shop.length ? 'The Tavern is empty' : null),
     use: (g, p, t) => {
-      if (!t || t.mem.locked) return;
-      const i = p.board.indexOf(t);
-      const tier = def(t.cardId).tier;
-      const id = drawFromPool(g, (cid) => def(cid).tier === tier && cid !== t.cardId);
-      if (i < 0 || !id) return;
-      if (!def(t.cardId).token && g.pool[t.cardId] !== undefined) g.pool[t.cardId] += t.golden ? 3 : 1;
-      const nu = makeUnit(g, id, t.golden);
-      nu.atk += 3;
-      nu.hp += 3;
-      p.board[i] = nu;
-      log(p, `Ha! ${def(t.cardId).name} became ${def(id).name}.`);
+      const i = t ? p.shop.indexOf(t) : -1;
+      if (i < 0) return;
+      p.shop.splice(i, 1);
+      (p.bauble ??= []).push(t!);
+      log(p, `${def(t!.cardId).name} is loaded into the Doom Bauble.`);
     },
+    progress: (g, p) => (p.bauble?.length ? `${p.bauble.length} loaded` : null),
   },
   {
     id: 'abragail', name: 'Abragail', title: 'Scholar of the Azura Academy', power: 'Well-Studied', avatar: 10, health: 36, passive: true,
@@ -355,7 +352,7 @@ export function canUseHeroPower(g: GameState, p: Player, id?: string): boolean {
 export function useHeroPower(g: GameState, p: Player, target?: Unit, id?: string): boolean {
   const h = id ? heroDef(id) : mainActive(p);
   if (!h || !canUseHeroPower(g, p, h.id) || !h.use) return false;
-  if (h.target && !target) return false;
+  if ((h.target || h.targetShop) && !target) return false;
   p.gold -= powerCost(g, p, h);
   p.usedPowers.push(h.id);
   heroFx(g, p, h, () => h.use!(g, p, target));

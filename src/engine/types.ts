@@ -124,6 +124,8 @@ export interface Player {
   usedPowers: string[];
   heroMem: Record<string, number>;
   heroSeeds: number[];
+  /** units loaded into Eve Williams' Doom Bauble, fired in the next battle with room (combat.ts fireBaubles) */
+  bauble?: Unit[];
   heroOffer?: string[];
   trinkets: string[];
   trinketOffer: string[] | null;

@@ -33,7 +33,7 @@ type Zone = 'shop' | 'hand' | 'board';
 interface Sel { zone: Zone; idx: number }
 interface Press { zone: Zone; idx: number; x: number; y: number; el: HTMLElement; pointerId: number }
 interface Targeting { kind: 'play'; handIdx: number; pos: number } // play a card that needs a target
-interface HeroTargeting { kind: 'hero'; id: string }
+interface HeroTargeting { kind: 'hero'; id: string; shop?: boolean }
 
 // ---- layout: see layout.ts (landscape mirrors Battlegrounds on PC; portrait is for phones) ----
 let L: Layout = LANDSCAPE;
@@ -418,7 +418,7 @@ export class App {
     const tgt = this.targeting;
     const targetUids = tgt?.kind === 'play'
       ? new Set(validTargets(p, p.hand[tgt.handIdx]?.cardId ?? '').map((u) => u.uid))
-      : tgt?.kind === 'hero' ? new Set(p.board.map((u) => u.uid)) : null;
+      : tgt?.kind === 'hero' ? new Set((tgt.shop ? p.shop : p.board).map((u) => u.uid)) : null;
     let h = this.leaderboardHtml();
     h += this.tavernBarHtml();
     // copies you already own (hand + army, not Golden): 1 = shimmer, 2 = the triple is one buy away
@@ -429,7 +429,7 @@ export class App {
       const v = unitView(p, u, 'shop', i);
       const have = owned.get(u.cardId) ?? 0;
       const hint = have >= 2 ? 'triple-hint' : have === 1 ? 'pair-hint' : '';
-      h += cardHtml(v, { zone: 'shop', idx: i, id: u.uid, x: shopX(i, p.shop.length), y: L.shopY, small: L.small && !L.shopBig, large: L.shopBig, extraClass: `${sel} ${hint} ${p.gold < buyCost(p, u.cardId) ? 'unaffordable' : ''} ${p.frozen ? 'frozen' : ''}`,
+      h += cardHtml(v, { zone: 'shop', idx: i, id: u.uid, x: shopX(i, p.shop.length), y: L.shopY, small: L.small && !L.shopBig, large: L.shopBig, extraClass: `${sel} ${hint} ${p.gold < buyCost(p, u.cardId) ? 'unaffordable' : ''} ${p.frozen ? 'frozen' : ''} ${targetUids?.has(u.uid) ? 'targetable' : ''}`,
         badge: have >= 2 ? '<div class="trip-tag">TRIPLE!</div>' : '' });
     });
     const skipping = p.heroMem.skipRound === this.g!.round;
@@ -465,7 +465,7 @@ export class App {
     h += `<div id="popover">${this.popoverHtml()}</div>`;
     if (tgt) {
       h += `<div class="abs panel target-bar" style="left:${L.targetBar.x}px;top:${L.targetBar.y}px;width:${L.targetBar.w}px">
-        <span>${tgt.kind === 'hero' ? 'Choose a unit for your Hero Power' : `Choose a target for ${esc(def(p.hand[tgt.handIdx]?.cardId ?? 'skel').name)}`}</span>
+        <span>${tgt.kind === 'hero' ? (tgt.shop ? 'Choose a unit in the Tavern to load' : 'Choose a unit for your Hero Power') : `Choose a target for ${esc(def(p.hand[tgt.handIdx]?.cardId ?? 'skel').name)}`}</span>
         ${tgt.kind === 'play' ? '<button class="btn" data-act="no-target">No target</button>' : ''}
         <button class="btn" data-act="cancel-target">Cancel</button></div>`;
     }
@@ -1456,7 +1456,11 @@ export class App {
           this.render();
           break;
         }
-        if (h.target) {
+        if (h.targetShop) {
+          this.targeting = { kind: 'hero', id: h.id, shop: true };
+          this.aimPt = null;
+          this.render();
+        } else if (h.target) {
           if (!p!.board.length) { this.toast('You need a unit in your army'); break; }
           this.targeting = { kind: 'hero', id: h.id };
           this.aimPt = null;
@@ -1614,6 +1618,15 @@ export class App {
     const p = this.me;
     if (!wasDrag) {
       // a tap: targeting or selection
+      // a Hero Power aimed at the Tavern (Doom Bauble)
+      if (this.targeting?.kind === 'hero' && this.targeting.shop) {
+        if (press.zone !== 'shop') return;
+        const t = this.targeting;
+        this.targeting = null;
+        if (useHeroPower(g, p, p.shop[press.idx], t.id)) { sfx.power(); bump('heroPowers'); noteGame('heroPower'); }
+        this.commit();
+        return;
+      }
       if (this.targeting && press.zone === 'board') {
         const u = p.board[press.idx];
         const t = this.targeting;
