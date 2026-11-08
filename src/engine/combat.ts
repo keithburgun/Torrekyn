@@ -447,12 +447,14 @@ export function runCombat(g: GameState, a: Player, b: Player, bIsGhost: boolean)
   const you = [a, b].find((x) => x.human);
   const winner = you ? withFx(g, you, { name: 'Battle' }, 'From the battle', () => c.run()) : c.run();
   let damage = 0;
+  let dmgParts: CombatResult['dmgParts'];
   if (winner !== -1) {
     const ws = c.sides[winner];
     const survivors = ws.units.filter((u) => u.hp > 0);
-
-    const bonus = survivors.filter((u) => u.cardId === 'horseman').reduce((s, u) => s + mult(u), 0);
-    damage = combatDamage(ws.tier, survivors.length, bonus);
+    // Horseman adds its own extra damage (one per copy, two if Golden)
+    const bonusFrom = survivors.filter((u) => u.cardId === 'horseman').flatMap((u) => Array<number>(mult(u)).fill(u.id));
+    damage = combatDamage(ws.tier, survivors.length, bonusFrom.length);
+    dmgParts = { tier: ws.tier, units: survivors.map((u) => u.id), bonus: bonusFrom };
   }
   // end of combat: Root
   for (const s of c.sides) {
@@ -481,7 +483,7 @@ export function runCombat(g: GameState, a: Player, b: Player, bIsGhost: boolean)
   }
   return {
     a: a.id, b: bIsGhost ? -1 : b.id, ghostOf: bIsGhost ? b.id : undefined,
-    winner, damage, frames: a.human || (!bIsGhost && b.human) ? c.frames : [],
+    winner, damage, dmgParts, frames: a.human || (!bIsGhost && b.human) ? c.frames : [],
   };
 }
 

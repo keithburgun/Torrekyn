@@ -111,32 +111,18 @@ export class CombatPlayer {
     const hpb = av?.querySelector('.hpb') as HTMLElement | null;
     const target = this.heroCenter(loserSide);
     av?.classList.add('hp-focus');
-    await sleep(ms(350));
-    // zaps from each surviving unit of the winner
-    const last = r.frames[r.frames.length - 1];
-    const shooters = (last?.sides[r.winner] ?? []).filter((u) => !u.dead).map((u) => this.center(u.id)).filter((c): c is { x: number; y: number } => !!c);
-    if (!shooters.length) shooters.push(this.heroCenter(r.winner as 0 | 1));
-    sfx.zap();
-    const flight = ms(420);
-    await Promise.all(shooters.slice(0, 7).map((c, i) => {
-      const b = document.createElement('div');
-      b.className = 'fx bolt hero-bolt';
-      b.style.left = `${c.x}px`;
-      b.style.top = `${c.y}px`;
-      this.fxLayer.appendChild(b);
-      return b.animate([{ transform: 'translate(-50%, -50%) scale(0.6)' }, { transform: `translate(calc(-50% + ${target.x - c.x}px), calc(-50% + ${target.y - c.y}px)) scale(1.2)` }],
-        { duration: flight, delay: i * ms(70), easing: 'cubic-bezier(.5, 0, .9, .6)', fill: 'both' }).finished.then(() => b.remove()).catch(() => b.remove());
-    }));
-    // health counts down
+    await sleep(ms(300));
+    await this.damageStars(r, loserSide, hpb ?? av, ms);
+    // the hit lands: health counts down
     av?.classList.add('hit');
     const fl = document.createElement('div');
     fl.className = 'float-num dmg hero-dmg';
-    fl.textContent = `-${r.damage}`;
+    fl.textContent = `${r.damage} damage!`;
     // beside the portrait, toward the middle of the screen (the enemy sits at the top, you at the bottom)
-    fl.style.left = `${target.x - 120}px`;
+    fl.style.left = `${target.x - 170}px`;
     fl.style.top = `${target.y + (loserIsMe ? -150 : 40)}px`;
     this.fxLayer.appendChild(fl);
-    setTimeout(() => fl.remove(), ms(1400));
+    setTimeout(() => fl.remove(), ms(1600));
     const steps = Math.min(from - Math.max(to, 0), 15);
     for (let i = 1; i <= steps; i++) {
       if (hpb) {
@@ -164,6 +150,77 @@ export class CombatPlayer {
     await sleep(ms(1900));
     ko.classList.add('out');
     setTimeout(() => ko.remove(), 400);
+  }
+
+  /**
+   * Shows how the damage adds up: one star per Tavern Tier pops onto the winner's hero, one at a time, then one
+   * star onto each of their surviving units (plus Horseman's extra), then all of them gather and fly into the
+   * loser's Health.
+   */
+  private async damageStars(r: CombatResult, loserSide: 0 | 1, hitEl: HTMLElement | null, ms: (n: number) => number) {
+    const winSide = (1 - loserSide) as 0 | 1;
+    const parts = r.dmgParts ?? { tier: r.damage, units: [], bonus: [] };
+    const hero = this.heroCenter(winSide);
+    const stars: HTMLElement[] = [];
+    const pop = async (x: number, y: number, extra = '') => {
+      const st = document.createElement('div');
+      st.className = `dmg-star ${extra}`;
+      st.textContent = '★';
+      st.style.left = `${x}px`;
+      st.style.top = `${y}px`;
+      this.fxLayer.appendChild(st);
+      stars.push(st);
+      sfx.click();
+      await sleep(ms(stars.length > 10 ? 120 : 200));
+    };
+    // the winner's Tavern Tier: a row of stars across their portrait
+    const n = parts.tier;
+    const gap = Math.min(40, 200 / Math.max(1, n));
+    for (let i = 0; i < n; i++) await pop(hero.x + (i - (n - 1) / 2) * gap, hero.y, 'tier');
+    await sleep(ms(150));
+    // one for each surviving unit (and Horseman's extra ones, a little to the side)
+    for (const id of parts.units) {
+      const c = this.center(id);
+      if (c) await pop(c.x, c.y);
+    }
+    const extraCount = new Map<number, number>();
+    for (const id of parts.bonus) {
+      const k = (extraCount.get(id) ?? 0) + 1;
+      extraCount.set(id, k);
+      const c = this.center(id);
+      if (c) await pop(c.x + 26 * k, c.y - 26 * k, 'bonus');
+    }
+    // any stars we couldn't place (a unit not on screen) still count: they come from the hero
+    while (stars.length < r.damage) await pop(hero.x + (stars.length % 5 - 2) * 30, hero.y + 46, 'tier');
+    await sleep(ms(250));
+    // gather in the middle of the battlefield, then fly into the loser's Health as one
+    const mid = { x: this.L.cx, y: this.L.combat.banner };
+    sfx.whoosh();
+    await Promise.all(stars.map((st, i) => st.animate(
+      [{ left: st.style.left, top: st.style.top }, { left: `${mid.x}px`, top: `${mid.y}px` }],
+      { duration: ms(420), delay: i * ms(20), easing: 'cubic-bezier(.5, 0, .3, 1)', fill: 'forwards' }).finished.catch(() => undefined)));
+    for (const st of stars) st.remove();
+    const ball = document.createElement('div');
+    ball.className = 'dmg-star big';
+    ball.innerHTML = `★<b>${r.damage}</b>`;
+    ball.style.left = `${mid.x}px`;
+    ball.style.top = `${mid.y}px`;
+    this.fxLayer.appendChild(ball);
+    await sleep(ms(380));
+    const to = hitEl ? this.stagePoint(hitEl) : this.heroCenter(loserSide);
+    sfx.zap();
+    await ball.animate([{ left: `${mid.x}px`, top: `${mid.y}px` }, { left: `${to.x}px`, top: `${to.y}px` }],
+      { duration: ms(360), easing: 'cubic-bezier(.6, 0, .9, .5)', fill: 'forwards' }).finished.catch(() => undefined);
+    ball.remove();
+    puff(this.fxLayer, to.x, to.y, ms(500), 0.8);
+  }
+
+  /** an element's centre in stage pixels */
+  private stagePoint(el: HTMLElement) {
+    const sr = this.stage.getBoundingClientRect();
+    const k = sr.width / (this.stage.offsetWidth || 1);
+    const r = el.getBoundingClientRect();
+    return { x: (r.left + r.width / 2 - sr.left) / k, y: (r.top + r.height / 2 - sr.top) / k };
   }
 
   private pos(f: CombatFrame) {
@@ -410,8 +467,7 @@ export class CombatPlayer {
     if (myWin) sfx.win(); else if (!tie) sfx.lose();
     const b = document.createElement('div');
     b.className = `result-banner ${!tie && !myWin ? 'lose' : ''}`;
-    b.innerHTML = `<h2>${tie ? 'Draw' : myWin ? 'Victory' : 'Defeat'}</h2>
-      <p>${tie ? 'No damage dealt.' : myWin ? `You dealt ${r.damage} damage.` : `You took ${r.damage} damage.`}</p>
+    b.innerHTML = `<p class="rb-lead">${tie ? 'No damage dealt.' : myWin ? `You dealt ${r.damage} damage.` : `You took ${r.damage} damage.`}</p>
       <div class="rb-health"><div class="rb-heart">${Math.max(0, me.health)}</div><span>Your Health</span></div>
       <button class="btn big primary">Continue</button>`;
     this.stage.appendChild(b);

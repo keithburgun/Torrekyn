@@ -861,7 +861,9 @@ export class App {
     const rating = c ? `<div class="rating-change ${c.delta >= 0 ? 'up' : 'down'}">
         <span class="rc-label">Rating</span><span class="rc-from">${c.before}</span><span class="rc-arrow">→</span><span class="rc-to">${c.after}</span>
         <span class="rc-delta">${c.delta >= 0 ? '+' : ''}${c.delta}</span></div>` : '';
-    return `<div class="modal"><h2>${place === 1 ? 'Victory!' : `You finished ${ordinal(place)}`}</h2>
+    // top 4 is a win
+    return `<div class="modal"><h2>${place <= 4 ? 'Victory!' : 'Defeat'}</h2>
+      <div class="hint lead" style="font-size:26px">You finished ${ordinal(place)}</div>
       ${rating}
       <div class="hint lead">Rounds survived: ${this.g!.round}</div>
       <div style="display:flex;gap:14px"><button class="btn big primary" data-act="new">Play Again</button><button class="btn big" data-act="title">Title</button></div></div>`;

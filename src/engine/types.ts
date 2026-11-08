@@ -168,6 +168,8 @@ export interface CombatResult {
   ghostOf?: number;
   winner: 0 | 1 | -1; // side index, -1 tie
   damage: number;
+  /** what the damage is made of (for showing it): the winner's tier, their surviving units, and extra stars from units (Horseman) */
+  dmgParts?: { tier: number; units: number[]; bonus: number[] };
   frames: CombatFrame[];
 }
 

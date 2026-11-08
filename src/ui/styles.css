@@ -1173,3 +1173,17 @@ svg.aim-arrow.locked .aim-ring { opacity: 0.9; animation: aim-ring 0.9s ease-in-
   max-height: 40vh; overflow: hidden; white-space: pre-wrap; word-break: break-word; font: 11px/1.35 ui-monospace, Menlo, Consolas, monospace;
   color: #ff4d4d; background: rgba(0, 0, 0, 0.55); padding: 4px 6px; border-radius: 4px; cursor: pointer; }
 #debug-errors[hidden] { display: none; }
+
+/* damage stars (combatView damageStars): tier stars on the winner's hero, one per surviving unit, then gathered */
+.dmg-star { position: absolute; transform: translate(-50%, -50%); font-size: 54px; line-height: 1; color: #ffd64a; pointer-events: none;
+  text-shadow: 0 0 10px rgba(255, 200, 60, 0.95), 0 0 24px rgba(255, 160, 40, 0.7), 0 2px 0 #b8741a; animation: dmg-star-pop 0.32s cubic-bezier(.3, 1.6, .5, 1) both; z-index: 5; }
+.dmg-star.tier { font-size: 48px; }
+.dmg-star.bonus { color: #ff9b5c; }
+.dmg-star.big { font-size: 150px; display: flex; align-items: center; justify-content: center; animation-duration: 0.36s; }
+.dmg-star.big b { position: absolute; font: 700 50px/1 var(--display, inherit); color: #5a2a00; text-shadow: none; padding-top: 12px; }
+@keyframes dmg-star-pop { from { transform: translate(-50%, -50%) scale(0) rotate(-90deg); opacity: 0; } to { transform: translate(-50%, -50%) scale(1) rotate(0); opacity: 1; } }
+#stage.portrait .dmg-star { font-size: 64px; }
+#stage.portrait .dmg-star.big { font-size: 200px; }
+#stage.portrait .dmg-star.big b { font-size: 66px; }
+.result-banner p.rb-lead { font-family: var(--display); font-weight: 600; font-size: 30px; margin-top: 4px; }
+#stage.portrait .result-banner p.rb-lead { font-size: 44px; }
