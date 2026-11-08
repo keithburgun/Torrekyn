@@ -28,8 +28,8 @@ export const ALL_TRIBES: Tribe[] = ['neverending', 'azure', 'kindred', 'brambor'
 /** tokens that come from hero powers rather than the card list */
 const HERO_TOKENS: CardDef[] = [
   { id: 'pumpkin', name: 'Pumpkin', tribe: 'neutral', tier: 1, atk: 1, hp: 1, keywords: [], token: true, allTribes: true,
-    text: 'Has every tribe. Whenever another unit dies in combat, this permanently gains its Deathrattle.',
-    goldenText: 'Has every tribe. Whenever another unit dies in combat, this permanently gains its Deathrattle.' },
+    text: 'Has every tribe. Whenever another unit dies in combat, this gains its Deathrattle.',
+    goldenText: 'Has every tribe. Whenever another unit dies in combat, this gains its Deathrattle.' },
   { id: 'dragon', name: 'Dragon', tribe: 'neutral', tier: 1, atk: 1, hp: 1, keywords: [], token: true, text: '', goldenText: '' },
 ];
 

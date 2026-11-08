@@ -217,14 +217,16 @@ describe('heroes', () => {
     const p = human(g);
     gainPower(g, p, 'andromeda_robin');
     expect(p.hand.some((u) => u.cardId === 'pumpkin')).toBe(true);
-    // a Skeleton dies next to the Pumpkin: it keeps the Deathrattle for good
+    // a Skeleton dies: the Pumpkin has its Deathrattle for the rest of that battle only
     const pumpkin = makeUnit(g, 'pumpkin');
     pumpkin.hp = 50;
     const pa = g.players[0], pb = g.players[1];
     pa.powers = []; pb.powers = [];
     pa.board = [pumpkin]; pb.board = [makeUnit(g, 'skeleton')];
-    new Combat(g, { p: pa, board: pa.board, slots: pa.slots, tier: 1, persistent: true }, { p: pb, board: pb.board, slots: pb.slots, tier: 1, persistent: true }).run();
-    expect(pumpkin.mem.dr_skeleton).toBe(1);
+    const c = new Combat(g, { p: pa, board: pa.board, slots: pa.slots, tier: 1, persistent: true }, { p: pb, board: pb.board, slots: pb.slots, tier: 1, persistent: true });
+    c.run();
+    expect(c.sides[0].units[0].mem.dr_skeleton).toBe(1);
+    expect(pumpkin.mem.dr_skeleton).toBeUndefined();
   });
 
   it('Croh Vosh: units summoned in combat get +1/+2', () => {

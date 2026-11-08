@@ -67,7 +67,7 @@ function heroAvenge(s: Side, id: string, n: number): boolean {
 export const HEROES: HeroDef[] = [
   {
     id: 'andromeda_robin', name: 'Andromeda Robin', title: 'Potato witch', power: 'Pumpkin Buddy', avatar: 0, health: 40, passive: true,
-    text: 'Start the game with a 1/1 Pumpkin. It has every tribe and permanently gains the Deathrattle of any other unit that dies in combat.',
+    text: 'Start the game with a 1/1 Pumpkin. It has every tribe and gains the Deathrattle of any other unit that dies in combat.',
     onGain: (g, p) => { gainNew(g, p, 'pumpkin'); },
   },
   {

@@ -110,7 +110,7 @@ def main():
                 continue
             key, _, file = spec['src'].partition('/')
             path = os.path.join(R[key], file)
-            tribe = cards[id_]['tribe'] if kind == 'cards' else 'hero'
+            tribe = cards[id_]['tribe'] if kind == 'cards' and id_ in cards else 'neutral' if kind == 'cards' else 'hero'
             im = pixel_art(path, tribe, spec.get('box')) if spec.get('px') else cropped(path, spec['crop'], tribe)
             if spec.get('flip'):
                 im = im.transpose(Image.FLIP_LEFT_RIGHT)

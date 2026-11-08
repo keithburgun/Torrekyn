@@ -266,14 +266,13 @@ export class Combat {
         for (const side of this.sides) for (const w of [...side.units]) {
           if (w.hp > 0) EFFECTS[w.cardId]?.onDeathAny?.(this.ctx(w), u);
         }
-        // Pumpkins (Andromeda Robin) permanently take the Deathrattle of any other unit that dies
+        // Pumpkins (Andromeda Robin) take the Deathrattle of any other unit that dies, for this battle only
         if (u.cardId !== 'pumpkin' && EFFECTS[u.cardId]?.deathrattle) {
           const key = `dr_${u.cardId}`;
           const m = mult(u);
           for (const side of this.sides) for (const pk of side.units) {
             if (pk.cardId !== 'pumpkin' || pk.hp <= 0 || (pk.mem[key] ?? 0) >= m) continue;
             pk.mem[key] = m;
-            this.perm(pk, (pu) => { pu.mem[key] = m; });
             this.snap('trigger', { source: pk.id, note: `Pumpkin gained ${def(u.cardId).name}'s Deathrattle` });
           }
         }

@@ -38,15 +38,17 @@ describe('hero powers', () => {
     expect(HEROES.map((h) => h.id).sort()).toEqual([...tested].sort());
   });
 
-  it('Andromeda Robin: starts with a Pumpkin that keeps the Deathrattles of units that die in combat', () => {
+  it('Andromeda Robin: starts with a Pumpkin that takes the Deathrattles of units that die, for that battle only', () => {
     const { g, p } = setup('andromeda_robin');
     const pumpkin = [...p.hand, ...p.board].find((u) => u.cardId === 'pumpkin');
     expect(pumpkin).toBeTruthy();
     const dr = firstOf((id) => !!EFFECTS[id]?.deathrattle && def(id).tier === 1);
     pumpkin!.hp = 500; // it has to be alive when the other unit dies
     p.board = [pumpkin!, unit(g, dr, 1, 1)];
-    combat(g, p, p.board, [unit(g, firstOf(() => true), 30, 30)]).run();
-    expect(Object.keys(pumpkin!.mem).some((k) => k === `dr_${dr}`)).toBe(true);
+    const c = combat(g, p, p.board, [unit(g, firstOf(() => true), 30, 30)]);
+    c.run();
+    expect(c.frames.some((f) => f.note?.includes('Pumpkin gained'))).toBe(true);
+    expect(Object.keys(pumpkin!.mem).some((k) => k.startsWith('dr_'))).toBe(false); // gone after the battle
   });
 
   it('Gelf Lanz: after buying an Azure unit, the next Azure unit costs 1 less', () => {
