@@ -1,7 +1,7 @@
 import artManifest from '../data/art.json';
 import { store } from '../save/store';
 import artV2 from '../data/artV2.json';
-import { def, effStats, TRIBE_NAMES } from '../engine/core';
+import { CARDS, def, effStats, TRIBE_NAMES } from '../engine/core';
 import { EFFECTS } from '../engine/effects';
 import type { Keyword, Player, Unit, CombatFrameUnit } from '../engine/types';
 import { unitCounter } from '../engine/fx';
@@ -147,4 +147,27 @@ export function unitView(p: Player, u: Unit, zone: 'board' | 'hand' | 'shop', i:
 
 export function frameUnitView(u: CombatFrameUnit) {
   return { cardId: u.cardId, golden: u.golden, atk: u.atk, hp: u.hp, kw: u.kw };
+}
+
+/**
+ * Load every card and hero picture in the background from the title screen, so they're ready before a card
+ * first appears (on itch.io pictures that only started loading when the card was drawn sometimes stayed blank).
+ * Each picture gets a few tries; one that still fails is reported (DEBUG MODE shows it on screen).
+ */
+export function preloadArt() {
+  if (typeof Image === 'undefined') return;
+  const urls = [...new Set([...CARDS.map((c) => cardArt(c.id)), ...Object.keys(V2).filter((k) => k.startsWith('hero:')).map((k) => heroArt(k.slice(5)))])];
+  const keep: HTMLImageElement[] = []; // held so the browser keeps them decoded and cached
+  let next = 0;
+  const load = (url: string, tries: number) => new Promise<void>((done) => {
+    const im = new Image();
+    im.onload = () => { keep.push(im); done(); };
+    im.onerror = () => {
+      if (tries > 1) setTimeout(() => void load(url, tries - 1).then(done), 1500);
+      else { console.error(`Card art failed to load: ${url.split('/').slice(-2).join('/')}`); done(); }
+    };
+    im.src = url;
+  });
+  const worker = async () => { while (next < urls.length) await load(urls[next++], 3); };
+  for (let i = 0; i < 6; i++) void worker();
 }

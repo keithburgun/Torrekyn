@@ -8,6 +8,7 @@ import '@fontsource/nunito/latin-800.css';
 import './ui/styles.css';
 import { installDebug } from './ui/debug';
 import { App } from './ui/app';
+import { preloadArt } from './ui/view';
 import { initUpdates } from './ui/update';
 import { currentLayout, getMode, onLayoutChange, room } from './ui/layout';
 import type { GameState } from './engine/types';
@@ -77,6 +78,7 @@ function start(data: { g?: GameState; screen?: string } = {}) {
   // when the page is updated while open in Claude, keep the game going
   if (data.g) app.resume(data.g);
   hot?.snapshot?.(() => ({ g: app.g, screen: app.screen }));
+  setTimeout(preloadArt, 400); // card and hero art, in the background
 }
 
 if (hot?.ready) hot.ready(start);
