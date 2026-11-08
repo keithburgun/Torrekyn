@@ -11,7 +11,7 @@ import type { Body, Keyword, Player, Slot, Unit, GameState } from './types';
 import { addKw, CARDS, def, effStats, has, isTribe, log, makeUnit, pick, rand, removeKw, sample, tribeOf, CONFIG } from './core';
 import type { CUnit, Combat, Side } from './combat';
 import {
-  destroyUnit, discoverOptions, gainNew, inPlay, queueDiscover, randomCardOfTier, sellUnit, drawFromPool,
+  destroyUnit, discoverOptions, gainNew, inPlay, maxGoldFor, queueDiscover, randomCardOfTier, sellUnit, drawFromPool,
 } from './game';
 
 export interface Ctx {
@@ -81,7 +81,10 @@ function gemTarget(c: Ctx): Body | undefined {
 /** "Play a Gem on a unit": its Battlecry, aimed at that unit, without the Gem itself */
 function playGemOn(c: Ctx, gemId: string, target: Body | undefined) {
   if (!target) return;
-  EFFECTS[gemId]?.battlecry?.({ ...c, self: target, m: 1, target });
+  // Gem Wizard: Red Gems trigger twice (three times if Golden), however they're played
+  let times = 1;
+  if (gemId === 'red_gem') for (const b of c.board) if (b.cardId === 'gem_wizard') times = Math.max(times, b.golden ? 3 : 2);
+  for (let i = 0; i < times; i++) EFFECTS[gemId]?.battlecry?.({ ...c, self: target, m: 1, target });
 }
 
 /** a shop-style context for a combat hook (so Gem Battlecries can run in battle) */
@@ -175,7 +178,7 @@ export const EFFECTS: Record<string, Effect> = {
     endTurn: (c) => buff(c.board[0], 0, c.m),
   },
   sickle: {
-    rally: (c, t) => { for (const u of c.c.adjacent(t)) c.c.damage(u, c.m, c.self); },
+    rally: (c, t) => { for (const u of c.c.adjacent(t)) c.c.damage(u, 3 * c.m, c.self); },
   },
   horseman: {}, // handled at end of combat
   funeral: {
@@ -294,7 +297,7 @@ export const EFFECTS: Record<string, Effect> = {
   ocean_sky: {
     onShieldLost: (c, u) => {
       if (u === c.self || u.side !== c.self.side) return;
-      c.c.perm(u, (x) => buff(x, c.m, 2 * c.m), c.m, 2 * c.m);
+      c.c.perm(u, (x) => buff(x, 3 * c.m, 3 * c.m), 3 * c.m, 3 * c.m);
     },
   },
   commitment: {
@@ -308,10 +311,13 @@ export const EFFECTS: Record<string, Effect> = {
 
   // ===== Kindred Society =====
   doctor: {
+    // Fighter: Rally summons random Tier 1 units
     rally: (c) => {
+      const ids = CARDS.filter((d) => !d.token && d.tier === 1 && inPlay(c.g, d.id)).map((d) => d.id);
       for (let i = 0; i < c.m; i++) {
-        const d = pick(c.g, c.side.died.filter((x) => def(x.cardId).tier === 1));
-        if (d) c.c.spawnCopy(c.side, d, c.side.units.indexOf(c.self) + 1);
+        const id = pick(c.g, ids);
+        if (!id || !c.c.spawn(c.side, id, false, c.side.units.indexOf(c.self) + 1 + i)) return;
+        c.c.snap('trigger', i === 0 ? { note: `Summon ${def(id).name}` } : {});
       }
     },
   },
@@ -565,16 +571,16 @@ export const EFFECTS: Record<string, Effect> = {
 
   // ===== Alcove Prefex =====
   left_twinbot: {
-    // all your Twinbots get +1/+1 for the rest of the game (ownerBonus), including the ones in this battle
+    // all your Twinbots get +1 Attack for the rest of the game (ownerBonus), including the ones in this battle
     rally: (c) => {
       if (c.side.persistent) c.p.twinBonus = (c.p.twinBonus ?? 0) + c.m;
-      for (const u of c.side.units) if (u.hp > 0 && (u.cardId === 'left_twinbot' || u.cardId === 'right_twinbot')) buff(u, c.m, c.m);
+      for (const u of c.side.units) if (u.hp > 0 && (u.cardId === 'left_twinbot' || u.cardId === 'right_twinbot')) buff(u, c.m, 0);
     },
   },
   right_twinbot: {
     soc: (c) => {
       const l = c.side.units[c.side.units.indexOf(c.self) - 1];
-      if (l) { addKw(l, 'reborn'); if (c.m === 2) buff(l, 4, 4); }
+      if (l) addKw(l, 'reborn');
     },
   },
   tinker: {
@@ -704,32 +710,24 @@ export const EFFECTS: Record<string, Effect> = {
     },
   },
   purveyor: {
+    battlecry: (c) => { for (let i = 0; i < c.m; i++) gain(c, 'red_gem'); },
     endTurn: (c) => { for (let i = 0; i < c.m; i++) gain(c, 'red_gem'); },
   },
   gargoil: {
     deathrattle: (c) => {
-      const dmg = 10 * c.m;
-      const mine = sample(c.g, c.side.units.filter((u) => u.hp > 0), 3);
-      const theirs = sample(c.g, c.c.enemy(c.side).units.filter((u) => u.hp > 0), 3);
-      for (const u of [...mine, ...theirs]) c.c.damage(u, dmg, c.self);
+      for (const u of sample(c.g, c.c.enemy(c.side).units.filter((x) => x.hp > 0), 3)) c.c.damage(u, 10 * c.m, c.self);
     },
   },
   miner: {
-    rally: (c) => { for (let i = 0; i < c.m; i++) gain(c, 'red_gem'); },
+    // Bulldozer: gain a Red Gem and play one (on its own army)
+    rally: (c) => { for (let i = 0; i < c.m; i++) { gain(c, 'red_gem'); playGemOn(cctx(c), 'red_gem', c.self); } },
   },
   bill_milton: {
-    battlecry: (c) => { if (!c.combat) c.p.quests.push({ kind: 'bill', have: 0, need: 8, reward: 12 * c.m }); },
+    endTurn: (c) => buff(c.self, maxGoldFor(c.g, c.p) * c.m, 0),
   },
   gem_wizard: {}, // see battlecryTimes
   exploit: {
-    target: 'unlocked',
-    battlecry: (c) => {
-      if (c.combat) { if (c.side!.persistent) c.p.maxGoldBonus += 2 * c.m; return; }
-      const t = c.target as Unit | undefined;
-      if (!t || t === c.self || t.mem.locked) return;
-      destroyUnit(c.g, c.p, t);
-      c.p.maxGoldBonus += 2 * c.m;
-    },
+    battlecry: (c) => { if (!c.combat) c.p.quests.push({ kind: 'bill', have: 0, need: 8, reward: 12 * c.m }); },
   },
 
   // ===== Neutral =====
@@ -737,7 +735,6 @@ export const EFFECTS: Record<string, Effect> = {
     battlecry: (c) => {
       const t = others(c.board, c.self)[0];
       if (t) t.atk += 4 * c.m;
-      if (!c.combat) destroyUnit(c.g, c.p, c.self as Unit);
     },
   },
   shield_neutral: {

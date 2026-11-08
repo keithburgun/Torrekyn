@@ -85,8 +85,8 @@
    "tier": 3,
    "atk": 7,
    "hp": 1,
-   "text": "Rally: Deal 1 damage to adjacent units.",
-   "goldenText": "Rally: Deal 2 damage to adjacent units.",
+   "text": "Rally: Deal 3 damage to adjacent units.",
+   "goldenText": "Rally: Deal 6 damage to adjacent units.",
    "keywords": []
   },
   {
@@ -197,16 +197,17 @@
    "tier": 1,
    "atk": 2,
    "hp": 1,
-   "text": "Divine Shield.",
-   "goldenText": "Divine Shield.",
+   "text": "Taunt. Divine Shield.",
+   "goldenText": "Taunt. Divine Shield.",
    "keywords": [
-    "divineShield"
+    "divineShield",
+    "taunt"
    ]
   },
   {
    "id": "tourmaline",
    "name": "Blue Gem",
-   "tribe": "azure",
+   "tribe": "neutral",
    "tier": 1,
    "atk": 5,
    "hp": 4,
@@ -331,10 +332,10 @@
    "name": "Ocean Sky",
    "tribe": "azure",
    "tier": 5,
-   "atk": 1,
+   "atk": 10,
    "hp": 25,
-   "text": "Whenever another unit loses Divine Shield, it gains +1/+2 permanently.",
-   "goldenText": "Whenever another unit loses Divine Shield, it gains +2/+4 permanently.",
+   "text": "Whenever another unit loses Divine Shield, it gains +3/+3 permanently.",
+   "goldenText": "Whenever another unit loses Divine Shield, it gains +6/+6 permanently.",
    "keywords": []
   },
   {
@@ -355,11 +356,9 @@
    "tier": 1,
    "atk": 1,
    "hp": 3,
-   "text": "Reborn. Rally: Summon a Tier 1 unit that died this battle.",
-   "goldenText": "Reborn. Rally: Summon 2 Tier 1 units that died this battle.",
-   "keywords": [
-    "reborn"
-   ]
+   "text": "Rally: Summon a random tier 1 unit.",
+   "goldenText": "Rally: Summon two random tier 1 units.",
+   "keywords": []
   },
   {
    "id": "librarian",
@@ -408,7 +407,7 @@
   {
    "id": "pink_gem",
    "name": "Pink Gem",
-   "tribe": "kindred",
+   "tribe": "neutral",
    "tier": 2,
    "atk": 1,
    "hp": 1,
@@ -433,7 +432,7 @@
    "tribe": "kindred",
    "tier": 3,
    "atk": 1,
-   "hp": 1,
+   "hp": 12,
    "text": "Your left-most unit is invunlerable while attacking.",
    "goldenText": "Your two left-most units are invulnerable while attacking.",
    "keywords": []
@@ -864,10 +863,10 @@
    "name": "Left Twinbot",
    "tribe": "alcove",
    "tier": 1,
-   "atk": 2,
+   "atk": 0,
    "hp": 2,
-   "text": "Rally: Your Twinbots have +1/+1 this game.",
-   "goldenText": "Rally: Your Twinbots have +2/+2 this game.",
+   "text": "Rally: Your Twinbots have +1 Attack this game.",
+   "goldenText": "Rally: Your Twinbots have +2 Attack this game.",
    "keywords": []
   },
   {
@@ -875,10 +874,10 @@
    "name": "Right Twinbot",
    "tribe": "alcove",
    "tier": 1,
-   "atk": 2,
+   "atk": 0,
    "hp": 2,
    "text": "Start of Combat: Give the unit to the left of this Reborn.",
-   "goldenText": "Start of Combat: Give the unit to the left of this Reborn and +4/+4.",
+   "goldenText": "Start of Combat: Give the unit to the left of this Reborn.",
    "keywords": []
   },
   {
@@ -998,8 +997,8 @@
    "name": "WARMECH",
    "tribe": "alcove",
    "tier": 5,
-   "atk": 10,
-   "hp": 10,
+   "atk": 4,
+   "hp": 2,
    "text": "Divine Shield. Reborn. This unit has +4/+2 for each Battlecry you've triggered this game.",
    "goldenText": "Divine Shield. Reborn. This unit has +8/+4 for each Battlecry you've triggered this game.",
    "keywords": [
@@ -1067,7 +1066,7 @@
    "name": "Pyro",
    "tribe": "demons",
    "tier": 2,
-   "atk": 4,
+   "atk": 7,
    "hp": 4,
    "text": "When this kills a unit when attacking, it deals excess damage to an adjacent unit.",
    "goldenText": "When this kills a unit when attacking, it deals excess damage to both adjacent units.",
@@ -1135,8 +1134,8 @@
    "tier": 4,
    "atk": 6,
    "hp": 6,
-   "text": "End of Turn: Gain a Red Gem.",
-   "goldenText": "End of Turn: Gain 2 Red Gems.",
+   "text": "Battlecry and End of Turn: Gain a Red Gem.",
+   "goldenText": "Battlecry and End of Turn: Gain 2 Red Gems.",
    "keywords": []
   },
   {
@@ -1146,8 +1145,8 @@
    "tier": 4,
    "atk": 10,
    "hp": 1,
-   "text": "Deathrattle: Deal 10 damage to 3 friendly and 3 enemy units.",
-   "goldenText": "Deathrattle: Deal 20 damage to 3 friendly and 3 enemy units.",
+   "text": "Deathrattle: Deal 10 damage to 3 random enemy units.",
+   "goldenText": "Deathrattle: Deal 20 damage to 3 random enemy units.",
    "keywords": []
   },
   {
@@ -1155,10 +1154,10 @@
    "name": "Bulldozer",
    "tribe": "demons",
    "tier": 4,
-   "atk": 2,
-   "hp": 7,
-   "text": "Rally: Gain a Red Gem.",
-   "goldenText": "Rally: Gain 2 Red Gems.",
+   "atk": 4,
+   "hp": 15,
+   "text": "Rally: Gain a Red Gem and play a Red Gem.",
+   "goldenText": "Rally: Gain 2 Red Gem and play 2 Red Gems.",
    "keywords": []
   },
   {
@@ -1166,10 +1165,10 @@
    "name": "Bill Milton",
    "tribe": "demons",
    "tier": 5,
-   "atk": 20,
-   "hp": 20,
-   "text": "Battlecry: Gain quest: Buy 8 Business Demons to gain 12 Gold.",
-   "goldenText": "Battlecry: Gain quest: Buy 8 Business Demons to gain 24 Gold.",
+   "atk": 40,
+   "hp": 40,
+   "text": "End of your turn: Gain 1 attack per maximum gold you have.",
+   "goldenText": "End of your turn: Gain 2 attack per maximum gold you have.",
    "keywords": []
   },
   {
@@ -1177,10 +1176,10 @@
    "name": "Gem Wizard",
    "tribe": "demons",
    "tier": 5,
-   "atk": 10,
-   "hp": 4,
-   "text": "Your Red Gems trigger their Battlecries twice.",
-   "goldenText": "Your Red Gems trigger their Battlecries three times.",
+   "atk": 20,
+   "hp": 20,
+   "text": "Your Red Gems trigger twice.",
+   "goldenText": "Your Red Gems trigger three times.",
    "keywords": []
   },
   {
@@ -1190,8 +1189,8 @@
    "tier": 5,
    "atk": 3,
    "hp": 25,
-   "text": "Battlecry: Destroy a friendly unit. Increase your maximum Gold by 2.",
-   "goldenText": "Battlecry: Destroy a friendly unit. Increase your maximum Gold by 4.",
+   "text": "Battlecry: Gain quest: Buy 8 Business Demons to gain 12 Gold.",
+   "goldenText": "Battlecry: Gain quest: Buy 8 Business Demons to gain 24 Gold.",
    "keywords": []
   },
   {
@@ -1201,8 +1200,8 @@
    "tier": 1,
    "atk": 2,
    "hp": 1,
-   "text": "Battlecry: Destroy this and give your left-most unit +4 Attack.",
-   "goldenText": "Battlecry: Destroy this and give your left-most unit +8 Attack.",
+   "text": "Battlecry: Give your left-most unit +4 Attack.",
+   "goldenText": "Battlecry: Give your left-most unit +8 Attack.",
    "keywords": []
   },
   {
@@ -1343,7 +1342,7 @@
    "tribe": "neutral",
    "tier": 5,
    "atk": 12,
-   "hp": 6,
+   "hp": 8,
    "text": "Your deathrattles trigger twice.",
    "goldenText": "Your deathrattles trigger three times.",
    "keywords": []
@@ -1398,7 +1397,7 @@
   {
    "id": "purple_gem",
    "name": "Purple Gem",
-   "tribe": "neverending",
+   "tribe": "neutral",
    "tier": 2,
    "atk": 1,
    "hp": 1,

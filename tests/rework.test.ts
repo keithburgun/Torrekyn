@@ -60,15 +60,12 @@ describe('rework', () => {
     expect(sellValue(intern, p)).toBe(2);
   });
 
-  it('Exploit: destroys a friendly unit and adds 2 maximum gold', () => {
+  it('Exploit: starts the Business Demons quest (buy 8, gain 12 gold)', () => {
     const { g, p } = setup();
-    const victim = u(g, 'skel');
-    p.board = [victim];
+    p.board = [];
     p.hand = [u(g, 'exploit')];
-    const before = p.maxGoldBonus;
-    expect(play(g, p, 0, 1, victim.uid).ok).toBe(true);
-    expect(p.board.map((x) => x.cardId)).toEqual(['exploit']);
-    expect(p.maxGoldBonus).toBe(before + 2);
+    expect(play(g, p, 0, 0).ok).toBe(true);
+    expect(p.quests.at(-1)).toMatchObject({ kind: 'bill', need: 8, reward: 12 });
   });
 
   it('May Danaris: a 20/20 Phoenix with a random Gem on it', () => {
@@ -121,5 +118,41 @@ describe('Sniper', () => {
     const s = c.sides[0];
     EFFECTS.sniper.soc!({ g, c, side: s, self: s.units[0], m: 1, p, pos: 0 });
     expect(c.sides[1].units[0].hp).toBe(100 - 9);
+  });
+});
+
+describe('rework 2', () => {
+  it('Bill Milton (card): end of turn gains Attack equal to your maximum gold', async () => {
+    const { EFFECTS } = await import('../src/engine/effects');
+    const { maxGoldFor } = await import('../src/engine/game');
+    const { g, p } = setup();
+    const b = u(g, 'bill_milton');
+    p.board = [b];
+    const before = b.atk;
+    EFFECTS.bill_milton.endTurn!({ g, p, self: b, m: 1, board: p.board });
+    expect(b.atk).toBe(before + maxGoldFor(g, p));
+  });
+
+  it('Bulldozer: Rally gains a Red Gem and plays one (twice with Gem Wizard)', () => {
+    const { g, p, o } = setup();
+    p.hand = [];
+    const dozer = u(g, 'miner', 1, 100);
+    const wiz = u(g, 'gem_wizard', 0, 100);
+    p.board = [dozer, wiz];
+    const c = fight(g, p, o, p.board, [u(g, 'skel', 0, 1000)]);
+    const before = c.sides[0].units.map((x) => x.atk + x.hp);
+    c.attackNow(c.sides[0].units[0]);
+    expect(p.hand.filter((x) => x.cardId === 'red_gem').length).toBe(1);
+    const after = c.sides[0].units.map((x) => x.atk + x.hp);
+    // one Red Gem played twice (Gem Wizard): +3 to each of the two units, twice
+    expect(after[1] - before[1]).toBe(6);
+  });
+
+  it('Fighter: Rally summons a random Tier 1 unit', () => {
+    const { g, p, o } = setup();
+    const c = fight(g, p, o, [u(g, 'doctor', 1, 100)], [u(g, 'skel', 0, 1000)]);
+    c.attackNow(c.sides[0].units[0]);
+    expect(c.sides[0].units.length).toBe(2);
+    expect(def(c.sides[0].units[1].cardId).tier).toBe(1);
   });
 });
