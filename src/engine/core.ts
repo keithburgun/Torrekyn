@@ -4,7 +4,6 @@ import type { Body, CardDef, GameState, Keyword, Player, Tribe, Unit } from './t
 export const CONFIG = {
   players: 6,
   startHealth: 45,
-  damageCap: 15,
   maxTier: 5,
   boardSize: 7,
   handSize: 10,

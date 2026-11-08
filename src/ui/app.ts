@@ -336,7 +336,7 @@ export class App {
     return `<div class="title-wrap"><div class="panel rules">
       <h3>The Goal</h3>
       Six players draft armies of units and battle automatically each round. Everyone starts at about ${CONFIG.startHealth} Health (stronger heroes start with less).
-      Lose a battle and you take damage equal to the winner's Tavern Tier plus the tiers of their surviving units, never more than ${CONFIG.damageCap}.
+      Lose a battle and you take damage equal to the winner's Tavern Tier, plus 1 for each of their surviving units.
       Be the last one standing.
       <h3>Your Turn</h3>
       Buy units from the Tavern for ${CONFIG.buyCost} gold, then play them from your hand into your army (up to ${CONFIG.boardSize}).

@@ -21,7 +21,7 @@ function fight(g: GameState, a: Unit[], b: Unit[]) {
 }
 
 describe('mechanics', () => {
-  it('Pyro\'s excess damage hits one neighbour (both if Golden) and does not chain', async () => {
+  it('Pyro\'s excess damage (only when attacking) hits one neighbour (both if Golden) and does not chain', async () => {
     for (const golden of [false, true]) {
       const g = newGame(7);
       const pyro = makeUnit(g, 'pyro'); pyro.atk = 40; pyro.hp = 40; pyro.golden = golden;
@@ -32,15 +32,20 @@ describe('mechanics', () => {
         { p: pb, board: enemies, slots: pb.slots, tier: 1, persistent: false });
       const mine = c.sides[0].units[0];
       const theirs = c.sides[1].units;
-      c.damage(theirs[3], 40, mine);
+      // hit back while defending: no spill
+      c.damage(theirs[1], 40, mine);
+      expect(theirs.filter((u) => u.hp <= 0).length).toBe(1);
+      // attacking: spills once
+      c.damage(theirs[4], 40, mine, false, true);
       const dead = theirs.filter((u) => u.hp <= 0).length;
-      expect(dead).toBe(golden ? 3 : 2);
+      expect(dead).toBe(golden ? 4 : 3);
     }
   });
 
   it('damage cap is 15', () => {
-    expect(combatDamage(5, 30, 0)).toBe(15);
+    expect(combatDamage(5, 7, 0)).toBe(12);
     expect(combatDamage(2, 3, 1)).toBe(6);
+    expect(combatDamage(6, 7, 4)).toBe(17); // no cap
   });
 
   it('buying 3 copies makes a golden with combined buffs', () => {

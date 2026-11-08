@@ -1047,7 +1047,7 @@
    "tribe": "demons",
    "tier": 1,
    "atk": 1,
-   "hp": 4,
+   "hp": 2,
    "text": "After you buy 4 units, gain a random Tier 1 card.",
    "goldenText": "After you buy 4 units, gain 2 random Tier 1 cards.",
    "keywords": []
@@ -1068,10 +1068,10 @@
    "name": "Pyro",
    "tribe": "demons",
    "tier": 2,
-   "atk": 12,
+   "atk": 4,
    "hp": 4,
-   "text": "When this kills a unit, it deals excess damage to an adjacent unit.",
-   "goldenText": "When this kills a unit, it deals excess damage to both adjacent units.",
+   "text": "When this kills a unit when attacking, it deals excess damage to an adjacent unit.",
+   "goldenText": "When this kills a unit when attacking, it deals excess damage to both adjacent units.",
    "keywords": []
   },
   {

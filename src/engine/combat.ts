@@ -187,7 +187,7 @@ export class Combat {
   }
 
   /** `spill`: this is Pyro's excess damage, which doesn't spill again (it used to chain through a whole army) */
-  damage(t: CUnit | undefined, amount: number, source?: CUnit, spill = false) {
+  damage(t: CUnit | undefined, amount: number, source?: CUnit, spill = false, attacking = false) {
     if (!t || t.hp <= 0 || amount <= 0) return;
     if (!this.inExchange) this.addFx({ k: 'hit', to: t.id, from: source?.id, fromSide: source ? undefined : this.heroSide });
     if (has(t, 'divineShield')) {
@@ -207,7 +207,8 @@ export class Combat {
     }
     if (t.hp <= 0 && source && !t.killedBy) t.killedBy = source;
     if (t.hp > 0) EFFECTS[t.cardId]?.onDamaged?.(this.ctx(t));
-    if (t.hp <= 0 && !spill && source?.cardId === 'pyro' && source.hp > 0) {
+    // Pyro only spills when it's the one attacking (not when it's hit back while defending)
+    if (t.hp <= 0 && !spill && attacking && source?.cardId === 'pyro' && source.hp > 0) {
       const excess = amount - before;
       if (excess > 0) {
         const adj = this.adjacent(t);
@@ -359,7 +360,7 @@ export class Combat {
     const atkA = a.atk;
     const atkT = t.atk;
     this.inExchange = true;
-    this.damage(t, atkA, a);
+    this.damage(t, atkA, a, false, true);
     if (idx >= invuln) this.damage(a, atkT, t);
     this.inExchange = false;
     this.snap('hit', { attacker: a.id, target: t.id });
@@ -448,9 +449,9 @@ export function runCombat(g: GameState, a: Player, b: Player, bIsGhost: boolean)
   if (winner !== -1) {
     const ws = c.sides[winner];
     const survivors = ws.units.filter((u) => u.hp > 0);
-    const tierSum = survivors.reduce((s, u) => s + def(u.cardId).tier, 0);
+
     const bonus = survivors.filter((u) => u.cardId === 'horseman').reduce((s, u) => s + mult(u), 0);
-    damage = combatDamage(ws.tier, tierSum, bonus);
+    damage = combatDamage(ws.tier, survivors.length, bonus);
   }
   // end of combat: Root
   for (const s of c.sides) {

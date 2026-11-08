@@ -3,7 +3,7 @@
 When the card text was ambiguous, Hearthstone: Battlegrounds conventions were used. Everything below can be changed; tell Claude which ones to change.
 
 ## Core rules (src/engine/core.ts `CONFIG`)
-- 6 players, 45 Health each. Damage = winner's Tavern Tier + tiers of the winner's surviving units, always capped at 15.
+- 6 players, 45 Health each. Damage = winner's Tavern Tier + 1 per surviving unit of the winner (whatever its tier). No cap.
 - Tavern Tiers 1–5. Upgrade costs: Tier 2 = 5, Tier 3 = 7, Tier 4 = 8, Tier 5 = 9, each dropping by 1 every turn (as in HS).
 - Shop size by tier: 3 / 4 / 4 / 5 / 5. Units cost 3, sell for 1, Refresh costs 1, Freeze is free.
 - Gold: 3 on turn 1, +1 per turn, max 10 (plus Investor/trinket bonuses).

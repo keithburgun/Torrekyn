@@ -128,7 +128,7 @@ GOLDEN = {
     "drill_sgt": "Start of Combat: If you are tier 3 or lower, gain +10 Attack.",
     "shopkeep": "After you buy 4 units, gain 2 random Tier 1 cards.",
     "intern": "Whenever you sell a tier 3 unit, gain 2 random tier 2 units.",
-    "pyro": "When this kills a unit, it deals excess damage to both adjacent units.",
+    "pyro": "When this kills a unit when attacking, it deals excess damage to both adjacent units.",
     "jeweler": "Battlecry: Improve your Red Gems twice.",
     "treasure": "This sells for 12 gold.",
     "biker": "Whenever this takes damage, it gains +4/+6.",

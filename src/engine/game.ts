@@ -540,8 +540,9 @@ export function endTurn(g: GameState): CombatResult[] {
   return results;
 }
 
-export function combatDamage(winnerTier: number, survivorsTierSum: number, bonus: number) {
-  return Math.min(CONFIG.damageCap, winnerTier + survivorsTierSum + bonus);
+/** damage to the loser: the winner's Tavern Tier + 1 for each surviving unit (whatever its tier), no cap */
+export function combatDamage(winnerTier: number, survivors: number, bonus: number) {
+  return winnerTier + survivors + bonus;
 }
 
 export type { CombatResult } from './types';
