@@ -1232,3 +1232,37 @@ svg.aim-arrow.locked .aim-ring { opacity: 0.9; animation: aim-ring 0.9s ease-in-
 .overflow-pill { z-index: 8; text-align: center; padding: 5px 12px; border-radius: 999px; background: rgba(30, 22, 48, 0.9); color: #ffe7a0;
   font: 600 15px/1.2 var(--display); box-shadow: 0 2px 10px rgba(0, 0, 0, 0.4); pointer-events: none; }
 #stage.portrait .overflow-pill { font-size: 22px; }
+
+/* a unit's full card while hovering it in battle (the battle keeps going) */
+.combat-zoom { position: absolute; z-index: 60; width: 300px; pointer-events: none; filter: drop-shadow(0 10px 24px rgba(0, 0, 0, 0.55)); }
+.combat-zoom .bigcard { margin: 0; }
+#stage.combat-paused #clayer { filter: saturate(0.7); }
+
+/* ---- stat badges: Attack = yellow pointed diamond, Health = red circle; big numbers outlined in dark grey ---- */
+.card .stat, .bigcard .stat {
+  --outline: #26222c;
+  text-shadow: 2px 0 0 var(--outline), -2px 0 0 var(--outline), 0 2px 0 var(--outline), 0 -2px 0 var(--outline),
+    1.5px 1.5px 0 var(--outline), -1.5px 1.5px 0 var(--outline), 1.5px -1.5px 0 var(--outline), -1.5px -1.5px 0 var(--outline);
+  font-size: 26px; width: 46px; height: 46px; line-height: 1;
+}
+.card .stat.atk, .bigcard .stat.atk {
+  border-radius: 0; box-shadow: none; padding-bottom: 0;
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 48 48' preserveAspectRatio='none'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='0' y2='1'%3E%3Cstop offset='0' stop-color='%23fff1b0'/%3E%3Cstop offset='.55' stop-color='%23ffc23d'/%3E%3Cstop offset='1' stop-color='%23e89512'/%3E%3C/linearGradient%3E%3C/defs%3E%3Cpath d='M24 2 46 24 24 46 2 24Z' fill='url(%23g)' stroke='%23fff' stroke-width='3' stroke-linejoin='round'/%3E%3Cpath d='M24 2 46 24 24 46 2 24Z' fill='none' stroke='%23b06a08' stroke-width='1' stroke-linejoin='round' opacity='.5'/%3E%3C/svg%3E") center/contain no-repeat;
+  filter: drop-shadow(0 3px 3px rgba(80, 40, 0, 0.35));
+}
+.card .stat.hp, .bigcard .stat.hp {
+  -webkit-mask: none; mask: none; padding-bottom: 0; border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, #ff9a8c, #e8322a 58%, #a8121a);
+  box-shadow: 0 0 0 3px #fff, 0 3px 6px rgba(90, 0, 0, 0.35);
+}
+.card .stat.atk { left: -13px; width: 54px; } .card .stat.hp { right: -9px; }
+.card.small .stat.atk { width: 48px; } .card.large .stat.atk { width: 62px; }
+#stage.portrait .card.large .stat.atk { width: 76px; } #stage.portrait .card.small .stat.atk { width: 60px; }
+.card.small .stat { width: 40px; height: 40px; font-size: 22px; }
+.card.large .stat { width: 54px; height: 54px; font-size: 30px; }
+.bigcard .stat { width: 62px; height: 62px; font-size: 33px; }
+.bigcard .stat.atk { left: -18px; width: 72px; } .bigcard .stat.hp { right: -12px; box-shadow: 0 0 0 4px #fff, 0 3px 6px rgba(90, 0, 0, 0.35); }
+#stage.portrait .card.large .stat { width: 66px; height: 66px; font-size: 40px; }
+#stage.portrait .card.small .stat { width: 52px; height: 52px; font-size: 32px; }
+.card .stat.buffed { color: #d9ffb0; }
+.card .stat.hurt { color: #ffd2d2; text-decoration: none; }

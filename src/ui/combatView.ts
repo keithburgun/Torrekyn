@@ -1,7 +1,7 @@
 import { heroDef } from '../engine/heroes';
 import { store } from '../save/store';
 import type { CombatFrame, CombatFrameUnit, CombatFx, CombatResult, GameState } from '../engine/types';
-import { cardHtml, esc, frameUnitView, heroArt } from './view';
+import { bigCardHtml, cardHtml, esc, frameUnitView, heroArt } from './view';
 import { sfx } from './sfx';
 import { currentLayout, type Layout } from './layout';
 import { placeBoardBg, placeHud } from './hud';
@@ -27,7 +27,12 @@ const REBORN_FADE = 1100;
 
 
 
-const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
+/** the battle's Pause button: every wait in the playback holds while paused */
+let paused = false;
+const sleep = async (ms: number) => {
+  await new Promise((r) => setTimeout(r, ms));
+  while (paused) await new Promise((r) => setTimeout(r, 120));
+};
 
 export class CombatPlayer {
   els = new Map<number, HTMLElement>();
@@ -69,6 +74,7 @@ export class CombatPlayer {
       <div class="vs-banner" style="left:${this.L.cx}px;top:${this.L.combat.banner}px">ROUND ${round} · BATTLE</div>
       <div class="abs combat-ctl" style="right:30px;bottom:30px;display:flex;gap:10px">
         <button class="btn" data-cact="speed">Speed ${speedLabel(this.speed)}</button>
+        <button class="btn" data-cact="pause">Pause</button>
         <button class="btn" data-cact="skip">Skip</button>
       </div>
       <div id="clayer" class="abs" style="inset:0;pointer-events:none"></div>
@@ -82,7 +88,56 @@ export class CombatPlayer {
       store.set('torrekin-speed', String(this.speed));
       (e.target as HTMLElement).textContent = `Speed ${speedLabel(this.speed)}`;
     });
-    stage.querySelector('[data-cact="skip"]')!.addEventListener('click', () => { this.skip = true; });
+    stage.querySelector('[data-cact="skip"]')!.addEventListener('click', () => { this.skip = true; paused = false; });
+    paused = false;
+    stage.querySelector('[data-cact="pause"]')!.addEventListener('click', (e) => {
+      paused = !paused;
+      (e.target as HTMLElement).textContent = paused ? 'Resume' : 'Pause';
+      this.stage.classList.toggle('combat-paused', paused);
+    });
+    // hover (or tap) a unit to see its full card; the battle keeps going
+    stage.addEventListener('pointermove', (e) => { if (e.pointerType === 'mouse') this.hoverAt(e); });
+    stage.addEventListener('pointerdown', (e) => { if (!(e.target as HTMLElement).closest('button')) this.hoverAt(e); });
+    stage.addEventListener('pointerleave', () => this.showZoom(null));
+  }
+
+  /** the unit each card shows right now (for the zoomed card) */
+  private units = new Map<number, CombatFrameUnit>();
+  private zoomId: number | null = null;
+  private zoomEl: HTMLElement | null = null;
+
+  private hoverAt(e: PointerEvent) {
+    let hit: number | null = null;
+    for (const [id, el] of this.els) {
+      if (el.classList.contains('dying')) continue;
+      const r = el.getBoundingClientRect();
+      if (e.clientX >= r.left && e.clientX <= r.right && e.clientY >= r.top && e.clientY <= r.bottom) hit = id;
+    }
+    this.showZoom(hit);
+  }
+
+  private showZoom(id: number | null) {
+    const u = id === null ? undefined : this.units.get(id);
+    const el = id === null ? undefined : this.els.get(id);
+    if (!u || !el) { this.zoomEl?.remove(); this.zoomEl = null; this.zoomId = null; return; }
+    if (!this.zoomEl) {
+      this.zoomEl = document.createElement('div');
+      this.zoomEl.className = 'combat-zoom';
+      this.stage.appendChild(this.zoomEl);
+    }
+    this.zoomId = id;
+    this.zoomEl.innerHTML = bigCardHtml(frameUnitView(u));
+    // clear of the board: the screen's side away from the unit (top or bottom edge on a tall screen)
+    const sr = this.stage.getBoundingClientRect(), k = sr.width / this.L.W, r = el.getBoundingClientRect();
+    const cx = (r.left + r.right) / 2 / k - sr.left / k, cy = (r.top + r.bottom) / 2 / k - sr.top / k;
+    const w = 300, h = 420;
+    if (this.L.portrait) {
+      this.zoomEl.style.left = `${this.L.cx - w / 2}px`;
+      this.zoomEl.style.top = `${cy < this.L.H / 2 ? this.L.H - h - 140 : 120}px`;
+    } else {
+      this.zoomEl.style.left = `${cx < this.L.cx ? this.L.W - w - 60 : 60}px`;
+      this.zoomEl.style.top = `${(this.L.H - h) / 2}px`;
+    }
   }
 
   private t(ms: number) {
@@ -365,6 +420,7 @@ export class CombatPlayer {
     for (const [id, el] of this.els) {
       if (pos.has(id)) continue;
       this.els.delete(id);
+      if (id === this.zoomId) this.showZoom(null);
       if (instant) { el.remove(); continue; }
       sfx.destroy();
       el.style.transition = `opacity ${this.t(DEATH_FADE)}ms ease-out, transform ${this.t(DEATH_FADE)}ms ease-out, filter ${this.t(DEATH_FADE)}ms`;
@@ -374,6 +430,8 @@ export class CombatPlayer {
 
     // 3. add new units / update existing ones
     for (const [id, { u, x, y }] of pos) {
+      this.units.set(id, u);
+      if (id === this.zoomId) queueMicrotask(() => this.showZoom(id)); // the zoomed card follows its unit's stats
       const html = cardHtml(frameUnitView(u), { zone: 'combat', idx: 0, x, y, id, small: this.L.small, large: this.L.large });
       const tmp = document.createElement('div');
       tmp.innerHTML = html;
