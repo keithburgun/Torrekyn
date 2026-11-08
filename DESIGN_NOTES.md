@@ -4,7 +4,7 @@ When the card text was ambiguous, Hearthstone: Battlegrounds conventions were us
 
 ## Core rules (src/engine/core.ts `CONFIG`)
 - 6 players; each hero has its own starting Health around 40 (the default). Damage = 2 per surviving unit of the winner (whatever its tier), plus extras like Horseman's. No cap. A battle that times out with both armies standing is a stalemate: each player takes 2 per surviving enemy unit (so endless draws can't stall the game). Cards gained with a full hand wait (Player.overflow) and arrive when there's room. Locked units count toward triples; the Golden copy arrives unlocked.
-- Tavern Tiers 1–5. Upgrade costs: Tier 2 = 5, Tier 3 = 7, Tier 4 = 8, Tier 5 = 9, each dropping by 1 every turn (as in HS).
+- Tavern Tiers 1–5. Upgrade costs: Tier 2 = 5, Tier 3 = 8, Tier 4 = 10, Tier 5 = 13, each dropping by 1 every turn until bought (fastest possible: Tier 5 on turn 9).
 - Shop size by tier: 3 / 4 / 4 / 5 / 5. Units cost 3, sell for 1, Refresh costs 1, Freeze is free.
 - Gold: 3 on turn 1, +1 per turn, max 10 (plus Investor/trinket bonuses).
 - Card pool copies per tier: 15 / 13 / 11 / 9 / 7 (scaled down from HS for 6 players).

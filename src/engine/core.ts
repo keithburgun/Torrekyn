@@ -11,7 +11,7 @@ export const CONFIG = {
   sellValue: 1,
   rerollCost: 1,
   /** cost to upgrade TO tier n (index n) */
-  upgradeCost: [0, 0, 5, 7, 8, 9],
+  upgradeCost: [0, 0, 5, 8, 10, 13], // to reach Tier 2, 3, 4, 5 (each drops 1 gold per turn until bought)
   shopSize: [0, 3, 4, 4, 5, 5],
   copiesPerTier: [0, 15, 13, 11, 9, 7],
   /** 7 tribes exist; 3 are banned each match, so 4 are in play (plus Neutral) */
