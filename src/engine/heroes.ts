@@ -144,7 +144,7 @@ export const HEROES: HeroDef[] = [
   },
   {
     id: 'eve_williams', name: 'Eve Williams', title: 'Revolutionary', power: 'Doom Bauble', avatar: 9, health: 48, cost: 1, targetShop: true,
-    text: 'Select a unit in the Tavern. When you have space in a battle, FIRE it at a random enemy. (It is summoned and attacks at once; you don\u2019t keep it.)',
+    text: 'Select a unit in the Tavern. When you have space in a battle, FIRE it at a random enemy.',
     locked: (g, p) => (!p.shop.length ? 'The Tavern is empty' : null),
     use: (g, p, t) => {
       const i = t ? p.shop.indexOf(t) : -1;
