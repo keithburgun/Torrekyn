@@ -73,7 +73,7 @@ describe('mechanics', () => {
     buy(g, p, 0); buy(g, p, 0); buy(g, p, 0);
     expect(p.hand.length).toBe(1);
     expect(p.hand[0].golden).toBe(true);
-    expect(p.hand[0].atk).toBe(4);
+    expect(p.hand[0].atk).toBe(6);
     play(g, p, 0, 0);
     expect(p.discovers.length).toBe(1); // triple reward
   });
@@ -88,7 +88,9 @@ describe('mechanics', () => {
   it('reborn returns with 1 health', () => {
     const g = newGame(3);
     const big = makeUnit(g, 'ancient_name_neverending'); // 15/12
-    const { c } = fight(g, [makeUnit(g, 'ash')], [big]);
+    const reborn = makeUnit(g, 'skel');
+    reborn.kw = ['reborn'];
+    const { c } = fight(g, [reborn], [big]);
     const frames = c.frames.filter((f) => f.note?.includes('Reborn'));
     expect(frames.length).toBe(1);
   });

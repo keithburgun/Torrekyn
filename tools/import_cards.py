@@ -36,7 +36,7 @@ KEYWORDS = {
 # (golden = double stats, and effects doubled / triggered twice).
 GOLDEN = {
     "skeleton": "Deathrattle: Spawn 4 1/1 Skels.",
-    "ash": "Taunt. Reborn.",
+    "ash": "Taunt.",
     "memory": "When you sell this, gain 2 random Tier 1 units.",
     "ashlie": "Battlecry: Your Neverending units have +2 Attack this game.",
     "bramble": "Whenever a Neverending unit dies, this gains +2 Attack.",
@@ -65,7 +65,7 @@ GOLDEN = {
     "gelf_lanz": "Rally: Deal full damage to adjacent units.",
     "ocean_sky": "Whenever another unit loses Divine Shield, it gains +2/+4 permanently.",
     "commitment": "Battlecry: Triple the stats of your left-most unit. It is locked permanently.",
-    "doctor": "Rally: Summon 2 Tier 1 units that died this battle.",
+    "doctor": "Reborn. Rally: Summon 2 Tier 1 units that died this battle.",
     "librarian": "Battlecry: Discover a unit from a tier higher twice.",
     "architect": "Battlecry: Give up to 4 different units in your hand +10/+10.",
     "patchwork": "Whenever you gain a Kindred unit, this slot gains +2/+4 permanently.",
@@ -95,7 +95,7 @@ GOLDEN = {
     "ancient_name_brambor": "Battlecry: Give this slot Divine Shield and +10/+10.",
     "chosen_name": "Battlecry: Give this slot +22/+22",
     "andromeda_robin": "Start of Combat: Deal 6 damage to 4 random enemies and improve this twice.",
-    "green_gem": "Deathrattle: Give your units in hand +2/+2 and improve this.",
+    "green_gem": "Battlecry: Give a unit +2 Attack and Windfury.",
     "storyteller": "When you sell this, gain 2 random Tier 1 units.",
     "disciple": "Deathrattle: Deal 1 damage to a random enemy unit twice.",
     "hunter": "Start of Combat: Give 2 random enemy units Taunt and deal 1 damage to them.",

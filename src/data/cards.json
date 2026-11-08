@@ -26,13 +26,12 @@
    "name": "Ash",
    "tribe": "neverending",
    "tier": 1,
-   "atk": 1,
-   "hp": 1,
-   "text": "Taunt. Reborn.",
-   "goldenText": "Taunt. Reborn.",
+   "atk": 2,
+   "hp": 2,
+   "text": "Taunt.",
+   "goldenText": "Taunt.",
    "keywords": [
-    "taunt",
-    "reborn"
+    "taunt"
    ]
   },
   {
@@ -351,14 +350,16 @@
   },
   {
    "id": "doctor",
-   "name": "Doctor",
+   "name": "Fighter",
    "tribe": "kindred",
    "tier": 1,
    "atk": 1,
-   "hp": 1,
-   "text": "Rally: Summon a Tier 1 unit that died this battle.",
-   "goldenText": "Rally: Summon 2 Tier 1 units that died this battle.",
-   "keywords": []
+   "hp": 3,
+   "text": "Reborn. Rally: Summon a Tier 1 unit that died this battle.",
+   "goldenText": "Reborn. Rally: Summon 2 Tier 1 units that died this battle.",
+   "keywords": [
+    "reborn"
+   ]
   },
   {
    "id": "librarian",
@@ -688,7 +689,7 @@
    "id": "green_gem",
    "name": "Green Gem",
    "tribe": "neutral",
-   "tier": 1,
+   "tier": 2,
    "atk": 1,
    "hp": 1,
    "text": "Battlecry: Give a unit +2 Attack and Windfury.",
