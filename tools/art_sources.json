@@ -877,12 +877,8 @@
    ]
   },
   "sarinee": {
-   "src": "C/Eve.jpg",
-   "crop": [
-    0.5,
-    0.45,
-    0.95
-   ]
+   "src": "M/sarinee-frame1.png",
+   "px": true
   },
   "broken_land": {
    "src": "K/earth rgb.png",
