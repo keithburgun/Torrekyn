@@ -26,6 +26,7 @@ def roots(a):
         'G': os.path.join(img, 'GemImages/Resources'), 'N': os.path.join(img, 'NMB Intro'), 'S': os.path.join(img, 'Units'),
         'T': os.path.join(img, 'Tiles'), 'UI': os.path.join(img, 'UI'),
         'K': os.path.join(a, 'x_Icons/Circle and square icons/RGB PNG'),
+        'X': os.path.join(a, 'x_Sprites/Sprites'),
     }
 
 # backdrop colours per tribe (centre, edge) for pixel sprites and transparent art

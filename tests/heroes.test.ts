@@ -146,9 +146,9 @@ describe('hero powers', () => {
     expect(def(p.hand[0].cardId).tier).toBe(3);
   });
 
-  it('Omar Evans: every 5 Cloister units sold gives a random Cloister unit', () => {
+  it('Omar Evans: every 5 units sold gives a random Cloister unit', () => {
     const { g, p } = setup('omar_evans');
-    const cl = firstOf((id) => isTribe(id, 'cloister') && !EFFECTS[id]?.onSell && !EFFECTS[id]?.onSellOther);
+    const cl = firstOf((id) => !isTribe(id, 'cloister') && !EFFECTS[id]?.onSell && !EFFECTS[id]?.onSellOther); // any tribe counts
     p.hand = [];
     p.board = Array.from({ length: 5 }, () => unit(g, cl));
     for (let i = 0; i < 4; i++) sell(g, p, 0);

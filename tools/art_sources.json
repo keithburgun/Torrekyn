@@ -305,12 +305,8 @@
    "px": true
   },
   "librarian": {
-   "src": "C/lori davis transparent.png",
-   "crop": [
-    0.5,
-    0.45,
-    0.95
-   ]
+   "src": "X/cottersprite.png",
+   "px": true
   },
   "architect": {
    "src": "S/Order/builderbunny.png",
@@ -525,7 +521,7 @@
    ]
   },
   "disciple": {
-   "src": "S/Skelly/fanatic.png",
+   "src": "X/ghost2 keithedit.png",
    "px": true
   },
   "hunter": {

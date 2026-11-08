@@ -85,7 +85,7 @@ Fourteen Torrekin champions; you choose 1 of 4 at the start. Heroes tied to a tr
 | May Danaris | Root Access | 2 gold | Discover a unit (base stats) from the army of the last player you fought. |
 | Locas Clare | Five-Finger Discount | 10 gold, −1 per turn | Move every unit in the Tavern to your hand (as many as fit). The cost then goes back to 10 next turn. The sheet lists it as Passive; it is played as an active power because it has a cost. |
 | Venice Gorn | Sow Seeds | 2 gold | Plant a seed; in 2 turns it sprouts into a random unit from 1 Tier above your Tavern. |
-| Omar Evans | Leaf Cloak | Passive | Every 5 **Cloister** units you sell, get a random Cloister unit. "Zuzuni" in the sheet is read as Cloister (the ninja tribe) until told otherwise. |
+| Omar Evans | Leaf Cloak | Passive | After you sell 5 units (any tribe), get a random Cloister unit of your Tier or lower. Repeats. |
 | Eve Williams | Wild Card | 1 gold, target | Transform a friendly unit into a random unit of the same Tier, then +3/+3. |
 | Abragail | Well-Studied | Passive | At the start of turn 4, Discover a Hero Power, then a second one; they replace Well-Studied and you keep both. |
 | Bill Milton | Golden Parachute | Passive | Whenever you play a Business Demon, gain 1 gold. |

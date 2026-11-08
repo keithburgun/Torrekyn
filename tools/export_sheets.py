@@ -40,7 +40,7 @@ def src_text(spec):
 
 FOLDER = {'R': 'RGB PNG', 'I': 'Illustrations', 'C': 'Illustrations/Characters', 'M': 'Images', 'P': 'Images/UI/characterportraits',
           'U': 'Images/UI/characterportraits/UnitUIIcons', 'G': 'Images/GemImages', 'N': 'Images/NMB Intro', 'S': 'Images/Units',
-          'T': 'Images/Tiles', 'UI': 'Images/UI', 'K': 'Circle and square icons'}
+          'T': 'Images/Tiles', 'UI': 'Images/UI', 'K': 'Circle and square icons', 'X': 'Sprites'}
 
 def where(spec):
     k, _, f = spec['src'].partition('/')
