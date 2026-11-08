@@ -95,7 +95,7 @@ GOLDEN = {
     "ancient_name_brambor": "Battlecry: Give this slot Divine Shield and +10/+10.",
     "chosen_name": "Battlecry: Give this slot +22/+22",
     "andromeda_robin": "Start of Combat: Deal 6 damage to 4 random enemies and improve this twice.",
-    "green_gem": "Taunt. Deathrattle: Give your other units in play and in hand +6/+6 and destroy this permanently.",
+    "green_gem": "Deathrattle: Give your units in hand +2/+2 and improve this.",
     "storyteller": "When you sell this, gain 2 random Tier 1 units.",
     "disciple": "Deathrattle: Deal 1 damage to a random enemy unit twice.",
     "hunter": "Start of Combat: Give 2 random enemy units Taunt and deal 1 damage to them.",

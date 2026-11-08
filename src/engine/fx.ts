@@ -34,6 +34,7 @@ export function unitCounter(u: Unit): string | null {
   if (u.cardId === 'larva') return `${u.mem.turns ?? 0}/${u.golden ? 2 : 3}`;
   if (u.cardId === 'scout') return `T${Math.min(5, 1 + (u.mem.age ?? 0))}`;
   if (u.cardId === 'andromeda_robin') return `${3 + (u.mem.imp ?? 0)} dmg`;
+  if (u.cardId === 'green_gem') { const n = (1 + (u.mem.imp ?? 0)) * (u.golden ? 2 : 1); return `+${n}/+${n}`; }
   if (u.cardId === 'pumpkin') {
     const n = Object.keys(u.mem).filter((k) => k.startsWith('dr_')).length;
     return n ? `${n} DR` : null;

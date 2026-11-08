@@ -691,11 +691,9 @@
    "tier": 1,
    "atk": 1,
    "hp": 1,
-   "text": "Taunt. Deathrattle: Give your other units in play and in hand +3 and destroy this permanently.",
-   "goldenText": "Taunt. Deathrattle: Give your other units in play and in hand +6/+6 and destroy this permanently.",
-   "keywords": [
-    "taunt"
-   ]
+   "text": "Deathrattle: Give your units in hand +1/+1 and improve this.",
+   "goldenText": "Deathrattle: Give your units in hand +2/+2 and improve this.",
+   "keywords": []
   },
   {
    "id": "storyteller",

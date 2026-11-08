@@ -422,20 +422,15 @@ export const EFFECTS: Record<string, Effect> = {
 
   // ===== Cloister =====
   green_gem: {
+    // gives +(1 + improvements) to each card in your hand, then improves itself; Golden gives exactly double
     deathrattle: (c) => {
-      const n = 3 * c.m;
-      for (const u of c.side.units) if (u !== c.self) buff(u, n, n);
-      if (c.side.persistent) {
-        for (const u of c.p.board) if (u.uid !== c.self.src) buff(u, n, n);
-        for (const u of c.p.hand) buff(u, n, n);
-        const src = c.self.src;
-        c.c.after(c.side, () => {
-          const u = c.p.board.find((x) => x.uid === src);
-          if (u) destroyUnit(c.g, c.p, u);
-        });
-      }
+      const n = (1 + (c.self.mem.imp ?? 0)) * c.m;
+      if (c.side.persistent) for (const u of c.p.hand) buff(u, n, n);
+      c.self.mem.imp = (c.self.mem.imp ?? 0) + 1;
+      c.c.perm(c.self, (u) => { u.mem.imp = (u.mem.imp ?? 0) + 1; });
     },
   },
+
   storyteller: {
     onSell: (c) => { for (let i = 0; i < c.m; i++) gain(c, randomTier(c, 1)); },
   },

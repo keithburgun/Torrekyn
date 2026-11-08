@@ -268,3 +268,26 @@ describe('heroes', () => {
     expect(p.powers).not.toContain('abragail');
   });
 });
+
+describe('Green Gem', () => {
+  it('Deathrattle: gives your hand +1/+1, then +2/+2 next time (Golden: double)', async () => {
+    const { Combat } = await import('../src/engine/combat');
+    for (const golden of [false, true]) {
+      const g = newGame(21);
+      const pa = g.players[0], pb = g.players[1];
+      pa.hero = undefined; pb.hero = undefined; pa.powers = []; pb.powers = []; pa.trinkets = []; pb.trinkets = [];
+      const gem = makeUnit(g, 'green_gem', golden);
+      const card = makeUnit(g, 'skel');
+      const base = [card.atk, card.hp];
+      pa.board = [gem]; pa.hand = [card];
+      const k = golden ? 2 : 1;
+      for (const round of [1, 2]) {
+        const foe = makeUnit(g, 'skel'); foe.atk = 50; foe.hp = 50;
+        new Combat(g, { p: pa, board: pa.board, slots: pa.slots, tier: 1, persistent: true }, { p: pb, board: [foe], slots: pb.slots, tier: 1, persistent: false }).run();
+        const total = round === 1 ? k : k + 2 * k; // +1 then +2 (doubled when Golden)
+        expect([card.atk - base[0], card.hp - base[1]]).toEqual([total, total]);
+      }
+      expect(gem.mem.imp).toBe(2);
+    }
+  });
+});
