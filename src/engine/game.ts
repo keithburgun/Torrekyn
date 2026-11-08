@@ -370,7 +370,8 @@ export function sellUnit(g: GameState, p: Player, u: Unit) {
 /** Remove a unit from the board without selling it (destroyed / consumed). */
 export function destroyUnit(g: GameState, p: Player, u: Unit) {
   const i = p.board.indexOf(u);
-  if (i >= 0) p.board.splice(i, 1);
+  if (i < 0) return; // already gone (a repeated Battlecry destroying itself again): don't return it to the pool twice
+  p.board.splice(i, 1);
   returnToPool(g, u);
 }
 
@@ -413,8 +414,8 @@ export function runBattlecry(g: GameState, p: Player, u: Unit, target?: Unit) {
   const e = EFFECTS[u.cardId];
   if (!e?.battlecry) return;
   const times = battlecryTimes(p, u) * (hasTrinket(p, 'crown_of_echoes') ? 2 : 1) * heroHooks.battlecryTimes(p);
+  // repeats happen even if the unit is gone by then (Sword and Shield destroy themselves in their Battlecry)
   for (let i = 0; i < times; i++) {
-    if (!p.board.includes(u) && i > 0) break;
     withFx(g, p, { unit: u }, i === 0 ? 'Battlecry' : 'Battlecry again!', () => e.battlecry!({ g, p, self: u, m: mult(u), board: p.board, target }));
     onBattlecryTriggered(g, p);
   }
