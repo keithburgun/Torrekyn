@@ -336,7 +336,7 @@ export class App {
     return `<div class="title-wrap"><div class="panel rules">
       <h3>The Goal</h3>
       Six players draft armies of units and battle automatically each round. Everyone starts at about ${CONFIG.startHealth} Health (stronger heroes start with less).
-      Lose a battle and you take damage equal to the winner's Tavern Tier, plus 1 for each of their surviving units.
+      Lose a battle and you take 2 damage for each of the winner's surviving units. If time runs out with both armies still standing, both players take damage that way.
       Be the last one standing.
       <h3>Your Turn</h3>
       Buy units from the Tavern for ${CONFIG.buyCost} gold, then play them from your hand into your army (up to ${CONFIG.boardSize}).
@@ -422,9 +422,9 @@ export class App {
       : tgt?.kind === 'hero' ? new Set((tgt.shop ? p.shop : p.board).map((u) => u.uid)) : null;
     let h = this.leaderboardHtml();
     h += this.tavernBarHtml();
-    // copies you already own that can triple (hand + army, not Golden, not locked): 1 = shimmer, 2 = one buy away
+    // copies you already own (hand + army, not Golden; locked ones count too): 1 = shimmer, 2 = one buy away
     const owned = new Map<string, number>();
-    for (const u of [...p.hand, ...p.board]) if (!u.golden && !u.mem.locked) owned.set(u.cardId, (owned.get(u.cardId) ?? 0) + 1);
+    for (const u of [...p.hand, ...p.board]) if (!u.golden) owned.set(u.cardId, (owned.get(u.cardId) ?? 0) + 1);
     p.shop.forEach((u, i) => {
       const sel = this.sel?.zone === 'shop' && this.sel.idx === i ? 'selected' : '';
       const v = unitView(p, u, 'shop', i);
@@ -442,6 +442,8 @@ export class App {
       const buffed = s.atk || s.hp || s.kw.length;
       h += `<div class="slot-plate ${buffed ? 'buffed' : ''}" data-slot="${i}" style="left:${L.slotX(i)}px;top:${L.slotTop}px;width:${L.slotW}px;height:${L.slotH}px"><div class="bonus ${s.atk < 0 || s.hp < 0 ? 'neg' : ''}">${bonus || `Slot ${i + 1}`}</div></div>`;
     }
+    // cards gained while the hand was full wait here until there's room
+    if (p.overflow?.length) h += `<div class="overflow-pill abs" style="left:${L.cx - 160}px;top:${L.handY - 34}px;width:320px">Hand full · ${p.overflow.length} more card${p.overflow.length > 1 ? 's' : ''} waiting for room</div>`;
     // a unit being played with a targeted Battlecry stays in the slot it was dropped on while you aim
     const placing = tgt?.kind === 'play' && p.hand[tgt.handIdx] ? tgt : null;
     p.board.forEach((u, i) => {
@@ -839,7 +841,7 @@ export class App {
       const o = g.players[h.vs];
       const who = o ? `${o.human ? 'You' : esc(o.name)}${h.ghost ? ' (ghost)' : ''}` : 'a ghost';
       const res = h.result === 'win' ? `<b class="w">Won</b> vs ${who}` : h.result === 'loss' ? `<b class="l">Lost</b> to ${who}` : `<b class="d">Draw</b> with ${who}`;
-      const dmg = h.result === 'win' ? ` · dealt ${h.dmg}` : h.result === 'loss' ? ` · took ${h.dmg}` : '';
+      const dmg = h.result === 'win' ? ` · dealt ${h.dmg}` : h.result === 'loss' || h.dmg ? ` · took ${h.dmg}` : '';
       return `<div class="lh-row"><span class="lh-r">R${h.round}</span>${res}<span class="lh-d">${dmg}</span></div>`;
     }).join('');
     return `<div class="lh-title">Last ${recent.length === 1 ? 'battle' : `${recent.length} battles`}</div>${rows}`;

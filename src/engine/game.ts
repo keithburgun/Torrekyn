@@ -182,6 +182,7 @@ export function startTurn(g: GameState, p: Player) {
   setFxPhase('shop');
   if (p.frozen) p.frozen = false;
   else rollShop(g, p);
+  drainOverflow(g, p);
   // a skipped turn (Mazrael Bettencourt's first): no shop and no gold
   if (p.heroMem.skipRound === g.round) {
     for (const u of p.shop) returnToPool(g, u);
@@ -205,7 +206,8 @@ export function rollShop(g: GameState, p: Player) {
 // ---------------- gaining cards ----------------
 export function gainCard(g: GameState, p: Player, u: Unit, how: 'buy' | 'gain' = 'gain'): boolean {
   if (p.hand.length >= CONFIG.handSize) {
-    returnToPool(g, u);
+    // hand full: the card waits and arrives when there's room (drainOverflow)
+    (p.overflow ??= []).push(u);
     return false;
   }
   p.hand.push(u);
@@ -243,17 +245,23 @@ function completeQuest(g: GameState, p: Player, kind: 'devotion' | 'bill', rewar
   }
 }
 
+/** move waiting cards into the hand while it has room (they count as gained then) */
+export function drainOverflow(g: GameState, p: Player) {
+  while (p.overflow?.length && p.hand.length < CONFIG.handSize) gainCard(g, p, p.overflow.shift()!);
+}
+
 export function checkTriples(g: GameState, p: Player) {
   for (;;) {
     const counts = new Map<string, Unit[]>();
+    // locked units count too: tripling frees them (the Golden copy arrives unlocked)
     for (const u of [...p.hand, ...p.board]) {
-      if (u.golden || u.mem.locked) continue;
+      if (u.golden) continue;
       const arr = counts.get(u.cardId) ?? [];
       arr.push(u);
       counts.set(u.cardId, arr);
     }
     const trip = [...counts.values()].find((a) => a.length >= 3);
-    if (!trip) return;
+    if (!trip) break;
     const three = trip.slice(0, 3);
     const d = def(three[0].cardId);
     const gold = makeUnit(g, d.id, true);
@@ -269,6 +277,7 @@ export function checkTriples(g: GameState, p: Player) {
     if (p.human) (p.tripleEvents ??= []).push({ cardId: d.id, uids: three.map((u) => u.uid), goldenUid: gold.uid });
     log(p, `Tripled ${d.name}! Golden ${d.name} added to hand.`);
   }
+  drainOverflow(g, p);
 }
 
 // ---------------- discover ----------------
@@ -422,6 +431,7 @@ export function play(g: GameState, p: Player, handIdx: number, pos: number, targ
     if (b !== u && e) withFx(g, p, { unit: b }, 'Ability', () => e({ g, p, self: b, m: mult(b), board: p.board }, u));
   }
   heroHooks.onPlay(g, p, u);
+  drainOverflow(g, p); // a card waiting for room takes the freed hand slot
   return OK;
 }
 
@@ -534,7 +544,11 @@ export function endTurn(g: GameState): CombatResult[] {
   for (const p of g.players) p.lostLast = false;
   for (const r of results) {
     const ids = [r.a, r.b].filter((id) => id >= 0);
-    if (r.winner === -1) { for (const id of ids) g.players[id].streak = 0; continue; }
+    if (r.winner === -1) {
+      for (const id of ids) g.players[id].streak = 0;
+      if (r.stalemate) { if (r.a >= 0) g.players[r.a].health -= r.stalemate[0]; if (r.b >= 0) g.players[r.b].health -= r.stalemate[1]; }
+      continue;
+    }
     const loserId = r.winner === 0 ? r.b : r.a;
     const winnerId = r.winner === 0 ? r.a : r.b;
     if (loserId >= 0) { g.players[loserId].health -= r.damage; g.players[loserId].lostLast = true; g.players[loserId].streak = 0; }
@@ -547,7 +561,7 @@ export function endTurn(g: GameState): CombatResult[] {
       if (me < 0) continue;
       const result = r.winner === -1 ? 'draw' : r.winner === side ? 'win' : 'loss';
       const h = (g.players[me].history ??= []);
-      h.push({ round: g.round, vs: vs >= 0 ? vs : r.ghostOf ?? -1, ghost: vs < 0, result, dmg: result === 'draw' ? 0 : r.damage });
+      h.push({ round: g.round, vs: vs >= 0 ? vs : r.ghostOf ?? -1, ghost: vs < 0, result, dmg: result === 'draw' ? (r.stalemate?.[side] ?? 0) : r.damage });
       if (h.length > 6) h.shift();
     }
   }
@@ -572,9 +586,10 @@ export function endTurn(g: GameState): CombatResult[] {
   return results;
 }
 
-/** damage to the loser: the winner's Tavern Tier + 1 for each surviving unit (whatever its tier), no cap */
-export function combatDamage(winnerTier: number, survivors: number, bonus: number) {
-  return winnerTier + survivors + bonus;
+/** damage to the loser: 2 for each of the winner's surviving units (plus extras like Horseman's), no cap */
+export const DAMAGE_PER_UNIT = 2;
+export function combatDamage(survivors: number, bonus: number) {
+  return survivors * DAMAGE_PER_UNIT + bonus;
 }
 
 export type { CombatResult } from './types';

@@ -1,3 +1,4 @@
+import { EFFECTS } from '../src/engine/effects';
 import { CARDS } from '../src/engine/core';
 import { describe, it, expect } from 'vitest';
 import { newGame as ng, human, buy, play, sell, combatDamage, selectHero } from '../src/engine/game';
@@ -58,9 +59,9 @@ describe('mechanics', () => {
   });
 
   it('damage cap is 15', () => {
-    expect(combatDamage(5, 7, 0)).toBe(12);
-    expect(combatDamage(2, 3, 1)).toBe(6);
-    expect(combatDamage(6, 7, 4)).toBe(17); // no cap
+    expect(combatDamage(7, 0)).toBe(14); // 2 per surviving unit
+    expect(combatDamage(3, 1)).toBe(7);
+    expect(combatDamage(7, 4)).toBe(18); // no cap
   });
 
   it('buying 3 copies makes a golden with combined buffs', () => {
@@ -304,5 +305,36 @@ describe('Treasure', () => {
     p.lostLast = true;
     expect(sellValue(t, p)).toBe(6);
     expect(sellValue(makeUnit(g, 'treasure', true), p)).toBe(12);
+  });
+});
+
+describe('full hand and triples', () => {
+  it('a card gained with a full hand waits and arrives when there is room', async () => {
+    const { gainCard, play } = await import('../src/engine/game');
+    const g = newGame(8); const p = g.players[0];
+    p.discovers = []; p.trinketOffer = null; p.board = [];
+    const ids = CARDS.filter((c) => !c.token && c.tier === 1).map((c) => c.id);
+    p.hand = Array.from({ length: 10 }, (_, i) => makeUnit(g, ids[i % 2]));
+    const extra = makeUnit(g, ids[2]);
+    expect(gainCard(g, p, extra)).toBe(false);
+    expect(p.overflow).toEqual([extra]);
+    const idx = p.hand.findIndex((u) => !EFFECTS[u.cardId]?.target);
+    play(g, p, idx, 0);
+    expect(p.hand).toContain(extra);
+    expect(p.overflow?.length).toBe(0);
+  });
+
+  it('locked units count toward a triple, and the Golden copy arrives unlocked', async () => {
+    const { gainCard } = await import('../src/engine/game');
+    const g = newGame(9); const p = g.players[0];
+    p.discovers = []; p.hand = [];
+    const id = CARDS.find((c) => !c.token && c.tier === 1)!.id;
+    const locked = makeUnit(g, id); locked.mem.locked = 1;
+    p.board = [locked, makeUnit(g, id)];
+    gainCard(g, p, makeUnit(g, id));
+    expect(p.board.length).toBe(0);
+    const gold = p.hand.find((u) => u.golden)!;
+    expect(gold).toBeTruthy();
+    expect(gold.mem.locked).toBeUndefined();
   });
 });

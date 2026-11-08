@@ -1228,3 +1228,7 @@ svg.aim-arrow.locked .aim-ring { opacity: 0.9; animation: aim-ring 0.9s ease-in-
 .lh-row b.w { color: #7ee2b8; } .lh-row b.l { color: #ff8fa8; } .lh-row b.d { color: #ffd98a; }
 .ip-hist { min-width: 320px; padding: 8px 14px; border-radius: 14px; background: rgba(255, 255, 255, 0.05); }
 #stage.portrait .lh-row { font-size: 22px; } #stage.portrait .lh-title { font-size: 20px; }
+
+.overflow-pill { z-index: 8; text-align: center; padding: 5px 12px; border-radius: 999px; background: rgba(30, 22, 48, 0.9); color: #ffe7a0;
+  font: 600 15px/1.2 var(--display); box-shadow: 0 2px 10px rgba(0, 0, 0, 0.4); pointer-events: none; }
+#stage.portrait .overflow-pill { font-size: 22px; }

@@ -153,9 +153,8 @@ export class CombatPlayer {
   }
 
   /**
-   * Shows how the damage adds up: one star per Tavern Tier pops onto the winner's hero, one at a time, then one
-   * star onto each of their surviving units (plus Horseman's extra), then all of them gather and fly into the
-   * loser's Health.
+   * Shows how the damage adds up: stars pop onto each of the winner's surviving units, one at a time (2 per unit,
+   * plus Horseman's extra; a tier part would show on their hero), then they gather and fly into the loser's Health.
    */
   private async damageStars(r: CombatResult, loserSide: 0 | 1, hitEl: HTMLElement | null, ms: (n: number) => number) {
     const winSide = (1 - loserSide) as 0 | 1;
@@ -173,15 +172,16 @@ export class CombatPlayer {
       sfx.click();
       await sleep(ms(stars.length > 10 ? 120 : 200));
     };
-    // the winner's Tavern Tier: a row of stars across their portrait
+    // the winner's Tavern Tier (when it counts): a row of stars across their portrait
     const n = parts.tier;
     const gap = Math.min(40, 200 / Math.max(1, n));
     for (let i = 0; i < n; i++) await pop(hero.x + (i - (n - 1) / 2) * gap, hero.y, 'tier');
-    await sleep(ms(150));
-    // one for each surviving unit (and Horseman's extra ones, a little to the side)
+    if (n) await sleep(ms(150));
+    // for each surviving unit, its stars (2 each), side by side; Horseman's extra ones a little to the side
+    const per = parts.perUnit ?? 1;
     for (const id of parts.units) {
       const c = this.center(id);
-      if (c) await pop(c.x, c.y);
+      if (c) for (let k = 0; k < per; k++) await pop(c.x + (k - (per - 1) / 2) * 34, c.y);
     }
     const extraCount = new Map<number, number>();
     for (const id of parts.bonus) {
@@ -467,7 +467,8 @@ export class CombatPlayer {
     if (myWin) sfx.win(); else if (!tie) sfx.lose();
     const b = document.createElement('div');
     b.className = `result-banner ${!tie && !myWin ? 'lose' : ''}`;
-    b.innerHTML = `<p class="rb-lead">${tie ? 'No damage dealt.' : myWin ? `You dealt ${r.damage} damage.` : `You took ${r.damage} damage.`}</p>
+    const stale = r.stalemate?.[this.me as 0 | 1] ?? 0;
+    b.innerHTML = `<p class="rb-lead">${tie ? (stale ? `Stalemate! Time ran out with both armies standing. You took ${stale} damage.` : 'No damage dealt.') : myWin ? `You dealt ${r.damage} damage.` : `You took ${r.damage} damage.`}</p>
       <div class="rb-health"><div class="rb-heart">${Math.max(0, me.health)}</div><span>Your Health</span></div>
       <button class="btn big primary">Continue</button>`;
     this.stage.appendChild(b);
