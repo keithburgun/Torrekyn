@@ -126,6 +126,8 @@ export interface Player {
   heroSeeds: number[];
   /** units loaded into Eve Williams' Doom Bauble, fired in the next battle with room (combat.ts fireBaubles) */
   bauble?: Unit[];
+  /** lost their most recent battle (Treasure sells for more) */
+  lostLast?: boolean;
   heroOffer?: string[];
   trinkets: string[];
   trinketOffer: string[] | null;

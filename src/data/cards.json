@@ -1088,10 +1088,10 @@
    "name": "Treasure",
    "tribe": "demons",
    "tier": 2,
-   "atk": 0,
-   "hp": 1,
-   "text": "This sells for 6 gold.",
-   "goldenText": "This sells for 12 gold.",
+   "atk": 3,
+   "hp": 9,
+   "text": "If you lost your last battle, this sells for 6 gold.",
+   "goldenText": "If you lost your last battle, this sells for 12 gold.",
    "keywords": []
   },
   {

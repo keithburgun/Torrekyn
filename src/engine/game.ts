@@ -352,7 +352,7 @@ export function buy(g: GameState, p: Player, shopIdx: number): ActionResult {
 }
 
 export function sellValue(u: Unit, p?: Player) {
-  if (u.cardId === 'treasure') return 6 * mult(u);
+  if (u.cardId === 'treasure' && p?.lostLast) return 6 * mult(u); // only after losing your last battle
   return CONFIG.sellValue;
 }
 
@@ -530,11 +530,12 @@ export function endTurn(g: GameState): CombatResult[] {
       results.push(runCombat(g, p, o, false));
     }
   }
-  // apply damage
+  // apply damage, and remember who lost (Treasure)
+  for (const p of g.players) p.lostLast = false;
   for (const r of results) {
     if (r.winner === -1) continue;
     const loserId = r.winner === 0 ? r.b : r.a;
-    if (loserId >= 0) g.players[loserId].health -= r.damage;
+    if (loserId >= 0) { g.players[loserId].health -= r.damage; g.players[loserId].lostLast = true; }
   }
   // eliminations
   const dying = alivePlayers(g).filter((p) => p.health <= 0).sort((a, b) => a.health - b.health);

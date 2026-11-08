@@ -291,3 +291,18 @@ describe('Green Gem', () => {
     }
   });
 });
+
+describe('Treasure', () => {
+  it('sells for 6 gold (12 Golden) only if you lost your last battle', async () => {
+    const { sellValue } = await import('../src/engine/game');
+    const g = newGame(4);
+    const p = g.players[0];
+    const t = makeUnit(g, 'treasure');
+    expect([t.atk, t.hp]).toEqual([3, 9]);
+    p.lostLast = false;
+    expect(sellValue(t, p)).toBe(1);
+    p.lostLast = true;
+    expect(sellValue(t, p)).toBe(6);
+    expect(sellValue(makeUnit(g, 'treasure', true), p)).toBe(12);
+  });
+});

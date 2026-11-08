@@ -64,7 +64,6 @@ export function unitScore(p: Player, u: Unit, zone: 'board' | 'hand' | 'shop' = 
   if (fav && (d.tribe === fav || (on(p, 'tribe') && isTribe(u, fav)))) s += on(p, 'tribe') ? knob(p, 'tribeW') + knob(p, 'tribeTierW') * d.tier : 6 + 2 * d.tier;
   for (const k of st.kw) s += k === 'divineShield' ? st.atk * 0.4 + 4 : k === 'reborn' ? 4 : k === 'venomous' ? 8 : 2;
   if (u.cardId === 'virus' && !u.golden) s = -50;
-  if (u.cardId === 'treasure') s = 4;
   return s;
 }
 
