@@ -1167,3 +1167,9 @@ svg.aim-arrow.locked .aim-ring { opacity: 0.9; animation: aim-ring 0.9s ease-in-
 @keyframes snow-fall { 0% { opacity: 0; transform: translate(0, 0) rotate(0); } 15% { opacity: 1; } 100% { opacity: 0; transform: translate(var(--dx), var(--dy)) rotate(var(--rot)); } }
 #stage.portrait .snowflake { font-size: 30px !important; }
 @media (prefers-reduced-motion: reduce) { .snowflake { display: none; } }
+
+/* DEBUG MODE error list (src/ui/debug.ts): small red text, bottom-left, above everything */
+#debug-errors { position: fixed; left: 6px; bottom: 6px; z-index: 99999; max-width: min(720px, calc(100vw - 12px));
+  max-height: 40vh; overflow: hidden; white-space: pre-wrap; word-break: break-word; font: 11px/1.35 ui-monospace, Menlo, Consolas, monospace;
+  color: #ff4d4d; background: rgba(0, 0, 0, 0.55); padding: 4px 6px; border-radius: 4px; cursor: pointer; }
+#debug-errors[hidden] { display: none; }

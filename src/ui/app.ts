@@ -12,6 +12,7 @@ import type { CombatResult, GameState, Player } from '../engine/types';
 import { CombatPlayer } from './combatView';
 import { art, bigCardHtml, cardHtml, esc, getArtStyle, heroArt, setArtStyle, unitView, KEYWORD_HELP, KW_ICON, type ArtStyle } from './view';
 import { clearSave, loadSave, save } from './save';
+import { debugOn, setDebug } from './debug';
 import { checkForUpdates, versionLabel } from './update';
 import { isMuted, setMuted, sfx } from './sfx';
 import { achievementsHtml, cardGridHtml, cardViewerHtml, filteredCards, tribesAnnounceHtml, type ViewerState } from './screens';
@@ -91,8 +92,6 @@ export class App {
       if (this.dragging && this.press && e.pointerId === this.press.pointerId && this.lastPt) this.drop(this.lastPt);
       else this.cancelDrag();
     }));
-    window.addEventListener('error', (e) => this.reportError(e.error ?? e.message));
-    window.addEventListener('unhandledrejection', (e) => this.reportError(e.reason));
     stage.addEventListener('click', (e) => this.onClick(e));
     stage.addEventListener('mouseover', (e) => this.onHover(e));
     stage.addEventListener('contextmenu', (e) => e.preventDefault());
@@ -632,6 +631,7 @@ export class App {
       ${this.cloudRowHtml()}
       <div class="opt-row"><span>Card art</span>${seg('art-style', [['illustrated', 'Illustrated'], ['classic', 'Classic']], getArtStyle())}</div>
       <div class="opt-row"><span>Battle speed</span>${seg('speed', [['1', '×1'], ['2', '×2'], ['4', '×4']], String(speed), 'v')}</div>
+      <div class="opt-row"><span>Debug mode (errors on screen)</span>${seg('debug', [['on', 'On'], ['off', 'Off']], debugOn() ? 'on' : 'off')}</div>
       <div style="display:flex;gap:12px;justify-content:center">
         <button class="btn" data-act="cards">Card Viewer</button>
         <button class="btn" data-act="achievements">Achievements</button>
@@ -1403,6 +1403,7 @@ export class App {
       case 'sign-out': void sync.signOut().then(() => { this.toast('Signed out. Your progress stays on this device.'); this.render(); }); break;
       case 'layout': setMode(el.dataset.mode as LayoutMode); break;
       case 'sound': setMuted(el.dataset.mode === 'off'); this.render(); break;
+      case 'debug': setDebug(el.dataset.mode === 'on'); this.render(); break;
       case 'art-style': setArtStyle(el.dataset.mode as ArtStyle); this.render(); break;
       case 'speed': store.set('torrekin-speed', el.dataset.v!); this.render(); break;
       case 'tribes': this.showTribes = !this.showTribes; this.render(); break;

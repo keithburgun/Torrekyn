@@ -22,8 +22,12 @@ function rawSet(key: string, value: string | null) {
   try {
     if (value === null) localStorage.removeItem(key);
     else localStorage.setItem(key, value);
-  } catch { /* storage unavailable: kept in memory */ }
+  } catch (e) {
+    // storage unavailable or full: kept in memory for this session (reported once, for DEBUG MODE)
+    if (!warned) { warned = true; console.error(`Couldn't save to this browser's storage (progress lasts until the page closes):`, e); }
+  }
 }
+let warned = false;
 
 export interface SyncMeta {
   /** when each synced key last changed on this device (ms) */

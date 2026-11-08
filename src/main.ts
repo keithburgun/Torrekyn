@@ -6,6 +6,7 @@ import '@fontsource/nunito/latin-400.css';
 import '@fontsource/nunito/latin-700.css';
 import '@fontsource/nunito/latin-800.css';
 import './ui/styles.css';
+import { installDebug } from './ui/debug';
 import { App } from './ui/app';
 import { initUpdates } from './ui/update';
 import { currentLayout, getMode, onLayoutChange, room } from './ui/layout';
@@ -19,6 +20,8 @@ interface Hot {
   snapshot?: (fn: () => unknown) => void;
 }
 const hot = (window as unknown as { claude?: { hot?: Hot } }).claude?.hot;
+
+installDebug();
 
 const stage = document.getElementById('stage')!;
 
