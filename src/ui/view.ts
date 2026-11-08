@@ -2,7 +2,7 @@ import artManifest from '../data/art.json';
 import { store } from '../save/store';
 import artV2 from '../data/artV2.json';
 import { CARDS, def, effStats, TRIBE_NAMES } from '../engine/core';
-import { EFFECTS } from '../engine/effects';
+import { EFFECTS, GEMS, gemLevel } from '../engine/effects';
 import type { Keyword, Player, Unit, CombatFrameUnit } from '../engine/types';
 import { unitCounter } from '../engine/fx';
 
@@ -110,7 +110,7 @@ export function cardHtml(u: { cardId: string; golden: boolean; atk: number; hp: 
   <div class="abil">${tags}</div>
   <div class="name">${esc(d.name)}</div>
   <div class="tribe-plate ${(TRIBE_SHORT[d.tribe] ?? d.tribe).length > 8 ? 'long' : ''}">${TRIBE_SHORT[d.tribe] ?? d.tribe}</div>${o.badge ?? ''}
-  ${(() => { const c = u.mem && (o.zone === "board" || o.zone === "combat") ? unitCounter(u as Unit) : null; return c ? `<div class="counter">${c}</div>` : ''; })()}
+  ${(() => { const c = (u as { note?: string }).note ?? (u.mem && (o.zone === "board" || o.zone === "combat") ? unitCounter(u as Unit) : null); return c ? `<div class="counter">${c}</div>` : ''; })()}
   <div class="stat atk ${atk > baseAtk ? 'buffed' : ''}">${atk}</div>
   <div class="stat hp ${hp > baseHp ? 'buffed' : hp < baseHp ? 'hurt' : ''}">${hp}</div>
 </div>`;
@@ -142,7 +142,24 @@ export function bigCardHtml(u: { cardId: string; golden: boolean; atk: number; h
 
 export function unitView(p: Player, u: Unit, zone: 'board' | 'hand' | 'shop', i: number) {
   const st = effStats(p, u, zone, i);
-  return { ...u, atk: st.atk, hp: st.hp, kw: st.kw };
+  return { ...u, atk: st.atk, hp: st.hp, kw: st.kw, note: gemNote(p, u) };
+}
+
+/** an improved Gem shows what it gives now */
+function gemNote(p: Player, u: Unit): string | undefined {
+  if (!GEMS.includes(u.cardId)) return undefined;
+  const l = gemLevel(p, u.cardId);
+  if (!l) return undefined;
+  const m = u.golden ? 2 : 1;
+  switch (u.cardId) {
+    case 'purple_gem': return `+${1 + l}/+${1 + l}`;
+    case 'tourmaline': return `+${(10 + 2 * l) * m} Health`;
+    case 'pink_gem': return `${(1 + l) * m} units`;
+    case 'green_gem': return `+${2 + l} Attack`;
+    case 'red_gem': return `+${(3 + l) * m}`;
+    case 'ancient_name_brambor': return `+${(4 + l) * m} Health`;
+  }
+  return undefined;
 }
 
 export function frameUnitView(u: CombatFrameUnit) {

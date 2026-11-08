@@ -124,6 +124,7 @@ export function ownerBonus(p: Player, b: Body): { atk: number; hp: number } {
   let hp = 0;
   if (p.trinkets?.includes('bronze_compass') && isTribe(b, 'neverending')) atk += 12; // Bronze Compass
   if (isTribe(b, 'alcove')) atk += p.alcoveAtkThisTier ?? 0; // Scientist
+  if (b.cardId === 'left_twinbot' || b.cardId === 'right_twinbot') { atk += p.twinBonus ?? 0; hp += p.twinBonus ?? 0; }
   if (b.cardId === 'warmech') {
     atk += 4 * mult(b) * p.battlecriesGame;
     hp += 2 * mult(b) * p.battlecriesGame;
@@ -137,10 +138,7 @@ export function effStats(p: Player, u: Unit, zone: 'board' | 'hand' | 'shop', in
   let atk = u.atk + bonus.atk;
   let hp = u.hp + bonus.hp;
   const kw = [...u.kw];
-  if (zone === 'shop' && isTribe(u, 'alcove')) {
-    atk += p.tinkerThisTier;
-    hp += p.tinkerThisTier;
-  }
+  // (Tinker used to add shop stats here: tinkerThisTier stays 0 in new games)
   if (zone === 'board' && index >= 0 && p.slots[index]) {
     const s = p.slots[index];
     atk += s.atk;

@@ -102,16 +102,18 @@ describe('mechanics', () => {
   it('slots carry stats to whoever stands in them', () => {
     const g = newGame(5);
     const p: Player = human(g);
+    p.discovers = [];
     p.board = [makeUnit(g, 'skel')];
-    p.hand = [makeUnit(g, 'chosen_name')];
-    play(g, p, 0, 1);
-    expect(p.slots[1].atk).toBe(11);
-    sell(g, p, 1);
+    p.hand = [makeUnit(g, 'ancient_name_brambor')]; // Potato Gem: +4 Health to the chosen unit's slot
+    play(g, p, 0, 1, p.board[0].uid);
+    expect(p.slots[0].hp).toBe(4);
+    sell(g, p, 0);
+    sell(g, p, 0);
     p.hand = [makeUnit(g, 'skel')];
-    play(g, p, 0, 1);
+    play(g, p, 0, 0);
     const c = new Combat(g, { p, board: p.board, slots: p.slots, tier: 1, persistent: true },
       { p: g.players[1], board: [], slots: g.players[1].slots, tier: 1, persistent: true });
-    expect(c.sides[0].units[1].atk).toBe(12);
+    expect(c.sides[0].units[0].hp).toBe(def('skel').hp + 4);
   });
 
   it('venomous kills big units', () => {
@@ -270,31 +272,45 @@ describe('heroes', () => {
   });
 });
 
-describe('Green Gem', () => {
-  it('Deathrattle: gives your hand +1/+1, then +2/+2 next time (Golden: double)', async () => {
-    const { Combat } = await import('../src/engine/combat');
-    for (const golden of [false, true]) {
-      const g = newGame(21);
-      const pa = g.players[0], pb = g.players[1];
-      pa.hero = undefined; pb.hero = undefined; pa.powers = []; pb.powers = []; pa.trinkets = []; pb.trinkets = [];
-      const gem = makeUnit(g, 'green_gem', golden);
-      const card = makeUnit(g, 'skel');
-      const base = [card.atk, card.hp];
-      pa.board = [gem]; pa.hand = [card];
-      const k = golden ? 2 : 1;
-      for (const round of [1, 2]) {
-        const foe = makeUnit(g, 'skel'); foe.atk = 50; foe.hp = 50;
-        new Combat(g, { p: pa, board: pa.board, slots: pa.slots, tier: 1, persistent: true }, { p: pb, board: [foe], slots: pb.slots, tier: 1, persistent: false }).run();
-        const total = round === 1 ? k : k + 2 * k; // +1 then +2 (doubled when Golden)
-        expect([card.atk - base[0], card.hp - base[1]]).toEqual([total, total]);
-      }
-      expect(gem.mem.imp).toBe(2);
-    }
+describe('Gems', () => {
+  it('Gems can be improved, show it, and can be played on units in battle', async () => {
+    const { gemLevel, improveGem } = await import('../src/engine/effects');
+    const { play } = await import('../src/engine/game');
+    const g = newGame(21); const p = g.players[0];
+    p.discovers = []; p.trinketOffer = null;
+    const t = makeUnit(g, 'skel');
+    p.board = [t];
+    p.hand = [makeUnit(g, 'tourmaline')]; // Blue Gem: +10 Health
+    play(g, p, 0, 1, t.uid);
+    expect(t.hp).toBe(def('skel').hp + 10);
+    improveGem(p, 'tourmaline', 2);
+    expect(gemLevel(p, 'tourmaline')).toBe(2);
+    p.hand = [makeUnit(g, 'tourmaline')];
+    play(g, p, 0, 2, t.uid);
+    expect(t.hp).toBe(def('skel').hp + 10 + 14);
+    // Broken Land improves every Gem, Red included
+    p.hand = [makeUnit(g, 'broken_land')];
+    play(g, p, 0, 0);
+    expect(gemLevel(p, 'red_gem')).toBe(1);
+    expect(gemLevel(p, 'green_gem')).toBe(1);
+  });
+
+  it('Purple Gem: Reborn and +1/+1 until your next turn', async () => {
+    const { play } = await import('../src/engine/game');
+    const g = newGame(22); const p = g.players[0];
+    p.discovers = []; p.trinketOffer = null;
+    const t = makeUnit(g, 'skel');
+    const base = [t.atk, t.hp];
+    p.board = [t];
+    p.hand = [makeUnit(g, 'purple_gem')];
+    play(g, p, 0, 1, t.uid);
+    expect([t.atk, t.hp]).toEqual([base[0] + 1, base[1] + 1]);
+    expect(t.kw).toContain('reborn');
   });
 });
 
 describe('Treasure', () => {
-  it('sells for 6 gold (12 Golden) only if you lost your last battle', async () => {
+  it('sells for 5 gold (10 Golden) only if you lost your last battle', async () => {
     const { sellValue } = await import('../src/engine/game');
     const g = newGame(4);
     const p = g.players[0];
@@ -303,8 +319,8 @@ describe('Treasure', () => {
     p.lostLast = false;
     expect(sellValue(t, p)).toBe(1);
     p.lostLast = true;
-    expect(sellValue(t, p)).toBe(6);
-    expect(sellValue(makeUnit(g, 'treasure', true), p)).toBe(12);
+    expect(sellValue(t, p)).toBe(5);
+    expect(sellValue(makeUnit(g, 'treasure', true), p)).toBe(10);
   });
 });
 

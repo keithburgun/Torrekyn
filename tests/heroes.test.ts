@@ -146,7 +146,7 @@ describe('hero powers', () => {
 
   it('Omar Evans: every 5 Cloister units sold gives a random Cloister unit', () => {
     const { g, p } = setup('omar_evans');
-    const cl = firstOf((id) => isTribe(id, 'cloister'));
+    const cl = firstOf((id) => isTribe(id, 'cloister') && !EFFECTS[id]?.onSell && !EFFECTS[id]?.onSellOther);
     p.hand = [];
     p.board = Array.from({ length: 5 }, () => unit(g, cl));
     for (let i = 0; i < 4; i++) sell(g, p, 0);

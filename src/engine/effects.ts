@@ -8,10 +8,10 @@
  */
 import { BONUS_KEYWORDS } from './types';
 import type { Body, Keyword, Player, Slot, Unit, GameState } from './types';
-import { addKw, def, effStats, has, isTribe, log, makeUnit, pick, rand, removeKw, sample, tribeOf, CONFIG } from './core';
+import { addKw, CARDS, def, effStats, has, isTribe, log, makeUnit, pick, rand, removeKw, sample, tribeOf, CONFIG } from './core';
 import type { CUnit, Combat, Side } from './combat';
 import {
-  destroyUnit, discoverOptions, gainNew, queueDiscover, randomCardOfTier, sellUnit, drawFromPool,
+  destroyUnit, discoverOptions, gainNew, inPlay, queueDiscover, randomCardOfTier, sellUnit, drawFromPool,
 } from './game';
 
 export interface Ctx {
@@ -46,6 +46,7 @@ export interface Effect {
   onPlayOther?(c: Ctx, u: Unit): void;
   onBattlecry?(c: Ctx): void;
   endTurn?(c: Ctx): void;
+  onRefresh?(c: Ctx): void;
   startTurn?(c: Ctx): void;
   soc?(c: CCtx): void;
   rally?(c: CCtx, target: CUnit): void;
@@ -60,6 +61,34 @@ export interface Effect {
 }
 
 // ---------------- helpers ----------------
+/** the Gems: improvable, and what "a random Gem" picks from (Omni-Gem isn't one of them) */
+export const GEMS = ['purple_gem', 'tourmaline', 'pink_gem', 'green_gem', 'red_gem', 'ancient_name_brambor'];
+
+/** how many times this player has improved a Gem (Red Gem keeps its old counter) */
+export function gemLevel(p: Player, id: string): number {
+  return (p.gemBonus?.[id] ?? 0) + (id === 'red_gem' ? p.redGemBonus : 0);
+}
+export function improveGem(p: Player, id: string, n: number) {
+  if (id === 'red_gem') { p.redGemBonus += n; return; }
+  (p.gemBonus ??= {})[id] = (p.gemBonus[id] ?? 0) + n;
+}
+
+/** a Gem's target: the chosen unit, or a random other friendly unit */
+function gemTarget(c: Ctx): Body | undefined {
+  return c.target ?? pick(c.g, others(c.board, c.self));
+}
+
+/** "Play a Gem on a unit": its Battlecry, aimed at that unit, without the Gem itself */
+function playGemOn(c: Ctx, gemId: string, target: Body | undefined) {
+  if (!target) return;
+  EFFECTS[gemId]?.battlecry?.({ ...c, self: target, m: 1, target });
+}
+
+/** a shop-style context for a combat hook (so Gem Battlecries can run in battle) */
+function cctx(c: CCtx): Ctx {
+  return { g: c.g, p: c.p, self: c.self, m: c.m, board: c.side.units.filter((u) => u.hp > 0), combat: c.c, side: c.side };
+}
+
 const buff = (b: Body | undefined, a: number, h: number) => {
   if (!b) return;
   b.atk += a;
@@ -153,7 +182,7 @@ export const EFFECTS: Record<string, Effect> = {
     onRebornAny: (c) => c.c.perm(c.self, (u) => { u.hp += 2 * c.m; }, 0, 2 * c.m),
   },
   lich: {
-    soc: (c) => { for (let i = 0; i < c.m; i++) c.c.damage(c.c.randomEnemy(c.side), 8, c.self); },
+    deathrattle: (c) => { for (let i = 0; i < c.m; i++) playGemOn(cctx(c), 'purple_gem', pick(c.g, c.side.units.filter((u) => u.hp > 0 && u !== c.self))); },
   },
   necromancer: {
     deathrattle: (c) => c.c.spawnMany(c.side, 'skeleton', c.m === 2, 2, c.pos),
@@ -193,8 +222,28 @@ export const EFFECTS: Record<string, Effect> = {
   lake: {
     endTurn: (c) => buff(pick(c.g, c.p.hand), 0, c.m),
   },
+  purple_gem: {
+    // Reborn and +1/+1 (+1/+1 per improvement) until your next turn
+    target: 'friendly',
+    battlecry: (c) => {
+      const t = gemTarget(c);
+      if (!t) return;
+      const n = 1 + gemLevel(c.p, 'purple_gem');
+      buff(t, n, n);
+      const hadReborn = has(t, 'reborn');
+      addKw(t, 'reborn');
+      if (!c.combat) {
+        const u = t as Unit;
+        u.mem.tmpAtk = (u.mem.tmpAtk ?? 0) + n;
+        u.mem.tmpHp = (u.mem.tmpHp ?? 0) + n;
+        if (!hadReborn) u.mem.tmpReborn = 1;
+      }
+    },
+  },
   tourmaline: {
-    battlecry: (c) => slotBuff(c, 0, 0, 10 * c.m),
+    // Blue Gem
+    target: 'friendly',
+    battlecry: (c) => { const t = gemTarget(c); if (t) buff(t, 0, (10 + gemLevel(c.p, 'tourmaline') * 2) * c.m); },
   },
   command: {
     battlecry: (c) => discover(c, (id) => def(id).tier === 1, 'Discover a Tier 1 unit', c.m),
@@ -296,11 +345,12 @@ export const EFFECTS: Record<string, Effect> = {
     battlecry: (c) => buff(pick(c.g, c.p.hand.filter((u) => isTribe(u, 'kindred'))), 6 * c.m, 6 * c.m),
   },
   pink_gem: {
-    deathrattle: (c) => {
-      for (let i = 0; i < c.m; i++) {
-        const d = pick(c.g, c.side.died.filter((x) => x.id !== c.self.id && x.cardId !== 'pink_gem'));
-        if (d) c.c.spawnCopy(c.side, d, c.pos);
-      }
+    // Divine Shield to random friendly units (1, +1 per improvement; Golden doubles); played on a unit, that one first
+    battlecry: (c) => {
+      const n = (1 + gemLevel(c.p, 'pink_gem')) * c.m;
+      const pool = others(c.board, c.self).filter((u) => !has(u, 'divineShield') && u !== c.target);
+      const picks = [...(c.target ? [c.target] : []), ...sample(c.g, pool, n)].slice(0, n);
+      for (const u of picks) addKw(u, 'divineShield');
     },
   },
   therapist: {
@@ -331,10 +381,19 @@ export const EFFECTS: Record<string, Effect> = {
     soc: (c) => buff(c.self, c.self.atk * c.m, c.self.hp * c.m),
   },
   life: {
-    soc: (c) => c.c.spawnMany(c.side, 'pink_gem', c.m === 2, 2, c.side.units.indexOf(c.self) + 1),
+    // spawn two Pink Gems; their Battlecry happens as they arrive
+    soc: (c) => {
+      for (let i = 0; i < 2; i++) {
+        const cu = c.c.spawn(c.side, 'pink_gem', c.m === 2, c.side.units.indexOf(c.self) + 1 + i);
+        if (!cu) break;
+        c.c.snap('trigger', i === 0 ? { note: 'Summon Pink Gem' } : {});
+        c.c.triggerBattlecry(c.side, cu);
+      }
+    },
   },
   restore: {
-    endTurn: (c) => { for (let i = 0; i < c.m; i++) gain(c, 'hug'); },
+    avenge: [3, 3],
+    avengeFn: (c) => gain(c, 'pink_gem'),
   },
   honeysuckle_kindred: {
     deathrattle: (c) => {
@@ -352,14 +411,14 @@ export const EFFECTS: Record<string, Effect> = {
     avenge: [3, 3],
     avengeFn: (c) => {
       c.self.cardId = 'rootling';
-      c.self.atk = 7 * c.m;
-      c.self.hp = 7 * c.m;
+      c.self.atk = 9 * c.m;
+      c.self.hp = 9 * c.m;
       c.self.kw = [];
     },
   },
   farmer: {
     avenge: [3, 3],
-    avengeFn: (c) => { for (let i = 0; i < c.m; i++) gain(c, 'sapling'); },
+    avengeFn: (c) => { for (let i = 0; i < c.m; i++) gain(c, 'ancient_name_brambor'); },
   },
   organizer: {
     target: 'friendly',
@@ -402,32 +461,36 @@ export const EFFECTS: Record<string, Effect> = {
     onRallyFriendly: (c) => c.c.perm(c.self, (u) => { u.hp += 3 * c.m; }, 0, 3 * c.m),
   },
   distant_land: {
-    soc: (c) => buff(c.self, c.self.atk * c.m, c.self.hp * c.m),
+    deathrattle: (c) => { for (let i = 0; i < 2 * c.m; i++) gain(c, pick(c.g, GEMS)); },
   },
   ancient_name_brambor: {
-    battlecry: (c) => slotBuff(c, slotIndex(c), c.m === 2 ? 10 : 0, c.m === 2 ? 10 : 0, ['divineShield']),
+    // Potato Gem: +Health to a slot (the chosen unit's)
+    target: 'friendly',
+    battlecry: (c) => {
+      const t = gemTarget(c);
+      if (!t) return;
+      slotBuff(c, c.combat ? (t as CUnit).slot : c.board.indexOf(t), 0, (4 + gemLevel(c.p, 'ancient_name_brambor')) * c.m);
+    },
   },
   chosen_name: {
-    battlecry: (c) => slotBuff(c, slotIndex(c), 11 * c.m, 11 * c.m),
+    soc: (c) => buff(c.self, c.self.atk * c.m, c.self.hp * c.m),
   },
   andromeda_robin: {
-    soc: (c) => {
-      const dmg = (3 + (c.self.mem.imp ?? 0)) * c.m;
-      const targets = sample(c.g, c.c.enemy(c.side).units.filter((u) => u.hp > 0), 4);
-      for (const t of targets) c.c.damage(t, dmg, c.self);
-      c.self.mem.imp = (c.self.mem.imp ?? 0) + c.m;
-      c.c.perm(c.self, (u) => { u.mem.imp = (u.mem.imp ?? 0) + c.m; });
+    // plays a Potato Gem on its own slot, then improves Potato Gems
+    endTurn: (c) => {
+      playGemOn(c, 'ancient_name_brambor', c.self);
+      improveGem(c.p, 'ancient_name_brambor', c.m);
     },
   },
 
   // ===== Cloister =====
   green_gem: {
-    // gives +(1 + improvements) to each card in your hand, then improves itself; Golden gives exactly double
-    deathrattle: (c) => {
-      const n = (1 + (c.self.mem.imp ?? 0)) * c.m;
-      if (c.side.persistent) for (const u of c.p.hand) buff(u, n, n);
-      c.self.mem.imp = (c.self.mem.imp ?? 0) + 1;
-      c.c.perm(c.self, (u) => { u.mem.imp = (u.mem.imp ?? 0) + 1; });
+    target: 'friendly',
+    battlecry: (c) => {
+      const t = gemTarget(c);
+      if (!t) return;
+      buff(t, 2 + gemLevel(c.p, 'green_gem'), 0);
+      addKw(t, 'windfury');
     },
   },
 
@@ -494,16 +557,18 @@ export const EFFECTS: Record<string, Effect> = {
     },
   },
   shine_like_a_knife: {
+    // its Attack to two friendly units (Golden: double its Attack)
     deathrattle: (c) => {
-      for (const u of sample(c.g, c.side.units.filter((x) => x.hp > 0), 2 * c.m)) u.atk += c.self.atk;
+      for (const u of sample(c.g, c.side.units.filter((x) => x.hp > 0), 2)) u.atk += c.self.atk * c.m;
     },
   },
 
   // ===== Alcove Prefex =====
   left_twinbot: {
+    // all your Twinbots get +1/+1 for the rest of the game (ownerBonus), including the ones in this battle
     rally: (c) => {
-      const r = c.side.units[c.side.units.indexOf(c.self) + 1];
-      if (r) { buff(r, 2 * c.m, 2 * c.m); addKw(r, 'reborn'); }
+      if (c.side.persistent) c.p.twinBonus = (c.p.twinBonus ?? 0) + c.m;
+      for (const u of c.side.units) if (u.hp > 0 && (u.cardId === 'left_twinbot' || u.cardId === 'right_twinbot')) buff(u, c.m, c.m);
     },
   },
   right_twinbot: {
@@ -513,15 +578,20 @@ export const EFFECTS: Record<string, Effect> = {
     },
   },
   tinker: {
-    onPlay: (c) => { c.p.tinkerThisTier += c.m; },
+    // while in play: each Refresh gives a random shop unit Venomous, Divine Shield or Reborn (game.ts reroll)
+    onRefresh: (c) => {
+      for (const u of sample(c.g, c.p.shop, c.m)) {
+        const opts = (['venomous', 'divineShield', 'reborn'] as Keyword[]).filter((k) => !has(u, k));
+        const k = pick(c.g, opts);
+        if (k) addKw(u, k);
+      }
+    },
   },
   sniper: {
+    // 3 damage to a random enemy, once more for each other Alcove unit you have (Golden: all of it twice)
     soc: (c) => {
-      for (let i = 0; i < c.m; i++) {
-        const live = c.c.enemy(c.side).units.filter((u) => u.hp > 0);
-        const t = live[live.length - 1];
-        if (t) c.c.damage(t, 12, c.self);
-      }
+      const shots = 1 + c.side.units.filter((u) => u.hp > 0 && u !== c.self && isTribe(u, 'alcove')).length;
+      for (let i = 0; i < shots * c.m; i++) c.c.damage(c.c.randomEnemy(c.side), 3, c.self);
     },
   },
   mod: {
@@ -547,14 +617,8 @@ export const EFFECTS: Record<string, Effect> = {
     },
   },
   virus: {
-    battlecry: (c) => {
-      if (c.combat) return;
-      if (c.m === 1) { c.p.slots[0].atk -= 5; c.p.slots[0].hp -= 5; }
-      for (const r of c.g.players) {
-        if (!r.alive || r === c.p) continue;
-        if (c.m === 2) { r.slots[0].atk -= 5; r.slots[0].hp -= 5; }
-        gainNew(c.g, r, 'virus');
-      }
+    soc: (c) => {
+      for (const t of sample(c.g, c.c.enemy(c.side).units.filter((u) => u.hp > 0), c.m)) t.hp = 1;
     },
   },
   robot_boy: {
@@ -577,11 +641,26 @@ export const EFFECTS: Record<string, Effect> = {
   },
   warmech: {}, // stats computed from battlecry count
   may_danaris: {
-    deathrattle: (c) => c.c.spawnMany(c.side, 'phoenix', c.m === 2, 1, c.pos),
+    // a 20/20 Phoenix, with a random Gem played on it (two if Golden)
+    deathrattle: (c) => {
+      const ph = c.c.spawn(c.side, 'phoenix', false, c.pos);
+      if (!ph) return;
+      c.c.snap('trigger', { note: 'Summon Phoenix' });
+      for (let i = 0; i < c.m; i++) playGemOn(cctx(c), pick(c.g, GEMS)!, ph);
+    },
   },
   golden_light: {
+    // 3 random Deathrattle units (Golden: with double stats)
     deathrattle: (c) => {
-      if (c.side.persistent) c.c.after(c.side, () => { c.p.health -= 1; });
+      const ids = CARDS.filter((d) => !d.token && d.id !== 'golden_light' && EFFECTS[d.id]?.deathrattle && inPlay(c.g, d.id)).map((d) => d.id);
+      for (let i = 0; i < 3; i++) {
+        const id = pick(c.g, ids);
+        if (!id) return;
+        const cu = c.c.spawn(c.side, id, false, c.pos + i);
+        if (!cu) return;
+        if (c.m === 2) { cu.atk *= 2; cu.hp *= 2; }
+        c.c.snap('trigger', i === 0 ? { note: 'Golden Light' } : {});
+      }
     },
   },
 
@@ -597,13 +676,16 @@ export const EFFECTS: Record<string, Effect> = {
     },
   },
   intern: {
-    onSellOther: (c, sold) => {
-      if (def(sold.cardId).tier === 3) for (let i = 0; i < c.m; i++) gain(c, randomTier(c, 2));
+    // Avenge (5): sells for 1 more gold (2 if Golden), for good
+    avenge: [5, 5],
+    avengeFn: (c) => {
+      c.self.mem.sellBonus = (c.self.mem.sellBonus ?? 0) + c.m;
+      c.c.perm(c.self, (u) => { u.mem.sellBonus = (u.mem.sellBonus ?? 0) + c.m; });
     },
   },
   pyro: {}, // see Combat.damage
   jeweler: {
-    battlecry: (c) => { c.p.redGemBonus += c.m; },
+    battlecry: (c) => improveGem(c.p, 'red_gem', c.m),
   },
   treasure: {}, // sell value
   biker: {
@@ -614,7 +696,7 @@ export const EFFECTS: Record<string, Effect> = {
   },
   red_gem: {
     battlecry: (c) => {
-      const amt = (4 + c.p.redGemBonus) * c.m;
+      const amt = (3 + gemLevel(c.p, 'red_gem')) * c.m;
       for (const u of c.board.slice(0, 3)) {
         if (rand(c.g) < 0.5) buff(u, amt, 0);
         else buff(u, 0, amt);
@@ -642,11 +724,11 @@ export const EFFECTS: Record<string, Effect> = {
   exploit: {
     target: 'unlocked',
     battlecry: (c) => {
-      if (c.combat) { c.p.goldNextTurn += 5 * c.m; return; }
+      if (c.combat) { if (c.side!.persistent) c.p.maxGoldBonus += 2 * c.m; return; }
       const t = c.target as Unit | undefined;
       if (!t || t === c.self || t.mem.locked) return;
       destroyUnit(c.g, c.p, t);
-      c.p.gold += 5 * c.m;
+      c.p.maxGoldBonus += 2 * c.m;
     },
   },
 
@@ -724,16 +806,7 @@ export const EFFECTS: Record<string, Effect> = {
   },
   sarinee: {}, // see endTurnEffects
   broken_land: {
-    battlecry: (c) => {
-      const left = others(c.board, c.self).find((u) => !(u as Unit).mem?.locked);
-      if (!left) return;
-      const a = left.atk * c.m;
-      const h = left.hp * c.m;
-      if (c.combat) left.hp = 0;
-      else sellUnit(c.g, c.p, left as Unit);
-      const right = c.board[c.board.length - 1];
-      buff(right, a, h);
-    },
+    battlecry: (c) => { for (const id of GEMS) improveGem(c.p, id, c.m); },
   },
   tom_judith: {}, // see combat deathrattle multiplier
   omni_gem: {

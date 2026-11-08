@@ -183,6 +183,15 @@ export function startTurn(g: GameState, p: Player) {
   if (p.frozen) p.frozen = false;
   else rollShop(g, p);
   drainOverflow(g, p);
+  // "until your next turn" buffs wear off (Purple Gem)
+  for (const u of [...p.board, ...p.hand]) {
+    if (u.mem.tmpAtk || u.mem.tmpHp || u.mem.tmpReborn) {
+      u.atk = Math.max(0, u.atk - (u.mem.tmpAtk ?? 0));
+      u.hp = Math.max(1, u.hp - (u.mem.tmpHp ?? 0));
+      if (u.mem.tmpReborn) u.kw = u.kw.filter((k) => k !== 'reborn');
+      delete u.mem.tmpAtk; delete u.mem.tmpHp; delete u.mem.tmpReborn;
+    }
+  }
   // a skipped turn (Mazrael Bettencourt's first): no shop and no gold
   if (p.heroMem.skipRound === g.round) {
     for (const u of p.shop) returnToPool(g, u);
@@ -361,8 +370,8 @@ export function buy(g: GameState, p: Player, shopIdx: number): ActionResult {
 }
 
 export function sellValue(u: Unit, p?: Player) {
-  if (u.cardId === 'treasure' && p?.lostLast) return 6 * mult(u); // only after losing your last battle
-  return CONFIG.sellValue;
+  if (u.cardId === 'treasure' && p?.lostLast) return 5 * mult(u); // only after losing your last battle
+  return CONFIG.sellValue + (u.mem.sellBonus ?? 0); // Intern's growth
 }
 
 export function sell(g: GameState, p: Player, boardIdx: number): ActionResult {
@@ -471,6 +480,11 @@ export function reroll(g: GameState, p: Player): ActionResult {
   p.gold -= CONFIG.rerollCost;
   p.frozen = false;
   rollShop(g, p);
+  // "when you Refresh" (Tinker)
+  for (const b of [...p.board]) {
+    const e = EFFECTS[b.cardId]?.onRefresh;
+    if (e) withFx(g, p, { unit: b }, 'Ability', () => e({ g, p, self: b, m: mult(b), board: p.board }));
+  }
   return OK;
 }
 

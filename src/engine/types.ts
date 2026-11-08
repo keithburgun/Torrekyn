@@ -134,6 +134,10 @@ export interface Player {
   history?: { round: number; vs: number; ghost?: boolean; result: 'win' | 'loss' | 'draw'; dmg: number }[];
   /** cards gained while the hand was full: they move into the hand as soon as there's room */
   overflow?: Unit[];
+  /** times each Gem was improved (Red Gem uses redGemBonus) */
+  gemBonus?: Record<string, number>;
+  /** Left Twinbot: +X/+X to all your Twinbots for the rest of the game */
+  twinBonus?: number;
   heroOffer?: string[];
   trinkets: string[];
   trinketOffer: string[] | null;

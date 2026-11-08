@@ -119,8 +119,8 @@
    "tier": 4,
    "atk": 6,
    "hp": 3,
-   "text": "At the start of the battle, deal 8 damage to a random enemy unit.",
-   "goldenText": "At the start of the battle, deal 8 damage to a random enemy unit twice.",
+   "text": "Deathrattle: Play a Purple Gem on a random friendly unit.",
+   "goldenText": "Deathrattle: Play a Purple Gem on a random friendly unit, twice.",
    "keywords": []
   },
   {
@@ -206,13 +206,13 @@
   },
   {
    "id": "tourmaline",
-   "name": "Tourmaline",
+   "name": "Blue Gem",
    "tribe": "azure",
    "tier": 1,
    "atk": 5,
    "hp": 4,
-   "text": "Battlecry: Give your left-most slot +10 Health.",
-   "goldenText": "Battlecry: Give your left-most slot +20 Health.",
+   "text": "Battlecry: Give a unit +10 Health.",
+   "goldenText": "Battlecry: Give a unit +20 Health.",
    "keywords": []
   },
   {
@@ -395,7 +395,7 @@
   },
   {
    "id": "hug",
-   "name": "Hug",
+   "name": "Stuffie Magic",
    "tribe": "kindred",
    "tier": 2,
    "atk": 4,
@@ -411,8 +411,8 @@
    "tier": 2,
    "atk": 1,
    "hp": 1,
-   "text": "Deathrattle: Spawn a unit that died this battle.",
-   "goldenText": "Deathrattle: Spawn 2 units that died this battle.",
+   "text": "Battlecry: Give a random unit Divine Shield.",
+   "goldenText": "Battlecry: Give 2 random units Divine Shield.",
    "keywords": []
   },
   {
@@ -488,8 +488,8 @@
    "tier": 5,
    "atk": 10,
    "hp": 10,
-   "text": "End of turn: Gain a Hug.",
-   "goldenText": "End of turn: Gain 2 Hugs.",
+   "text": "Avenge(3): Gain a Pink Gem.",
+   "goldenText": "Avenge(3): Gain a Pink Gem.",
    "keywords": []
   },
   {
@@ -521,8 +521,8 @@
    "tier": 1,
    "atk": 3,
    "hp": 1,
-   "text": "Avenge(3): Become a 7/7 Rootling.",
-   "goldenText": "Avenge(3): Become a 14/14 Rootling.",
+   "text": "Avenge(3): Become a 9/9 Rootling.",
+   "goldenText": "Avenge(3): Become a 18/18 Rootling.",
    "keywords": []
   },
   {
@@ -532,8 +532,8 @@
    "tier": 1,
    "atk": 1,
    "hp": 1,
-   "text": "Avenge(3): Get a Sapling.",
-   "goldenText": "Avenge(3): Get 2 Saplings.",
+   "text": "Avenge(3): Get a Potato Gem.",
+   "goldenText": "Avenge(3): Get 2 Potato Gems.",
    "keywords": []
   },
   {
@@ -645,21 +645,21 @@
    "name": "Distant Land",
    "tribe": "brambor",
    "tier": 4,
-   "atk": 4,
-   "hp": 4,
-   "text": "Start of Battle: Double this unit's stats.",
-   "goldenText": "Start of Battle: Triple this unit's stats.",
+   "atk": 6,
+   "hp": 6,
+   "text": "Deathrattle: Gain 2 random Gems.",
+   "goldenText": "Deathrattle: Gain 4 random Gems.",
    "keywords": []
   },
   {
    "id": "ancient_name_brambor",
-   "name": "Ancient Name",
-   "tribe": "brambor",
+   "name": "Potato Gem",
+   "tribe": "neutral",
    "tier": 5,
    "atk": 10,
    "hp": 10,
-   "text": "Battlecry: Give this slot Divine Shield.",
-   "goldenText": "Battlecry: Give this slot Divine Shield and +10/+10.",
+   "text": "Battlecry: Give a slot +4 Health.",
+   "goldenText": "Battlecry: Give a slot +8 Health.",
    "keywords": []
   },
   {
@@ -669,8 +669,8 @@
    "tier": 5,
    "atk": 10,
    "hp": 10,
-   "text": "Battlecry: Give this slot +11/+11",
-   "goldenText": "Battlecry: Give this slot +22/+22",
+   "text": "Start of Battle: Double this unit's stats.",
+   "goldenText": "Start of Battle: Triple this unit's stats.",
    "keywords": []
   },
   {
@@ -678,21 +678,21 @@
    "name": "Andromeda Robin",
    "tribe": "brambor",
    "tier": 5,
-   "atk": 17,
-   "hp": 17,
-   "text": "Start of Combat: Deal 3 damage to 4 random enemies and improve this.",
-   "goldenText": "Start of Combat: Deal 6 damage to 4 random enemies and improve this twice.",
+   "atk": 30,
+   "hp": 30,
+   "text": "End of Turn: Play a Potato Gem to this slot. Improve your Potato Gems.",
+   "goldenText": "End of Turn: Play a Potato Gem to this slot. Improve your Potato Gems twice.",
    "keywords": []
   },
   {
    "id": "green_gem",
    "name": "Green Gem",
-   "tribe": "cloister",
+   "tribe": "neutral",
    "tier": 1,
    "atk": 1,
    "hp": 1,
-   "text": "Deathrattle: Give your units in hand +1/+1 and improve this.",
-   "goldenText": "Deathrattle: Give your units in hand +2/+2 and improve this.",
+   "text": "Battlecry: Give a unit +2 Attack and Windfury.",
+   "goldenText": "Battlecry: Give a unit +2 Attack and Windfury.",
    "keywords": []
   },
   {
@@ -855,7 +855,7 @@
    "atk": 25,
    "hp": 5,
    "text": "Deathrattle: Give this unit's Attack to two friendly units.",
-   "goldenText": "Deathrattle: Give this unit's Attack to four friendly units.",
+   "goldenText": "Deathrattle: Give double unit's Attack two friendly units.",
    "keywords": []
   },
   {
@@ -863,10 +863,10 @@
    "name": "Left Twinbot",
    "tribe": "alcove",
    "tier": 1,
-   "atk": 1,
-   "hp": 1,
-   "text": "Rally: Give the unit to the right of this +2/+2 and Reborn.",
-   "goldenText": "Rally: Give the unit to the right of this +4/+4 and Reborn.",
+   "atk": 2,
+   "hp": 2,
+   "text": "Rally: Your Twinbots have +1/+1 this game.",
+   "goldenText": "Rally: Your Twinbots have +2/+2 this game.",
    "keywords": []
   },
   {
@@ -874,8 +874,8 @@
    "name": "Right Twinbot",
    "tribe": "alcove",
    "tier": 1,
-   "atk": 1,
-   "hp": 1,
+   "atk": 2,
+   "hp": 2,
    "text": "Start of Combat: Give the unit to the left of this Reborn.",
    "goldenText": "Start of Combat: Give the unit to the left of this Reborn and +4/+4.",
    "keywords": []
@@ -885,10 +885,10 @@
    "name": "Tinker",
    "tribe": "alcove",
    "tier": 1,
-   "atk": 2,
-   "hp": 2,
-   "text": "Alcove units in the shop have +1/+1 for the rest of this game.",
-   "goldenText": "Alcove units in the shop have +2/+2 for the rest of this game.",
+   "atk": 1,
+   "hp": 1,
+   "text": "When you Refresh the shop, give Venomous, Divine Shield or Reborn to a random unit in the shop.",
+   "goldenText": "When you Refresh the shop, give Venomous, Divine Shield or Reborn to 2 random units in the shop.",
    "keywords": []
   },
   {
@@ -898,8 +898,8 @@
    "tier": 2,
    "atk": 1,
    "hp": 1,
-   "text": "Start of battle: Deal 12 damage to the opponent's right-most minion.",
-   "goldenText": "Start of battle: Deal 12 damage to the opponent's right-most minion twice.",
+   "text": "Start of battle: Deal 3 damage to a random unit. Repeat for every other Alcove unit you have in play.",
+   "goldenText": "Start of battle: Deal 3 damage to a random unit. Repeat for every other Alcove unit you have in play, twice.",
    "keywords": []
   },
   {
@@ -955,8 +955,8 @@
    "tier": 3,
    "atk": 1,
    "hp": 1,
-   "text": "Battlecry: Your left-most slot gains -5/-5. Each Rival gains a Virus to their hand.",
-   "goldenText": "Battlecry: Each Rival's left-most slot gains -5/-5, and each Rival gains a Virus to their hand.",
+   "text": "Start of Combat: Set a random opponent's unit's health to 1.",
+   "goldenText": "Start of Combat: Set two random opponent's unit's health to 1.",
    "keywords": []
   },
   {
@@ -1013,8 +1013,8 @@
    "tier": 5,
    "atk": 25,
    "hp": 7,
-   "text": "Deathrattle: Summon a 100/100 Phoenix.",
-   "goldenText": "Deathrattle: Summon a 200/200 Phoenix.",
+   "text": "Deathrattle: Summon a 20/20 Phoenix and play a random Gem on it.",
+   "goldenText": "Deathrattle: Summon a 20/20 Phoenix and play two random Gems on it.",
    "keywords": []
   },
   {
@@ -1022,10 +1022,10 @@
    "name": "Golden Light",
    "tribe": "alcove",
    "tier": 5,
-   "atk": 90,
-   "hp": 90,
-   "text": "Deathrattle. You take 1 damage.",
-   "goldenText": "Deathrattle. You take 1 damage.",
+   "atk": 1,
+   "hp": 1,
+   "text": "Deathrattle: Summon 3 random Deathrattle units.",
+   "goldenText": "Deathrattle: Summon 3 random Deathrattle units and double their stats.",
    "keywords": []
   },
   {
@@ -1033,8 +1033,8 @@
    "name": "Drill Sgt.",
    "tribe": "demons",
    "tier": 1,
-   "atk": 2,
-   "hp": 2,
+   "atk": 1,
+   "hp": 1,
    "text": "Start of Combat: If you are tier 3 or lower, gain +5 Attack.",
    "goldenText": "Start of Combat: If you are tier 3 or lower, gain +10 Attack.",
    "keywords": []
@@ -1057,8 +1057,8 @@
    "tier": 1,
    "atk": 3,
    "hp": 3,
-   "text": "Whenever you sell a tier 3 unit, gain a random tier 2 unit.",
-   "goldenText": "Whenever you sell a tier 3 unit, gain 2 random tier 2 units.",
+   "text": "Avenge (5): This sells for 1 more gold.",
+   "goldenText": "Avenge (5): This sells for 2 more gold.",
    "keywords": []
   },
   {
@@ -1090,8 +1090,8 @@
    "tier": 2,
    "atk": 3,
    "hp": 9,
-   "text": "If you lost your last battle, this sells for 6 gold.",
-   "goldenText": "If you lost your last battle, this sells for 12 gold.",
+   "text": "If you lost your last battle, this sells for 5 gold.",
+   "goldenText": "If you lost your last battle, this sells for 10 gold.",
    "keywords": []
   },
   {
@@ -1119,12 +1119,12 @@
   {
    "id": "red_gem",
    "name": "Red Gem",
-   "tribe": "demons",
+   "tribe": "neutral",
    "tier": 3,
    "atk": 1,
    "hp": 4,
-   "text": "Battlecry: Give your 3 left-most units +4 of a random stat.",
-   "goldenText": "Battlecry: Give your 3 left-most units +8 of a random stat.",
+   "text": "Battlecry: Give your 3 left-most units +3 of a random stat.",
+   "goldenText": "Battlecry: Give your 3 left-most units +6 of a random stat.",
    "keywords": []
   },
   {
@@ -1132,8 +1132,8 @@
    "name": "Purveyor",
    "tribe": "demons",
    "tier": 4,
-   "atk": 3,
-   "hp": 3,
+   "atk": 6,
+   "hp": 6,
    "text": "End of Turn: Gain a Red Gem.",
    "goldenText": "End of Turn: Gain 2 Red Gems.",
    "keywords": []
@@ -1151,7 +1151,7 @@
   },
   {
    "id": "miner",
-   "name": "Miner",
+   "name": "Bulldozer",
    "tribe": "demons",
    "tier": 4,
    "atk": 2,
@@ -1165,8 +1165,8 @@
    "name": "Bill Milton",
    "tribe": "demons",
    "tier": 5,
-   "atk": 6,
-   "hp": 6,
+   "atk": 20,
+   "hp": 20,
    "text": "Battlecry: Gain quest: Buy 8 Business Demons to gain 12 Gold.",
    "goldenText": "Battlecry: Gain quest: Buy 8 Business Demons to gain 24 Gold.",
    "keywords": []
@@ -1176,7 +1176,7 @@
    "name": "Gem Wizard",
    "tribe": "demons",
    "tier": 5,
-   "atk": 4,
+   "atk": 10,
    "hp": 4,
    "text": "Your Red Gems trigger their Battlecries twice.",
    "goldenText": "Your Red Gems trigger their Battlecries three times.",
@@ -1187,10 +1187,10 @@
    "name": "Exploit",
    "tribe": "demons",
    "tier": 5,
-   "atk": 1,
-   "hp": 18,
-   "text": "Battlecry: Destroy a friendly unit. Gain 5 gold.",
-   "goldenText": "Battlecry: Destroy a friendly unit. Gain 10 gold.",
+   "atk": 3,
+   "hp": 25,
+   "text": "Battlecry: Destroy a friendly unit. Increase your maximum Gold by 2.",
+   "goldenText": "Battlecry: Destroy a friendly unit. Increase your maximum Gold by 4.",
    "keywords": []
   },
   {
@@ -1288,11 +1288,9 @@
    "tier": 3,
    "atk": 25,
    "hp": 15,
-   "text": "Stealth. Whenever a unit with Taunt dies, this gains +2/+1 permanently.",
-   "goldenText": "Stealth. Whenever a unit with Taunt dies, this gains +4/+2 permanently.",
-   "keywords": [
-    "stealth"
-   ]
+   "text": "Whenever a unit with Taunt dies, this gains +2/+1 permanently.",
+   "goldenText": "Whenever a unit with Taunt dies, this gains +4/+2 permanently.",
+   "keywords": []
   },
   {
    "id": "spoonful",
@@ -1334,8 +1332,8 @@
    "tier": 5,
    "atk": 19,
    "hp": 82,
-   "text": "Battlecry: Sell your left-most unit and give its stats to your right-most unit.",
-   "goldenText": "Battlecry: Sell your left-most unit and give double its stats to your right-most unit.",
+   "text": "Battlecry: Improve ALL your gems this game.",
+   "goldenText": "Battlecry: Improve ALL your gems this game, twice.",
    "keywords": []
   },
   {
@@ -1377,8 +1375,8 @@
    "name": "Rootling",
    "tribe": "brambor",
    "tier": 1,
-   "atk": 7,
-   "hp": 7,
+   "atk": 9,
+   "hp": 9,
    "text": "",
    "goldenText": "",
    "keywords": [],
@@ -1389,12 +1387,23 @@
    "name": "Phoenix",
    "tribe": "alcove",
    "tier": 5,
-   "atk": 100,
-   "hp": 100,
+   "atk": 20,
+   "hp": 20,
    "text": "",
    "goldenText": "",
    "keywords": [],
    "token": true
+  },
+  {
+   "id": "purple_gem",
+   "name": "Purple Gem",
+   "tribe": "neverending",
+   "tier": 2,
+   "atk": 1,
+   "hp": 1,
+   "text": "Battlecry: Give a unit Reborn and +1/+1 for 1 turn.",
+   "goldenText": "Battlecry: Give a unit Reborn and +1/+1 for 1 turn.",
+   "keywords": []
   }
  ]
 }

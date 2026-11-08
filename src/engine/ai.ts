@@ -63,7 +63,6 @@ export function unitScore(p: Player, u: Unit, zone: 'board' | 'hand' | 'shop' = 
   const fav = p.favoriteTribe;
   if (fav && (d.tribe === fav || (on(p, 'tribe') && isTribe(u, fav)))) s += on(p, 'tribe') ? knob(p, 'tribeW') + knob(p, 'tribeTierW') * d.tier : 6 + 2 * d.tier;
   for (const k of st.kw) s += k === 'divineShield' ? st.atk * 0.4 + 4 : k === 'reborn' ? 4 : k === 'venomous' ? 8 : 2;
-  if (u.cardId === 'virus' && !u.golden) s = -50;
   return s;
 }
 
@@ -136,8 +135,7 @@ function bestTarget(g: GameState, p: Player, u: Unit): number | undefined {
 
 function playHand(g: GameState, p: Player) {
   for (let guard = 0; guard < 20; guard++) {
-    // viruses are never played unless golden
-    const idx = p.hand.findIndex((u) => !(u.cardId === 'virus' && !u.golden) && !handLocked(p, u));
+    const idx = p.hand.findIndex((u) => !handLocked(p, u));
     if (idx < 0) return;
     if (p.board.length >= CONFIG.boardSize) {
       const worst = worstBoardIndex(p);
@@ -255,12 +253,6 @@ function shopScore(g: GameState, p: Player, u: Unit): number {
 }
 
 export function aiTakeTurn(g: GameState, p: Player) {
-  for (const u of [...p.hand]) {
-    if (u.cardId === 'virus' && !u.golden) {
-      // bots discard viruses (they can't be played safely)
-      p.hand.splice(p.hand.indexOf(u), 1);
-    }
-  }
   while (p.discovers.length) chooseDiscover(g, p, aiChooseDiscover(g, p, p.discovers[0]));
   if (p.trinketOffer) {
     const affordable = p.trinketOffer.filter((t) => trinketDef(t).cost <= p.gold);
