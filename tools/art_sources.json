@@ -2,11 +2,11 @@
  "_about": "Card and hero art: source image (relative to the unzipped art folders), crop [centre x, centre y, side] as fractions (side = fraction of the shorter edge), or px:true for pixel sprites (first frame, scaled up sharp on a tribe-coloured backdrop). Build with: python3 tools/build_art.py <assets dir>",
  "heroes": {
   "andromeda_robin": {
-   "src": "P/advisor-andromeda.png",
+   "src": "M/icon-512.png",
    "crop": [
-    0.33,
-    0.43,
-    0.56
+    0.6,
+    0.45,
+    0.7
    ]
   },
   "gelf_lanz": {
@@ -50,11 +50,11 @@
    ]
   },
   "locas_clare": {
-   "src": "M/icon-512.png",
+   "src": "M/locas-clare-sketch.png",
    "crop": [
-    0.6,
-    0.45,
-    0.7
+    0.55,
+    0.25,
+    0.44
    ]
   },
   "venice_gorn": {

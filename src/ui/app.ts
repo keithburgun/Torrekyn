@@ -126,7 +126,8 @@ export class App {
     this.stage.classList.toggle('tall', !!L.tall);
     this.stage.classList.toggle('menu-bg', this.screen === 'title' || this.screen === 'rules' || this.screen === 'hero' || this.screen === 'tribes');
     // one night-sky backdrop for every screen, drawn once, very large and blurred (styles.css #stage::before)
-    this.stage.style.setProperty('--bg', `url('${art('art/bg.png')}')`);
+    // made absolute: a url() inside a CSS variable is read relative to the stylesheet that uses it (assets/), not the page
+    this.stage.style.setProperty('--bg', `url('${new URL(art('art/bg.png'), document.baseURI).href}')`);
     placeBoardBg(this.stage, L, null);
     if (this.screen === 'combat') return; // combat view owns the stage
     let html = '';
