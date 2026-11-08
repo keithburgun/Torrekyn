@@ -77,10 +77,10 @@ Fourteen Torrekin champions; you choose 1 of 4 at the start. Heroes tied to a tr
 
 | Hero | Power | Type | How it plays |
 |---|---|---|---|
-| Andromeda Robin | Elemental Weave | Passive | Start with a 1/1 **Pumpkin** in hand. It counts as every tribe. Whenever any other unit with a Deathrattle dies in combat (either side), the Pumpkin permanently gains that Deathrattle (each once; Golden gives the Golden version). |
+| Andromeda Robin | Pumpkin Buddy | Passive | Start with a 1/1 **Pumpkin** in hand. It counts as every tribe. Whenever any other unit with a Deathrattle dies in combat (either side), the Pumpkin permanently gains that Deathrattle (each once; Golden gives the Golden version). |
 | Gelf Lanz | Inspire | Passive | Once you've bought an Azure unit, your next Azure unit costs 1 less, and that re-arms with every Azure buy (so Azure units cost 2 from then on). |
 | Derby Pocket | Coffee Run | Passive | After you play 5 Battlecry units, your Battlecries trigger an extra time for the rest of the game. |
-| Bunny Wizard | Cuddle Spell | 1 gold | Discover a Kindred unit (your Tier or lower). Unlocks at Tavern Tier 4. |
+| Bunny Wizard | New Friends | 1 gold | Discover a Kindred unit (your Tier or lower). Unlocks at Tavern Tier 4. |
 | Croh Vosh | Abyssal Sweep | Passive | Units summoned for you during combat get +1/+2 (Reborn isn't a summon). |
 | May Danaris | Root Access | 2 gold | Discover a unit (base stats) from the army of the last player you fought. |
 | Locas Clare | Five-Finger Discount | 10 gold, −1 per turn | Move every unit in the Tavern to your hand (as many as fit). The cost then goes back to 10 next turn. The sheet lists it as Passive; it is played as an active power because it has a cost. |

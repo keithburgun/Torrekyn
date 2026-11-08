@@ -88,7 +88,7 @@ export const HEROES: HeroDef[] = [
     id: 'bunny_wizard', name: 'Bunny Wizard', title: 'A very soft healer', power: 'New Friends', avatar: 3, health: 46, cost: 1, needsTribe: 'kindred',
     text: 'Discover a Kindred unit. (Unlocks at Tavern Tier 4.)',
     locked: (g, p) => (p.tier < 4 ? 'Unlocks at Tavern Tier 4' : null),
-    use: (g, p) => queueDiscover(g, p, discoverOptions(g, (id) => isTribe(id, 'kindred') && def(id).tier <= p.tier), 'Cuddle Spell: Discover a Kindred unit'),
+    use: (g, p) => queueDiscover(g, p, discoverOptions(g, (id) => isTribe(id, 'kindred') && def(id).tier <= p.tier), 'New Friends: Discover a Kindred unit'),
   },
   {
     id: 'croh_vosh', name: 'Croh Vosh', title: 'The drowned lich', power: 'Abyssal Sweep', avatar: 4, health: 44, passive: true,
