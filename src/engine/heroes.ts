@@ -190,6 +190,22 @@ export const HEROES: HeroDef[] = [
     progress: (g, p) => `Dragons ${1 + (p.heroMem.brood ?? 0)}/${1 + (p.heroMem.brood ?? 0)}`,
   },
   {
+    id: 'mazrael_bettencourt', name: 'Mazrael Bettencourt', title: 'The patient blade', power: 'Long Game', avatar: 14, passive: true,
+    text: 'Skip your first turn. Discover a Tier 3, a Tier 4 and a Tier 5 unit. Each unlocks once your Tavern reaches its Tier.',
+    startTurn: (g, p) => {
+      if (g.round !== 1 || p.heroMem.longGame) return;
+      p.heroMem.longGame = 1;
+      p.heroMem.skipRound = g.round; // game.ts startTurn empties the shop and the gold
+      for (const t of [3, 4, 5]) {
+        queueDiscover(g, p, discoverOptions(g, (id) => def(id).tier === t), `Long Game: Discover a Tier ${t} unit (unlocks at Tavern Tier ${t})`, false, t);
+      }
+    },
+    progress: (g, p) => {
+      const waiting = p.hand.filter((u) => (u.mem.unlockTier ?? 0) > p.tier).length;
+      return waiting ? `${waiting} waiting` : null;
+    },
+  },
+  {
     id: 'trevor_l', name: 'Trevor L', title: 'Rock and roll skeleton', power: 'Party All Night', avatar: 13, health: 42, passive: true,
     text: 'Avenge (5): Give a random friendly unit Reborn.',
     onFriendlyDeath: (c, s) => {

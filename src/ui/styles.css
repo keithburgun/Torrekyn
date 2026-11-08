@@ -1187,3 +1187,13 @@ svg.aim-arrow.locked .aim-ring { opacity: 0.9; animation: aim-ring 0.9s ease-in-
 #stage.portrait .dmg-star.big b { font-size: 66px; }
 .result-banner p.rb-lead { font-family: var(--display); font-weight: 600; font-size: 30px; margin-top: 4px; }
 #stage.portrait .result-banner p.rb-lead { font-size: 44px; }
+
+/* a card waiting in hand until your Tavern reaches its tier (Mazrael Bettencourt) */
+.card.hand-locked { filter: grayscale(0.55) brightness(0.8); }
+.card.hand-locked::before { position: absolute; left: 50%; top: 38%; transform: translate(-50%, -50%); z-index: 6; white-space: nowrap;
+  padding: 4px 10px; border-radius: 999px; background: rgba(30, 22, 48, 0.88); color: #ffe7a0; font: 700 15px/1.2 var(--display); box-shadow: 0 2px 8px rgba(0,0,0,.4); }
+.card.hand-locked.unlock-3::before { content: '🔒 Tier 3'; }
+.card.hand-locked.unlock-4::before { content: '🔒 Tier 4'; }
+.card.hand-locked.unlock-5::before { content: '🔒 Tier 5'; }
+.card.hand-locked.unlock-6::before { content: '🔒 Tier 6'; }
+#stage.portrait .card.hand-locked::before { font-size: 24px; }

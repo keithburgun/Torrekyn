@@ -53,6 +53,8 @@ export interface Discover {
   /** choosing a Hero Power instead of a card (Abragail) */
   powers?: boolean;
   golden?: boolean;
+  /** the unit waits in your hand until your Tavern reaches this tier (Mazrael Bettencourt) */
+  unlockTier?: number;
   reason: string;
 }
 

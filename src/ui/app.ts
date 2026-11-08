@@ -5,7 +5,7 @@ import { friendly, supabase } from '../save/providers/supabase';
 import { reloadAchievements } from './achievements';
 import { reloadArtStyle } from './view';
 import {
-  buy, chooseDiscover, endTurn, maxGoldFor, move, needsTarget, newGame, play, reroll, selectHero, sell, sellValue, toggleFreeze, upgrade, validTargets,
+  buy, chooseDiscover, endTurn, maxGoldFor, move, needsTarget, newGame, play, reroll, selectHero, sell, sellValue, toggleFreeze, upgrade, validTargets, handLocked,
 } from '../engine/game';
 import { HEROES, buyCost, canUseHeroPower, heroDef, heroHealth, mainActive, pickTrinket, powerCost, powersOf, trinketDef, useHeroPower, type HeroDef } from '../engine/heroes';
 import type { CombatResult, GameState, Player } from '../engine/types';
@@ -432,7 +432,8 @@ export class App {
       h += cardHtml(v, { zone: 'shop', idx: i, id: u.uid, x: shopX(i, p.shop.length), y: L.shopY, small: L.small && !L.shopBig, large: L.shopBig, extraClass: `${sel} ${hint} ${p.gold < buyCost(p, u.cardId) ? 'unaffordable' : ''} ${p.frozen ? 'frozen' : ''}`,
         badge: have >= 2 ? '<div class="trip-tag">TRIPLE!</div>' : '' });
     });
-    if (!p.shop.length) h += `<div class="hint abs" style="left:${L.cx - 240}px;top:${L.shopY + 70}px;width:480px">The Tavern is empty. Refresh for new units.</div>`;
+    const skipping = p.heroMem.skipRound === this.g!.round;
+    if (!p.shop.length) h += `<div class="hint abs" style="left:${L.cx - 240}px;top:${L.shopY + 70}px;width:480px">${skipping ? 'You skip your first turn. The Tavern opens next turn.' : 'The Tavern is empty. Refresh for new units.'}</div>`;
     // army slots
     for (let i = 0; i < CONFIG.boardSize; i++) {
       const s = p.slots[i];
@@ -457,7 +458,8 @@ export class App {
     p.hand.forEach((u, i) => {
       if (placing && i === placing.handIdx) return;
       const sel = this.sel?.zone === 'hand' && this.sel.idx === i ? 'selected' : '';
-      h += cardHtml(unitView(p, u, 'hand', i), { zone: 'hand', idx: i, x: handX(i, p.hand.length), y: L.handY, small: !L.shopBig, large: L.shopBig, extraClass: `in-hand ${sel}`, id: u.uid });
+      const waiting = handLocked(p, u) ? `hand-locked unlock-${u.mem.unlockTier}` : '';
+      h += cardHtml(unitView(p, u, 'hand', i), { zone: 'hand', idx: i, x: handX(i, p.hand.length), y: L.handY, small: !L.shopBig, large: L.shopBig, extraClass: `in-hand ${sel} ${waiting}`, id: u.uid });
     });
     h += this.rightSideHtml();
     h += `<div id="popover">${this.popoverHtml()}</div>`;
@@ -722,7 +724,9 @@ export class App {
     let actions = '';
     if (this.sel) {
       if (s.zone === 'shop') actions = `<button class="btn primary" data-act="buy" ${p.gold < buyCost(p, u.cardId) ? 'disabled' : ''}>Buy <span class="cost">${buyCost(p, u.cardId)}<span class="coin"></span></span></button>`;
-      if (s.zone === 'hand') actions = `<button class="btn primary" data-act="play" ${p.board.length >= CONFIG.boardSize ? 'disabled' : ''}>Play</button>`;
+      if (s.zone === 'hand') actions = handLocked(p, u)
+        ? `<button class="btn" disabled>Unlocks at Tier ${u.mem.unlockTier}</button>`
+        : `<button class="btn primary" data-act="play" ${p.board.length >= CONFIG.boardSize ? 'disabled' : ''}>Play</button>`;
       if (s.zone === 'board') actions = `<button class="btn" data-act="left" ${s.idx === 0 || u.mem.locked ? 'disabled' : ''}>◀</button>
         <button class="btn primary" data-act="sell" ${u.mem.locked ? 'disabled' : ''}>Sell <span class="cost">+${sellValue(u, p)}<span class="coin"></span></span></button>
         <button class="btn" data-act="right" ${s.idx >= p.board.length - 1 || u.mem.locked ? 'disabled' : ''}>▶</button>`;

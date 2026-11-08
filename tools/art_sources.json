@@ -112,6 +112,14 @@
     0.31,
     0.42
    ]
+  },
+  "mazrael_bettencourt": {
+   "src": "M/mazrael-bettencourt.png",
+   "crop": [
+    0.47,
+    0.17,
+    0.3
+   ]
   }
  },
  "cards": {

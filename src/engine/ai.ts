@@ -9,7 +9,7 @@
 import { CONFIG, def, effStats, isTribe, rand, shuffle, tribeOf } from './core';
 import { Combat } from './combat';
 import { EFFECTS } from './effects';
-import { buy, play, reroll, sell, upgrade, chooseDiscover, validTargets, move, toggleFreeze } from './game';
+import { buy, play, reroll, sell, upgrade, chooseDiscover, validTargets, move, toggleFreeze, handLocked } from './game';
 import { buyCost, canUseHeroPower, pickTrinket, powerCost, powersOf, trinketDef, useHeroPower } from './heroes';
 import type { BotProfile, Discover, GameState, Player, Unit, Tribe } from './types';
 import cardValues from '../data/cardValues.json';
@@ -27,7 +27,7 @@ const EXPERT_OFF: Feature[] = ['level', 'simbuy', 'powerFirst'];
 export const EXPERT: BotProfile = { noise: 0, blunder: 0, f: Object.fromEntries(FEATURES.map((k) => [k, !EXPERT_OFF.includes(k)])) };
 
 /** Hero Powers ranked by how well Expert bots did with them (800-game balance run), best first; for Abragail's picks */
-const POWER_RANK = ['may_danaris', 'trevor_l', 'clover', 'andromeda_robin', 'venice_gorn', 'gelf_lanz', 'eve_williams', 'bill_milton', 'derby_pocket', 'bunny_wizard', 'omar_evans', 'croh_vosh', 'locas_clare'];
+const POWER_RANK = ['may_danaris', 'trevor_l', 'clover', 'andromeda_robin', 'venice_gorn', 'gelf_lanz', 'eve_williams', 'bill_milton', 'derby_pocket', 'bunny_wizard', 'omar_evans', 'mazrael_bettencourt', 'croh_vosh', 'locas_clare'];
 
 const prof = (p: Player): BotProfile => p.bot ?? EXPERT;
 const on = (p: Player, k: Feature) => prof(p).f?.[k] ?? EXPERT.f![k] ?? false;
@@ -138,7 +138,7 @@ function bestTarget(g: GameState, p: Player, u: Unit): number | undefined {
 function playHand(g: GameState, p: Player) {
   for (let guard = 0; guard < 20; guard++) {
     // viruses are never played unless golden
-    const idx = p.hand.findIndex((u) => !(u.cardId === 'virus' && !u.golden));
+    const idx = p.hand.findIndex((u) => !(u.cardId === 'virus' && !u.golden) && !handLocked(p, u));
     if (idx < 0) return;
     if (p.board.length >= CONFIG.boardSize) {
       const worst = worstBoardIndex(p);

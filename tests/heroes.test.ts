@@ -34,7 +34,7 @@ function combat(g: GameState, p: Player, mine: Unit[], theirs: Unit[], persisten
 describe('hero powers', () => {
   it('covers every hero', () => {
     const tested = ['andromeda_robin', 'gelf_lanz', 'derby_pocket', 'bunny_wizard', 'croh_vosh', 'may_danaris', 'locas_clare', 'venice_gorn',
-      'omar_evans', 'eve_williams', 'abragail', 'bill_milton', 'clover', 'trevor_l'];
+      'omar_evans', 'eve_williams', 'abragail', 'bill_milton', 'clover', 'trevor_l', 'mazrael_bettencourt'];
     expect(HEROES.map((h) => h.id).sort()).toEqual([...tested].sort());
   });
 
@@ -221,5 +221,21 @@ describe('hero powers', () => {
     expect(s.units.some((u) => u.kw.includes('reborn'))).toBe(false);
     heroHooks.onFriendlyDeath(c, s);
     expect(s.units.filter((u) => u.kw.includes('reborn')).length).toBe(1);
+  });
+
+  it('Mazrael Bettencourt: skips turn 1 and Discovers Tier 3, 4 and 5 units that unlock at those Tavern Tiers', () => {
+    const g2 = newGame(5, 'You', ALL_TRIBES);
+    selectHero(g2, 'mazrael_bettencourt');
+    const m = human(g2);
+    expect(m.shop.length).toBe(0);
+    expect(m.gold).toBe(0);
+    expect(m.discovers.map((d) => d.unlockTier)).toEqual([3, 4, 5]);
+    for (let i = 0; i < 3; i++) chooseDiscover(g2, m, 0);
+    expect(m.hand.map((u) => def(u.cardId).tier)).toEqual([3, 4, 5]);
+    expect(play(g2, m, 0, 0)).toEqual({ ok: false, reason: 'Unlocks at Tavern Tier 3' });
+    m.tier = 3;
+    expect(play(g2, m, 0, 0).ok).toBe(true);
+    expect(m.board[0].mem.unlockTier).toBeUndefined();
+    expect(play(g2, m, 0, 1).ok).toBe(false); // the Tier 4 one still waits
   });
 });

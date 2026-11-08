@@ -182,6 +182,12 @@ export function startTurn(g: GameState, p: Player) {
   setFxPhase('shop');
   if (p.frozen) p.frozen = false;
   else rollShop(g, p);
+  // a skipped turn (Mazrael Bettencourt's first): no shop and no gold
+  if (p.heroMem.skipRound === g.round) {
+    for (const u of p.shop) returnToPool(g, u);
+    p.shop = [];
+    p.gold = 0;
+  }
 }
 
 export function rollShop(g: GameState, p: Player) {
@@ -273,9 +279,9 @@ export function discoverOptions(g: GameState, filter: (id: string) => boolean, n
   return sample(g, src, n);
 }
 
-export function queueDiscover(g: GameState, p: Player, options: string[], reason: string, golden = false) {
+export function queueDiscover(g: GameState, p: Player, options: string[], reason: string, golden = false, unlockTier?: number) {
   if (!options.length) return;
-  const d: Discover = { options, reason, golden };
+  const d: Discover = { options, reason, golden, ...(unlockTier ? { unlockTier } : {}) };
   if (p.human && !g.simulateAll) p.discovers.push(d);
   else {
     const choice = aiChooseDiscover(g, p, d);
@@ -299,7 +305,14 @@ function takeDiscover(g: GameState, p: Player, d: Discover, idx: number) {
     return;
   }
   if (g.pool[id] > 0) g.pool[id]--;
-  gainCard(g, p, makeUnit(g, id, !!d.golden));
+  const u = makeUnit(g, id, !!d.golden);
+  if (d.unlockTier) u.mem.unlockTier = d.unlockTier;
+  gainCard(g, p, u);
+}
+
+/** a card in hand that can't be played until your Tavern reaches its tier (Mazrael Bettencourt) */
+export function handLocked(p: Player, u: Unit): boolean {
+  return (u.mem.unlockTier ?? 0) > p.tier;
 }
 
 export function chooseDiscover(g: GameState, p: Player, idx: number) {
@@ -390,6 +403,8 @@ export function play(g: GameState, p: Player, handIdx: number, pos: number, targ
   const u = p.hand[handIdx];
   if (!u) return fail('Nothing there');
   if (p.board.length >= CONFIG.boardSize) return fail('Your army is full');
+  if (handLocked(p, u)) return fail(`Unlocks at Tavern Tier ${u.mem.unlockTier}`);
+  delete u.mem.unlockTier;
   p.hand.splice(handIdx, 1);
   pos = Math.max(0, Math.min(pos, p.board.length));
   p.board.splice(pos, 0, u);
@@ -450,6 +465,7 @@ export function reroll(g: GameState, p: Player): ActionResult {
 }
 
 export function toggleFreeze(p: Player): ActionResult {
+  if (p.heroMem.skipRound !== undefined && !p.frozen && p.shop.length === 0 && p.gold === 0) return fail('Nothing to freeze');
   p.frozen = !p.frozen;
   return OK;
 }
