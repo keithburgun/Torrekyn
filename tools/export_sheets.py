@@ -126,7 +126,7 @@ def main():
     for h in heroes:
         spec = src['heroes'].get(h['id'])
         vals = [h['name'], h['title'], h['power'], 'Passive' if h.get('passive') else 'Active', '—' if h.get('passive') else h.get('cost', 0),
-                h['text'], None, h['id'], where(spec) if spec else '', crop_text(spec) if spec else '', h.get('health', 45)]
+                h['text'], None, h['id'], where(spec) if spec else '', crop_text(spec) if spec else '', h.get('health', 40)]
         for i, v in enumerate(vals, 1):
             body(wh.cell(r, i, v), center=i in (4, 5, 11))
         wh.row_dimensions[r].height = ROW_PT
