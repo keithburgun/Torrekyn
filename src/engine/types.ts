@@ -128,6 +128,10 @@ export interface Player {
   bauble?: Unit[];
   /** lost their most recent battle (Treasure sells for more) */
   lostLast?: boolean;
+  /** wins in a row (a loss or a draw ends it) */
+  streak?: number;
+  /** recent battles, newest last (kept short): who they fought and how it went */
+  history?: { round: number; vs: number; ghost?: boolean; result: 'win' | 'loss' | 'draw'; dmg: number }[];
   heroOffer?: string[];
   trinkets: string[];
   trinketOffer: string[] | null;

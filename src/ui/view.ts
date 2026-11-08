@@ -104,7 +104,7 @@ export function cardHtml(u: { cardId: string; golden: boolean; atk: number; hp: 
   const tags = abilityTags(u.cardId).slice(0, 2).map((t) => `<i>${t}</i>`).join('');
   return `<div class="${cls}" data-zone="${o.zone}" data-idx="${o.idx}" ${o.id !== undefined ? `data-id="${o.id}"` : ''} style="left:${o.x}px;top:${o.y}px">
   <div class="face"></div>
-  <div class="art" style="background-image:url('${cardArt(u.cardId)}')"></div>
+  <div class="art" style="background-image:url('${cardArt(u.cardId)}')"></div>${kw.includes('stealth') ? '<div class="smoke"></div>' : ''}
   <div class="tier">${'★'.repeat(d.tier)}</div>
   <div class="kws">${icons}</div>
   <div class="abil">${tags}</div>

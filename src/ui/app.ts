@@ -402,9 +402,10 @@ export class App {
           <div class="nm">${esc(p.name)}</div>
           <div class="hero-nm">${esc(h?.name ?? '')}${p.human ? '' : ` · ${seatRating(this.g!, p.id)}`}</div>
           <div class="hpbar"><div style="width:${pct}%"></div></div>
-          <div class="nums"><span>❤ ${Math.max(0, p.health)}</span><span>★ ${p.tier}</span></div>
+          <div class="nums"><span>❤ ${Math.max(0, p.health)}</span><span>★ ${p.tier}</span>${p.alive && (p.streak ?? 0) >= 2 ? `<span class="streak" title="${p.streak} wins in a row">🔥${p.streak}</span>` : ''}</div>
         </div>
         ${next ? '<div class="tag">NEXT</div>' : ''}
+        <div class="lb-hist">${this.historyHtml(p)}</div>
         ${!p.alive ? `<div class="place">${ordinal(p.placement)}</div>` : ''}
       </div>`;
     }).join('');
@@ -421,9 +422,9 @@ export class App {
       : tgt?.kind === 'hero' ? new Set((tgt.shop ? p.shop : p.board).map((u) => u.uid)) : null;
     let h = this.leaderboardHtml();
     h += this.tavernBarHtml();
-    // copies you already own (hand + army, not Golden): 1 = shimmer, 2 = the triple is one buy away
+    // copies you already own that can triple (hand + army, not Golden, not locked): 1 = shimmer, 2 = one buy away
     const owned = new Map<string, number>();
-    for (const u of [...p.hand, ...p.board]) if (!u.golden) owned.set(u.cardId, (owned.get(u.cardId) ?? 0) + 1);
+    for (const u of [...p.hand, ...p.board]) if (!u.golden && !u.mem.locked) owned.set(u.cardId, (owned.get(u.cardId) ?? 0) + 1);
     p.shop.forEach((u, i) => {
       const sel = this.sel?.zone === 'shop' && this.sel.idx === i ? 'selected' : '';
       const v = unitView(p, u, 'shop', i);
@@ -829,6 +830,21 @@ export class App {
       <button class="btn" data-act="trinket-skip">Skip</button></div>`;
   }
 
+  /** a player's last 3 battles: round, opponent, result and damage */
+  historyHtml(p: Player) {
+    const recent = (p.history ?? []).slice(-3).reverse();
+    if (!recent.length) return '<div class="lh-title">No battles yet</div>';
+    const g = this.g!;
+    const rows = recent.map((h) => {
+      const o = g.players[h.vs];
+      const who = o ? `${o.human ? 'You' : esc(o.name)}${h.ghost ? ' (ghost)' : ''}` : 'a ghost';
+      const res = h.result === 'win' ? `<b class="w">Won</b> vs ${who}` : h.result === 'loss' ? `<b class="l">Lost</b> to ${who}` : `<b class="d">Draw</b> with ${who}`;
+      const dmg = h.result === 'win' ? ` · dealt ${h.dmg}` : h.result === 'loss' ? ` · took ${h.dmg}` : '';
+      return `<div class="lh-row"><span class="lh-r">R${h.round}</span>${res}<span class="lh-d">${dmg}</span></div>`;
+    }).join('');
+    return `<div class="lh-title">Last ${recent.length === 1 ? 'battle' : `${recent.length} battles`}</div>${rows}`;
+  }
+
   inspectHtml() {
     const p = this.g!.players[this.inspect!];
     const h = heroDef(p.hero);
@@ -845,6 +861,7 @@ export class App {
           ${per ? `<div class="ip-style">“${esc(per.style)}”</div>` : ''}
           <div class="hint" style="padding:0;text-align:left">Playing <b>${esc(h?.name ?? '')}</b>, ${esc(h?.title ?? '')}<br>${powersOf(p).map((x) => `${esc(x.power)}: ${esc(x.text)}`).join('<br>')}<br>Tavern Tier ${p.tier}${p.trinkets.length ? ' · Trinkets: ' + p.trinkets.map((t) => trinketDef(t).name).join(', ') : ''}</div></div>
         </div>
+        <div class="ip-hist">${this.historyHtml(p)}</div>
         <div class="hint">Army when you last fought:</div>
         <div style="display:flex;gap:10px;flex-wrap:wrap;justify-content:center">${cards}</div>
         <button class="btn" data-act="close-inspect">Close</button>

@@ -3,7 +3,7 @@
 When the card text was ambiguous, Hearthstone: Battlegrounds conventions were used. Everything below can be changed; tell Claude which ones to change.
 
 ## Core rules (src/engine/core.ts `CONFIG`)
-- 6 players, 45 Health each. Damage = winner's Tavern Tier + 1 per surviving unit of the winner (whatever its tier). No cap.
+- 6 players; each hero has its own starting Health around 40 (the default). Damage = winner's Tavern Tier + 1 per surviving unit of the winner (whatever its tier). No cap.
 - Tavern Tiers 1–5. Upgrade costs: Tier 2 = 5, Tier 3 = 7, Tier 4 = 8, Tier 5 = 9, each dropping by 1 every turn (as in HS).
 - Shop size by tier: 3 / 4 / 4 / 5 / 5. Units cost 3, sell for 1, Refresh costs 1, Freeze is free.
 - Gold: 3 on turn 1, +1 per turn, max 10 (plus Investor/trinket bonuses).
@@ -153,7 +153,7 @@ Heroes start with different Health to even out their power: stronger heroes star
 bot in every seat (docs/balance.md): at 45 Health each, average placement ranged from 2.99 (May Danaris, Clover,
 Abragail) to 4.14 (Locas Clare). 10 Health is worth about 0.55 places, so each hero's Health was moved by
 (placement − 3.5) / 0.055. Afterwards every hero averages 3.44–3.59. Health is set per hero in `heroes.ts`
-(`health`), shown on the hero choice, and CONFIG.startHealth (45) is the default.
+(`health`), shown on the hero choice, and CONFIG.startHealth (40) is the default; all values were scaled by 40/45 when the base dropped from 45.
 
 ## Maximum Gold cap
 Investor and Warlord's Horn raise maximum Gold permanently; that used to have no ceiling (Investors kept on the

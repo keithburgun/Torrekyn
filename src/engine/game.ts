@@ -533,9 +533,23 @@ export function endTurn(g: GameState): CombatResult[] {
   // apply damage, and remember who lost (Treasure)
   for (const p of g.players) p.lostLast = false;
   for (const r of results) {
-    if (r.winner === -1) continue;
+    const ids = [r.a, r.b].filter((id) => id >= 0);
+    if (r.winner === -1) { for (const id of ids) g.players[id].streak = 0; continue; }
     const loserId = r.winner === 0 ? r.b : r.a;
-    if (loserId >= 0) { g.players[loserId].health -= r.damage; g.players[loserId].lostLast = true; }
+    const winnerId = r.winner === 0 ? r.a : r.b;
+    if (loserId >= 0) { g.players[loserId].health -= r.damage; g.players[loserId].lostLast = true; g.players[loserId].streak = 0; }
+    if (winnerId >= 0) g.players[winnerId].streak = (g.players[winnerId].streak ?? 0) + 1;
+  }
+  // battle history (shown when you hover a player)
+  for (const r of results) {
+    const sides: [number, number, 0 | 1][] = [[r.a, r.b, 0], [r.b, r.a, 1]];
+    for (const [me, vs, side] of sides) {
+      if (me < 0) continue;
+      const result = r.winner === -1 ? 'draw' : r.winner === side ? 'win' : 'loss';
+      const h = (g.players[me].history ??= []);
+      h.push({ round: g.round, vs: vs >= 0 ? vs : r.ghostOf ?? -1, ghost: vs < 0, result, dmg: result === 'draw' ? 0 : r.damage });
+      if (h.length > 6) h.shift();
+    }
   }
   // eliminations
   const dying = alivePlayers(g).filter((p) => p.health <= 0).sort((a, b) => a.health - b.health);

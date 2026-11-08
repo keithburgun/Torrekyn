@@ -185,7 +185,21 @@ b { font-weight: 800; }
   animation: shimmer 2.4s ease-in-out infinite;
 }
 .card.kw-taunt.kw-divineShield::after { inset: -14px -12px -34px; }
-.card.kw-stealth { opacity: 0.62; filter: saturate(0.6) blur(0.3px); }
+/* Stealth: smoky clouds drifting around the bottom of the card */
+.card .smoke { position: absolute; left: -10%; right: -10%; bottom: -4%; height: 50%; pointer-events: none; z-index: 4;
+  background:
+    radial-gradient(ellipse 24% 42% at 10% 66%, rgba(128, 132, 166, 0.92) 0 40%, transparent 72%),
+    radial-gradient(ellipse 26% 44% at 32% 78%, rgba(154, 158, 190, 0.92) 0 40%, transparent 72%),
+    radial-gradient(ellipse 28% 46% at 54% 68%, rgba(122, 126, 160, 0.92) 0 40%, transparent 72%),
+    radial-gradient(ellipse 26% 44% at 76% 80%, rgba(160, 164, 196, 0.92) 0 40%, transparent 72%),
+    radial-gradient(ellipse 24% 42% at 94% 64%, rgba(130, 134, 168, 0.92) 0 40%, transparent 72%),
+    radial-gradient(ellipse 22% 34% at 22% 36%, rgba(200, 204, 226, 0.8) 0 35%, transparent 70%),
+    radial-gradient(ellipse 22% 34% at 64% 32%, rgba(190, 194, 220, 0.75) 0 35%, transparent 70%),
+    radial-gradient(ellipse 20% 32% at 88% 38%, rgba(200, 204, 226, 0.7) 0 35%, transparent 70%);
+  filter: blur(2.5px); animation: smoke-drift 3.6s ease-in-out infinite alternate; }
+/* the stats and name stay readable above the smoke */
+.card.kw-stealth .stat, .card.kw-stealth .name, .card.kw-stealth .tribe-plate, .card.kw-stealth .abil { z-index: 5; }
+@keyframes smoke-drift { from { transform: translateX(-4%) scaleY(0.96); } to { transform: translateX(4%) scaleY(1.06); } }
 .card.kw-reborn .art { box-shadow: inset 0 0 20px rgba(150, 230, 255, 0.95), inset 0 0 0 2px #fff; }
 @keyframes shimmer { 50% { opacity: 0.8; } }
 
@@ -1198,3 +1212,19 @@ svg.aim-arrow.locked .aim-ring { opacity: 0.9; animation: aim-ring 0.9s ease-in-
 .card.hand-locked.unlock-5::before { content: '🔒 Tier 5'; }
 .card.hand-locked.unlock-6::before { content: '🔒 Tier 6'; }
 #stage.portrait .card.hand-locked::before { font-size: 24px; }
+
+/* hot streak on the leaderboard */
+.row .nums .streak { color: #ffb347; font-weight: 700; }
+
+/* recent battles: on hover beside a leaderboard row (desktop), and in the player panel */
+.leader .row .lb-hist { display: none; position: absolute; left: calc(100% + 14px); top: 50%; transform: translateY(-50%); z-index: 50; width: 300px;
+  padding: 10px 14px; border-radius: 16px; background: rgba(28, 22, 42, 0.97); border: 2px solid var(--lilac); box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5); pointer-events: none; }
+@media (hover: hover) { .leader .row:hover .lb-hist { display: block; } }
+.leader.horizontal .row .lb-hist { left: 50%; top: calc(100% + 12px); transform: translateX(-50%); }
+.lh-title { font-family: var(--display); font-weight: 600; font-size: 14px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--lilac); margin-bottom: 4px; }
+.lh-row { font-size: 15px; line-height: 1.5; color: var(--ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.lh-row .lh-r { display: inline-block; min-width: 34px; color: var(--ink-soft); font-weight: 600; }
+.lh-row .lh-d { color: var(--ink-soft); }
+.lh-row b.w { color: #7ee2b8; } .lh-row b.l { color: #ff8fa8; } .lh-row b.d { color: #ffd98a; }
+.ip-hist { min-width: 320px; padding: 8px 14px; border-radius: 14px; background: rgba(255, 255, 255, 0.05); }
+#stage.portrait .lh-row { font-size: 22px; } #stage.portrait .lh-title { font-size: 20px; }
