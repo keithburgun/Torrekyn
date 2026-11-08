@@ -5,7 +5,7 @@
  *  - Divine Shield absorbs one hit; Venomous kills on damage (one use); Reborn returns at 1 Health;
  *  - Windfury attacks twice; deaths resolve left-to-right, attacking side first.
  */
-import { addKw, cloneUnit, def, effStats, has, mult, pick, rand, removeKw, sample, tribeAtkFor, tribeOf, CONFIG } from './core';
+import { addKw, cloneUnit, def, effStats, has, mult, ownerBonus, pick, rand, removeKw, sample, tribeOf, CONFIG } from './core';
 import { EFFECTS, hasBattlecry, battlecryTimes, type CCtx } from './effects';
 import { gainNew, combatDamage, onBattlecryTriggered } from './game';
 import { heroHooks, heroSoc } from './heroes';
@@ -141,8 +141,9 @@ export class Combat {
     if (s.units.filter((u) => u.hp > 0).length >= CONFIG.boardSize) return null;
     const d = def(cardId);
     const m = golden ? 2 : 1;
-    const cu = this.makeCU(s.idx, cardId, golden, d.atk * m, d.hp * m, d.keywords, null, -1);
-    cu.atk += tribeAtkFor(s.owner, cardId);
+    // a fresh unit gets the same "all your X units have…" bonuses as the ones you brought in
+    const bonus = ownerBonus(s.owner, { cardId, golden } as Body);
+    const cu = this.makeCU(s.idx, cardId, golden, d.atk * m + bonus.atk, d.hp * m + bonus.hp, d.keywords, null, -1);
     s.units.splice(Math.max(0, Math.min(pos, s.units.length)), 0, cu);
     this.addFx({ k: 'summon', to: cu.id });
     heroHooks.onSummon(this, s, cu);
@@ -291,7 +292,7 @@ export class Combat {
           const d = def(u.cardId);
           const m = u.golden ? 2 : 1;
           if (s.units.filter((x) => x.hp > 0).length < CONFIG.boardSize) {
-            const r = this.makeCU(s.idx, u.cardId, u.golden, d.atk * m + tribeAtkFor(s.owner, u.cardId), 1,
+            const r = this.makeCU(s.idx, u.cardId, u.golden, d.atk * m + ownerBonus(s.owner, u).atk, 1,
               d.keywords.filter((k) => k !== 'reborn'), u.src, u.slot, { ...u.mem });
             s.units.splice(Math.min(pos, s.units.length), 0, r);
             this.addFx({ k: 'reborn', to: r.id });

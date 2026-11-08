@@ -1,3 +1,4 @@
+import { CARDS } from '../src/engine/core';
 import { describe, it, expect } from 'vitest';
 import { newGame as ng, human, buy, play, sell, combatDamage, selectHero } from '../src/engine/game';
 // a game past hero selection with no hero powers in the way (hero tests below give powers explicitly)
@@ -21,6 +22,20 @@ function fight(g: GameState, a: Unit[], b: Unit[]) {
 }
 
 describe('mechanics', () => {
+  it('"Your X units have…" bonuses also apply to units summoned during a battle', () => {
+    const g = newGame(11);
+    const pa = g.players[0], pb = g.players[1];
+    pa.hero = undefined; pb.hero = undefined; pa.powers = []; pb.powers = [];
+    pa.trinkets = ['bronze_compass'];
+    const c = new Combat(g, { p: pa, board: [makeUnit(g, 'skel')], slots: pa.slots, tier: 1, persistent: false },
+      { p: pb, board: [makeUnit(g, 'skel')], slots: pb.slots, tier: 1, persistent: false });
+    const base = CARDS.find((x) => x.id === 'skel')!.atk;
+    expect(c.sides[0].units[0].atk).toBe(base + 12);
+    const summoned = c.spawn(c.sides[0], 'skel', false, 1)!;
+    expect(summoned.atk).toBe(base + 12);
+    expect(c.spawn(c.sides[1], 'skel', false, 1)!.atk).toBe(base); // not the opponent's
+  });
+
   it('Pyro\'s excess damage (only when attacking) hits one neighbour (both if Golden) and does not chain', async () => {
     for (const golden of [false, true]) {
       const g = newGame(7);

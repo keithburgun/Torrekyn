@@ -115,21 +115,31 @@ export function displayName(b: Body): string {
   return (b.golden ? 'Golden ' : '') + def(b.cardId).name;
 }
 
+/**
+ * Bonuses a player gives to all their units of a kind, wherever the unit is (hand, army, or summoned during a
+ * battle): tribe Attack buffs, Bronze Compass, Scientist, War Mech's growth. Not baked into the unit's stats.
+ */
+export function ownerBonus(p: Player, b: Body): { atk: number; hp: number } {
+  let atk = tribeAtkFor(p, b.cardId);
+  let hp = 0;
+  if (p.trinkets?.includes('bronze_compass') && isTribe(b, 'neverending')) atk += 12; // Bronze Compass
+  if (isTribe(b, 'alcove')) atk += p.alcoveAtkThisTier ?? 0; // Scientist
+  if (b.cardId === 'warmech') {
+    atk += 4 * mult(b) * p.battlecriesGame;
+    hp += 2 * mult(b) * p.battlecriesGame;
+  }
+  return { atk, hp };
+}
+
 /** Stats a unit shows / brings into combat, including auras that are not baked in. */
 export function effStats(p: Player, u: Unit, zone: 'board' | 'hand' | 'shop', index = -1) {
-  let atk = u.atk;
-  let hp = u.hp;
+  const bonus = ownerBonus(p, u);
+  let atk = u.atk + bonus.atk;
+  let hp = u.hp + bonus.hp;
   const kw = [...u.kw];
-  atk += tribeAtkFor(p, u.cardId);
-  if (p.trinkets?.includes('bronze_compass') && isTribe(u, 'neverending')) atk += 12; // Bronze Compass
-  if (isTribe(u, 'alcove')) atk += p.alcoveAtkThisTier;
   if (zone === 'shop' && isTribe(u, 'alcove')) {
     atk += p.tinkerThisTier;
     hp += p.tinkerThisTier;
-  }
-  if (u.cardId === 'warmech') {
-    atk += 4 * mult(u) * p.battlecriesGame;
-    hp += 2 * mult(u) * p.battlecriesGame;
   }
   if (zone === 'board' && index >= 0 && p.slots[index]) {
     const s = p.slots[index];
