@@ -1422,3 +1422,12 @@ svg.aim-arrow.locked .aim-ring { opacity: 0.9; animation: aim-ring 0.9s ease-in-
 #stage .tavern-btn .tb-icon { filter: none; width: 42%; }
 #stage .tavern-btn .tb-label { background: none; bottom: 9px; height: auto; font-size: 18px; text-shadow: 0 2px 0 rgba(120, 20, 70, 0.45); }
 #stage.portrait .tavern-btn .tb-label { font-size: 22px; bottom: 11px; }
+
+/* Trinkets: Keith's pixel present instead of a plain orb (greater trinkets glow pink) */
+#stage .trinket-orb, #stage .trinketcard .gem, #stage.pix .trinket-orb, #stage.pix .trinket-orb.greater, #stage.pix .trinketcard .gem {
+  border-radius: 0; clip-path: none; box-shadow: none; background: var(--trinket-art) center / contain no-repeat;
+  filter: drop-shadow(0 3px 0 rgba(8, 6, 12, 0.6)) drop-shadow(0 0 6px rgba(255, 255, 255, 0.35));
+}
+#stage .trinket-orb.greater, #stage .trinketcard.greater .gem, #stage.pix .trinket-orb.greater, #stage.pix .trinketcard.greater .gem {
+  filter: drop-shadow(0 3px 0 rgba(8, 6, 12, 0.6)) drop-shadow(0 0 10px var(--pink)) drop-shadow(0 0 4px #fff);
+}

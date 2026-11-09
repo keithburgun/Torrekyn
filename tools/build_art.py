@@ -81,19 +81,21 @@ def scale2x(im):
     out[1::2, 1::2] = pick((Bk == D) & (Bk != A) & (D != C), Bp)
     return Image.fromarray(out.astype('uint8'), 'RGBA')
 
-# 'smooth': Scale2x three times, then a soft (Lanczos) resize: rounded edges, slightly soft. 'sharp': plain nearest-neighbour blocks.
-PX_MODE = os.environ.get('PX_MODE', 'smooth')
+# 'soft': crisp pixels with only the edges lightly anti-aliased ("sharp bilinear": blow the sprite up with
+# hard nearest-neighbour blocks, then area-average it down to the exact size, so each pixel stays a solid
+# square and only the pixels straddling a boundary blend). 'sharp': plain nearest-neighbour at a whole-number scale.
+# (scale2x above is kept for experiments; it rounds shapes off too much for this game.)
+PX_MODE = os.environ.get('PX_MODE', 'soft')
 
 def upscale_sprite(im, k):
     w, h = im.size
     if PX_MODE == 'sharp':
         return im.resize((w * max(1, int(k)), h * max(1, int(k))), Image.NEAREST)
-    big = im
-    while big.width < w * k:
-        big = scale2x(big)
-    # resize in premultiplied alpha so see-through edges don't pick up dark fringes
-    big = big.convert('RGBa').resize((round(w * k), round(h * k)), Image.LANCZOS).convert('RGBA')
-    return big
+    import math
+    K = 4 * math.ceil(k)
+    big = im.resize((w * K, h * K), Image.NEAREST)
+    # premultiplied alpha so see-through edges don't pick up dark fringes
+    return big.convert('RGBa').resize((round(w * k), round(h * k)), Image.BOX).convert('RGBA')
 
 def pixel_art(path, tribe, box=None):
     im = trim(first_frame(Image.open(path).convert('RGBA'), box))

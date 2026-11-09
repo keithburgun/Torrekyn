@@ -2,6 +2,10 @@
 
 Newest first. The version shows on the title screen.
 
+## 0.4.8 — 2026-11-09
+- Pixel sprites back to crisp pixel art with only the edges lightly anti-aliased (sharp-bilinear), replacing the over-smoothed Scale2x look.
+- Trinkets use Keith's pixel present art instead of a plain orb; greater trinkets glow pink.
+
 ## 0.4.7 — 2026-11-09
 - Bill Milton's Golden Parachute triggers when you buy a Business Demon (was: play one).
 

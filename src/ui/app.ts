@@ -158,6 +158,7 @@ export class App {
     // one night-sky backdrop for every screen, drawn once, very large and blurred (styles.css #stage::before)
     // made absolute: a url() inside a CSS variable is read relative to the stylesheet that uses it (assets/), not the page
     this.stage.style.setProperty('--bg', `url('${new URL(art('art/bg.png'), document.baseURI).href}')`);
+    this.stage.style.setProperty('--trinket-art', `url('${new URL(art('art/trinket.png'), document.baseURI).href}')`);
     placeBoardBg(this.stage, L, null);
     if (this.screen === 'combat') return; // combat view owns the stage
     // a new screen fades in quickly (shop and battle also fade out first; see afterEndTurn / startCombat)
