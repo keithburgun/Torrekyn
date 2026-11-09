@@ -2,6 +2,9 @@
 
 Newest first. The version shows on the title screen.
 
+## 0.4.0 — 2026-11-09
+- Pixel-art interface (new default): square buttons, panels, chips, tooltips, Tavern keys, hero frames and coins with notched pixel borders, hard bevels and hard drop shadows. Options → Interface switches back to Smooth.
+
 ## 0.3.2 — 2026-11-09
 - May Danaris: Root Access costs 3 (was 2).
 - Omar Evans: Leaf Cloak now Discovers a Cloister unit after every 4 units sold (was a random one after 5).

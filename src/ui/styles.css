@@ -1260,3 +1260,107 @@ svg.aim-arrow.locked .aim-ring { opacity: 0.9; animation: aim-ring 0.9s ease-in-
 #stage.portrait .card.small .stat { width: 52px; height: 52px; font-size: 32px; }
 .card .stat.buffed { color: #d9ffb0; }
 .card .stat.hurt { color: #ffd2d2; text-decoration: none; }
+
+/* =====================================================================
+   PIXEL UI (Options → Interface: Pixel). Square, notched-corner frames with a dark 1-"pixel" outline,
+   a hard bevel (light top edge, dark bottom edge) and a hard drop shadow instead of soft glows.
+   Cards and their art are left alone; this restyles buttons, panels, badges and chips.
+   ===================================================================== */
+#stage.pix {
+  --px: 4px;            /* one "pixel" */
+  --pix-ink: #120e18;   /* outline */
+  --pix-drop: rgba(8, 6, 12, 0.7);
+  /* outline with the corner pixels cut off, plus a hard shadow below */
+  --pix-frame: 0 calc(-1 * var(--px)) 0 0 var(--pix-ink), 0 var(--px) 0 0 var(--pix-ink), calc(-1 * var(--px)) 0 0 0 var(--pix-ink), var(--px) 0 0 0 var(--pix-ink);
+  --pix-bevel: inset 0 var(--px) 0 0 rgba(255, 255, 255, 0.24), inset 0 calc(-1 * var(--px)) 0 0 rgba(0, 0, 0, 0.32);
+}
+#stage.pix .btn, #stage.pix .chip, #stage.pix .end-turn, #stage.pix .toast, #stage.pix .tip, #stage.pix .quest-chip, #stage.pix .trinket-chip,
+#stage.pix .panel, #stage.pix .tk-tier, #stage.pix .leader .tag, #stage.pix #cv-search, #stage.pix .panel.account input {
+  border-radius: 0; border: 0;
+}
+/* buttons */
+#stage.pix .btn {
+  background: var(--slate-hi); margin: var(--px);
+  box-shadow: var(--pix-frame), 0 calc(2 * var(--px)) 0 0 var(--pix-drop), var(--pix-bevel);
+  transition: filter 0.1s;
+}
+#stage.pix .btn:hover { transform: none; filter: brightness(1.15); }
+#stage.pix .btn:active { transform: translateY(var(--px)); box-shadow: var(--pix-frame), var(--pix-bevel); }
+#stage.pix .btn:focus-visible { outline: var(--px) solid #ffcf4a; outline-offset: var(--px); }
+#stage.pix .btn.primary { background: var(--pink-deep); box-shadow: var(--pix-frame), 0 calc(2 * var(--px)) 0 0 var(--pix-drop), inset 0 var(--px) 0 0 #ffb6dc, inset 0 calc(-1 * var(--px)) 0 0 #a83373; }
+#stage.pix .btn.on { background: #3f9fc2; box-shadow: var(--pix-frame), 0 calc(2 * var(--px)) 0 0 var(--pix-drop), inset 0 var(--px) 0 0 #aef0ff, inset 0 calc(-1 * var(--px)) 0 0 #23708c; }
+#stage.pix .btn.primary:active, #stage.pix .btn.on:active { box-shadow: var(--pix-frame); }
+#stage.pix .seg { gap: calc(3 * var(--px)); }
+#stage.pix .chip { background: var(--slate); margin: 3px; box-shadow: 0 -3px 0 0 var(--pix-ink), 0 3px 0 0 var(--pix-ink), -3px 0 0 0 var(--pix-ink), 3px 0 0 0 var(--pix-ink), inset 0 -3px 0 0 rgba(0, 0, 0, 0.3); }
+#stage.pix .chip.on { background: var(--pink-deep); box-shadow: 0 -3px 0 0 var(--pix-ink), 0 3px 0 0 var(--pix-ink), -3px 0 0 0 var(--pix-ink), 3px 0 0 0 var(--pix-ink), inset 0 3px 0 0 #ffb6dc; }
+#stage.pix .end-turn {
+  border-radius: 0; background: var(--pink-deep);
+  box-shadow: var(--pix-frame), 0 calc(2 * var(--px)) 0 0 var(--pix-drop), inset 0 var(--px) 0 0 #ffb6dc, inset 0 calc(-2 * var(--px)) 0 0 #a83373;
+}
+#stage.pix .end-turn:active { transform: translateY(var(--px)); box-shadow: var(--pix-frame), inset 0 var(--px) 0 0 #ffb6dc; }
+/* panels, tooltips, toasts */
+#stage.pix .panel {
+  background: rgba(30, 26, 38, 0.94); backdrop-filter: none;
+  box-shadow: var(--pix-frame), inset 0 0 0 var(--px) #4d4560, inset 0 0 0 calc(2 * var(--px)) var(--pix-ink), calc(2 * var(--px)) calc(2 * var(--px)) 0 calc(var(--px)) var(--pix-drop);
+}
+#stage.pix .tip, #stage.pix .toast, #stage.pix .quest-chip, #stage.pix .trinket-chip, #stage.pix .tk-tier {
+  background: var(--slate); box-shadow: var(--pix-frame), inset 0 0 0 3px var(--lilac-deep), var(--px) var(--px) 0 var(--px) var(--pix-drop);
+}
+#stage.pix .toast { box-shadow: var(--pix-frame), inset 0 0 0 3px var(--pink), var(--px) var(--px) 0 var(--px) var(--pix-drop); }
+#stage.pix .quest-chip { box-shadow: var(--pix-frame), inset 0 0 0 3px #ffcf4a; }
+#stage.pix .leader .row { border-radius: 0; border: 0; box-shadow: inset 0 0 0 3px rgba(255, 255, 255, 0.06); }
+#stage.pix .leader .row.me { box-shadow: inset 0 0 0 3px var(--lilac); }
+#stage.pix .leader .row.next { box-shadow: inset 0 0 0 3px var(--pink), 0 0 0 3px var(--pix-ink); }
+#stage.pix .leader .hpbar, #stage.pix .leader .hpbar div { border-radius: 0; }
+#stage.pix .leader .hpbar { box-shadow: 0 0 0 2px var(--pix-ink); }
+#stage.pix .leader .tag { box-shadow: 0 0 0 2px var(--pix-ink); }
+#stage.pix #cv-search, #stage.pix .panel.account input { box-shadow: inset 0 0 0 3px var(--slate-edge), 0 0 0 3px var(--pix-ink); }
+/* round things become square tiles */
+#stage.pix .leader .avatar, #stage.pix .hero-portrait, #stage.pix .tk-portrait, #stage.pix .hero-power, #stage.pix .hero-power .hp-icon,
+#stage.pix .trinket-orb, #stage.pix .tb-cost, #stage.pix .coin, #stage.pix .tavern-btn, #stage.pix .tavern-btn::before, #stage.pix .tx-portrait {
+  border-radius: 0;
+}
+#stage.pix .leader .avatar { box-shadow: 0 0 0 3px var(--pix-ink), 0 0 0 6px var(--slate-edge); }
+#stage.pix .hero-portrait { box-shadow: 0 0 0 4px var(--pix-ink), 0 0 0 8px var(--lilac), 0 0 0 12px var(--pix-ink); }
+#stage.pix .tk-portrait { background: #2d2640; box-shadow: 0 0 0 4px var(--pix-ink), 0 0 0 8px var(--pink), 0 0 0 12px var(--pix-ink), inset 0 4px 0 0 #5a4a7a; }
+#stage.pix .hero-power { box-shadow: 0 0 0 4px var(--pix-ink), 0 0 0 8px var(--lilac), 0 0 0 12px var(--pix-ink); }
+#stage.pix .hero-power.passive { box-shadow: 0 0 0 4px var(--pix-ink), 0 0 0 8px #8a8396, 0 0 0 12px var(--pix-ink); }
+#stage.pix .my-hero.ready .hero-portrait { animation: none; box-shadow: 0 0 0 4px var(--pix-ink), 0 0 0 8px #7ee2b8, 0 0 0 12px var(--pix-ink); }
+#stage.pix .trinket-orb { background: #5fcde0; box-shadow: 0 0 0 3px var(--pix-ink), inset 0 4px 0 0 #e4fcff, inset 0 -4px 0 0 #2f8fb0; }
+#stage.pix .trinket-orb.greater { background: var(--pink); box-shadow: 0 0 0 3px var(--pix-ink), inset 0 4px 0 0 #ffd0ea, inset 0 -4px 0 0 var(--pink-deep); }
+#stage.pix .coin, #stage.pix .tb-cost { background: var(--coin); box-shadow: 0 0 0 2px var(--pix-ink), inset 0 2px 0 0 #fff8cf, inset 0 -2px 0 0 #b07a12; }
+#stage.pix .tb-cost { box-shadow: 0 0 0 3px var(--pix-ink), inset 0 3px 0 0 #fff8cf, inset 0 -3px 0 0 #b07a12; }
+/* Tavern buttons: square stone keys instead of domed orbs */
+#stage.pix .tavern-btn { background: #8d76c9; box-shadow: 0 0 0 4px var(--pix-ink), 0 8px 0 4px var(--pix-drop), inset 0 4px 0 0 #e4dafc, inset 0 -4px 0 0 #4b3a78; }
+#stage.pix .tavern-btn::before { inset: 10px; background: #2c2738; box-shadow: inset 0 4px 0 0 #120e18, inset 0 -3px 0 0 #4b4459; }
+#stage.pix .tavern-btn:active { transform: translateY(4px); box-shadow: 0 0 0 4px var(--pix-ink), inset 0 4px 0 0 #e4dafc, inset 0 -4px 0 0 #4b3a78; }
+#stage.pix .tavern-btn:active::before { background: #221e2b; }
+#stage.pix .tavern-btn.upgrade { background: #e8b23a; box-shadow: 0 0 0 4px var(--pix-ink), 0 8px 0 4px var(--pix-drop), inset 0 4px 0 0 #fff6cf, inset 0 -4px 0 0 #8a5c0c; }
+#stage.pix .tavern-btn.freeze.on { background: #3aa6c8; box-shadow: 0 0 0 4px var(--pix-ink), 0 8px 0 4px var(--pix-drop), inset 0 4px 0 0 #e4fcff, inset 0 -4px 0 0 #145a73; }
+#stage.pix .tavern-btn.freeze.on::before { background: #6ccbe6; }
+#stage.pix #mute-btn, #stage.pix .gear, #stage.pix .tribes-chip, #stage.pix .tribes-tip {
+  border-radius: 0; border: 0; margin: 0; background: var(--slate); box-shadow: var(--pix-frame), inset 0 0 0 3px var(--slate-edge), 0 calc(2 * var(--px)) 0 0 var(--pix-drop);
+}
+#stage.pix .tribes-tip { box-shadow: var(--pix-frame), inset 0 0 0 3px var(--lilac-deep), var(--px) var(--px) 0 var(--px) var(--pix-drop); }
+#stage.pix #mute-btn.muted { box-shadow: var(--pix-frame), inset 0 0 0 3px var(--pink); }
+#stage.pix .slot-plate { border-radius: 0; border-width: 4px; }
+/* coins and gold pips: chunky pixel circles (an octagon) */
+#stage.pix .coin, #stage.pix .tb-cost, #stage.pix .pip {
+  border-radius: 0; clip-path: polygon(30% 0, 70% 0, 100% 30%, 100% 70%, 70% 100%, 30% 100%, 0 70%, 0 30%);
+}
+#stage.pix .coin, #stage.pix .pip.full { background: var(--coin); box-shadow: inset 0 3px 0 0 #fff8cf, inset 0 -3px 0 0 #b07a12; }
+#stage.pix .tb-cost { box-shadow: inset 0 3px 0 0 #fff8cf, inset 0 -3px 0 0 #b07a12, inset 0 0 0 2px #5a3a00; }
+#stage.pix .tavern-btn, #stage.pix .tavern-btn.upgrade, #stage.pix .tavern-btn.freeze.on { --tb-drop: 0 6px 0 4px var(--pix-drop); }
+#stage.pix .tavern-btn { box-shadow: 0 0 0 4px var(--pix-ink), var(--tb-drop), inset 0 4px 0 0 #e4dafc, inset 0 -4px 0 0 #4b3a78; }
+#stage.pix .tavern-btn.upgrade { box-shadow: 0 0 0 4px var(--pix-ink), var(--tb-drop), inset 0 4px 0 0 #fff6cf, inset 0 -4px 0 0 #8a5c0c; }
+#stage.pix .tavern-btn.freeze.on { box-shadow: 0 0 0 4px var(--pix-ink), var(--tb-drop), inset 0 4px 0 0 #e4fcff, inset 0 -4px 0 0 #145a73; }
+#stage.pix .herocard, #stage.pix .trinketcard, #stage.pix .ach, #stage.pix .ach-toast {
+  border-radius: 0; border: 0; background: var(--slate-hi);
+  box-shadow: var(--pix-frame), inset 0 0 0 var(--px) var(--lilac-deep), inset 0 0 0 calc(2 * var(--px)) var(--pix-ink), calc(2 * var(--px)) calc(2 * var(--px)) 0 var(--px) var(--pix-drop);
+}
+#stage.pix .trinketcard.greater { box-shadow: var(--pix-frame), inset 0 0 0 var(--px) var(--pink), inset 0 0 0 calc(2 * var(--px)) var(--pix-ink), calc(2 * var(--px)) calc(2 * var(--px)) 0 var(--px) var(--pix-drop); }
+#stage.pix .ach { box-shadow: var(--pix-frame), inset 0 0 0 3px var(--slate-edge); }
+#stage.pix .ach.done { box-shadow: var(--pix-frame), inset 0 0 0 3px #ffcf4a; }
+#stage.pix .ach-bar, #stage.pix .ach-bar div { border-radius: 0; }
+#stage.pix .trinketcard .gem { border-radius: 0; clip-path: polygon(30% 0, 70% 0, 100% 30%, 100% 70%, 70% 100%, 30% 100%, 0 70%, 0 30%); background: #5fcde0; box-shadow: inset 0 6px 0 0 #e4fcff, inset 0 -6px 0 0 #2f8fb0; }
+#stage.pix .herocard .hero-portrait { box-shadow: 0 0 0 4px var(--pix-ink), 0 0 0 8px var(--lilac); }

@@ -51,6 +51,11 @@ function handX(i: number, n: number) {
 }
 const ordinal = (n: number) => n + (n === 1 ? 'st' : n === 2 ? 'nd' : n === 3 ? 'rd' : 'th');
 
+/** Interface style: 'pixel' (square, pixel-art frames; the default) or 'smooth' (the original rounded look) */
+function uiStyle(): 'pixel' | 'smooth' {
+  return store.get('torrekin-ui') === 'smooth' ? 'smooth' : 'pixel';
+}
+
 export class App {
   stage: HTMLElement;
   g: GameState | null = null;
@@ -139,6 +144,7 @@ export class App {
     L = currentLayout();
     this.stage.classList.toggle('portrait', L.portrait);
     this.stage.classList.toggle('tall', !!L.tall);
+    this.stage.classList.toggle('pix', uiStyle() === 'pixel');
     this.stage.classList.toggle('menu-bg', this.screen === 'title' || this.screen === 'rules' || this.screen === 'hero' || this.screen === 'tribes');
     // one night-sky backdrop for every screen, drawn once, very large and blurred (styles.css #stage::before)
     // made absolute: a url() inside a CSS variable is read relative to the stylesheet that uses it (assets/), not the page
@@ -644,6 +650,7 @@ export class App {
       <div class="hint" style="margin-top:-8px">Auto picks portrait when the window is taller than it is wide.</div>
       <div class="opt-row"><span>Sound</span>${seg('sound', [['on', 'On'], ['off', 'Off']], isMuted() ? 'off' : 'on')}</div>
       ${this.cloudRowHtml()}
+      <div class="opt-row"><span>Interface</span>${seg('ui-style', [['pixel', 'Pixel'], ['smooth', 'Smooth']], uiStyle())}</div>
       <div class="opt-row"><span>Card art</span>${seg('art-style', [['illustrated', 'Illustrated'], ['classic', 'Classic']], getArtStyle())}</div>
       <div class="opt-row"><span>Battle speed</span>${seg('speed', SPEEDS.map((s) => [String(s.v), s.label]), String(speed), 'v')}</div>
       <div class="opt-row"><span>Debug mode (errors on screen)</span>${seg('debug', [['on', 'On'], ['off', 'Off']], debugOn() ? 'on' : 'off')}</div>
@@ -1445,6 +1452,7 @@ export class App {
       case 'sound': setMuted(el.dataset.mode === 'off'); this.render(); break;
       case 'debug': setDebug(el.dataset.mode === 'on'); this.render(); break;
       case 'art-style': setArtStyle(el.dataset.mode as ArtStyle); this.render(); break;
+      case 'ui-style': store.set('torrekin-ui', el.dataset.mode!); this.render(); break;
       case 'speed': store.set('torrekin-speed', el.dataset.v!); this.render(); break;
       case 'tribes': this.showTribes = !this.showTribes; this.render(); break;
       case 'to-hero': sfx.click(); this.screen = 'hero'; this.render(); break;
