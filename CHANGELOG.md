@@ -2,6 +2,10 @@
 
 Newest first. The version shows on the title screen.
 
+## 0.4.2 — 2026-11-09
+- Hero Health is a red circle (like a unit's Health) beside the portrait instead of a heart over the face; same in the battle intro and battle.
+- Hero select shows Stealing A Boat's real starting cost (7).
+
 ## 0.4.1 — 2026-11-09
 - Pixel interface: hero portraits (and your hero's power button) are round again, with the round cost coin.
 

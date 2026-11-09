@@ -385,7 +385,7 @@ export class App {
           <div class="hero-portrait" style="background-image:url('${heroArt(h.id)}')"><div class="hp">${heroHealth(h.id)}</div></div>
           <div class="hn">${esc(h.name)}</div>
           <div class="pc htitle" style="font-size:14px;margin-top:-8px;text-align:center">${esc(h.title)}</div>
-          <div class="pw">${esc(h.power)} ${h.passive ? '<span class="pc">(Passive)</span>' : `<span class="pc">(${h.costFn ? 'starts at 10 gold' : `${h.cost} gold`})</span>`}</div>
+          <div class="pw">${esc(h.power)} ${h.passive ? '<span class="pc">(Passive)</span>' : `<span class="pc">(${h.costFn ? `starts at ${h.costFn(this.g!, this.me!)} gold` : `${h.cost} gold`})</span>`}</div>
           <div class="pt">${esc(h.text)}</div>
         </div>`;
       }).join('')}</div>
