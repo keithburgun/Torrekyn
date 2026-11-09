@@ -52,6 +52,15 @@ function handX(i: number, n: number) {
 const ordinal = (n: number) => n + (n === 1 ? 'st' : n === 2 ? 'nd' : n === 3 ? 'rd' : 'th');
 
 /** Interface style: 'pixel' (square, pixel-art frames; the default) or 'smooth' (the original rounded look) */
+/** Pixel-drawn icons for the Tavern buttons (a 9x9 grid, drawn crisp at any size) */
+const pixSvg = (rects: string) => `<svg viewBox="0 0 9 9" shape-rendering="crispEdges" fill="currentColor" aria-hidden="true">${rects
+  .trim().split(/\s+/).map((r) => { const [x, y, w = '1', h = '1'] = r.split(','); return `<rect x="${x}" y="${y}" width="${w}" height="${h}"/>`; }).join('')}</svg>`;
+const PIX_ICON = {
+  up: pixSvg('4,0 3,1,3 2,2,5 1,3,7 0,4,9 3,5,3,4'),
+  refresh: pixSvg('2,0,4 7,0 1,1 6,1,2 0,2 5,2,3 0,3,1,3 8,4,1,2 1,6 7,6 2,7,5'), // a loop with an arrowhead at the top right
+  freeze: pixSvg('4,0,1,9 0,4,9,1 1,1 2,2 3,3 5,5 6,6 7,7 7,1 6,2 5,3 3,5 2,6 1,7 3,0 5,0 3,8 5,8 0,3 0,5 8,3 8,5'),
+};
+
 function uiStyle(): 'pixel' | 'smooth' {
   return store.get('torrekin-ui') === 'smooth' ? 'smooth' : 'pixel';
 }
@@ -503,7 +512,7 @@ export class App {
     const at = (cx: number, landX: number) => (t ? `left:${cx - t.btn / 2}px;top:${t.btnTop}px` : `left:${landX}px;top:${L.tavernY + 14}px`);
     return `
       <div class="tavern-btn upgrade ${upCost === null || p.gold < upCost ? 'off' : ''}" data-act="upgrade" style="${at(t?.up ?? 0, L.cx - 175)}" title="Upgrade the Tavern">
-        <div class="tb-icon">⬆</div>${upCost === null ? '' : `<div class="tb-cost">${upCost}</div>`}
+        <div class="tb-icon">${PIX_ICON.up}</div>${upCost === null ? '' : `<div class="tb-cost">${upCost}</div>`}
         <div class="tb-label">${upCost === null ? 'Max Tier' : 'Upgrade'}</div>
       </div>
       <div class="tavern-keeper" style="left:${t ? L.cx - t.kp / 2 : L.cx - 66}px;top:${L.tavernY}px">
@@ -513,10 +522,10 @@ export class App {
         <div class="tk-label">Tavern · Tier ${p.tier}</div>
       </div>
       <div class="tavern-btn refresh ${p.gold < CONFIG.rerollCost ? 'off' : ''}" data-act="reroll" style="${at(t?.refresh ?? 0, L.cx + 87)}" title="Refresh the Tavern">
-        <div class="tb-icon">↻</div><div class="tb-cost">${CONFIG.rerollCost}</div><div class="tb-label">Refresh</div>
+        <div class="tb-icon">${PIX_ICON.refresh}</div><div class="tb-cost">${CONFIG.rerollCost}</div><div class="tb-label">Refresh</div>
       </div>
       <div class="tavern-btn freeze ${p.frozen ? 'on' : ''}" data-act="freeze" style="${at(t?.freeze ?? 0, L.cx + 187)}" title="Freeze the Tavern">
-        <div class="tb-icon">❄</div><div class="tb-label">${p.frozen ? 'Frozen' : 'Freeze'}</div>
+        <div class="tb-icon">${PIX_ICON.freeze}</div><div class="tb-label">${p.frozen ? 'Frozen' : 'Freeze'}</div>
       </div>`;
   }
 

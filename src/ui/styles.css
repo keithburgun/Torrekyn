@@ -1317,7 +1317,7 @@ svg.aim-arrow.locked .aim-ring { opacity: 0.9; animation: aim-ring 0.9s ease-in-
 #stage.pix #cv-search, #stage.pix .panel.account input { box-shadow: inset 0 0 0 3px var(--slate-edge), 0 0 0 3px var(--pix-ink); }
 /* round things become square tiles */
 #stage.pix .leader .avatar, #stage.pix .tk-portrait, #stage.pix .hero-power, #stage.pix .hero-power .hp-icon,
-#stage.pix .trinket-orb, #stage.pix .tb-cost, #stage.pix .coin, #stage.pix .tavern-btn, #stage.pix .tavern-btn::before, #stage.pix .tx-portrait {
+#stage.pix .trinket-orb, #stage.pix .tb-cost, #stage.pix .coin, #stage.pix .tx-portrait {
   border-radius: 0;
 }
 #stage.pix .leader .avatar { box-shadow: 0 0 0 3px var(--pix-ink), 0 0 0 6px var(--slate-edge); }
@@ -1329,13 +1329,6 @@ svg.aim-arrow.locked .aim-ring { opacity: 0.9; animation: aim-ring 0.9s ease-in-
 #stage.pix .coin, #stage.pix .tb-cost { background: var(--coin); box-shadow: 0 0 0 2px var(--pix-ink), inset 0 2px 0 0 #fff8cf, inset 0 -2px 0 0 #b07a12; }
 #stage.pix .tb-cost { box-shadow: 0 0 0 3px var(--pix-ink), inset 0 3px 0 0 #fff8cf, inset 0 -3px 0 0 #b07a12; }
 /* Tavern buttons: square stone keys instead of domed orbs */
-#stage.pix .tavern-btn { background: #8d76c9; box-shadow: 0 0 0 4px var(--pix-ink), 0 8px 0 4px var(--pix-drop), inset 0 4px 0 0 #e4dafc, inset 0 -4px 0 0 #4b3a78; }
-#stage.pix .tavern-btn::before { inset: 10px; background: #2c2738; box-shadow: inset 0 4px 0 0 #120e18, inset 0 -3px 0 0 #4b4459; }
-#stage.pix .tavern-btn:active { transform: translateY(4px); box-shadow: 0 0 0 4px var(--pix-ink), inset 0 4px 0 0 #e4dafc, inset 0 -4px 0 0 #4b3a78; }
-#stage.pix .tavern-btn:active::before { background: #221e2b; }
-#stage.pix .tavern-btn.upgrade { background: #e8b23a; box-shadow: 0 0 0 4px var(--pix-ink), 0 8px 0 4px var(--pix-drop), inset 0 4px 0 0 #fff6cf, inset 0 -4px 0 0 #8a5c0c; }
-#stage.pix .tavern-btn.freeze.on { background: #3aa6c8; box-shadow: 0 0 0 4px var(--pix-ink), 0 8px 0 4px var(--pix-drop), inset 0 4px 0 0 #e4fcff, inset 0 -4px 0 0 #145a73; }
-#stage.pix .tavern-btn.freeze.on::before { background: #6ccbe6; }
 #stage.pix #mute-btn, #stage.pix .gear, #stage.pix .tribes-chip, #stage.pix .tribes-tip {
   border-radius: 0; border: 0; margin: 0; background: var(--slate); box-shadow: var(--pix-frame), inset 0 0 0 3px var(--slate-edge), 0 calc(2 * var(--px)) 0 0 var(--pix-drop);
 }
@@ -1348,10 +1341,6 @@ svg.aim-arrow.locked .aim-ring { opacity: 0.9; animation: aim-ring 0.9s ease-in-
 }
 #stage.pix .coin, #stage.pix .pip.full { background: var(--coin); box-shadow: inset 0 3px 0 0 #fff8cf, inset 0 -3px 0 0 #b07a12; }
 #stage.pix .tb-cost { box-shadow: inset 0 3px 0 0 #fff8cf, inset 0 -3px 0 0 #b07a12, inset 0 0 0 2px #5a3a00; }
-#stage.pix .tavern-btn, #stage.pix .tavern-btn.upgrade, #stage.pix .tavern-btn.freeze.on { --tb-drop: 0 6px 0 4px var(--pix-drop); }
-#stage.pix .tavern-btn { box-shadow: 0 0 0 4px var(--pix-ink), var(--tb-drop), inset 0 4px 0 0 #e4dafc, inset 0 -4px 0 0 #4b3a78; }
-#stage.pix .tavern-btn.upgrade { box-shadow: 0 0 0 4px var(--pix-ink), var(--tb-drop), inset 0 4px 0 0 #fff6cf, inset 0 -4px 0 0 #8a5c0c; }
-#stage.pix .tavern-btn.freeze.on { box-shadow: 0 0 0 4px var(--pix-ink), var(--tb-drop), inset 0 4px 0 0 #e4fcff, inset 0 -4px 0 0 #145a73; }
 #stage.pix .herocard, #stage.pix .trinketcard, #stage.pix .ach, #stage.pix .ach-toast {
   border-radius: 0; border: 0; background: var(--slate-hi);
   box-shadow: var(--pix-frame), inset 0 0 0 var(--px) var(--lilac-deep), inset 0 0 0 calc(2 * var(--px)) var(--pix-ink), calc(2 * var(--px)) calc(2 * var(--px)) 0 var(--px) var(--pix-drop);
@@ -1377,3 +1366,42 @@ svg.aim-arrow.locked .aim-ring { opacity: 0.9; animation: aim-ring 0.9s ease-in-
 .scene-tx.battle .enemy .tx-hp { left: auto; right: calc(100% + 4px); }
 .combat-name .hpb { width: 34px; height: 34px; font-size: 17px; right: -12px; bottom: -8px; -webkit-text-stroke: 2px #7a0d14; }
 .herocard .hero-portrait .hp { left: calc(100% - 26px); bottom: -4px; }
+
+/* ---------- Tavern buttons: flat pixel plaques (Upgrade gold, Refresh green, Freeze ice) ----------
+   One colour block with a dark notched outline, a light top edge and dark bottom edge, a pixel icon,
+   the label on a dark strip inside the button, and the cost as a coin tag on the corner. */
+#stage .tavern-btn {
+  --tb: #8d76c9; --tb-hi: #e4dafc; --tb-lo: #4b3a78; --tb-ink: #1a1222;
+  border-radius: 0; border: 0; background: var(--tb); justify-content: flex-start; flex-direction: column; padding-top: 10px; box-sizing: border-box;
+  box-shadow: 0 -4px 0 0 #120e18, 0 4px 0 0 #120e18, -4px 0 0 0 #120e18, 4px 0 0 0 #120e18, 0 9px 0 0 rgba(8, 6, 12, 0.7),
+    inset 0 4px 0 0 var(--tb-hi), inset 0 -4px 0 0 var(--tb-lo);
+  transition: transform 0.08s, filter 0.1s;
+}
+#stage .tavern-btn::before { display: none; }
+#stage .tavern-btn.upgrade { --tb: #f0b73c; --tb-hi: #fff1b8; --tb-lo: #a5700f; }
+#stage .tavern-btn.refresh { --tb: #4cc38a; --tb-hi: #c8f7dd; --tb-lo: #23845a; }
+#stage .tavern-btn.freeze { --tb: #62b8ec; --tb-hi: #e0f5ff; --tb-lo: #2d77a8; }
+#stage .tavern-btn.freeze.on { --tb: #dff7ff; --tb-hi: #ffffff; --tb-lo: #8fd3f0; --tb-ink: #2d77a8; animation: frost 1.6s ease-in-out infinite; }
+@keyframes frost { 50% { filter: brightness(1.08) drop-shadow(0 0 10px rgba(160, 230, 255, 0.9)); } }
+#stage .tavern-btn:hover { filter: brightness(1.1); transform: translateY(-2px); }
+#stage .tavern-btn:active { transform: translateY(5px);
+  box-shadow: 0 -4px 0 0 #120e18, 0 4px 0 0 #120e18, -4px 0 0 0 #120e18, 4px 0 0 0 #120e18, inset 0 4px 0 0 var(--tb-lo), inset 0 -4px 0 0 var(--tb-hi); }
+#stage .tavern-btn.off { opacity: 1; filter: saturate(0.15) brightness(0.62); }
+#stage .tavern-btn.off:hover { transform: none; }
+#stage .tavern-btn .tb-icon { width: 44%; aspect-ratio: 1; color: var(--tb-ink); line-height: 0; text-shadow: none; font-size: 0;
+  filter: drop-shadow(0 3px 0 rgba(255, 255, 255, 0.35)); }
+#stage .tavern-btn .tb-icon svg { width: 100%; height: 100%; display: block; }
+#stage .tavern-btn .tb-label { position: absolute; left: 4px; right: 4px; bottom: 4px; top: auto; transform: none; height: 27%;
+  display: flex; align-items: center; justify-content: center; background: rgba(18, 14, 24, 0.55);
+  font-family: var(--display); font-size: 17px; font-weight: 700; color: #fff; text-shadow: 0 2px 0 rgba(0, 0, 0, 0.5); letter-spacing: 0.02em; }
+#stage .tavern-btn .tb-cost { top: -12px; right: -12px; width: 32px; height: 32px; border-radius: 0; font-size: 18px; color: #4a2f00;
+  background: #ffcf4a; clip-path: polygon(30% 0, 70% 0, 100% 30%, 100% 70%, 70% 100%, 30% 100%, 0 70%, 0 30%);
+  box-shadow: inset 0 0 0 3px #120e18, inset 0 6px 0 0 #fff1b8, inset 0 -6px 0 0 #b07a12; }
+#stage.portrait .tavern-btn { padding-top: 14px; }
+#stage.portrait .tavern-btn .tb-label { font-size: 21px; }
+#stage.portrait .tavern-btn .tb-cost { width: 40px; height: 40px; font-size: 22px; }
+/* the "You took N damage" screen: your Health as the same red orb */
+.rb-heart { width: 84px; height: 84px; padding-bottom: 0; -webkit-mask: none; mask: none; border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, #ff9a8c, #e8322a 58%, #a8121a); box-shadow: 0 0 0 4px #fff, 0 4px 8px rgba(90, 0, 0, 0.4);
+  -webkit-text-stroke: 4px #7a0d14; paint-order: stroke fill; text-shadow: none; }
+#stage.portrait .rb-heart { width: 118px; height: 118px; }
