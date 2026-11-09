@@ -1316,16 +1316,14 @@ svg.aim-arrow.locked .aim-ring { opacity: 0.9; animation: aim-ring 0.9s ease-in-
 #stage.pix .leader .tag { box-shadow: 0 0 0 2px var(--pix-ink); }
 #stage.pix #cv-search, #stage.pix .panel.account input { box-shadow: inset 0 0 0 3px var(--slate-edge), 0 0 0 3px var(--pix-ink); }
 /* round things become square tiles */
-#stage.pix .leader .avatar, #stage.pix .hero-portrait, #stage.pix .tk-portrait, #stage.pix .hero-power, #stage.pix .hero-power .hp-icon,
+#stage.pix .leader .avatar, #stage.pix .tk-portrait, #stage.pix .hero-power, #stage.pix .hero-power .hp-icon,
 #stage.pix .trinket-orb, #stage.pix .tb-cost, #stage.pix .coin, #stage.pix .tavern-btn, #stage.pix .tavern-btn::before, #stage.pix .tx-portrait {
   border-radius: 0;
 }
 #stage.pix .leader .avatar { box-shadow: 0 0 0 3px var(--pix-ink), 0 0 0 6px var(--slate-edge); }
-#stage.pix .hero-portrait { box-shadow: 0 0 0 4px var(--pix-ink), 0 0 0 8px var(--lilac), 0 0 0 12px var(--pix-ink); }
 #stage.pix .tk-portrait { background: #2d2640; box-shadow: 0 0 0 4px var(--pix-ink), 0 0 0 8px var(--pink), 0 0 0 12px var(--pix-ink), inset 0 4px 0 0 #5a4a7a; }
 #stage.pix .hero-power { box-shadow: 0 0 0 4px var(--pix-ink), 0 0 0 8px var(--lilac), 0 0 0 12px var(--pix-ink); }
 #stage.pix .hero-power.passive { box-shadow: 0 0 0 4px var(--pix-ink), 0 0 0 8px #8a8396, 0 0 0 12px var(--pix-ink); }
-#stage.pix .my-hero.ready .hero-portrait { animation: none; box-shadow: 0 0 0 4px var(--pix-ink), 0 0 0 8px #7ee2b8, 0 0 0 12px var(--pix-ink); }
 #stage.pix .trinket-orb { background: #5fcde0; box-shadow: 0 0 0 3px var(--pix-ink), inset 0 4px 0 0 #e4fcff, inset 0 -4px 0 0 #2f8fb0; }
 #stage.pix .trinket-orb.greater { background: var(--pink); box-shadow: 0 0 0 3px var(--pix-ink), inset 0 4px 0 0 #ffd0ea, inset 0 -4px 0 0 var(--pink-deep); }
 #stage.pix .coin, #stage.pix .tb-cost { background: var(--coin); box-shadow: 0 0 0 2px var(--pix-ink), inset 0 2px 0 0 #fff8cf, inset 0 -2px 0 0 #b07a12; }
@@ -1363,4 +1361,5 @@ svg.aim-arrow.locked .aim-ring { opacity: 0.9; animation: aim-ring 0.9s ease-in-
 #stage.pix .ach.done { box-shadow: var(--pix-frame), inset 0 0 0 3px #ffcf4a; }
 #stage.pix .ach-bar, #stage.pix .ach-bar div { border-radius: 0; }
 #stage.pix .trinketcard .gem { border-radius: 0; clip-path: polygon(30% 0, 70% 0, 100% 30%, 100% 70%, 70% 100%, 30% 100%, 0 70%, 0 30%); background: #5fcde0; box-shadow: inset 0 6px 0 0 #e4fcff, inset 0 -6px 0 0 #2f8fb0; }
-#stage.pix .herocard .hero-portrait { box-shadow: 0 0 0 4px var(--pix-ink), 0 0 0 8px var(--lilac); }
+/* hero portraits (and the power button on your own hero) stay round, with the round gold cost coin */
+#stage.pix .my-hero .tb-cost { clip-path: none; border-radius: 50%; background: radial-gradient(circle at 35% 30%, #fff8cf, var(--coin) 55%, #e59a12); box-shadow: 0 0 0 3px var(--slate); }

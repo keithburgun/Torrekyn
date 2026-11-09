@@ -2,6 +2,9 @@
 
 Newest first. The version shows on the title screen.
 
+## 0.4.1 — 2026-11-09
+- Pixel interface: hero portraits (and your hero's power button) are round again, with the round cost coin.
+
 ## 0.4.0 — 2026-11-09
 - Pixel-art interface (new default): square buttons, panels, chips, tooltips, Tavern keys, hero frames and coins with notched pixel borders, hard bevels and hard drop shadows. Options → Interface switches back to Smooth.
 
