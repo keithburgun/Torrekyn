@@ -2,6 +2,10 @@
 
 Newest first. The version shows on the title screen.
 
+## 0.4.4 — 2026-11-09
+- Cost coins are drawn as pixel coins with a clean outline (the old clipped shape lost its edge on the diagonals).
+- Chunkier Tavern button icons: 2-pixel strokes, a clearer Refresh arrow and a bolder snowflake.
+
 ## 0.4.3 — 2026-11-09
 - New Upgrade / Refresh / Freeze buttons: flat pixel plaques (gold, green, ice blue) with pixel-drawn icons, the label inside the button, and a coin tag for the cost; Freeze glows frosty while the Tavern is frozen.
 - The end-of-battle screen shows your Health as the red orb instead of a heart.

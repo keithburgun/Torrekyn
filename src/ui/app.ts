@@ -52,13 +52,13 @@ function handX(i: number, n: number) {
 const ordinal = (n: number) => n + (n === 1 ? 'st' : n === 2 ? 'nd' : n === 3 ? 'rd' : 'th');
 
 /** Interface style: 'pixel' (square, pixel-art frames; the default) or 'smooth' (the original rounded look) */
-/** Pixel-drawn icons for the Tavern buttons (a 9x9 grid, drawn crisp at any size) */
-const pixSvg = (rects: string) => `<svg viewBox="0 0 9 9" shape-rendering="crispEdges" fill="currentColor" aria-hidden="true">${rects
+/** Pixel-drawn icons for the Tavern buttons (a 12x12 grid with 2-pixel strokes, drawn crisp at any size) */
+const pixSvg = (rects: string) => `<svg viewBox="0 0 12 12" shape-rendering="crispEdges" fill="currentColor" aria-hidden="true">${rects
   .trim().split(/\s+/).map((r) => { const [x, y, w = '1', h = '1'] = r.split(','); return `<rect x="${x}" y="${y}" width="${w}" height="${h}"/>`; }).join('')}</svg>`;
 const PIX_ICON = {
-  up: pixSvg('4,0 3,1,3 2,2,5 1,3,7 0,4,9 3,5,3,4'),
-  refresh: pixSvg('2,0,4 7,0 1,1 6,1,2 0,2 5,2,3 0,3,1,3 8,4,1,2 1,6 7,6 2,7,5'), // a loop with an arrowhead at the top right
-  freeze: pixSvg('4,0,1,9 0,4,9,1 1,1 2,2 3,3 5,5 6,6 7,7 7,1 6,2 5,3 3,5 2,6 1,7 3,0 5,0 3,8 5,8 0,3 0,5 8,3 8,5'),
+  up: pixSvg('5,0,2 4,1,4 3,2,6 2,3,8 1,4,10 0,5,12 4,6,4,6'),
+  refresh: pixSvg('3,1,4,2 1,2,2,2 0,4,2,5 1,9,2,2 3,10,6,2 9,9,2,2 10,6,2,3 7,0,2,5 9,1,1,3 10,2,1,1'),
+  freeze: pixSvg('5,0,2,12 0,5,12,2 1,1,2,2 2,2,2,2 3,3,2,2 7,7,2,2 8,8,2,2 9,9,2,2 9,1,2,2 8,2,2,2 7,3,2,2 3,7,2,2 2,8,2,2 1,9,2,2'),
 };
 
 function uiStyle(): 'pixel' | 'smooth' {
