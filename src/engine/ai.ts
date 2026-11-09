@@ -32,7 +32,7 @@ const POWER_RANK = ['may_danaris', 'trevor_l', 'clover', 'andromeda_robin', 'ven
 const prof = (p: Player): BotProfile => p.bot ?? EXPERT;
 const on = (p: Player, k: Feature) => prof(p).f?.[k] ?? EXPERT.f![k] ?? false;
 /** tuning numbers, with the Expert's values as defaults */
-export const KNOBS: Record<string, number> = { valueK: 2.4, tierW: 3.5, atkW: 0.9, hpW: 0.7, lvl3: 5, lvl4: 8, lvl5: 10, cheap: 1, lowHp: 0, spare: 0, econK: 1.6, simOpps: 3, simN: 3, simShuffles: 2, rerollGold: 1, rerollBar: 1.3, simBuyK: 40, simBuyTop: 3, trip2: 60, trip1: 10, tribeW: 3, tribeTierW: 1, lazy: 0, keep: 0 };
+export const KNOBS: Record<string, number> = { valueK: 2.4, tierW: 3.5, atkW: 0.9, hpW: 0.7, lvl3: 5, lvl4: 8, lvl5: 10, lvl6: 13, cheap: 1, lowHp: 0, spare: 0, econK: 1.6, simOpps: 3, simN: 3, simShuffles: 2, rerollGold: 1, rerollBar: 1.3, simBuyK: 40, simBuyTop: 3, trip2: 60, trip1: 10, tribeW: 3, tribeTierW: 1, lazy: 0, keep: 0 };
 const knob = (p: Player, k: string) => prof(p).x?.[k] ?? EXPERT.x?.[k] ?? KNOBS[k];
 /** evaluation noise for this bot (uniform, symmetric) */
 const jitter = (g: GameState, p: Player, scale = 10) => ((prof(p).noise ?? 0) ? (rand(g) * 2 - 1) * (prof(p).noise ?? 0) * scale : 0);
@@ -43,7 +43,8 @@ const jitter = (g: GameState, p: Player, scale = 10) => ((prof(p).noise ?? 0) ? 
  */
 const ECON: Record<string, number> = {
   memory: 4, storyteller: 4, command: 5, remember: 10, librarian: 10, restore: 12, farmer: 3, honeysuckle_brambor: 5,
-  owl: 8, computer: 8, robot_boy: 10, shopkeep: 4, intern: 3, purveyor: 10, miner: 6, pickaxe: 6, scout: 4, grief: 6,
+  computer: 8, robot_boy: 10, shopkeep: 4, intern: 3, purveyor: 10, miner: 6, pickaxe: 6, scout: 4, grief: 6,
+  omni_gem: 30, exploit: 8, golden_light: 10, potato_lord: 10, jeweler: 3,
 };
 
 /** Rough value of a unit for a bot. */
@@ -57,7 +58,7 @@ export function unitScore(p: Player, u: Unit, zone: 'board' | 'hand' | 'shop' = 
     let e = (ECON[u.cardId] ?? 0) * knob(p, 'econK') * (u.golden ? 1.8 : 1);
     if (u.cardId === 'grief' && p.tier >= CONFIG.maxTier) e = 0;
     // Battlecries and Discovers pay off when played; once on the board only recurring effects still matter
-    if (zone === 'board' && ['command', 'remember', 'librarian', 'owl', 'grief'].includes(u.cardId)) e = 0;
+    if (zone === 'board' && ['command', 'remember', 'librarian'].includes(u.cardId)) e = 0;
     s += e;
   }
   const fav = p.favoriteTribe;
@@ -96,6 +97,7 @@ function chooseFavorite(g: GameState, p: Player) {
 }
 
 function targetTier(round: number) {
+  if (round >= 13) return 6;
   if (round >= 10) return 5;
   if (round >= 8) return 4;
   if (round >= 5) return 3;
@@ -108,7 +110,7 @@ function wantsLevel(g: GameState, p: Player): boolean {
   if (p.tier >= CONFIG.maxTier || p.gold < p.upgradeCost) return false;
   if (!on(p, 'level')) return p.tier < targetTier(g.round) || p.upgradeCost <= 1;
   // a curve (round to reach each tier), level when it's cheap, and hold off when low on Health with a thin army
-  const curve = [0, 1, 2, knob(p, 'lvl3'), knob(p, 'lvl4'), knob(p, 'lvl5')];
+  const curve = [0, 1, 2, knob(p, 'lvl3'), knob(p, 'lvl4'), knob(p, 'lvl5'), knob(p, 'lvl6')];
   const behind = g.round >= curve[p.tier + 1];
   const cheap = p.upgradeCost <= knob(p, 'cheap');
   // leave gold for at least this many buys after leveling when ahead of the curve
@@ -133,6 +135,8 @@ function bestTarget(g: GameState, p: Player, u: Unit): number | undefined {
   return cands.reduce((a, b) => (effStats(p, a, 'board').hp > effStats(p, b, 'board').hp ? a : b)).uid;
 }
 
+const SELL_NOW = ['omni_gem', 'exploit'];
+
 function playHand(g: GameState, p: Player) {
   for (let guard = 0; guard < 20; guard++) {
     const idx = p.hand.findIndex((u) => !handLocked(p, u));
@@ -147,6 +151,12 @@ function playHand(g: GameState, p: Player) {
     const r = play(g, p, idx, pos, EFFECTS[u.cardId]?.target ? bestTarget(g, p, u) : undefined);
     if (!r.ok) return;
     while (p.discovers.length) chooseDiscover(g, p, aiChooseDiscover(g, p, p.discovers[0]));
+    // cards that pay off when sold (Omni-Gem, Exploit) are sold right away
+    const sold = p.board.findIndex((b) => b.uid === u.uid && SELL_NOW.includes(b.cardId));
+    if (sold >= 0) {
+      sell(g, p, sold);
+      while (p.discovers.length) chooseDiscover(g, p, aiChooseDiscover(g, p, p.discovers[0]));
+    }
   }
 }
 

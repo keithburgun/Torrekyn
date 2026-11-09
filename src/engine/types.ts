@@ -1,9 +1,10 @@
 export type Tribe =
   | 'neverending' | 'azure' | 'kindred' | 'brambor' | 'cloister' | 'alcove' | 'demons' | 'neutral';
 
-export type Keyword = 'taunt' | 'divineShield' | 'reborn' | 'venomous' | 'stealth' | 'windfury';
+/** Venomous is used up by its first kill; Poisonous never is */
+export type Keyword = 'taunt' | 'divineShield' | 'reborn' | 'venomous' | 'poisonous' | 'windfury';
 
-export const BONUS_KEYWORDS: Keyword[] = ['taunt', 'divineShield', 'reborn', 'venomous', 'stealth', 'windfury'];
+export const BONUS_KEYWORDS: Keyword[] = ['taunt', 'divineShield', 'reborn', 'venomous', 'windfury'];
 
 export interface CardDef {
   id: string;

@@ -54,7 +54,7 @@ const ABILITIES: [string, (c: CardDef) => boolean][] = [
   ['Divine Shield', (c) => c.keywords.includes('divineShield') || /divine shield/i.test(c.text)],
   ['Reborn', (c) => c.keywords.includes('reborn') || /reborn/i.test(c.text)],
   ['Venomous', (c) => c.keywords.includes('venomous') || /venomous/i.test(c.text)],
-  ['Stealth', (c) => c.keywords.includes('stealth') || /stealth/i.test(c.text)],
+  ['Poisonous', (c) => c.keywords.includes('poisonous') || /poisonous/i.test(c.text)],
   ['Token', (c) => !!c.token],
 ];
 
@@ -98,7 +98,7 @@ export function cardViewerHtml(v: ViewerState, g: GameState | null) {
       ${chip('cv-tribe', '', 'All tribes', !v.tribe)}${tribes.map((t) => chip('cv-tribe', t, `<span class="tdot t-${t}"></span>${esc(TRIBE_NAMES[t])}`, v.tribe === t, g && t !== 'neutral' && !g.tribes.includes(t) ? 'banned' : '')).join('')}
     </div>
     <div class="cv-filters">
-      ${chip('cv-tier', '0', 'All tiers', !v.tier)}${[1, 2, 3, 4, 5].map((t) => chip('cv-tier', String(t), `Tier ${t}`, v.tier === t)).join('')}
+      ${chip('cv-tier', '0', 'All tiers', !v.tier)}${[1, 2, 3, 4, 5, 6].map((t) => chip('cv-tier', String(t), `Tier ${t}`, v.tier === t)).join('')}
       <span class="cv-sep"></span>
       ${chip('cv-ab', '', 'Any ability', !v.ability)}${ABILITIES.map(([n]) => chip('cv-ab', n, n, v.ability === n)).join('')}
     </div>

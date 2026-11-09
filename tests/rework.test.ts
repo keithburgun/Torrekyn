@@ -1,6 +1,6 @@
 /** The November rework: Gems and the cards changed with them. */
 import { describe, it, expect } from 'vitest';
-import { newGame, play, reroll, sellValue, endTurn } from '../src/engine/game';
+import { newGame, play, reroll, sellValue, endTurn, sell, endTurnEffects } from '../src/engine/game';
 import { def, makeUnit } from '../src/engine/core';
 import { gemLevel } from '../src/engine/effects';
 import { Combat } from '../src/engine/combat';
@@ -60,11 +60,13 @@ describe('rework', () => {
     expect(sellValue(intern, p)).toBe(2);
   });
 
-  it('Exploit: starts the Business Demons quest (buy 8, gain 12 gold)', () => {
+  it('Exploit: selling it starts the Business Demons quest (buy 8, gain 12 gold)', () => {
     const { g, p } = setup();
     p.board = [];
     p.hand = [u(g, 'exploit')];
     expect(play(g, p, 0, 0).ok).toBe(true);
+    expect(p.quests.length).toBe(0);
+    sell(g, p, 0);
     expect(p.quests.at(-1)).toMatchObject({ kind: 'bill', need: 8, reward: 12 });
   });
 
@@ -80,14 +82,11 @@ describe('rework', () => {
     expect(def('phoenix').atk).toBe(20);
   });
 
-  it('Golden Light: summons 3 Deathrattle units', () => {
+  it('Golden Light: Deathrattle gains a random Tier 6 unit', () => {
     const { g, p, o } = setup();
-    const c = fight(g, p, o, [u(g, 'golden_light', 0, 1)], [u(g, 'skel', 1, 1000)]);
-    let n = 0;
-    const orig = c.spawn.bind(c);
-    c.spawn = (...a: Parameters<typeof c.spawn>) => { const r = orig(...a); if (r) n++; return r; };
-    c.run();
-    expect(n).toBeGreaterThanOrEqual(3);
+    p.hand = [];
+    fight(g, p, o, [u(g, 'golden_light', 0, 1)], [u(g, 'skel', 1, 1000)]).run();
+    expect(p.hand.map((x) => def(x.cardId).tier)).toEqual([6]);
   });
 
   it('Andromeda Robin: plays a Potato Gem on its slot each end of turn and improves Potato Gems', () => {
@@ -154,5 +153,97 @@ describe('rework 2', () => {
     c.attackNow(c.sides[0].units[0]);
     expect(c.sides[0].units.length).toBe(2);
     expect(def(c.sides[0].units[1].cardId).tier).toBe(1);
+  });
+
+  // ===== Workbook 3: Tier 6, Poisonous, reworks =====
+  it('Poisonous kills every unit it damages (Venomous only the first)', () => {
+    const { g, p, o } = setup();
+    const c = fight(g, p, o, [u(g, 'adder', 1, 1000)], [u(g, 'skel', 0, 500), u(g, 'skel', 0, 500), u(g, 'skel', 0, 500)]);
+    expect(c.run()).toBe(0);
+    expect(c.sides[0].units[0].kw).toContain('poisonous');
+  });
+
+  it('Adder: a kill gives its Attack and max Health to a unit in hand', () => {
+    const { g, p, o } = setup();
+    p.hand = [u(g, 'skel', 1, 1)];
+    // the enemy can't attack (0 Attack), so the kill is Adder's own attack
+    fight(g, p, o, [u(g, 'adder', 1, 1000)], [u(g, 'skel', 0, 30)]).run();
+    expect([p.hand[0].atk, p.hand[0].hp]).toEqual([1, 31]);
+  });
+
+  it('Green Ninja: joins the battle from your hand', () => {
+    const { g, p, o } = setup();
+    p.hand = [u(g, 'orange_ninja')];
+    const c = fight(g, p, o, [u(g, 'skel', 1, 1)], [u(g, 'skel', 0, 1000)]);
+    c.run();
+    expect(c.frames[2].sides[0].some((x) => x.cardId === 'orange_ninja') || c.frames.some((f) => f.sides[0].some((x) => x.cardId === 'orange_ninja'))).toBe(true);
+    expect(p.hand.length).toBe(1);
+  });
+
+  it('Mod: Start of Combat gives its stats to the unit on its right', () => {
+    const { g, p, o } = setup();
+    const c = fight(g, p, o, [u(g, 'mod', 8, 9), u(g, 'skel', 1, 1)], [u(g, 'skel', 0, 1)]);
+    c.run();
+    const f = c.frames.find((x) => x.note === 'Mod: Start of Combat')!;
+    expect(f.sides[0][1]).toMatchObject({ atk: 9, hp: 10 });
+  });
+
+  it('Chaos: End of Turn buffs the left-most unit once plus once per Battlecry this turn', () => {
+    const { g, p } = setup();
+    const left = u(g, 'skel', 1, 1);
+    p.board = [left, u(g, 'chaos')];
+    p.battlecriesThisTurn = 2;
+    endTurnEffects(g, p);
+    expect([left.atk, left.hp]).toEqual([10, 10]);
+  });
+
+  it('Owl and The Mayor: End of Turn grows their slot', () => {
+    const { g, p } = setup();
+    p.board = [u(g, 'owl'), u(g, 'the_mayor')];
+    endTurnEffects(g, p);
+    expect(p.slots[0].atk).toBe(2);
+    expect(p.slots[1].hp).toBe(20);
+    expect(p.slots[1].kw).toContain('reborn');
+  });
+
+  it('Omni-Gem: selling it gains 3 Tier 5 units', () => {
+    const { g, p } = setup();
+    p.hand = [];
+    p.board = [u(g, 'omni_gem')];
+    sell(g, p, 0);
+    expect(p.hand.map((x) => def(x.cardId).tier)).toEqual([5, 5, 5]);
+  });
+
+  it('Scientist and Grief are Deathrattles now', () => {
+    const { g, p, o } = setup();
+    p.upgradeCost = 10;
+    const c = fight(g, p, o, [u(g, 'scientist', 0, 1), u(g, 'grief', 0, 1)], [u(g, 'skel', 1, 1000)]);
+    c.run();
+    for (const fn of c.sides[0].afterFns) fn(); // runCombat does this after the battle
+    expect(p.alcoveAtkThisTier).toBe(2);
+    expect(p.upgradeCost).toBe(7);
+  });
+
+  it('Alabaster: the first 3 friendly summons get Reborn', () => {
+    const { g, p, o } = setup();
+    const c = fight(g, p, o, [u(g, 'alabaster', 0, 1000), u(g, 'skeleton', 0, 1, true)], [u(g, 'skel', 1, 1000)]);
+    const got: boolean[] = [];
+    const orig = c.spawn.bind(c);
+    c.spawn = (...a: Parameters<typeof c.spawn>) => { const r = orig(...a); if (r) got.push(r.kw.includes('reborn')); return r; };
+    c.run();
+    expect(got.slice(0, 3)).toEqual([true, true, true]);
+    expect(got.length).toBeGreaterThan(3);
+    expect(got[3]).toBe(false);
+  });
+
+  it('Tier 6 is in the game: Tavern goes to 6 and the Summit trinkets Discover Tier 6 units', async () => {
+    const { CONFIG } = await import('../src/engine/core');
+    const { TRINKETS } = await import('../src/engine/heroes');
+    expect(CONFIG.maxTier).toBe(6);
+    const { g, p } = setup();
+    p.human = false;
+    p.hand = [];
+    TRINKETS.find((t) => t.id === 'summit_vault')!.onGain!(g, p);
+    expect(p.hand.map((x) => def(x.cardId).tier)).toEqual([6, 6]);
   });
 });

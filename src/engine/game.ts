@@ -9,7 +9,7 @@ import { PERSONAS, matchPersonas, personaProfile } from './personas';
 import { HEROES, heroHealth, buyCost, gainPower, heroDef, heroEndTurn, heroHooks, hasTrinket, offerTrinkets, shopBonus, GREATER_TRINKET_TURN, LESSER_TRINKET_TURN } from './heroes';
 import type { Discover, GameState, Player, Slot, Tribe, Unit } from './types';
 
-export const SAVE_VERSION = 4;
+export const SAVE_VERSION = 5; // 5: Tier 6 and Poisonous (Stealth removed); older games in progress are dropped
 
 
 function emptySlots(): Slot[] {

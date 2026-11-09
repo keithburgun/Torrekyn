@@ -105,7 +105,7 @@ export const HEROES: HeroDef[] = [
     },
   },
   {
-    id: 'locas_clare', name: 'Locas Clare', title: 'Prankster and lockpick', power: 'Five-Finger Discount', avatar: 6, health: 51,
+    id: 'locas_clare', name: 'Locas Clare', title: 'Prankster and lockpick', power: 'Stealing A Boat', avatar: 6, health: 51,
     text: 'Steal every unit in the Tavern (they go to your hand), then this resets to 10. Costs 1 less each turn.',
     costFn: (g, p) => Math.max(0, 10 - (g.round - (p.heroMem.locasFrom ?? 1))),
     locked: (g, p) => (!p.shop.length ? 'The Tavern is empty' : p.hand.length >= CONFIG.handSize ? 'Your hand is full' : null),
@@ -169,12 +169,12 @@ export const HEROES: HeroDef[] = [
   },
   {
     id: 'bill_milton', name: 'Bill Milton', title: 'CEO of the Business Demons', power: 'Golden Parachute', avatar: 11, health: 44, passive: true, needsTribe: 'demons',
-    text: 'Whenever you play a Business Demon, gain 1 gold.',
+    text: 'Whenever you play a Business Demon, gain 1 Gold.',
     onPlay: (g, p, u) => { if (isTribe(u, 'demons')) p.gold += 1; },
   },
   {
     id: 'clover', name: 'Clover', title: 'Dragon of Dragon Bridge', power: 'Broodmother', avatar: 12, health: 32, passive: true,
-    text: 'Avenge (4): Summon a 1/1 Dragon, and improve this (+1/+1 to future Dragons).',
+    text: 'Avenge (4): Summon a 1/1 Dragon and improve this (+1/+1 to future Dragons).',
     onFriendlyDeath: (c, s) => {
       if (!heroAvenge(s, 'clover', 4)) return;
       const lvl = s.owner.heroMem.brood ?? 0;
@@ -234,12 +234,12 @@ export interface TrinketDef {
 
 export const TRINKETS: TrinketDef[] = [
   // lesser (offered at the start of turn 6)
-  { id: 'healing_draught', name: 'Teched Up', cost: 0, text: 'Gain 3 Gold. Your shop no longer offers cards from Tier 1 or 2.', onGain: (g, p) => { p.gold += 3; } },
-  { id: 'whetstone', name: 'Crop Circle', cost: 1, text: 'At the end of each turn, get a random Brambor.', endTurn: (g, p) => {
+  { id: 'healing_draught', name: 'Teched Up', cost: 0, text: 'Gain 3 Gold. Your Tavern no longer offers Tier 1 or 2 units.', onGain: (g, p) => { p.gold += 3; } },
+  { id: 'whetstone', name: 'Crop Circle', cost: 1, text: 'End of Turn: Gain a random Brambor unit.', endTurn: (g, p) => {
     const id = drawFromPool(g, (cid) => def(cid).tribe === 'brambor' && def(cid).tier <= p.tier);
     if (id) gainNew(g, p, id);
   } },
-  { id: 'old_map', name: 'Old Map', cost: 1, text: 'At the end of every 2 turns, Discover a Tier 5 unit.',
+  { id: 'old_map', name: 'Old Map', cost: 1, text: 'Every other End of Turn: Discover a Tier 5 unit.',
     endTurn: (g, p) => {
       if (!everyOther(p, 'old_map')) return;
       p.heroMem.old_map_discover = 1; // discovered at the start of next turn, when you can choose
@@ -255,6 +255,8 @@ export const TRINKETS: TrinketDef[] = [
   { id: 'spare_parts', name: 'Spare Parts', cost: 3, text: 'Every time you play a unit, give a random unit in your hand +2/+2.', onPlay: (g, p) => { const u = pick(g, p.hand); if (u) { u.atk += 2; u.hp += 2; } } },
   { id: 'war_drum', name: 'War Drum', cost: 3, text: 'Start of Combat: Give your units +2 Attack.', soc: (c, s) => { for (const u of s.units) u.atk += 2; } },
   { id: 'lucky_coin', name: 'Lucky Coin', cost: 0, text: 'Gain 8 Gold.', onGain: (g, p) => { p.gold += 8; } },
+  { id: 'summit_key', name: 'Summit Key', cost: 2, text: 'Discover a Tier 6 unit.',
+    onGain: (g, p) => queueDiscover(g, p, discoverOptions(g, (id) => def(id).tier === 6), 'Summit Key: Discover a Tier 6 unit') },
   // greater (offered at the start of turn 9)
   { id: 'bannerlords_standard', name: "Bannerlord's Standard", cost: 3, greater: true, text: 'Give all your slots +3/+3.', onGain: (g, p) => { for (const s of p.slots) { s.atk += 3; s.hp += 3; } } },
   { id: 'aegis_charm', name: 'Aegis Charm', cost: 4, greater: true, text: 'Start of Combat: Give your 2 left-most units Divine Shield.', soc: (c, s) => { for (const u of s.units.slice(0, 2)) addKw(u, 'divineShield'); } },
@@ -273,10 +275,14 @@ export const TRINKETS: TrinketDef[] = [
       c.snap('trigger', { note: "Warlord's Horn: +1 maximum Gold" });
     } },
   { id: 'gravebell', name: 'Gravebell', cost: 6, greater: true, text: 'Your Deathrattles trigger an extra time.' },
-  { id: 'golden_lantern', name: 'Golden Lantern', cost: 6, greater: true, text: 'At the end of every other turn, make a random non-golden unit in your army Golden.',
+  { id: 'golden_lantern', name: 'Golden Lantern', cost: 6, greater: true, text: 'Every other End of Turn: Make a random non-Golden unit in your army Golden.',
     endTurn: (g, p) => { if (everyOther(p, 'golden_lantern')) makeGolden(g, p); },
     progress: (p) => `${p.heroMem.t_golden_lantern ?? 0}/2` },
   { id: 'crown_of_echoes', name: 'Crown of Echoes', cost: 7, greater: true, text: 'Your Battlecries trigger an extra time.' },
+  { id: 'summit_vault', name: 'Summit Vault', cost: 4, greater: true, text: 'Discover two Tier 6 units.',
+    onGain: (g, p) => {
+      for (let i = 0; i < 2; i++) queueDiscover(g, p, discoverOptions(g, (id) => def(id).tier === 6), 'Summit Vault: Discover a Tier 6 unit');
+    } },
 ];
 
 /** counts turns for "every 2 turns" trinkets; true on every second one */

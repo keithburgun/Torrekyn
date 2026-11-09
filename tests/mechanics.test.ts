@@ -120,7 +120,7 @@ describe('mechanics', () => {
 
   it('venomous kills big units', () => {
     const g = newGame(6);
-    const { winner } = fight(g, [makeUnit(g, 'orange_ninja')], [makeUnit(g, 'honeysuckle_kindred')]);
+    const { winner } = fight(g, [makeUnit(g, 'white_ninja')], [makeUnit(g, 'honeysuckle_kindred')]);
     expect(winner).not.toBe(1);
   });
 });

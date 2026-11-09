@@ -33,7 +33,7 @@ export const KW_ICON: Record<Keyword, [string, string]> = {
   divineShield: ['✦', 'Divine Shield'],
   reborn: ['☥', 'Reborn'],
   venomous: ['☠', 'Venomous'],
-  stealth: ['◐', 'Stealth'],
+  poisonous: ['☣', 'Poisonous'],
   windfury: ['〰', 'Windfury'],
 };
 
@@ -42,7 +42,7 @@ export const KEYWORD_HELP: Record<string, string> = {
   'Divine Shield': 'The first damage this takes is ignored.',
   Reborn: 'Comes back with 1 Health the first time it dies.',
   Venomous: 'Destroys any unit it damages (once).',
-  Stealth: "Can't be attacked until it attacks.",
+  Poisonous: 'Destroys any unit it damages (every time).',
   Windfury: 'Attacks twice.',
   Battlecry: 'Happens when you play it from your hand.',
   Deathrattle: 'Happens when it dies.',
@@ -67,7 +67,7 @@ export function abilityTags(cardId: string): string[] {
   if (e.startTurn) tags.push('Turn');
   if (e.onSell) tags.push('Sell');
   if (e.target === undefined && e.onPlay) tags.push('Play');
-  if (!tags.length && d.text && !/^((Taunt|Divine Shield|Reborn|Venomous|Stealth)[.,]?\s*)+$/i.test(d.text)) tags.push('Passive');
+  if (!tags.length && d.text && !/^((Taunt|Divine Shield|Reborn|Venomous|Poisonous)[.,]?\s*)+$/i.test(d.text)) tags.push('Passive');
   return tags;
 }
 
@@ -104,7 +104,7 @@ export function cardHtml(u: { cardId: string; golden: boolean; atk: number; hp: 
   const tags = abilityTags(u.cardId).slice(0, 2).map((t) => `<i>${t}</i>`).join('');
   return `<div class="${cls}" data-zone="${o.zone}" data-idx="${o.idx}" ${o.id !== undefined ? `data-id="${o.id}"` : ''} style="left:${o.x}px;top:${o.y}px">
   <div class="face"></div>
-  <div class="art" style="background-image:url('${cardArt(u.cardId)}')"></div>${kw.includes('stealth') ? '<div class="smoke"></div>' : ''}
+  <div class="art" style="background-image:url('${cardArt(u.cardId)}')"></div>
   <div class="tier">${'★'.repeat(d.tier)}</div>
   <div class="kws">${icons}</div>
   <div class="abil">${tags}</div>
@@ -118,7 +118,7 @@ export function cardHtml(u: { cardId: string; golden: boolean; atk: number; hp: 
 
 export function formatText(text: string): string {
   let t = esc(text);
-  t = t.replace(/(Battlecry|Deathrattle|Rally|Avenge ?\(\d+\)|Start of (Combat|Battle|Turn)|End of (the )?[Tt]urn|At the end of the turn|Divine Shield|Taunt|Reborn|Venomous|Stealth|Discover|Quest|Windfury)/g, '<b>$1</b>');
+  t = t.replace(/(Battlecry|Deathrattle|Rally|Avenge ?\(\d+\)|Start of (Combat|Turn)|End of Turn|Divine Shield|Taunt|Reborn|Venomous|Poisonous|Discover|Quest|Windfury)/g, '<b>$1</b>');
   return t;
 }
 

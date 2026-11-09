@@ -34,7 +34,7 @@ function playOut(seed: number) {
 
 describe('Torrekin simulation', () => {
   it('every card has an effect entry or is vanilla', () => {
-    const vanilla = CARDS.filter((c) => !EFFECTS[c.id] && c.text && !/^((Taunt|Divine Shield|Reborn|Venomous|Stealth)[.,]?\s*)+$/.test(c.text));
+    const vanilla = CARDS.filter((c) => !EFFECTS[c.id] && c.text && !/^((Taunt|Divine Shield|Reborn|Venomous|Poisonous)[.,]?\s*)+$/.test(c.text));
     expect(vanilla.map((c) => c.id)).toEqual([]);
   });
 

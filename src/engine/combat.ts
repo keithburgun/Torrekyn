@@ -1,8 +1,8 @@
 /**
  * Battle simulation, following Hearthstone: Battlegrounds conventions:
  *  - the side with more units attacks first (coin flip if equal), sides alternate;
- *  - each side's units attack left-to-right; targets are random, Taunt first; Stealth can't be targeted;
- *  - Divine Shield absorbs one hit; Venomous kills on damage (one use); Reborn returns at 1 Health;
+ *  - each side's units attack left-to-right; targets are random, Taunt first;
+ *  - Divine Shield absorbs one hit; Venomous kills on damage (one use), Poisonous always does; Reborn returns at 1 Health;
  *  - Windfury attacks twice; deaths resolve left-to-right, attacking side first.
  */
 import { addKw, cloneUnit, def, effStats, has, mult, ownerBonus, pick, rand, removeKw, sample, tribeOf, CONFIG } from './core';
@@ -146,7 +146,7 @@ export class Combat {
     const cu = this.makeCU(s.idx, cardId, golden, d.atk * m + bonus.atk, d.hp * m + bonus.hp, d.keywords, null, -1);
     s.units.splice(Math.max(0, Math.min(pos, s.units.length)), 0, cu);
     this.addFx({ k: 'summon', to: cu.id });
-    heroHooks.onSummon(this, s, cu);
+    this.onSummoned(s, cu);
     return cu;
   }
 
@@ -163,7 +163,7 @@ export class Combat {
     const cu = this.makeCU(s.idx, d.cardId, d.golden, d.startAtk, d.startHp, d.startKw, null, -1, { ...d.mem });
     s.units.splice(Math.max(0, Math.min(pos, s.units.length)), 0, cu);
     this.addFx({ k: 'summon', to: cu.id });
-    heroHooks.onSummon(this, s, cu);
+    this.onSummoned(s, cu);
     this.snap('trigger', { note: `Summon ${def(d.cardId).name}` });
     return cu;
   }
@@ -175,9 +175,15 @@ export class Combat {
     const cu = this.makeCU(s.idx, u.cardId, u.golden, st.atk, st.hp, st.kw, null, -1, { ...u.mem });
     s.units.splice(Math.max(0, Math.min(pos, s.units.length)), 0, cu);
     this.addFx({ k: 'summon', to: cu.id });
-    heroHooks.onSummon(this, s, cu);
+    this.onSummoned(s, cu);
     this.snap('trigger', { note: `Summon ${def(u.cardId).name}` });
     return cu;
+  }
+
+  /** a unit was summoned during battle: hero powers, then friendly units that care (Alabaster) */
+  private onSummoned(s: Side, cu: CUnit) {
+    heroHooks.onSummon(this, s, cu);
+    for (const w of [...s.units]) if (w !== cu && w.hp > 0) EFFECTS[w.cardId]?.onSummonFriendly?.(this.ctx(w), cu);
   }
 
   kill(t: CUnit, source?: CUnit) {
@@ -201,9 +207,9 @@ export class Combat {
     }
     const before = t.hp;
     t.hp -= amount;
-    if (source && has(source, 'venomous') && t.hp > 0) {
+    if (source && (has(source, 'venomous') || has(source, 'poisonous')) && t.hp > 0) {
       t.hp = 0;
-      removeKw(source, 'venomous');
+      if (!has(source, 'poisonous')) removeKw(source, 'venomous'); // Poisonous is never used up
       this.addFx({ k: 'venom', to: t.id });
     }
     if (t.hp <= 0 && source && !t.killedBy) t.killedBy = source;
@@ -318,13 +324,8 @@ export class Combat {
   chooseTarget(attacker: CUnit): CUnit | undefined {
     const foes = this.enemy(this.sides[attacker.side]).units.filter((u) => u.hp > 0);
     if (!foes.length) return undefined;
-    let visible = foes.filter((u) => !has(u, 'stealth'));
-    if (!visible.length) {
-      for (const u of foes) removeKw(u, 'stealth');
-      visible = foes;
-    }
-    const taunts = visible.filter((u) => has(u, 'taunt'));
-    return pick(this.g, taunts.length ? taunts : visible);
+    const taunts = foes.filter((u) => has(u, 'taunt'));
+    return pick(this.g, taunts.length ? taunts : foes);
   }
 
   attackNow(a: CUnit, forced?: CUnit) {
@@ -358,7 +359,6 @@ export class Combat {
     let t = forced && forced.hp > 0 ? forced : this.chooseTarget(a);
     if (!t) return;
     const side = this.sides[a.side];
-    removeKw(a, 'stealth');
     this.snap('attack', { attacker: a.id, target: t.id });
     // Rally
     const e = EFFECTS[a.cardId];
@@ -378,11 +378,21 @@ export class Combat {
     for (const u of side.units) if (u.cardId === 'vulnerability' && u.hp > 0) invuln = Math.max(invuln, u.golden ? 2 : 1);
     const atkA = a.atk;
     const atkT = t.atk;
+    const tAtk = t.atk;
+    const tMaxHp = Math.max(t.hp, t.startHp);
     this.inExchange = true;
     this.damage(t, atkA, a, false, true);
     if (idx >= invuln) this.damage(a, atkT, t);
     this.inExchange = false;
     this.snap('hit', { attacker: a.id, target: t.id });
+    // "when this attacks and kills a unit" (Adder)
+    if (t.hp <= 0) {
+      const k = EFFECTS[a.cardId]?.onAttackKill;
+      if (k) {
+        k(this.ctx(a), t, tAtk, tMaxHp);
+        this.snap('trigger', { source: a.id, note: `${def(a.cardId).name}` });
+      }
+    }
     this.resolveDeaths();
   }
 
@@ -401,6 +411,14 @@ export class Combat {
     }
     this.snap('trigger', { note: 'Start of Combat' });
     this.resolveDeaths();
+    // Green Ninja: from your hand, it joins the battle if there's room (a temporary copy; the card stays in hand)
+    for (const s of [this.sides[this.attacking], this.sides[1 - this.attacking]]) {
+      if (!s.persistent) continue;
+      for (const u of s.owner.hand) {
+        if (u.cardId !== 'orange_ninja') continue;
+        if (!this.spawnUnit(s, u, s.units.length)) break;
+      }
+    }
     for (const s of [this.sides[this.attacking], this.sides[1 - this.attacking]]) {
       for (const u of [...s.units]) {
         const soc = EFFECTS[u.cardId]?.soc;

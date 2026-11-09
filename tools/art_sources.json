@@ -715,12 +715,8 @@
    "px": true
   },
   "jeweler": {
-   "src": "K/gaingem rgb.png",
-   "crop": [
-    0.5,
-    0.5,
-    0.86
-   ]
+   "src": "X/ruby.png",
+   "px": true
   },
   "treasure": {
    "src": "T/treasurechest.png",
@@ -903,6 +899,42 @@
     0.5,
     0.98
    ]
+  },
+  "invisible_hand": {
+   "src": "X/ninja.png",
+   "px": true
+  },
+  "tank": {
+   "src": "S/Alcove/tank.png",
+   "px": true
+  },
+  "alabaster": {
+   "src": "X/iceelemental.png",
+   "px": true
+  },
+  "the_mayor": {
+   "src": "X/bossportrait_king.png",
+   "crop": [
+    0.47,
+    0.42,
+    0.85
+   ]
+  },
+  "archnode": {
+   "src": "X/goldengolem.png",
+   "px": true
+  },
+  "adder": {
+   "src": "S/Generic/ninja.png",
+   "px": true
+  },
+  "potato_lord": {
+   "src": "X/potato.png",
+   "px": true
+  },
+  "blue_dragon": {
+   "src": "X/dragon.png",
+   "px": true
   }
  }
 }

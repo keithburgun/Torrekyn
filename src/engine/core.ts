@@ -4,16 +4,16 @@ import type { Body, CardDef, GameState, Keyword, Player, Tribe, Unit } from './t
 export const CONFIG = {
   players: 6,
   startHealth: 40,
-  maxTier: 5,
+  maxTier: 6,
   boardSize: 7,
   handSize: 10,
   buyCost: 3,
   sellValue: 1,
   rerollCost: 1,
   /** cost to upgrade TO tier n (index n) */
-  upgradeCost: [0, 0, 5, 8, 10, 13], // to reach Tier 2, 3, 4, 5 (each drops 1 gold per turn until bought)
-  shopSize: [0, 3, 4, 4, 5, 5],
-  copiesPerTier: [0, 15, 13, 11, 9, 7],
+  upgradeCost: [0, 0, 5, 8, 10, 13, 15], // to reach Tier 2-6 (each drops 1 gold per turn until bought)
+  shopSize: [0, 3, 4, 4, 5, 5, 6],
+  copiesPerTier: [0, 15, 13, 11, 9, 7, 5],
   /** 7 tribes exist; 3 are banned each match, so 4 are in play (plus Neutral) */
   tribesPerGame: 4,
   maxGold: 10,

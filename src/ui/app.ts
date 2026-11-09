@@ -438,7 +438,7 @@ export class App {
     // army slots
     for (let i = 0; i < CONFIG.boardSize; i++) {
       const s = p.slots[i];
-      const bonus = [s.atk || s.hp ? `${s.atk >= 0 ? '+' : ''}${s.atk}/${s.hp >= 0 ? '+' : ''}${s.hp}` : '', ...s.kw.map((k) => ({ taunt: 'Taunt', divineShield: 'Shield', reborn: 'Reborn', venomous: 'Venom', stealth: 'Stealth', windfury: 'Windfury' })[k])].filter(Boolean).join(' · ');
+      const bonus = [s.atk || s.hp ? `${s.atk >= 0 ? '+' : ''}${s.atk}/${s.hp >= 0 ? '+' : ''}${s.hp}` : '', ...s.kw.map((k) => ({ taunt: 'Taunt', divineShield: 'Shield', reborn: 'Reborn', venomous: 'Venom', poisonous: 'Poison', windfury: 'Windfury' })[k])].filter(Boolean).join(' · ');
       const buffed = s.atk || s.hp || s.kw.length;
       h += `<div class="slot-plate ${buffed ? 'buffed' : ''}" data-slot="${i}" style="left:${L.slotX(i)}px;top:${L.slotTop}px;width:${L.slotW}px;height:${L.slotH}px"><div class="bonus ${s.atk < 0 || s.hp < 0 ? 'neg' : ''}">${bonus || `Slot ${i + 1}`}</div></div>`;
     }

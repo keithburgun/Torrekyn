@@ -97,6 +97,7 @@ for (const t of ALL_TRIBES) {
 const board = (c: Ctx) => c.p?.board ?? [];
 const stat = (c: Ctx, i: number) => effStats(c.p!, c.p!.board[i], 'board', i);
 feat('tier5', 'Top Shelf', 'Reach Tavern Tier 5.', 'Feats', (c) => !!c.p && c.p.tier >= 5);
+feat('tier6', 'Summit', 'Reach Tavern Tier 6.', 'Feats', (c) => !!c.p && c.p.tier >= 6);
 feat('tier5fast', 'Fast Climber', 'Reach Tavern Tier 5 by turn 8.', 'Feats', (c) => !!c.p && c.p.tier >= 5 && c.g!.round <= 8);
 feat('gold3', 'Gilded Army', 'Have 3 Golden units in your army at once.', 'Feats', (c) => board(c).filter((u) => u.golden).length >= 3);
 feat('gold7', 'Solid Gold', 'Have 7 Golden units in your army at once.', 'Feats', (c) => board(c).filter((u) => u.golden).length >= 7);
@@ -113,7 +114,7 @@ feat('bc50', 'Battle Cry', 'Trigger 50 Battlecries in one game.', 'Feats', (c) =
 feat('disc5', 'Curious Mind', 'Discover 5 units in one game.', 'Feats', (c) => c.game.discovers >= 5);
 feat('hpgame10', 'Power Trip', 'Use your Hero Power 10 times in one game.', 'Feats', (c) => c.game.heroPowers >= 10);
 feat('earlytri', 'Early Gold', 'Make a Golden unit before turn 5.', 'Feats', (c) => c.game.firstTripleRound !== null && c.game.firstTripleRound < 5);
-feat('goldt5', 'Crown Jewel', 'Have a Golden Tier 5 unit.', 'Feats', (c) => !!c.p && [...c.p.board, ...c.p.hand].some((u) => u.golden && def(u.cardId).tier === 5));
+feat('goldt5', 'Crown Jewel', 'Have a Golden Tier 5 or 6 unit.', 'Feats', (c) => !!c.p && [...c.p.board, ...c.p.hand].some((u) => u.golden && def(u.cardId).tier >= 5));
 feat('trinkets2', 'Fully Accessorized', 'Own 2 Trinkets in one game.', 'Feats', (c) => !!c.p && c.p.trinkets.length >= 2);
 // combat feats
 feat('max15', 'Maximum Damage', 'Deal 15 damage in a single combat.', 'Combat', (c) => !!c.combat?.won && c.combat.damage >= 15);

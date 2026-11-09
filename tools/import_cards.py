@@ -28,7 +28,7 @@ KEYWORDS = {
     "divine shield": "divineShield",
     "reborn": "reborn",
     "venomous": "venomous",
-    "stealth": "stealth",
+    "poisonous": "poisonous",
     "windfury": "windfury",
 }
 

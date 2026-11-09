@@ -25,7 +25,7 @@ export function profileForSkill(skill: number): BotProfile {
     // beginners level late and never on a whim
     f.level = true;
     const late = Math.round((0.45 - s) * 11);
-    x.lvl3 = 5 + late; x.lvl4 = 8 + late; x.lvl5 = 10 + late; x.cheap = 0;
+    x.lvl3 = 5 + late; x.lvl4 = 8 + late; x.lvl5 = 10 + late; x.lvl6 = 13 + late; x.cheap = 0;
   }
   // beginners also wander off with gold unspent and hang on to weak units
   if (s < 0.5) { x.lazy = +((0.5 - s) * 1.2).toFixed(2); x.keep = +((0.5 - s) * 40).toFixed(1); }
@@ -54,7 +54,7 @@ export const PERSONAS: Persona[] = [
   { id: 'dbrenners', name: 'D.brenners', skill: 0.45, style: 'Never first, never last, always fine.' },
   { id: 'rothazar08', name: 'Rothazar08', skill: 0.4, style: 'Plays Neverending whenever it shows up.', quirk: { tribe: 'neverending' } },
   { id: 'bogman', name: 'BOGMAN_', skill: 0.35, style: 'Brambor or bust. Usually bust.', quirk: { tribe: 'brambor' } },
-  { id: 'dirchgavels', name: 'dirch-gavels-dds', skill: 0.3, style: 'Levels up fast and asks questions later.', quirk: { x: { lvl3: 4, lvl4: 6, lvl5: 8 } } },
+  { id: 'dirchgavels', name: 'dirch-gavels-dds', skill: 0.3, style: 'Levels up fast and asks questions later.', quirk: { x: { lvl3: 4, lvl4: 6, lvl5: 8, lvl6: 11 } } },
   { id: 'fhowitt', name: 'f.howitt', skill: 0.25, style: 'Confident. Unclear why.' },
   { id: 'orbath', name: 'orbath', skill: 0.2, style: 'Kindred forever.', quirk: { tribe: 'kindred' } },
   { id: 'chocadillydoo', name: 'chocadillydoo', skill: 0.15, style: 'Clicks fast. Thinks later.' },

@@ -17,8 +17,8 @@
    "tier": 1,
    "atk": 1,
    "hp": 1,
-   "text": "Deathrattle: Spawn 2 1/1 Skels",
-   "goldenText": "Deathrattle: Spawn 4 1/1 Skels.",
+   "text": "Deathrattle: Summon 2 1/1 Skels.",
+   "goldenText": "Deathrattle: Summon 4 1/1 Skels.",
    "keywords": []
   },
   {
@@ -74,8 +74,8 @@
    "tier": 2,
    "atk": 4,
    "hp": 1,
-   "text": "At the end of the turn, give the left-most card in your army +1 Health.",
-   "goldenText": "At the end of the turn, give the left-most card in your army +2 Health.",
+   "text": "Deathrattle: Give a random friendly unit Reborn.",
+   "goldenText": "Deathrattle: Give 2 random friendly units Reborn.",
    "keywords": []
   },
   {
@@ -96,8 +96,8 @@
    "tier": 3,
    "atk": 3,
    "hp": 3,
-   "text": "If is alive at the end of the battle, deal 1 more damage to the opponent.",
-   "goldenText": "If is alive at the end of the battle, deal 2 more damage to the opponent.",
+   "text": "If this is alive at the end of the battle, deal 1 more damage to the opponent.",
+   "goldenText": "If this is alive at the end of the battle, deal 2 more damage to the opponent.",
    "keywords": []
   },
   {
@@ -107,8 +107,8 @@
    "tier": 3,
    "atk": 1,
    "hp": 1,
-   "text": "Every time a unit is Reborn, this gains 2 health permanently.",
-   "goldenText": "Every time a unit is Reborn, this gains 4 health permanently.",
+   "text": "Every time a unit is Reborn, this gains 2 Health permanently.",
+   "goldenText": "Every time a unit is Reborn, this gains 4 Health permanently.",
    "keywords": []
   },
   {
@@ -129,8 +129,8 @@
    "tier": 4,
    "atk": 2,
    "hp": 4,
-   "text": "Deathrattle: Spawn 2 Skeletons.",
-   "goldenText": "Deathrattle: Spawn 2 Golden Skeletons.",
+   "text": "Deathrattle: Summon 2 Skeletons.",
+   "goldenText": "Deathrattle: Summon 2 Golden Skeletons.",
    "keywords": []
   },
   {
@@ -151,8 +151,8 @@
    "tier": 5,
    "atk": 15,
    "hp": 12,
-   "text": "Battlecry: Give your cards in hand and board +3/+3.",
-   "goldenText": "Battlecry: Give your cards in hand and board +6/+6.",
+   "text": "Battlecry: Give your units in hand and in your army +3/+3.",
+   "goldenText": "Battlecry: Give your units in hand and in your army +6/+6.",
    "keywords": []
   },
   {
@@ -175,8 +175,8 @@
    "tier": 5,
    "atk": 20,
    "hp": 20,
-   "text": "At the end of the turn, consume the unit to this unit's left and gain its stats.",
-   "goldenText": "At the end of the turn, consume the unit to this unit's left and gain double its stats.",
+   "text": "End of Turn: Consume the unit to this unit's left and gain its stats.",
+   "goldenText": "End of Turn: Consume the unit to this unit's left and gain double its stats.",
    "keywords": []
   },
   {
@@ -186,8 +186,8 @@
    "tier": 1,
    "atk": 1,
    "hp": 2,
-   "text": "At the end of the turn, give a unit in your hand +1 Health.",
-   "goldenText": "At the end of the turn, give a unit in your hand +2 Health.",
+   "text": "End of Turn: Give a unit in your hand +1 Health.",
+   "goldenText": "End of Turn: Give a unit in your hand +2 Health.",
    "keywords": []
   },
   {
@@ -222,8 +222,8 @@
    "tier": 2,
    "atk": 3,
    "hp": 3,
-   "text": "Battlecry: Discover a random tier 1 unit.",
-   "goldenText": "Battlecry: Discover a random tier 1 unit twice.",
+   "text": "Battlecry: Discover a Tier 1 unit.",
+   "goldenText": "Battlecry: Discover a Tier 1 unit, twice.",
    "keywords": []
   },
   {
@@ -277,8 +277,8 @@
    "tier": 3,
    "atk": 5,
    "hp": 7,
-   "text": "Avenge (3): Deal this unit's attack to a random enemy.",
-   "goldenText": "Avenge (3): Deal this unit's attack to a random enemy twice.",
+   "text": "Avenge (3): Deal damage equal to this unit's Attack to a random enemy unit.",
+   "goldenText": "Avenge (3): Deal damage equal to this unit's Attack to a random enemy unit, twice.",
    "keywords": []
   },
   {
@@ -301,8 +301,8 @@
    "tier": 4,
    "atk": 2,
    "hp": 7,
-   "text": "Start of Combat: Deal 25 damage to the lowest-health enemy.",
-   "goldenText": "Start of Combat: Deal 25 damage to the lowest-health enemy twice.",
+   "text": "Start of Combat: Deal 25 damage to the lowest-Health enemy unit.",
+   "goldenText": "Start of Combat: Deal 25 damage to the lowest-Health enemy unit, twice.",
    "keywords": []
   },
   {
@@ -312,8 +312,8 @@
    "tier": 4,
    "atk": 20,
    "hp": 20,
-   "text": "Battlecry: Discover a card from your last opponent.",
-   "goldenText": "Battlecry: Discover a card from your last opponent twice.",
+   "text": "Battlecry: Discover a unit from your last opponent's army.",
+   "goldenText": "Battlecry: Discover a unit from your last opponent's army, twice.",
    "keywords": []
   },
   {
@@ -356,8 +356,8 @@
    "tier": 1,
    "atk": 1,
    "hp": 3,
-   "text": "Rally: Summon a random tier 1 unit.",
-   "goldenText": "Rally: Summon two random tier 1 units.",
+   "text": "Rally: Summon a random Tier 1 unit.",
+   "goldenText": "Rally: Summon two random Tier 1 units.",
    "keywords": []
   },
   {
@@ -367,8 +367,8 @@
    "tier": 1,
    "atk": 2,
    "hp": 1,
-   "text": "Battlecry: Discover a unit from a tier higher.",
-   "goldenText": "Battlecry: Discover a unit from a tier higher twice.",
+   "text": "Battlecry: Discover a unit from one Tier higher.",
+   "goldenText": "Battlecry: Discover a unit from one Tier higher, twice.",
    "keywords": []
   },
   {
@@ -433,7 +433,7 @@
    "tier": 3,
    "atk": 1,
    "hp": 12,
-   "text": "Your left-most unit is invunlerable while attacking.",
+   "text": "Your left-most unit is invulnerable while attacking.",
    "goldenText": "Your two left-most units are invulnerable while attacking.",
    "keywords": []
   },
@@ -444,8 +444,8 @@
    "tier": 3,
    "atk": 7,
    "hp": 3,
-   "text": "Avenge(5): Give this slot +10 Health.",
-   "goldenText": "Avenge(5): Give this slot +20 Health.",
+   "text": "Avenge (5): Give this slot +10 Health.",
+   "goldenText": "Avenge (5): Give this slot +20 Health.",
    "keywords": []
   },
   {
@@ -466,8 +466,8 @@
    "tier": 4,
    "atk": 25,
    "hp": 5,
-   "text": "Start of Combat: double this unit's stats.",
-   "goldenText": "Start of Combat: triple this unit's stats.",
+   "text": "Start of Combat: Double this unit's stats.",
+   "goldenText": "Start of Combat: Triple this unit's stats.",
    "keywords": []
   },
   {
@@ -477,8 +477,8 @@
    "tier": 4,
    "atk": 2,
    "hp": 3,
-   "text": "Start of Combat: When there is room, spawn two Pink Gems.",
-   "goldenText": "Start of Combat: When there is room, spawn two Golden Pink Gems.",
+   "text": "Start of Combat: When there is room, summon two Pink Gems.",
+   "goldenText": "Start of Combat: When there is room, summon two Golden Pink Gems.",
    "keywords": []
   },
   {
@@ -488,8 +488,8 @@
    "tier": 5,
    "atk": 10,
    "hp": 10,
-   "text": "Avenge(3): Gain a Pink Gem.",
-   "goldenText": "Avenge(3): Gain a Pink Gem.",
+   "text": "Avenge (3): Gain a Pink Gem.",
+   "goldenText": "Avenge (3): Gain a Pink Gem.",
    "keywords": []
   },
   {
@@ -499,8 +499,8 @@
    "tier": 5,
    "atk": 55,
    "hp": 55,
-   "text": "Deathrattle: Spawn the highest-health Kindred from your hand into battle.",
-   "goldenText": "Deathrattle: Spawn the 2 highest-health Kindred from your hand into battle.",
+   "text": "Deathrattle: Summon the highest-Health Kindred unit from your hand into battle.",
+   "goldenText": "Deathrattle: Summon the 2 highest-Health Kindred units from your hand into battle.",
    "keywords": []
   },
   {
@@ -510,8 +510,8 @@
    "tier": 5,
    "atk": 12,
    "hp": 18,
-   "text": "Quest: After you buy 8 Kindred, your left and right most slots gain Reborn.",
-   "goldenText": "Quest: After you buy 4 Kindred, your left and right most slots gain Reborn.",
+   "text": "Quest: After you buy 8 Kindred units, your left-most and right-most slots gain Reborn.",
+   "goldenText": "Quest: After you buy 4 Kindred units, your left-most and right-most slots gain Reborn.",
    "keywords": []
   },
   {
@@ -521,8 +521,8 @@
    "tier": 1,
    "atk": 3,
    "hp": 1,
-   "text": "Avenge(3): Become a 9/9 Rootling.",
-   "goldenText": "Avenge(3): Become a 18/18 Rootling.",
+   "text": "Avenge (3): Become a 9/9 Rootling.",
+   "goldenText": "Avenge (3): Become an 18/18 Rootling.",
    "keywords": []
   },
   {
@@ -532,8 +532,8 @@
    "tier": 1,
    "atk": 1,
    "hp": 1,
-   "text": "Avenge(3): Get a Potato Gem.",
-   "goldenText": "Avenge(3): Get 2 Potato Gems.",
+   "text": "Avenge (3): Gain a Potato Gem.",
+   "goldenText": "Avenge (3): Gain 2 Potato Gems.",
    "keywords": []
   },
   {
@@ -556,8 +556,8 @@
    "tier": 2,
    "atk": 1,
    "hp": 1,
-   "text": "Avenge(3): Get a random Brambor unit.",
-   "goldenText": "Avenge(3): Get 2 random Brambor units.",
+   "text": "Avenge (3): Gain a random Brambor unit.",
+   "goldenText": "Avenge (3): Gain 2 random Brambor units.",
    "keywords": []
   },
   {
@@ -567,8 +567,8 @@
    "tier": 2,
    "atk": 3,
    "hp": 6,
-   "text": "Divine Shield, Taunt",
-   "goldenText": "Divine Shield, Taunt",
+   "text": "Taunt. Divine Shield.",
+   "goldenText": "Taunt. Divine Shield.",
    "keywords": [
     "divineShield",
     "taunt"
@@ -581,8 +581,8 @@
    "tier": 2,
    "atk": 2,
    "hp": 8,
-   "text": "At the end of combat, if this survived, get a random Brambor.",
-   "goldenText": "At the end of combat, if this survived, get 2 random Brambor.",
+   "text": "At the end of combat, if this survived, gain a random Brambor unit.",
+   "goldenText": "At the end of combat, if this survived, gain 2 random Brambor units.",
    "keywords": []
   },
   {
@@ -603,8 +603,8 @@
    "tier": 3,
    "atk": 6,
    "hp": 8,
-   "text": "Start of Battle: Give your other units the stats of this slot.",
-   "goldenText": "Start of Battle: Give your other units double the stats of this slot.",
+   "text": "Start of Combat: Give your other units the stats of this slot.",
+   "goldenText": "Start of Combat: Give your other units double the stats of this slot.",
    "keywords": []
   },
   {
@@ -625,8 +625,8 @@
    "tier": 4,
    "atk": 9,
    "hp": 3,
-   "text": "Rally: Deal this unit's damage to a random enemy unit.",
-   "goldenText": "Rally: Deal this unit's damage to a random enemy unit twice.",
+   "text": "Rally: Deal damage equal to this unit's Attack to a random enemy unit.",
+   "goldenText": "Rally: Deal damage equal to this unit's Attack to a random enemy unit, twice.",
    "keywords": []
   },
   {
@@ -636,8 +636,8 @@
    "tier": 4,
    "atk": 3,
    "hp": 9,
-   "text": "Whenever a Rally is triggered, gain 3 health permanently.",
-   "goldenText": "Whenever a Rally is triggered, gain 6 health permanently.",
+   "text": "Whenever a Rally is triggered, gain 3 Health permanently.",
+   "goldenText": "Whenever a Rally is triggered, gain 6 Health permanently.",
    "keywords": []
   },
   {
@@ -669,8 +669,8 @@
    "tier": 5,
    "atk": 10,
    "hp": 10,
-   "text": "Start of Battle: Double this unit's stats.",
-   "goldenText": "Start of Battle: Triple this unit's stats.",
+   "text": "Start of Combat: Double this unit's stats.",
+   "goldenText": "Start of Combat: Triple this unit's stats.",
    "keywords": []
   },
   {
@@ -735,11 +735,9 @@
    "tier": 2,
    "atk": 8,
    "hp": 3,
-   "text": "Venomous",
-   "goldenText": "Venomous",
-   "keywords": [
-    "venomous"
-   ]
+   "text": "Start of Combat: If this is in your hand, summon it to the battlefield if there's room.",
+   "goldenText": "Start of Combat: If this is in your hand, summon it to the battlefield if there's room.",
+   "keywords": []
   },
   {
    "id": "owl",
@@ -748,8 +746,8 @@
    "tier": 2,
    "atk": 1,
    "hp": 1,
-   "text": "Battlecry: Discover a unit from a Rival's army.",
-   "goldenText": "Battlecry: Discover a unit from a Rival's army twice.",
+   "text": "End of Turn: Give this slot +2 Attack.",
+   "goldenText": "End of Turn: Give this slot +4 Attack.",
    "keywords": []
   },
   {
@@ -759,8 +757,8 @@
    "tier": 3,
    "atk": 3,
    "hp": 3,
-   "text": "Start of Combat: When your last unit dies, spawn a Forest Abomination.",
-   "goldenText": "Start of Combat: When your last unit dies, spawn a Golden Forest Abomination.",
+   "text": "Start of Combat: When your last unit dies, summon a Forest Abomination.",
+   "goldenText": "Start of Combat: When your last unit dies, summon a Golden Forest Abomination.",
    "keywords": []
   },
   {
@@ -784,8 +782,8 @@
    "tier": 3,
    "atk": 9,
    "hp": 2,
-   "text": "Avenge(3): Give a random card in your hand +5/+5.",
-   "goldenText": "Avenge(3): Give a random card in your hand +10/+10.",
+   "text": "Avenge (3): Give a random unit in your hand +5/+5.",
+   "goldenText": "Avenge (3): Give a random unit in your hand +10/+10.",
    "keywords": []
   },
   {
@@ -808,8 +806,8 @@
    "tier": 4,
    "atk": 1,
    "hp": 1,
-   "text": "After this is in your hand for 3 turns, gain a Golden tier 5 Cloister unit.",
-   "goldenText": "After this is in your hand for 2 turns, gain a Golden tier 5 Cloister unit.",
+   "text": "After this is in your hand for 3 turns, gain a Golden Tier 5 Cloister unit.",
+   "goldenText": "After this is in your hand for 2 turns, gain a Golden Tier 5 Cloister unit.",
    "keywords": []
   },
   {
@@ -819,8 +817,8 @@
    "tier": 4,
    "atk": 5,
    "hp": 5,
-   "text": "Deathrattle: Summon the highest-attack Cloister unit from your hand. It attacks immediately.",
-   "goldenText": "Deathrattle: Summon the 2 highest-attack Cloister units from your hand. They attack immediately.",
+   "text": "Deathrattle: Summon the highest-Attack Cloister unit from your hand. It attacks immediately.",
+   "goldenText": "Deathrattle: Summon the 2 highest-Attack Cloister units from your hand. They attack immediately.",
    "keywords": []
   },
   {
@@ -839,12 +837,12 @@
    "name": "Omar Evans",
    "tribe": "cloister",
    "tier": 5,
-   "atk": 70,
-   "hp": 7,
-   "text": "Stealth. Avenge (3): This gains Divine Shield and attacks immediately.",
-   "goldenText": "Stealth. Avenge (2): This gains Divine Shield and attacks immediately.",
+   "atk": 20,
+   "hp": 20,
+   "text": "Venomous. Avenge (3): This gains Venomous and attacks immediately.",
+   "goldenText": "Venomous. Avenge (3): This gains Venomous and Divine Shield and attacks immediately.",
    "keywords": [
-    "stealth"
+    "venomous"
    ]
   },
   {
@@ -855,7 +853,7 @@
    "atk": 25,
    "hp": 5,
    "text": "Deathrattle: Give this unit's Attack to two friendly units.",
-   "goldenText": "Deathrattle: Give double unit's Attack two friendly units.",
+   "goldenText": "Deathrattle: Give double this unit's Attack to two friendly units.",
    "keywords": []
   },
   {
@@ -887,8 +885,8 @@
    "tier": 1,
    "atk": 1,
    "hp": 1,
-   "text": "When you Refresh the shop, give Venomous, Divine Shield or Reborn to a random unit in the shop.",
-   "goldenText": "When you Refresh the shop, give Venomous, Divine Shield or Reborn to 2 random units in the shop.",
+   "text": "When you Refresh the Tavern, give Venomous, Divine Shield or Reborn to a random unit in it.",
+   "goldenText": "When you Refresh the Tavern, give Venomous, Divine Shield or Reborn to 2 random units in it.",
    "keywords": []
   },
   {
@@ -898,8 +896,8 @@
    "tier": 2,
    "atk": 1,
    "hp": 1,
-   "text": "Start of battle: Deal 3 damage to a random unit. Repeat for every other Alcove unit you have in play.",
-   "goldenText": "Start of battle: Deal 3 damage to a random unit. Repeat for every other Alcove unit you have in play, twice.",
+   "text": "Start of Combat: Deal 3 damage to a random enemy unit. Repeat for every other Alcove unit you have.",
+   "goldenText": "Start of Combat: Deal 3 damage to a random enemy unit. Repeat for every other Alcove unit you have, twice.",
    "keywords": []
   },
   {
@@ -909,8 +907,8 @@
    "tier": 2,
    "atk": 8,
    "hp": 9,
-   "text": "Battlecry: Give this unit's stats to the unit to the right of it.",
-   "goldenText": "Battlecry: Give this unit's stats to the unit to the right of it.",
+   "text": "Start of Combat: Give this unit's stats to the unit to its right.",
+   "goldenText": "Start of Combat: Give double this unit's stats to the unit to its right.",
    "keywords": []
   },
   {
@@ -920,8 +918,8 @@
    "tier": 2,
    "atk": 1,
    "hp": 1,
-   "text": "Start of Turn: Give your left-most unit +3/+3. Repeat for each Battlecry you played this turn.",
-   "goldenText": "Start of Turn: Give your left-most unit +6/+6. Repeat for each Battlecry you played this turn.",
+   "text": "End of Turn: Give your left-most unit +3/+3. Repeat for each Battlecry you triggered this turn.",
+   "goldenText": "End of Turn: Give your left-most unit +6/+6. Repeat for each Battlecry you triggered this turn.",
    "keywords": []
   },
   {
@@ -942,8 +940,8 @@
    "tier": 3,
    "atk": 10,
    "hp": 10,
-   "text": "Taunt. Deathrattle: It costs 1 less gold to upgrade the shop.",
-   "goldenText": "Taunt. Deathrattle: It costs 2 less gold to upgrade the shop.",
+   "text": "Taunt. Deathrattle: Upgrading your Tavern costs 1 less Gold.",
+   "goldenText": "Taunt. Deathrattle: Upgrading your Tavern costs 2 less Gold.",
    "keywords": [
     "taunt"
    ]
@@ -955,8 +953,8 @@
    "tier": 3,
    "atk": 1,
    "hp": 1,
-   "text": "Start of Combat: Set a random opponent's unit's health to 1.",
-   "goldenText": "Start of Combat: Set two random opponent's unit's health to 1.",
+   "text": "Start of Combat: Set a random enemy unit's Health to 1.",
+   "goldenText": "Start of Combat: Set 2 random enemy units' Health to 1.",
    "keywords": []
   },
   {
@@ -966,8 +964,8 @@
    "tier": 4,
    "atk": 20,
    "hp": 20,
-   "text": "End of Turn: Gain a random Neutral card of any tier.",
-   "goldenText": "End of Turn: Gain 2 random Neutral cards of any tier.",
+   "text": "End of Turn: Gain a random Neutral unit of any Tier.",
+   "goldenText": "End of Turn: Gain 2 random Neutral units of any Tier.",
    "keywords": []
   },
   {
@@ -977,8 +975,8 @@
    "tier": 4,
    "atk": 1,
    "hp": 1,
-   "text": "Battlecry: For the rest of this game, Alcove units have +3 Attack.",
-   "goldenText": "Battlecry: For the rest of this game, Alcove units have +6 Attack.",
+   "text": "Deathrattle: For the rest of the game, your Alcove units have +2 Attack.",
+   "goldenText": "Deathrattle: For the rest of the game, your Alcove units have +4 Attack.",
    "keywords": []
   },
   {
@@ -1024,8 +1022,8 @@
    "tier": 5,
    "atk": 1,
    "hp": 1,
-   "text": "Deathrattle: Summon 3 random Deathrattle units.",
-   "goldenText": "Deathrattle: Summon 3 random Deathrattle units and double their stats.",
+   "text": "Deathrattle: Gain a random Tier 6 unit.",
+   "goldenText": "Deathrattle: Gain a random Tier 6 unit.",
    "keywords": []
   },
   {
@@ -1035,8 +1033,8 @@
    "tier": 1,
    "atk": 1,
    "hp": 1,
-   "text": "Start of Combat: If you are tier 3 or lower, gain +5 Attack.",
-   "goldenText": "Start of Combat: If you are tier 3 or lower, gain +10 Attack.",
+   "text": "Start of Combat: If your Tavern is Tier 3 or lower, gain +5 Attack.",
+   "goldenText": "Start of Combat: If your Tavern is Tier 3 or lower, gain +10 Attack.",
    "keywords": []
   },
   {
@@ -1046,8 +1044,8 @@
    "tier": 1,
    "atk": 1,
    "hp": 2,
-   "text": "After you buy 4 units, gain a random Tier 1 card.",
-   "goldenText": "After you buy 4 units, gain 2 random Tier 1 cards.",
+   "text": "After you buy 4 units, gain a random Tier 1 unit.",
+   "goldenText": "After you buy 4 units, gain 2 random Tier 1 units.",
    "keywords": []
   },
   {
@@ -1057,8 +1055,8 @@
    "tier": 1,
    "atk": 3,
    "hp": 3,
-   "text": "Avenge (5): This sells for 1 more gold.",
-   "goldenText": "Avenge (5): This sells for 2 more gold.",
+   "text": "Avenge (5): This sells for 1 more Gold.",
+   "goldenText": "Avenge (5): This sells for 2 more Gold.",
    "keywords": []
   },
   {
@@ -1068,8 +1066,8 @@
    "tier": 2,
    "atk": 7,
    "hp": 4,
-   "text": "When this kills a unit when attacking, it deals excess damage to an adjacent unit.",
-   "goldenText": "When this kills a unit when attacking, it deals excess damage to both adjacent units.",
+   "text": "When this kills a unit while attacking, it deals the excess damage to an adjacent unit.",
+   "goldenText": "When this kills a unit while attacking, it deals the excess damage to both adjacent units.",
    "keywords": []
   },
   {
@@ -1079,8 +1077,8 @@
    "tier": 2,
    "atk": 5,
    "hp": 1,
-   "text": "Battlecry: Improve your Red Gems.",
-   "goldenText": "Battlecry: Improve your Red Gems twice.",
+   "text": "Start of Turn: Improve your Red Gems.",
+   "goldenText": "Start of Turn: Improve your Red Gems twice.",
    "keywords": []
   },
   {
@@ -1090,8 +1088,8 @@
    "tier": 2,
    "atk": 3,
    "hp": 9,
-   "text": "If you lost your last battle, this sells for 5 gold.",
-   "goldenText": "If you lost your last battle, this sells for 10 gold.",
+   "text": "If you lost your last battle, this sells for 5 Gold.",
+   "goldenText": "If you lost your last battle, this sells for 10 Gold.",
    "keywords": []
   },
   {
@@ -1112,8 +1110,8 @@
    "tier": 3,
    "atk": 2,
    "hp": 2,
-   "text": "End of turn: Increase your maximum Gold by 1.",
-   "goldenText": "End of turn: Increase your maximum Gold by 2.",
+   "text": "End of Turn: Increase your maximum Gold by 1.",
+   "goldenText": "End of Turn: Increase your maximum Gold by 2.",
    "keywords": []
   },
   {
@@ -1157,7 +1155,7 @@
    "atk": 4,
    "hp": 15,
    "text": "Rally: Gain a Red Gem and play a Red Gem.",
-   "goldenText": "Rally: Gain 2 Red Gem and play 2 Red Gems.",
+   "goldenText": "Rally: Gain 2 Red Gems and play 2 Red Gems.",
    "keywords": []
   },
   {
@@ -1167,8 +1165,8 @@
    "tier": 5,
    "atk": 40,
    "hp": 40,
-   "text": "End of your turn: Gain 1 attack per maximum gold you have.",
-   "goldenText": "End of your turn: Gain 2 attack per maximum gold you have.",
+   "text": "End of Turn: Gain 1 Attack per maximum Gold you have.",
+   "goldenText": "End of Turn: Gain 2 Attack per maximum Gold you have.",
    "keywords": []
   },
   {
@@ -1189,8 +1187,8 @@
    "tier": 5,
    "atk": 3,
    "hp": 25,
-   "text": "Battlecry: Gain quest: Buy 8 Business Demons to gain 12 Gold.",
-   "goldenText": "Battlecry: Gain quest: Buy 8 Business Demons to gain 24 Gold.",
+   "text": "When you sell this, gain a Quest: Buy 8 Business Demons to gain 12 Gold.",
+   "goldenText": "When you sell this, gain a Quest: Buy 8 Business Demons to gain 12 Gold.",
    "keywords": []
   },
   {
@@ -1222,8 +1220,8 @@
    "tier": 1,
    "atk": 2,
    "hp": 2,
-   "text": "Gain 1 gold next turn.",
-   "goldenText": "Gain 2 gold next turn.",
+   "text": "End of Turn: Gain 1 Gold next turn.",
+   "goldenText": "End of Turn: Gain 2 Gold next turn.",
    "keywords": []
   },
   {
@@ -1233,8 +1231,8 @@
    "tier": 2,
    "atk": 1,
    "hp": 1,
-   "text": "When you sell this, discover a Tier 1 unit (improves each turn).",
-   "goldenText": "When you sell this, discover a Tier 1 unit twice (improves each turn).",
+   "text": "When you sell this, Discover a Tier 1 unit (improves each turn).",
+   "goldenText": "When you sell this, Discover a Tier 1 unit twice (improves each turn).",
    "keywords": []
   },
   {
@@ -1310,8 +1308,8 @@
    "tier": 4,
    "atk": 8,
    "hp": 6,
-   "text": "Battlecry: reduce the cost of upgrading the shop level by 3.",
-   "goldenText": "Battlecry: reduce the cost of upgrading the shop level by 6.",
+   "text": "Deathrattle: Upgrading your Tavern costs 3 less Gold.",
+   "goldenText": "Deathrattle: Upgrading your Tavern costs 6 less Gold.",
    "keywords": []
   },
   {
@@ -1321,8 +1319,8 @@
    "tier": 4,
    "atk": 12,
    "hp": 28,
-   "text": "Your end of turn effects trigger twice.",
-   "goldenText": "Your end of turn effects trigger three times.",
+   "text": "Your End of Turn effects trigger twice.",
+   "goldenText": "Your End of Turn effects trigger three times.",
    "keywords": []
   },
   {
@@ -1332,8 +1330,8 @@
    "tier": 5,
    "atk": 19,
    "hp": 82,
-   "text": "Battlecry: Improve ALL your gems this game.",
-   "goldenText": "Battlecry: Improve ALL your gems this game, twice.",
+   "text": "Battlecry: Improve ALL your Gems this game.",
+   "goldenText": "Battlecry: Improve ALL your Gems this game, twice.",
    "keywords": []
   },
   {
@@ -1343,8 +1341,8 @@
    "tier": 5,
    "atk": 12,
    "hp": 8,
-   "text": "Your deathrattles trigger twice.",
-   "goldenText": "Your deathrattles trigger three times.",
+   "text": "Your Deathrattles trigger twice.",
+   "goldenText": "Your Deathrattles trigger three times.",
    "keywords": []
   },
   {
@@ -1354,8 +1352,8 @@
    "tier": 5,
    "atk": 1,
    "hp": 1,
-   "text": "Battlecry: Give the unit to the left of this two random Bonus Keywords.",
-   "goldenText": "Battlecry: Give the unit to the left of this four random Bonus Keywords.",
+   "text": "When you sell this, gain 3 random Tier 5 units.",
+   "goldenText": "When you sell this, gain 6 random Tier 5 units.",
    "keywords": []
   },
   {
@@ -1403,6 +1401,98 @@
    "hp": 1,
    "text": "Battlecry: Give a unit Reborn and +1/+1 for 1 turn.",
    "goldenText": "Battlecry: Give a unit Reborn and +1/+1 for 1 turn.",
+   "keywords": []
+  },
+  {
+   "id": "invisible_hand",
+   "name": "Invisible Hand",
+   "tribe": "demons",
+   "tier": 6,
+   "atk": 20,
+   "hp": 16,
+   "text": "Reborn. Deathrattle: Play 2 Red Gems.",
+   "goldenText": "Reborn. Deathrattle: Play 4 Red Gems.",
+   "keywords": [
+    "reborn"
+   ]
+  },
+  {
+   "id": "tank",
+   "name": "Tank",
+   "tribe": "alcove",
+   "tier": 6,
+   "atk": 35,
+   "hp": 25,
+   "text": "Rally: Deal damage equal to this unit's Attack to the units adjacent to the target.",
+   "goldenText": "Rally: Deal damage equal to double this unit's Attack to the units adjacent to the target.",
+   "keywords": []
+  },
+  {
+   "id": "alabaster",
+   "name": "Alabaster",
+   "tribe": "neverending",
+   "tier": 6,
+   "atk": 15,
+   "hp": 30,
+   "text": "The first 3 friendly units summoned in each battle gain Reborn.",
+   "goldenText": "The first 6 friendly units summoned in each battle gain Reborn.",
+   "keywords": []
+  },
+  {
+   "id": "the_mayor",
+   "name": "The Mayor",
+   "tribe": "kindred",
+   "tier": 6,
+   "atk": 20,
+   "hp": 20,
+   "text": "End of Turn: Give this slot Reborn and +20 Health.",
+   "goldenText": "End of Turn: Give this slot Reborn and +40 Health.",
+   "keywords": []
+  },
+  {
+   "id": "archnode",
+   "name": "Archnode",
+   "tribe": "neutral",
+   "tier": 6,
+   "atk": 25,
+   "hp": 25,
+   "text": "Rally: Give one friendly unit of each tribe +3/+3 permanently.",
+   "goldenText": "Rally: Give one friendly unit of each tribe +6/+6 permanently.",
+   "keywords": []
+  },
+  {
+   "id": "adder",
+   "name": "Adder",
+   "tribe": "cloister",
+   "tier": 6,
+   "atk": 15,
+   "hp": 30,
+   "text": "Poisonous. When this kills a unit while attacking, give its Attack and max Health to a unit in your hand.",
+   "goldenText": "Poisonous. When this kills a unit while attacking, give double its Attack and max Health to a unit in your hand.",
+   "keywords": [
+    "poisonous"
+   ]
+  },
+  {
+   "id": "potato_lord",
+   "name": "Potato Lord",
+   "tribe": "brambor",
+   "tier": 6,
+   "atk": 25,
+   "hp": 30,
+   "text": "Rally: Gain a random Tier 5 unit.",
+   "goldenText": "Rally: Gain 2 random Tier 5 units.",
+   "keywords": []
+  },
+  {
+   "id": "blue_dragon",
+   "name": "Blue Dragon",
+   "tribe": "azure",
+   "tier": 6,
+   "atk": 30,
+   "hp": 30,
+   "text": "Avenge (3): Give a random friendly unit Divine Shield.",
+   "goldenText": "Avenge (3): Give 2 random friendly units Divine Shield.",
    "keywords": []
   }
  ]

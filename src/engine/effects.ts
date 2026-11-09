@@ -6,7 +6,6 @@
  *  - Combat hooks receive a CCtx.
  * m = 1 for normal, 2 for golden.
  */
-import { BONUS_KEYWORDS } from './types';
 import type { Body, Keyword, Player, Slot, Unit, GameState } from './types';
 import { addKw, CARDS, def, effStats, has, isTribe, log, makeUnit, pick, rand, removeKw, sample, tribeOf, CONFIG } from './core';
 import type { CUnit, Combat, Side } from './combat';
@@ -58,6 +57,10 @@ export interface Effect {
   onDamaged?(c: CCtx): void;
   onShieldLost?(c: CCtx, u: CUnit): void;
   onRallyFriendly?(c: CCtx, u: CUnit): void;
+  /** this attacked and killed `dead` (its Attack and max Health just before the hit) */
+  onAttackKill?(c: CCtx, dead: CUnit, atk: number, maxHp: number): void;
+  /** another friendly unit was summoned during battle */
+  onSummonFriendly?(c: CCtx, u: CUnit): void;
 }
 
 // ---------------- helpers ----------------
@@ -175,7 +178,10 @@ export const EFFECTS: Record<string, Effect> = {
     onDeathAny: (c, dead) => { if (isTribe(dead, 'neverending')) c.self.atk += c.m; },
   },
   thicket: {
-    endTurn: (c) => buff(c.board[0], 0, c.m),
+    // Deathrattle: Reborn to a random friendly unit (Golden: 2)
+    deathrattle: (c) => {
+      for (const u of sample(c.g, c.side.units.filter((x) => x.hp > 0 && !has(x, 'reborn')), c.m)) addKw(u, 'reborn');
+    },
   },
   sickle: {
     rally: (c, t) => { for (const u of c.c.adjacent(t)) c.c.damage(u, 3 * c.m, c.self); },
@@ -515,13 +521,7 @@ export const EFFECTS: Record<string, Effect> = {
     },
   },
   owl: {
-    battlecry: (c) => {
-      const rivals = c.g.players.filter((p) => p.alive && p !== c.p && p.board.length);
-      for (let i = 0; i < c.m; i++) {
-        const r = pick(c.g, rivals);
-        if (r) discoverFrom(c, r.board.map((u) => u.cardId), `Discover a unit from ${r.name}'s army`, 1);
-      }
-    },
+    endTurn: (c) => slotBuff(c, c.board.indexOf(c.self), 2 * c.m, 0),
   },
   secret: {
     soc: (c) => { c.side.secrets.push(c.m === 2); },
@@ -537,6 +537,7 @@ export const EFFECTS: Record<string, Effect> = {
     },
   },
   larva: {}, // handled at start of turn
+  orange_ninja: {}, // Green Ninja: joins from your hand at Start of Combat (see combat)
   ambush: {
     deathrattle: (c) => {
       const best = c.p.hand.filter((u) => isTribe(u, 'cloister')).sort((a, b) => atkOf(c.p, b) - atkOf(c.p, a)).slice(0, c.m);
@@ -556,9 +557,11 @@ export const EFFECTS: Record<string, Effect> = {
     },
   },
   omar_evans: {
-    avenge: [3, 2],
+    // Avenge (3): Venomous again (Golden: and Divine Shield), then it attacks at once
+    avenge: [3, 3],
     avengeFn: (c) => {
-      addKw(c.self, 'divineShield');
+      addKw(c.self, 'venomous');
+      if (c.m === 2) addKw(c.self, 'divineShield');
       c.c.attackNow(c.self);
     },
   },
@@ -601,14 +604,16 @@ export const EFFECTS: Record<string, Effect> = {
     },
   },
   mod: {
-    battlecry: (c) => {
-      const r = c.board[c.board.indexOf(c.self) + 1];
-      buff(r, c.self.atk, c.self.hp);
+    // Start of Combat: its stats (Golden: double) go to the unit on its right
+    soc: (c) => {
+      const r = c.side.units[c.side.units.indexOf(c.self) + 1];
+      if (r && r.hp > 0) buff(r, c.self.atk * c.m, c.self.hp * c.m);
     },
   },
   chaos: {
-    startTurn: (c) => {
-      const times = 1 + c.p.battlecriesLastTurn;
+    // once, plus once more for every Battlecry triggered this turn
+    endTurn: (c) => {
+      const times = 1 + c.p.battlecriesThisTurn;
       buff(c.board[0], 3 * c.m * times, 3 * c.m * times);
     },
   },
@@ -633,9 +638,10 @@ export const EFFECTS: Record<string, Effect> = {
     },
   },
   scientist: {
-    battlecry: (c) => {
-      c.p.alcoveAtkThisTier += 3 * c.m;
-      if (c.combat) for (const u of c.board) if (isTribe(u, 'alcove')) u.atk += 3 * c.m;
+    // Deathrattle: Alcove units have +2 Attack (Golden +4) for the rest of the game, starting with this battle
+    deathrattle: (c) => {
+      c.p.alcoveAtkThisTier += 2 * c.m;
+      for (const u of c.side.units) if (u.hp > 0 && isTribe(u, 'alcove')) u.atk += 2 * c.m;
     },
   },
   paradox: {
@@ -656,18 +662,7 @@ export const EFFECTS: Record<string, Effect> = {
     },
   },
   golden_light: {
-    // 3 random Deathrattle units (Golden: with double stats)
-    deathrattle: (c) => {
-      const ids = CARDS.filter((d) => !d.token && d.id !== 'golden_light' && EFFECTS[d.id]?.deathrattle && inPlay(c.g, d.id)).map((d) => d.id);
-      for (let i = 0; i < 3; i++) {
-        const id = pick(c.g, ids);
-        if (!id) return;
-        const cu = c.c.spawn(c.side, id, false, c.pos + i);
-        if (!cu) return;
-        if (c.m === 2) { cu.atk *= 2; cu.hp *= 2; }
-        c.c.snap('trigger', i === 0 ? { note: 'Golden Light' } : {});
-      }
-    },
+    deathrattle: (c) => gain(c, randomTier(c, 6)),
   },
 
   // ===== Business Demons =====
@@ -691,7 +686,7 @@ export const EFFECTS: Record<string, Effect> = {
   },
   pyro: {}, // see Combat.damage
   jeweler: {
-    battlecry: (c) => improveGem(c.p, 'red_gem', c.m),
+    startTurn: (c) => improveGem(c.p, 'red_gem', c.m),
   },
   treasure: {}, // sell value
   biker: {
@@ -727,7 +722,7 @@ export const EFFECTS: Record<string, Effect> = {
   },
   gem_wizard: {}, // see battlecryTimes
   exploit: {
-    battlecry: (c) => { if (!c.combat) c.p.quests.push({ kind: 'bill', have: 0, need: 8, reward: 12 * c.m }); },
+    onSell: (c) => { c.p.quests.push({ kind: 'bill', have: 0, need: 8, reward: 12 }); },
   },
 
   // ===== Neutral =====
@@ -799,7 +794,11 @@ export const EFFECTS: Record<string, Effect> = {
     },
   },
   grief: {
-    battlecry: (c) => { c.p.upgradeCost = Math.max(0, c.p.upgradeCost - 3 * c.m); },
+    // Deathrattle: upgrading costs 3 less (Golden 6), never below 0
+    deathrattle: (c) => {
+      if (!c.side.persistent) return;
+      c.c.after(c.side, () => { c.p.upgradeCost = Math.max(0, c.p.upgradeCost - 3 * c.m); });
+    },
   },
   sarinee: {}, // see endTurnEffects
   broken_land: {
@@ -807,10 +806,59 @@ export const EFFECTS: Record<string, Effect> = {
   },
   tom_judith: {}, // see combat deathrattle multiplier
   omni_gem: {
-    battlecry: (c) => {
-      const l = c.board[c.board.indexOf(c.self) - 1];
-      if (!l) return;
-      for (const k of sample(c.g, BONUS_KEYWORDS.filter((k) => !has(l, k)), 2 * c.m)) addKw(l, k);
+    onSell: (c) => { for (let i = 0; i < 3 * c.m; i++) gain(c, randomTier(c, 5)); },
+  },
+
+  // ===== Tier 6 =====
+  invisible_hand: {
+    // Reborn. Deathrattle: play 2 Red Gems (Golden: 4)
+    deathrattle: (c) => {
+      const cc = cctx(c);
+      for (let i = 0; i < 2 * c.m; i++) playGemOn(cc, 'red_gem', cc.board[0] ?? c.self);
+    },
+  },
+  tank: {
+    // Rally: its Attack (Golden: double) to the units next to the target
+    rally: (c, t) => { for (const u of c.c.adjacent(t)) c.c.damage(u, c.self.atk * c.m, c.self); },
+  },
+  alabaster: {
+    // the first 3 (Golden: 6) friendly units summoned in each battle get Reborn
+    onSummonFriendly: (c, u) => {
+      if ((c.self.mem.alabaster ?? 0) >= 3 * c.m || has(u, 'reborn')) return;
+      c.self.mem.alabaster = (c.self.mem.alabaster ?? 0) + 1;
+      addKw(u, 'reborn');
+    },
+  },
+  the_mayor: {
+    endTurn: (c) => slotBuff(c, c.board.indexOf(c.self), 0, 20 * c.m, ['reborn']),
+  },
+  archnode: {
+    // Rally: one random unit of each tribe in your army (Neutral counts) gets +3/+3 (Golden +6/+6) for good
+    rally: (c) => {
+      const byTribe = new Map<string, CUnit[]>();
+      for (const u of c.side.units) {
+        if (u.hp <= 0) continue;
+        const t = tribeOf(u);
+        byTribe.set(t, [...(byTribe.get(t) ?? []), u]);
+      }
+      for (const us of byTribe.values()) {
+        const u = pick(c.g, us)!;
+        c.c.perm(u, (x) => buff(x, 3 * c.m, 3 * c.m), 3 * c.m, 3 * c.m);
+      }
+    },
+  },
+  adder: {
+    // Poisonous. When it attacks and kills a unit, a random unit in your hand gets that unit's Attack and max Health (Golden: double)
+    onAttackKill: (c, _dead, atk, maxHp) => buff(pick(c.g, c.p.hand), atk * c.m, maxHp * c.m),
+  },
+  potato_lord: {
+    rally: (c) => { for (let i = 0; i < c.m; i++) gain(c, randomTier(c, 5)); },
+  },
+  blue_dragon: {
+    // Avenge (3): Divine Shield to a random friendly unit without one (Golden: 2)
+    avenge: [3, 3],
+    avengeFn: (c) => {
+      for (const u of sample(c.g, c.side.units.filter((x) => x.hp > 0 && !has(x, 'divineShield')), c.m)) addKw(u, 'divineShield');
     },
   },
   // ===== hero tokens =====
