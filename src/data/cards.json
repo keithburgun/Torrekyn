@@ -376,10 +376,10 @@
    "name": "Architect",
    "tribe": "kindred",
    "tier": 1,
-   "atk": 2,
-   "hp": 3,
-   "text": "Battlecry: Give up to 4 different units in your hand +5/+5.",
-   "goldenText": "Battlecry: Give up to 4 different units in your hand +10/+10.",
+   "atk": 1,
+   "hp": 1,
+   "text": "End of Turn: Give this slot +2/+2.",
+   "goldenText": "End of Turn: Give this slot +4/+4.",
    "keywords": []
   },
   {

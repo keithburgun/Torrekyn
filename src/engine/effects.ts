@@ -334,17 +334,7 @@ export const EFFECTS: Record<string, Effect> = {
     },
   },
   architect: {
-    battlecry: (c) => {
-      const seen = new Set<string>();
-      const picks: Unit[] = [];
-      for (const u of sample(c.g, c.p.hand, c.p.hand.length)) {
-        if (seen.has(u.cardId)) continue;
-        seen.add(u.cardId);
-        picks.push(u);
-        if (picks.length >= 4) break;
-      }
-      for (const u of picks) buff(u, 5 * c.m, 5 * c.m);
-    },
+    endTurn: (c) => slotBuff(c, c.board.indexOf(c.self), 2 * c.m, 2 * c.m),
   },
   patchwork: {
     onGain: (c, u) => {

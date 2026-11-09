@@ -20,7 +20,7 @@ import { playTriple } from './ceremony';
 import { placeBoardBg, placeHud } from './hud';
 import { puff } from './fx';
 import type { FxEvent } from '../engine/fx';
-import { battleIntro, recruitWipe } from './transitions';
+import { battleIntro, recruitWipe, fadeOut, fadeClear, fadeIn } from './transitions';
 import { getRating, isProvisional, rateGame, seatRating } from './rating';
 import { EXPERT_ELO, personaById } from '../engine/personas';
 import { bump, evaluate, newGameStarted, noteGame, onUnlock, recordCombat, recordGameEnd, type AchievementDef } from './achievements';
@@ -130,6 +130,11 @@ export class App {
   get me(): Player { return this.g!.players[0]; }
 
   // ---------------- rendering ----------------
+  /** the screen the stage last showed (to fade in a new one) */
+  private shownScreen: string | null = null;
+  /** the next screen change is already covered by a transition: no fade-in */
+  private noFade = false;
+
   render() {
     L = currentLayout();
     this.stage.classList.toggle('portrait', L.portrait);
@@ -140,6 +145,12 @@ export class App {
     this.stage.style.setProperty('--bg', `url('${new URL(art('art/bg.png'), document.baseURI).href}')`);
     placeBoardBg(this.stage, L, null);
     if (this.screen === 'combat') return; // combat view owns the stage
+    // a new screen fades in quickly (shop and battle also fade out first; see afterEndTurn / startCombat)
+    if (this.shownScreen !== this.screen) {
+      if (this.shownScreen !== null && !this.noFade) fadeIn(this.stage);
+      this.shownScreen = this.screen;
+    }
+    this.noFade = false;
     let html = '';
     if (this.screen === 'title') html = this.titleHtml();
     else if (this.screen === 'rules') html = this.rulesHtml();
@@ -1363,10 +1374,13 @@ export class App {
     // health shown on the intro is from before this battle's damage
     const before = (pl: Player) => pl.health + (mine.winner !== -1 && (mine.winner === 0 ? mine.b : mine.a) === pl.id ? mine.damage : 0);
     this.busy = true;
-    void battleIntro(this.stage, { hero: p.hero, name: p.name, health: before(p) }, { hero: opp.hero, name: opp.name, health: before(opp), sub: `${heroDef(opp.hero)?.name ?? ''}${opp.persona ? ` · ${seatRating(g, opp.id)}` : ''}` }, round, mine.b === -1, () => {
+    // the shop fades out, then the battle intro plays over it
+    void fadeOut(this.stage).then(() => battleIntro(this.stage, { hero: p.hero, name: p.name, health: before(p) }, { hero: opp.hero, name: opp.name, health: before(opp), sub: `${heroDef(opp.hero)?.name ?? ''}${opp.persona ? ` · ${seatRating(g, opp.id)}` : ''}` }, round, mine.b === -1, () => {
       this.screen = 'combat';
+      this.shownScreen = 'combat';
+      fadeClear(this.stage);
       this.startCombat(mine, meSide, round);
-    }).then(() => {
+    })).then(() => {
       this.busy = false;
       this.combat?.play();
     });
@@ -1387,12 +1401,13 @@ export class App {
         if (g.phase === 'over') this.gameEnded(g);
         this.commit();
       };
-      if (g.phase === 'over') toShop();
+      if (g.phase === 'over') void fadeOut(this.stage).then(toShop); // fades back in on the results screen
       else {
         this.busy = true;
         let open!: () => void;
         this.fxGate = new Promise<void>((r) => { open = r; });
-        void recruitWipe(this.stage, g.round, toShop).then(() => { this.busy = false; open(); this.fxGate = Promise.resolve(); });
+        // the battle fades out, then the Recruit sweep brings in the shop
+        void fadeOut(this.stage).then(() => recruitWipe(this.stage, g.round, () => { this.noFade = true; fadeClear(this.stage); toShop(); })).then(() => { this.busy = false; open(); this.fxGate = Promise.resolve(); });
       }
     });
   }

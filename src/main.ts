@@ -1,5 +1,7 @@
+import '@fontsource/amaranth/latin-400.css';
+import '@fontsource/amaranth/latin-400-italic.css';
+import '@fontsource/amaranth/latin-700.css';
 import '@fontsource/grenze/latin-400.css';
-import '@fontsource/grenze/latin-400-italic.css';
 import '@fontsource/grenze/latin-500.css';
 import '@fontsource/grenze/latin-600.css';
 import '@fontsource/grenze/latin-700.css';

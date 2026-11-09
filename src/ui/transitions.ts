@@ -74,3 +74,23 @@ export async function recruitWipe(stage: HTMLElement, round: number, swap: () =>
   await new Promise((r) => setTimeout(r, reduced() ? 10 : 380));
   el.remove();
 }
+
+// ---------- quick fades between scenes ----------
+/** Fade the stage out to the dark backdrop (resolves when it's dark). Undo with fadeClear. */
+export function fadeOut(stage: HTMLElement, ms = 200): Promise<void> {
+  if (reduced()) return Promise.resolve();
+  stage.style.transition = `opacity ${ms}ms ease-in`;
+  stage.style.opacity = '0';
+  return new Promise((r) => setTimeout(r, ms));
+}
+/** Show the stage again at once (call while something covers it, or before fadeIn). */
+export function fadeClear(stage: HTMLElement) {
+  stage.style.transition = '';
+  stage.style.opacity = '';
+}
+/** Fade the stage in from dark (a new screen appearing). */
+export function fadeIn(stage: HTMLElement, ms = 240) {
+  fadeClear(stage);
+  if (reduced()) return;
+  stage.animate([{ opacity: 0 }, { opacity: 1 }], { duration: ms, easing: 'ease-out' });
+}
