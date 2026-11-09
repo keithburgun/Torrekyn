@@ -10,7 +10,7 @@ Sheets:
   Heroes    the heroes with their portraits.
   Trinkets  the trinkets (no art yet).
 """
-import io, json, os, re, sys
+import datetime, io, json, os, re, sys
 import openpyxl
 from openpyxl.drawing.image import Image as XLImage
 from openpyxl.styles import Alignment, Font, PatternFill, Border, Side
@@ -18,8 +18,12 @@ from openpyxl.utils import get_column_letter
 from PIL import Image
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+VERSION = json.load(open(os.path.join(ROOT, 'package.json')))['version']
 TRIBE_KEY = {'neverending': 'neverendingParty', 'azure': 'azureOrder', 'kindred': 'kindredSociety', 'brambor': 'brambor',
              'cloister': 'cloister', 'alcove': 'alcovePrefex', 'demons': 'businessDemons', 'neutral': 'neutral'}
+TRIBE_NAME = {'neverending': 'Neverending Party', 'azure': 'Azure Order', 'kindred': 'Kindred Society', 'brambor': 'Brambor',
+              'cloister': 'Cloister', 'alcove': 'Alcove Prefex', 'demons': 'Business Demons', 'neutral': 'Neutral'}
+TRIBE_ORDER = list(TRIBE_NAME)
 TRIBE_FILL = {'neverending': 'EDE4FB', 'azure': 'E1EAFB', 'kindred': 'FBE4EF', 'brambor': 'F3E8DA', 'cloister': 'E2F2DF',
               'alcove': 'FBF4D2', 'demons': 'FBE0DC', 'neutral': 'EEEEF2'}
 THUMB = 110  # px
@@ -86,13 +90,15 @@ def main():
     ws = wb.active
     ws.title = 'Cards'
     headers = ['Tribe', 'Tier', 'Card Name', 'Attack', 'Health', 'Ability', 'Golden Ability', 'Art', 'Card ID', 'Art source', 'Crop (x, y, size)']
-    style_sheet(ws, headers, [17, 6, 20, 8, 8, 44, 44, 17, 22, 46, 16])
+    style_sheet(ws, headers, [18, 6, 20, 8, 8, 50, 50, 17, 22, 46, 16])
+    ws.freeze_panes = 'D2'
     r = 2
+    cards = sorted(cards, key=lambda c: (TRIBE_ORDER.index(c['tribe']), c['tier'], c['name'].lower()))
     for c in cards:
         if c.get('token'):
             continue
         spec = src['cards'].get(c['id'])
-        vals = [TRIBE_KEY[c['tribe']], c['tier'], c['name'], c['atk'], c['hp'], c['text'], c.get('goldenText', ''), None, c['id'],
+        vals = [TRIBE_NAME[c['tribe']], c['tier'], c['name'], c['atk'], c['hp'], c['text'], c.get('goldenText', ''), None, c['id'],
                 where(spec) if spec else '', crop_text(spec) if spec else '']
         for i, v in enumerate(vals, 1):
             cell = ws.cell(r, i, v)
@@ -106,13 +112,13 @@ def main():
 
     # ---- Tokens ----
     wt = wb.create_sheet('Tokens')
-    style_sheet(wt, ['Tribe', 'Tier', 'Card Name', 'Attack', 'Health', 'Art', 'Card ID', 'Art source', 'Crop (x, y, size)'], [17, 6, 20, 8, 8, 17, 16, 46, 16])
+    style_sheet(wt, ['Tribe', 'Tier', 'Card Name', 'Attack', 'Health', 'Art', 'Card ID', 'Art source', 'Crop (x, y, size)'], [18, 6, 20, 8, 8, 17, 16, 46, 16])
     r = 2
     for c in cards:
         if not c.get('token'):
             continue
         spec = src['cards'].get(c['id'])
-        for i, v in enumerate([TRIBE_KEY[c['tribe']], c['tier'], c['name'], c['atk'], c['hp'], None, c['id'], where(spec), crop_text(spec)], 1):
+        for i, v in enumerate([TRIBE_NAME[c['tribe']], c['tier'], c['name'], c['atk'], c['hp'], None, c['id'], where(spec), crop_text(spec)], 1):
             body(wt.cell(r, i, v), TRIBE_FILL[c['tribe']] if i <= 5 else None, center=i in (2, 4, 5))
         wt.row_dimensions[r].height = ROW_PT
         wt.add_image(thumb(os.path.join(ROOT, 'public/art/v2/cards', f"{c['id']}.webp")), f'F{r}')
@@ -139,6 +145,7 @@ def main():
     wk = wb.create_sheet('Trinkets')
     style_sheet(wk, ['Trinket', 'Type', 'Offered on turn', 'Cost (gold)', 'Effect', 'Trinket ID'], [24, 9, 10, 9, 60, 22])
     r = 2
+    trinkets = sorted(trinkets, key=lambda t: (bool(t.get('greater')), t['cost'], t['name'].lower()))
     for t in trinkets:
         vals = [t['name'], 'Greater' if t.get('greater') else 'Lesser', 9 if t.get('greater') else 6, t['cost'], t['text'], t['id']]
         for i, v in enumerate(vals, 1):
@@ -159,6 +166,11 @@ def main():
         '   "pixel" means a small pixel-art sprite, scaled up sharp on a backdrop in the tribe\'s colour.',
         'Art source folders: "RGB PNG" (Spellstorm), "Illustrations", "Images" (Gem Wizards Tactics), "Circle and square icons".',
         'Trinkets have no art yet.',
+        '',
+        f'Exported from game version {VERSION} on {datetime.date.today().isoformat()}. Cards are sorted by tribe, then Tier, then name.',
+        'Tier 6 units are never sold in the Tavern (it stops at Tier 5); they only come from effects such as Summit Key, Summit Vault, Golden Light and Robot Boy.',
+        'Card wording follows these forms: "Battlecry:", "Deathrattle:", "Start of Combat:", "Start of Turn:", "End of Turn:", "Rally:", "Avenge (N):",',
+        '   "Summon", "Gain", "Discover", "Tavern", and capitalised Tier, Gold, Attack and Health.',
     ]
     for i, n in enumerate(notes, 1):
         c = wi.cell(i, 1, n)
