@@ -110,6 +110,8 @@ export interface Player {
   battlecriesThisTurn: number;
   battlecriesLastTurn: number;
   battlecriesGame: number;
+  /** Deathrattles triggered this game (WARMECH) */
+  deathrattlesGame?: number;
   quests: Quest[];
   discovers: Discover[];
   lastOpponent: number | null;

@@ -168,7 +168,7 @@
    ]
   },
   "sickle": {
-   "src": "S/Potato/reaper-omni.png",
+   "src": "S/Skelly/fanatic.png",
    "px": true
   },
   "horseman": {
@@ -833,12 +833,8 @@
    "px": true
   },
   "locas": {
-   "src": "M/icon-512.png",
-   "crop": [
-    0.5,
-    0.5,
-    1.0
-   ]
+   "src": "X/skeleton.png",
+   "px": true
   },
   "spoonful": {
    "src": "U/ui-roadie.png",

@@ -2,6 +2,11 @@
 
 Newest first. The version shows on the title screen.
 
+## 0.3.1 — 2026-11-09
+- Workbook 4 balance: Horseman is a 5/5 Reborn; Sickle 7/7 deals 4 to adjacent units; Longbow 8/1 (Golden: one hit for double Attack); Time Cannot Destroy Avenge (5); Cursed Vines 2/2, slot +2/+2; Elder 8/18; Warlock 17/9; White Ninja 1/1; Songstress Avenge (2) +6/+6; Mod 5/5; Grief is Tier 2, 1/1; Potato Gem +8 Health.
+- WARMECH now grows with Deathrattles triggered this game (and during the battle) instead of Battlecries.
+- Locas (the card) is now Warrior, with new art; Sickle has new art.
+
 ## 0.3.0 — 2026-11-09
 - Fonts: Grenze for headings, names and big numbers; Amaranth for small and body text.
 - Quick fades between screens: the shop fades out before the battle intro, the battle fades out before the Recruit sweep, and menu screens fade in.

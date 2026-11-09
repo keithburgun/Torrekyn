@@ -290,6 +290,9 @@ export class Combat {
           for (const f of s.units) if (f.cardId === 'tom_judith' && f.hp > 0) times = Math.max(times, f.golden ? 3 : 2);
           if (s.owner.trinkets?.includes('gravebell')) times++;
           for (let i = 0; i < times; i++) dr(this.ctx(u, Math.min(pos, s.units.length)));
+          // WARMECH: +4/+2 (Golden +8/+4) per Deathrattle triggered this game, growing as they happen
+          if (s.persistent) s.owner.deathrattlesGame = (s.owner.deathrattlesGame ?? 0) + times;
+          for (const w of s.units) if (w.cardId === 'warmech' && w.hp > 0) { w.atk += 4 * mult(w) * times; w.hp += 2 * mult(w) * times; }
           this.snap('trigger', { note: `${def(u.cardId).name}: Deathrattle` });
         }
         // reborn
@@ -488,8 +491,7 @@ export function runCombat(g: GameState, a: Player, b: Player, bIsGhost: boolean)
   if (winner !== -1) {
     const ws = c.sides[winner];
     const survivors = ws.units.filter((u) => u.hp > 0);
-    // Horseman adds its own extra damage (one per copy, two if Golden)
-    const bonusFrom = survivors.filter((u) => u.cardId === 'horseman').flatMap((u) => Array<number>(mult(u)).fill(u.id));
+    const bonusFrom: number[] = [];
     damage = combatDamage(survivors.length, bonusFrom.length);
     dmgParts = { tier: 0, perUnit: DAMAGE_PER_UNIT, units: survivors.map((u) => u.id), bonus: bonusFrom };
   }

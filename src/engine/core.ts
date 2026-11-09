@@ -127,8 +127,9 @@ export function ownerBonus(p: Player, b: Body): { atk: number; hp: number } {
   if (isTribe(b, 'alcove')) atk += p.alcoveAtkThisTier ?? 0; // Scientist
   if (b.cardId === 'left_twinbot' || b.cardId === 'right_twinbot') { atk += p.twinBonus ?? 0; hp += p.twinBonus ?? 0; }
   if (b.cardId === 'warmech') {
-    atk += 4 * mult(b) * p.battlecriesGame;
-    hp += 2 * mult(b) * p.battlecriesGame;
+    // +4/+2 per Deathrattle triggered this game (Golden: double)
+    atk += 4 * mult(b) * (p.deathrattlesGame ?? 0);
+    hp += 2 * mult(b) * (p.deathrattlesGame ?? 0);
   }
   return { atk, hp };
 }

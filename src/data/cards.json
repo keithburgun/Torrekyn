@@ -84,9 +84,9 @@
    "tribe": "neverending",
    "tier": 3,
    "atk": 7,
-   "hp": 1,
-   "text": "Rally: Deal 3 damage to adjacent units.",
-   "goldenText": "Rally: Deal 6 damage to adjacent units.",
+   "hp": 7,
+   "text": "Rally: Deal 4 damage to adjacent units.",
+   "goldenText": "Rally: Deal 4 damage to adjacent units.",
    "keywords": []
   },
   {
@@ -94,11 +94,13 @@
    "name": "Horseman",
    "tribe": "neverending",
    "tier": 3,
-   "atk": 3,
-   "hp": 3,
-   "text": "If this is alive at the end of the battle, deal 1 more damage to the opponent.",
-   "goldenText": "If this is alive at the end of the battle, deal 2 more damage to the opponent.",
-   "keywords": []
+   "atk": 5,
+   "hp": 5,
+   "text": "Reborn.",
+   "goldenText": "Reborn.",
+   "keywords": [
+    "reborn"
+   ]
   },
   {
    "id": "funeral",
@@ -275,10 +277,10 @@
    "name": "Longbow",
    "tribe": "azure",
    "tier": 3,
-   "atk": 5,
-   "hp": 7,
+   "atk": 8,
+   "hp": 1,
    "text": "Avenge (3): Deal damage equal to this unit's Attack to a random enemy unit.",
-   "goldenText": "Avenge (3): Deal damage equal to this unit's Attack to a random enemy unit, twice.",
+   "goldenText": "Avenge (3): Deal damage equal to double this unit's Attack to a random enemy unit.",
    "keywords": []
   },
   {
@@ -288,8 +290,8 @@
    "tier": 4,
    "atk": 16,
    "hp": 16,
-   "text": "Divine Shield. Avenge (4): Gain Divine Shield and Taunt.",
-   "goldenText": "Divine Shield. Avenge (2): Gain Divine Shield and Taunt.",
+   "text": "Divine Shield. Avenge (5): Gain Divine Shield and Taunt.",
+   "goldenText": "Divine Shield. Avenge (5): Gain Divine Shield and Taunt.",
    "keywords": [
     "divineShield"
    ]
@@ -601,8 +603,8 @@
    "name": "Elder",
    "tribe": "brambor",
    "tier": 3,
-   "atk": 6,
-   "hp": 8,
+   "atk": 8,
+   "hp": 18,
    "text": "Start of Combat: Give your other units the stats of this slot.",
    "goldenText": "Start of Combat: Give your other units double the stats of this slot.",
    "keywords": []
@@ -612,10 +614,10 @@
    "name": "Cursed Vines",
    "tribe": "brambor",
    "tier": 3,
-   "atk": 1,
-   "hp": 1,
-   "text": "Rally: Give this slot +1/+2.",
-   "goldenText": "Rally: Give this slot +2/+4.",
+   "atk": 2,
+   "hp": 2,
+   "text": "Rally: Give this slot +2/+2.",
+   "goldenText": "Rally: Give this slot +4/+4.",
    "keywords": []
   },
   {
@@ -634,7 +636,7 @@
    "name": "Warlock",
    "tribe": "brambor",
    "tier": 4,
-   "atk": 3,
+   "atk": 17,
    "hp": 9,
    "text": "Whenever a Rally is triggered, gain 3 Health permanently.",
    "goldenText": "Whenever a Rally is triggered, gain 6 Health permanently.",
@@ -658,8 +660,8 @@
    "tier": 5,
    "atk": 10,
    "hp": 10,
-   "text": "Battlecry: Give a slot +4 Health.",
-   "goldenText": "Battlecry: Give a slot +8 Health.",
+   "text": "Battlecry: Give a slot +8 Health.",
+   "goldenText": "Battlecry: Give a slot +16 Health.",
    "keywords": []
   },
   {
@@ -766,8 +768,8 @@
    "name": "Forest Abomination",
    "tribe": "cloister",
    "tier": 3,
-   "atk": 18,
-   "hp": 3,
+   "atk": 1,
+   "hp": 1,
    "text": "Divine Shield. Venomous.",
    "goldenText": "Divine Shield. Venomous.",
    "keywords": [
@@ -782,8 +784,8 @@
    "tier": 3,
    "atk": 9,
    "hp": 2,
-   "text": "Avenge (3): Give a random unit in your hand +5/+5.",
-   "goldenText": "Avenge (3): Give a random unit in your hand +10/+10.",
+   "text": "Avenge (2): Give a random unit in your hand +6/+6.",
+   "goldenText": "Avenge (2): Give a random unit in your hand +12/+12.",
    "keywords": []
   },
   {
@@ -905,8 +907,8 @@
    "name": "Mod",
    "tribe": "alcove",
    "tier": 2,
-   "atk": 8,
-   "hp": 9,
+   "atk": 5,
+   "hp": 5,
    "text": "Start of Combat: Give this unit's stats to the unit to its right.",
    "goldenText": "Start of Combat: Give double this unit's stats to the unit to its right.",
    "keywords": []
@@ -997,8 +999,8 @@
    "tier": 5,
    "atk": 4,
    "hp": 2,
-   "text": "Divine Shield. Reborn. This unit has +4/+2 for each Battlecry you've triggered this game.",
-   "goldenText": "Divine Shield. Reborn. This unit has +8/+4 for each Battlecry you've triggered this game.",
+   "text": "Divine Shield. Reborn. This unit has +4/+2 for each Deathrattle you've triggered this game.",
+   "goldenText": "Divine Shield. Reborn. This unit has +8/+4 for each Deathrattle you've triggered this game.",
    "keywords": [
     "divineShield",
     "reborn"
@@ -1281,11 +1283,11 @@
   },
   {
    "id": "locas",
-   "name": "Locas",
+   "name": "Warrior",
    "tribe": "neutral",
    "tier": 3,
-   "atk": 25,
-   "hp": 15,
+   "atk": 15,
+   "hp": 5,
    "text": "Whenever a unit with Taunt dies, this gains +2/+1 permanently.",
    "goldenText": "Whenever a unit with Taunt dies, this gains +4/+2 permanently.",
    "keywords": []
@@ -1305,9 +1307,9 @@
    "id": "grief",
    "name": "Grief",
    "tribe": "neutral",
-   "tier": 4,
-   "atk": 8,
-   "hp": 6,
+   "tier": 2,
+   "atk": 1,
+   "hp": 1,
    "text": "Deathrattle: Upgrading your Tavern costs 3 less Gold.",
    "goldenText": "Deathrattle: Upgrading your Tavern costs 6 less Gold.",
    "keywords": []

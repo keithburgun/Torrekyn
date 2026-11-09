@@ -160,7 +160,7 @@ export function gemText(p: Player, cardId: string, golden: boolean, text: string
     case 'pink_gem': t = t.replace(/(a random unit|\d+ random units)/, `${(1 + l) * m} random units`); break;
     case 'green_gem': t = t.replace(/\+\d+ Attack/, `+${2 + l} Attack`); break;
     case 'red_gem': t = t.replace(/\+\d+ of/, `+${(3 + l) * m} of`); break;
-    case 'ancient_name_brambor': t = t.replace(/\+\d+ Health/, `+${(4 + l) * m} Health`); break;
+    case 'ancient_name_brambor': t = t.replace(/\+\d+ Health/, `+${(8 + l) * m} Health`); break;
   }
   return `${t} (Improved ${l === 1 ? 'once' : `${l} times`}.)`;
 }

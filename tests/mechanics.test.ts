@@ -106,16 +106,16 @@ describe('mechanics', () => {
     const p: Player = human(g);
     p.discovers = [];
     p.board = [makeUnit(g, 'skel')];
-    p.hand = [makeUnit(g, 'ancient_name_brambor')]; // Potato Gem: +4 Health to the chosen unit's slot
+    p.hand = [makeUnit(g, 'ancient_name_brambor')]; // Potato Gem: +8 Health to the chosen unit's slot
     play(g, p, 0, 1, p.board[0].uid);
-    expect(p.slots[0].hp).toBe(4);
+    expect(p.slots[0].hp).toBe(8);
     sell(g, p, 0);
     sell(g, p, 0);
     p.hand = [makeUnit(g, 'skel')];
     play(g, p, 0, 0);
     const c = new Combat(g, { p, board: p.board, slots: p.slots, tier: 1, persistent: true },
       { p: g.players[1], board: [], slots: g.players[1].slots, tier: 1, persistent: true });
-    expect(c.sides[0].units[0].hp).toBe(def('skel').hp + 4);
+    expect(c.sides[0].units[0].hp).toBe(def('skel').hp + 8);
   });
 
   it('venomous kills big units', () => {

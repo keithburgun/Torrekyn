@@ -95,10 +95,10 @@ describe('rework', () => {
     const eff = { g, p, self: p.board[0], m: 1, board: p.board };
     return import('../src/engine/effects').then(({ EFFECTS }) => {
       EFFECTS.andromeda_robin.endTurn!(eff);
-      expect(p.slots[0].hp).toBe(4);
+      expect(p.slots[0].hp).toBe(8);
       expect(gemLevel(p, 'ancient_name_brambor')).toBe(1);
       EFFECTS.andromeda_robin.endTurn!(eff);
-      expect(p.slots[0].hp).toBe(4 + 5);
+      expect(p.slots[0].hp).toBe(8 + 9);
     });
   });
 

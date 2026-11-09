@@ -184,9 +184,8 @@ export const EFFECTS: Record<string, Effect> = {
     },
   },
   sickle: {
-    rally: (c, t) => { for (const u of c.c.adjacent(t)) c.c.damage(u, 3 * c.m, c.self); },
+    rally: (c, t) => { for (const u of c.c.adjacent(t)) c.c.damage(u, 4, c.self); }, // Golden: same 4 (just bigger stats)
   },
-  horseman: {}, // handled at end of combat
   funeral: {
     onRebornAny: (c) => c.c.perm(c.self, (u) => { u.hp += 2 * c.m; }, 0, 2 * c.m),
   },
@@ -274,11 +273,12 @@ export const EFFECTS: Record<string, Effect> = {
     rally: (c) => { for (const u of c.side.units) if (isTribe(u, 'azure')) u.atk += 4 * c.m; },
   },
   longbow: {
+    // Golden: one hit for double its Attack
     avenge: [3, 3],
-    avengeFn: (c) => { for (let i = 0; i < c.m; i++) c.c.damage(c.c.randomEnemy(c.side), c.self.atk, c.self); },
+    avengeFn: (c) => c.c.damage(c.c.randomEnemy(c.side), c.self.atk * c.m, c.self),
   },
   time_cannot_destroy: {
-    avenge: [4, 2],
+    avenge: [5, 5],
     avengeFn: (c) => { addKw(c.self, 'divineShield'); addKw(c.self, 'taunt'); },
   },
   catapult: {
@@ -452,8 +452,8 @@ export const EFFECTS: Record<string, Effect> = {
   },
   cursed_vines: {
     rally: (c) => {
-      if (c.side.persistent && c.p.slots[c.self.slot]) { c.p.slots[c.self.slot].atk += c.m; c.p.slots[c.self.slot].hp += 2 * c.m; }
-      buff(c.self, c.m, 2 * c.m);
+      if (c.side.persistent && c.p.slots[c.self.slot]) { c.p.slots[c.self.slot].atk += 2 * c.m; c.p.slots[c.self.slot].hp += 2 * c.m; }
+      buff(c.self, 2 * c.m, 2 * c.m);
     },
   },
   witch: {
@@ -471,7 +471,7 @@ export const EFFECTS: Record<string, Effect> = {
     battlecry: (c) => {
       const t = gemTarget(c);
       if (!t) return;
-      slotBuff(c, c.combat ? (t as CUnit).slot : c.board.indexOf(t), 0, (4 + gemLevel(c.p, 'ancient_name_brambor')) * c.m);
+      slotBuff(c, c.combat ? (t as CUnit).slot : c.board.indexOf(t), 0, (8 + gemLevel(c.p, 'ancient_name_brambor')) * c.m);
     },
   },
   chosen_name: {
@@ -517,8 +517,8 @@ export const EFFECTS: Record<string, Effect> = {
     soc: (c) => { c.side.secrets.push(c.m === 2); },
   },
   songstress: {
-    avenge: [3, 3],
-    avengeFn: (c) => buff(pick(c.g, c.p.hand), 5 * c.m, 5 * c.m),
+    avenge: [2, 2],
+    avengeFn: (c) => buff(pick(c.g, c.p.hand), 6 * c.m, 6 * c.m),
   },
   red_sea_snake: {
     rally: (c) => {
@@ -641,7 +641,7 @@ export const EFFECTS: Record<string, Effect> = {
       for (const [, i] of sample(c.g, plain, c.m)) slotBuff(c, i, src.atk, src.hp, src.kw);
     },
   },
-  warmech: {}, // stats computed from battlecry count
+  warmech: {}, // stats from Deathrattles triggered this game (core ownerBonus; grows during battle in combat.ts)
   may_danaris: {
     // a 20/20 Phoenix, with a random Gem played on it (two if Golden)
     deathrattle: (c) => {
