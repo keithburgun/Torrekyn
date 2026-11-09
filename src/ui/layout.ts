@@ -67,7 +67,7 @@ export const LANDSCAPE: Layout = {
   heroY: 680, handY: 770, handWidth: 1040,
   shopDrop: 372, boardTop: 372, boardBottom: 625,
   leader: { x: 14, y: 14, w: 228, h: 800, horizontal: false },
-  endTurn: { x: 1410, y: 360 }, gold: { x: 1150, y: 812 }, gear: { x: 1494, y: 12, size: 44 }, mute: { x: 1546, y: 12, size: 44 },
+  endTurn: { x: 1410, y: 360 }, gold: { x: 1400, y: 640 }, gear: { x: 1494, y: 12, size: 44 }, mute: { x: 1546, y: 12, size: 44 },
   tribes: { x: 14, y: 826, w: 228 },
   cardsBtn: { x: 1436, y: 470 },
   targetBar: { x: 250, y: 640, w: 440 },

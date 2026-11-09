@@ -239,10 +239,9 @@ export const TRINKETS: TrinketDef[] = [
     const id = drawFromPool(g, (cid) => def(cid).tribe === 'brambor' && def(cid).tier <= p.tier);
     if (id) gainNew(g, p, id);
   } },
-  { id: 'old_map', name: 'Old Map', cost: 1, text: 'At the end of every 2 turns, gain 2 Gold and Discover a Tier 5 unit.',
+  { id: 'old_map', name: 'Old Map', cost: 1, text: 'At the end of every 2 turns, Discover a Tier 5 unit.',
     endTurn: (g, p) => {
       if (!everyOther(p, 'old_map')) return;
-      p.goldNextTurn += 2;
       p.heroMem.old_map_discover = 1; // discovered at the start of next turn, when you can choose
     },
     startTurn: (g, p) => {

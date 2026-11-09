@@ -365,12 +365,8 @@
    ]
   },
   "barton": {
-   "src": "P/potato.png",
-   "crop": [
-    0.5,
-    0.45,
-    1.0
-   ]
+   "src": "M/barton-frame1.png",
+   "px": true
   },
   "life": {
    "src": "I/Icons/heart.png",
@@ -525,7 +521,7 @@
    "px": true
   },
   "hunter": {
-   "src": "U/ui-skeletonarcher.png",
+   "src": "X/spirit archer.png",
    "px": true
   },
   "orange_ninja": {
