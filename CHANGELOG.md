@@ -2,6 +2,10 @@
 
 Newest first. The version shows on the title screen.
 
+## 0.4.5 — 2026-11-09
+- Tavern buttons now look like Begin Battle (pink pixel blocks) with Keith's pixel icons in solid black; Freeze turns ice blue while frozen.
+- Cost coins use Keith's pixel coin art.
+
 ## 0.4.4 — 2026-11-09
 - Cost coins are drawn as pixel coins with a clean outline (the old clipped shape lost its edge on the diagonals).
 - Chunkier Tavern button icons: 2-pixel strokes, a clearer Refresh arrow and a bolder snowflake.
