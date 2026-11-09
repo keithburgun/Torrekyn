@@ -190,25 +190,26 @@ describe('heroes', () => {
     expect(p.gold).toBe(1);
   });
 
-  it('Locas Clare steals the whole Tavern, then resets to 10', async () => {
+  it('Locas Clare steals the whole Tavern, then resets to 7', async () => {
     const { useHeroPower, powerCost, heroDef } = await import('../src/engine/heroes');
     const { g, p } = withPower('locas_clare');
     g.round = 5;
     p.gold = 10;
-    expect(powerCost(g, p, heroDef('locas_clare')!)).toBe(6);
+    expect(powerCost(g, p, heroDef('locas_clare')!)).toBe(3);
     const n = p.shop.length;
     expect(useHeroPower(g, p, undefined, 'locas_clare')).toBe(true);
     expect(p.shop.length).toBe(0);
     expect(p.hand.length).toBe(n);
     g.round = 6;
-    expect(powerCost(g, p, heroDef('locas_clare')!)).toBe(10);
+    expect(powerCost(g, p, heroDef('locas_clare')!)).toBe(7);
   });
 
-  it('Omar Evans: every 5 Cloister units sold gives a Cloister unit', () => {
+  it('Omar Evans: every 4 units sold Discovers a Cloister unit', () => {
     const { g, p } = withPower('omar_evans');
-    for (let i = 0; i < 5; i++) { p.board = [makeUnit(g, 'disciple')]; sell(g, p, 0); }
-    expect(p.hand.length).toBe(1);
-    expect(def(p.hand[0].cardId).tribe).toBe('cloister');
+    p.discovers = [];
+    for (let i = 0; i < 4; i++) { p.board = [makeUnit(g, 'disciple')]; sell(g, p, 0); }
+    expect(p.discovers.length).toBe(1);
+    for (const id of p.discovers[0].options as string[]) expect(def(id).tribe).toBe('cloister');
   });
 
   it('Andromeda Robin starts with a Pumpkin that collects Deathrattles', async () => {

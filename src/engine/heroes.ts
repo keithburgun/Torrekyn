@@ -53,7 +53,7 @@ export interface HeroDef {
 }
 
 const BATTLECRIES_FOR_COFFEE = 5;
-const SALES_FOR_LEAVES = 5;
+const SALES_FOR_LEAVES = 4;
 const ZUZUNI: Tribe = 'cloister'; // Omar Evans' "Zuzuni" units (assumed to be Cloister, the ninja tribe)
 
 /** Avenge (n) for a hero power: count friendly deaths this combat, fire every n. */
@@ -96,7 +96,7 @@ export const HEROES: HeroDef[] = [
     onSummon: (c, s, u) => { u.atk += 1; u.hp += 2; },
   },
   {
-    id: 'may_danaris', name: 'May Danaris', title: 'Hacker from the neon district', power: 'Root Access', avatar: 5, health: 32, cost: 2,
+    id: 'may_danaris', name: 'May Danaris', title: 'Hacker from the neon district', power: 'Root Access', avatar: 5, health: 32, cost: 3,
     text: "Discover a unit from your last opponent's army.",
     locked: (g, p) => (p.lastOpponentBoard.length ? null : 'No opponent fought yet'),
     use: (g, p) => {
@@ -106,12 +106,12 @@ export const HEROES: HeroDef[] = [
   },
   {
     id: 'locas_clare', name: 'Locas Clare', title: 'Prankster and lockpick', power: 'Stealing A Boat', avatar: 6, health: 51,
-    text: 'Steal every unit in the Tavern (they go to your hand), then this resets to 10. Costs 1 less each turn.',
-    costFn: (g, p) => Math.max(0, 10 - (g.round - (p.heroMem.locasFrom ?? 1))),
+    text: 'Steal every unit in the Tavern (they go to your hand), then this resets to 7. Costs 1 less each turn.',
+    costFn: (g, p) => Math.max(0, 7 - (g.round - (p.heroMem.locasFrom ?? 1))),
     locked: (g, p) => (!p.shop.length ? 'The Tavern is empty' : p.hand.length >= CONFIG.handSize ? 'Your hand is full' : null),
     use: (g, p) => {
       while (p.shop.length && p.hand.length < CONFIG.handSize) gainCard(g, p, p.shop.shift()!);
-      p.heroMem.locasFrom = g.round + 1; // back to 10 next turn
+      p.heroMem.locasFrom = g.round + 1; // back to 7 next turn
       log(p, 'Locas cleaned out the Tavern!');
     },
   },
@@ -131,12 +131,12 @@ export const HEROES: HeroDef[] = [
   },
   {
     id: 'omar_evans', name: 'Omar Evans', title: 'Bug ninja of the green', power: 'Leaf Cloak', avatar: 8, health: 44, passive: true, needsTribe: ZUZUNI,
-    text: `After you sell ${SALES_FOR_LEAVES} units, gain a random Cloister unit. (Repeats.)`,
+    text: `After you sell ${SALES_FOR_LEAVES} units, Discover a Cloister unit. (Repeats.)`,
     onSell: (g, p) => {
       p.heroMem.leaves = (p.heroMem.leaves ?? 0) + 1;
       if (p.heroMem.leaves >= SALES_FOR_LEAVES) {
         p.heroMem.leaves = 0;
-        gainNew(g, p, drawFromPool(g, (id) => isTribe(id, ZUZUNI) && def(id).tier <= p.tier));
+        queueDiscover(g, p, discoverOptions(g, (id) => isTribe(id, ZUZUNI) && def(id).tier <= p.tier), 'Leaf Cloak: Discover a Cloister unit');
       }
     },
     progress: (g, p) => `${p.heroMem.leaves ?? 0}/${SALES_FOR_LEAVES}`,

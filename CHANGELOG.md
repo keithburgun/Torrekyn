@@ -2,6 +2,11 @@
 
 Newest first. The version shows on the title screen.
 
+## 0.3.2 — 2026-11-09
+- May Danaris: Root Access costs 3 (was 2).
+- Omar Evans: Leaf Cloak now Discovers a Cloister unit after every 4 units sold (was a random one after 5).
+- Locas Clare: Stealing A Boat starts and resets at 7 (was 10).
+
 ## 0.3.1 — 2026-11-09
 - Workbook 4 balance: Horseman is a 5/5 Reborn; Sickle 7/7 deals 4 to adjacent units; Longbow 8/1 (Golden: one hit for double Attack); Time Cannot Destroy Avenge (5); Cursed Vines 2/2, slot +2/+2; Elder 8/18; Warlock 17/9; White Ninja 1/1; Songstress Avenge (2) +6/+6; Mod 5/5; Grief is Tier 2, 1/1; Potato Gem +8 Health.
 - WARMECH now grows with Deathrattles triggered this game (and during the battle) instead of Battlecries.

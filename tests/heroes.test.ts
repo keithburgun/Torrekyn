@@ -113,16 +113,16 @@ describe('hero powers', () => {
     p.lastOpponentBoard = ids.map((id) => unit(g, id));
     const gold = p.gold;
     expect(useHeroPower(g, p)).toBe(true);
-    expect(p.gold).toBe(gold - 2);
+    expect(p.gold).toBe(gold - 3);
     for (const id of p.discovers[0].options as string[]) expect(ids).toContain(id);
   });
 
-  it('Locas Clare: steals the whole Tavern, then the cost resets to 10 and drops by 1 each turn', () => {
+  it('Locas Clare: steals the whole Tavern, then the cost resets to 7 and drops by 1 each turn', () => {
     const { g, p } = setup('locas_clare');
     const h = heroDef('locas_clare')!;
-    expect(powerCost(g, p, h)).toBe(10);
-    g.round += 3;
     expect(powerCost(g, p, h)).toBe(7);
+    g.round += 3;
+    expect(powerCost(g, p, h)).toBe(4);
     p.hand = [];
     const n = p.shop.length;
     expect(n).toBeGreaterThan(0);
@@ -130,9 +130,9 @@ describe('hero powers', () => {
     expect(p.shop.length).toBe(0);
     expect(p.hand.length).toBe(n);
     g.round += 1;
-    expect(powerCost(g, p, h)).toBe(10);
+    expect(powerCost(g, p, h)).toBe(7);
     g.round += 2;
-    expect(powerCost(g, p, h)).toBe(8);
+    expect(powerCost(g, p, h)).toBe(5);
   });
 
   it('Venice Gorn: a seed sprouts 2 turns later into a unit 1 Tier above your Tavern', () => {
@@ -147,16 +147,17 @@ describe('hero powers', () => {
     expect(def(p.hand[0].cardId).tier).toBe(3);
   });
 
-  it('Omar Evans: every 5 units sold gives a random Cloister unit', () => {
+  it('Omar Evans: every 4 units sold Discovers a Cloister unit', () => {
     const { g, p } = setup('omar_evans');
     const cl = firstOf((id) => !isTribe(id, 'cloister') && !EFFECTS[id]?.onSell && !EFFECTS[id]?.onSellOther); // any tribe counts
     p.hand = [];
-    p.board = Array.from({ length: 5 }, () => unit(g, cl));
-    for (let i = 0; i < 4; i++) sell(g, p, 0);
-    expect(p.hand.length).toBe(0);
+    p.discovers = [];
+    p.board = Array.from({ length: 4 }, () => unit(g, cl));
+    for (let i = 0; i < 3; i++) sell(g, p, 0);
+    expect(p.discovers.length).toBe(0);
     sell(g, p, 0);
-    expect(p.hand.length).toBe(1);
-    expect(isTribe(p.hand[0], 'cloister')).toBe(true);
+    expect(p.discovers.length).toBe(1);
+    for (const id of p.discovers[0].options as string[]) expect(isTribe(id, 'cloister')).toBe(true);
     expect(p.heroMem.leaves).toBe(0);
   });
 
