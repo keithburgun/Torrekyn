@@ -2,6 +2,9 @@
 
 Newest first. The version shows on the title screen.
 
+## 0.4.6 — 2026-11-09
+- Pixel-art unit sprites are now upscaled with Scale2x smoothing plus a soft resize instead of hard nearest-neighbour blocks (rounded edges, slightly soft), and fill the card more evenly.
+
 ## 0.4.5 — 2026-11-09
 - Tavern buttons now look like Begin Battle (pink pixel blocks) with Keith's pixel icons in solid black; Freeze turns ice blue while frozen.
 - Cost coins use Keith's pixel coin art.

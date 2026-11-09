@@ -63,11 +63,45 @@ def trim(im):
     bb = im.getchannel('A').getbbox()
     return im.crop(bb) if bb else im
 
+def scale2x(im):
+    """EPX / Scale2x: doubles a sprite, rounding off stair-step diagonals instead of copying blocks"""
+    import numpy as np
+    a = np.asarray(im.convert('RGBA')).astype(np.int64)
+    key = (a[..., 0] << 24) | (a[..., 1] << 16) | (a[..., 2] << 8) | a[..., 3]
+    p = np.pad(key, 1, mode='edge')
+    A, D, C, Bk = p[:-2, 1:-1], p[2:, 1:-1], p[1:-1, :-2], p[1:-1, 2:]
+    pa = np.pad(a, ((1, 1), (1, 1), (0, 0)), mode='edge')
+    Cp, Bp = pa[1:-1, :-2], pa[1:-1, 2:]
+    h, w = key.shape
+    out = np.zeros((h * 2, w * 2, 4), np.int64)
+    pick = lambda cond, src: np.where(cond[..., None], src, a)
+    out[0::2, 0::2] = pick((C == A) & (C != D) & (A != Bk), Cp)
+    out[0::2, 1::2] = pick((A == Bk) & (A != C) & (Bk != D), Bp)
+    out[1::2, 0::2] = pick((D == C) & (D != Bk) & (C != A), Cp)
+    out[1::2, 1::2] = pick((Bk == D) & (Bk != A) & (D != C), Bp)
+    return Image.fromarray(out.astype('uint8'), 'RGBA')
+
+# 'smooth': Scale2x three times, then a soft (Lanczos) resize: rounded edges, slightly soft. 'sharp': plain nearest-neighbour blocks.
+PX_MODE = os.environ.get('PX_MODE', 'smooth')
+
+def upscale_sprite(im, k):
+    w, h = im.size
+    if PX_MODE == 'sharp':
+        return im.resize((w * max(1, int(k)), h * max(1, int(k))), Image.NEAREST)
+    big = im
+    while big.width < w * k:
+        big = scale2x(big)
+    # resize in premultiplied alpha so see-through edges don't pick up dark fringes
+    big = big.convert('RGBa').resize((round(w * k), round(h * k)), Image.LANCZOS).convert('RGBA')
+    return big
+
 def pixel_art(path, tribe, box=None):
     im = trim(first_frame(Image.open(path).convert('RGBA'), box))
     w, h = im.size
-    k = max(1, int(min(SIZE * 0.74 / w, SIZE * 0.74 / h)))
-    big = im.resize((w * k, h * k), Image.NEAREST)
+    k = min(SIZE * 0.74 / w, SIZE * 0.74 / h)
+    if PX_MODE == 'sharp':
+        k = max(1, int(k))
+    big = upscale_sprite(im, k)
     out = backdrop(tribe)
     # soft shadow under the sprite
     sh = Image.new('RGBA', out.size, (0, 0, 0, 0))
@@ -119,4 +153,5 @@ def main():
     json.dump(manifest, open(os.path.join(ROOT, 'src/data/artV2.json'), 'w'), indent=1)
     print('built', len(manifest))
 
-main()
+if __name__ == '__main__':
+    main()
