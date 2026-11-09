@@ -5,7 +5,7 @@ describe('achievements', () => {
     vi.stubGlobal('localStorage', { getItem: () => null, setItem: () => undefined });
     const { ACHIEVEMENTS } = await import('../src/ui/achievements');
     const { HEROES } = await import('../src/engine/heroes');
-    const n = 101 + 2 * (HEROES.length - 12); // 101: Summit (Tier 6) was added
+    const n = 100 + 2 * (HEROES.length - 12);
     expect(ACHIEVEMENTS.length).toBe(n);
     expect(new Set(ACHIEVEMENTS.map((a) => a.id)).size).toBe(n);
   });

@@ -122,9 +122,10 @@ export function formatText(text: string): string {
   return t;
 }
 
-export function bigCardHtml(u: { cardId: string; golden: boolean; atk: number; hp: number; kw: Keyword[]; mem?: Record<string, number> }, extra = ''): string {
+export function bigCardHtml(u: { cardId: string; golden: boolean; atk: number; hp: number; kw: Keyword[]; mem?: Record<string, number> }, extra = '', p?: Player): string {
   const d = def(u.cardId);
   let text = u.golden ? d.goldenText : d.text;
+  if (p) text = gemText(p, u.cardId, u.golden, text);
   // the Pumpkin lists the Deathrattles it has collected
   const gained = Object.keys(u.mem ?? {}).filter((k) => k.startsWith('dr_')).map((k) => def(k.slice(3)).name);
   if (gained.length) text += ` Deathrattles: ${gained.join(', ')}.`;
@@ -144,6 +145,24 @@ export function bigCardHtml(u: { cardId: string; golden: boolean; atk: number; h
 export function unitView(p: Player, u: Unit, zone: 'board' | 'hand' | 'shop', i: number) {
   const st = effStats(p, u, zone, i);
   return { ...u, atk: st.atk, hp: st.hp, kw: st.kw, note: gemNote(p, u) };
+}
+
+/** an improved Gem's ability text, with the numbers it gives now */
+export function gemText(p: Player, cardId: string, golden: boolean, text: string): string {
+  if (!GEMS.includes(cardId)) return text;
+  const l = gemLevel(p, cardId);
+  if (!l) return text;
+  const m = golden ? 2 : 1;
+  let t = text;
+  switch (cardId) {
+    case 'purple_gem': t = t.replace(/\+\d+\/\+\d+/, `+${1 + l}/+${1 + l}`); break;
+    case 'tourmaline': t = t.replace(/\+\d+ Health/, `+${(10 + 2 * l) * m} Health`); break;
+    case 'pink_gem': t = t.replace(/(a random unit|\d+ random units)/, `${(1 + l) * m} random units`); break;
+    case 'green_gem': t = t.replace(/\+\d+ Attack/, `+${2 + l} Attack`); break;
+    case 'red_gem': t = t.replace(/\+\d+ of/, `+${(3 + l) * m} of`); break;
+    case 'ancient_name_brambor': t = t.replace(/\+\d+ Health/, `+${(4 + l) * m} Health`); break;
+  }
+  return `${t} (Improved ${l === 1 ? 'once' : `${l} times`}.)`;
 }
 
 /** an improved Gem shows what it gives now */

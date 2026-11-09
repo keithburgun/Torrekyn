@@ -97,7 +97,6 @@ for (const t of ALL_TRIBES) {
 const board = (c: Ctx) => c.p?.board ?? [];
 const stat = (c: Ctx, i: number) => effStats(c.p!, c.p!.board[i], 'board', i);
 feat('tier5', 'Top Shelf', 'Reach Tavern Tier 5.', 'Feats', (c) => !!c.p && c.p.tier >= 5);
-feat('tier6', 'Summit', 'Reach Tavern Tier 6.', 'Feats', (c) => !!c.p && c.p.tier >= 6);
 feat('tier5fast', 'Fast Climber', 'Reach Tavern Tier 5 by turn 8.', 'Feats', (c) => !!c.p && c.p.tier >= 5 && c.g!.round <= 8);
 feat('gold3', 'Gilded Army', 'Have 3 Golden units in your army at once.', 'Feats', (c) => board(c).filter((u) => u.golden).length >= 3);
 feat('gold7', 'Solid Gold', 'Have 7 Golden units in your army at once.', 'Feats', (c) => board(c).filter((u) => u.golden).length >= 7);

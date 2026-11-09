@@ -735,8 +735,8 @@
    "tier": 2,
    "atk": 8,
    "hp": 3,
-   "text": "Start of Combat: If this is in your hand, summon it to the battlefield if there's room.",
-   "goldenText": "Start of Combat: If this is in your hand, summon it to the battlefield if there's room.",
+   "text": "Start of Combat: If this is in your hand, summon a copy of it to the battlefield if there's room.",
+   "goldenText": "Start of Combat: If this is in your hand, summon a copy of it to the battlefield if there's room.",
    "keywords": []
   },
   {

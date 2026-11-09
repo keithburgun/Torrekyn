@@ -131,7 +131,7 @@ export const HEROES: HeroDef[] = [
   },
   {
     id: 'omar_evans', name: 'Omar Evans', title: 'Bug ninja of the green', power: 'Leaf Cloak', avatar: 8, health: 44, passive: true, needsTribe: ZUZUNI,
-    text: `After you sell ${SALES_FOR_LEAVES} units, get a random Cloister unit. (Repeats.)`,
+    text: `After you sell ${SALES_FOR_LEAVES} units, gain a random Cloister unit. (Repeats.)`,
     onSell: (g, p) => {
       p.heroMem.leaves = (p.heroMem.leaves ?? 0) + 1;
       if (p.heroMem.leaves >= SALES_FOR_LEAVES) {

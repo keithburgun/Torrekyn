@@ -760,7 +760,7 @@ export class App {
       y = Math.max(8, Math.min(L.H - 10 - H, y));
     }
     return `<div class="popover ${actions ? 'interactive' : ''}" style="left:${x}px;top:${y}px;width:${W}px">
-      <div class="pop-card">${bigCardHtml(v)}</div>${actions ? `<div class="actions">${actions}</div>` : ''}</div>`;
+      <div class="pop-card">${bigCardHtml(v, '', this.me)}</div>${actions ? `<div class="actions">${actions}</div>` : ''}</div>`;
   }
 
   /** Phones: details for your hero power or a trinket, with a big Use button where it applies. */
@@ -812,7 +812,7 @@ export class App {
     return `<div class="modal"><h2>${esc(d.reason)}</h2><div class="choices">${d.options.map((id, i) => {
       const dd = def(id);
       const m = d.golden ? 2 : 1;
-      return `<div class="choice" data-act="discover" data-idx="${i}">${bigCardHtml({ cardId: id, golden: !!d.golden, atk: dd.atk * m, hp: dd.hp * m, kw: [...dd.keywords] })}</div>`;
+      return `<div class="choice" data-act="discover" data-idx="${i}">${bigCardHtml({ cardId: id, golden: !!d.golden, atk: dd.atk * m, hp: dd.hp * m, kw: [...dd.keywords] }, '', this.me)}</div>`;
     }).join('')}</div></div>`;
   }
 

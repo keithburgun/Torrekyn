@@ -236,10 +236,10 @@ describe('rework 2', () => {
     expect(got[3]).toBe(false);
   });
 
-  it('Tier 6 is in the game: Tavern goes to 6 and the Summit trinkets Discover Tier 6 units', async () => {
+  it('Tier 6 units: the Tavern stops at 5, the Summit trinkets Discover Tier 6 units', async () => {
     const { CONFIG } = await import('../src/engine/core');
     const { TRINKETS } = await import('../src/engine/heroes');
-    expect(CONFIG.maxTier).toBe(6);
+    expect(CONFIG.maxTier).toBe(5);
     const { g, p } = setup();
     p.human = false;
     p.hand = [];

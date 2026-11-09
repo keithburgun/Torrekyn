@@ -32,7 +32,7 @@ const POWER_RANK = ['may_danaris', 'trevor_l', 'clover', 'andromeda_robin', 'ven
 const prof = (p: Player): BotProfile => p.bot ?? EXPERT;
 const on = (p: Player, k: Feature) => prof(p).f?.[k] ?? EXPERT.f![k] ?? false;
 /** tuning numbers, with the Expert's values as defaults */
-export const KNOBS: Record<string, number> = { valueK: 2.4, tierW: 3.5, atkW: 0.9, hpW: 0.7, lvl3: 5, lvl4: 8, lvl5: 10, lvl6: 13, cheap: 1, lowHp: 0, spare: 0, econK: 1.6, simOpps: 3, simN: 3, simShuffles: 2, rerollGold: 1, rerollBar: 1.3, simBuyK: 40, simBuyTop: 3, trip2: 60, trip1: 10, tribeW: 3, tribeTierW: 1, lazy: 0, keep: 0 };
+export const KNOBS: Record<string, number> = { valueK: 2.4, tierW: 3.5, atkW: 0.9, hpW: 0.7, lvl3: 5, lvl4: 8, lvl5: 10, cheap: 1, lowHp: 0, spare: 0, econK: 1.6, simOpps: 3, simN: 3, simShuffles: 2, rerollGold: 1, rerollBar: 1.3, simBuyK: 40, simBuyTop: 3, trip2: 60, trip1: 10, tribeW: 3, tribeTierW: 1, lazy: 0, keep: 0 };
 const knob = (p: Player, k: string) => prof(p).x?.[k] ?? EXPERT.x?.[k] ?? KNOBS[k];
 /** evaluation noise for this bot (uniform, symmetric) */
 const jitter = (g: GameState, p: Player, scale = 10) => ((prof(p).noise ?? 0) ? (rand(g) * 2 - 1) * (prof(p).noise ?? 0) * scale : 0);
@@ -97,7 +97,6 @@ function chooseFavorite(g: GameState, p: Player) {
 }
 
 function targetTier(round: number) {
-  if (round >= 13) return 6;
   if (round >= 10) return 5;
   if (round >= 8) return 4;
   if (round >= 5) return 3;
@@ -110,7 +109,7 @@ function wantsLevel(g: GameState, p: Player): boolean {
   if (p.tier >= CONFIG.maxTier || p.gold < p.upgradeCost) return false;
   if (!on(p, 'level')) return p.tier < targetTier(g.round) || p.upgradeCost <= 1;
   // a curve (round to reach each tier), level when it's cheap, and hold off when low on Health with a thin army
-  const curve = [0, 1, 2, knob(p, 'lvl3'), knob(p, 'lvl4'), knob(p, 'lvl5'), knob(p, 'lvl6')];
+  const curve = [0, 1, 2, knob(p, 'lvl3'), knob(p, 'lvl4'), knob(p, 'lvl5')];
   const behind = g.round >= curve[p.tier + 1];
   const cheap = p.upgradeCost <= knob(p, 'cheap');
   // leave gold for at least this many buys after leveling when ahead of the curve

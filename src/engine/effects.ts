@@ -634,7 +634,7 @@ export const EFFECTS: Record<string, Effect> = {
   },
   robot_boy: {
     endTurn: (c) => {
-      for (let i = 0; i < c.m; i++) gain(c, drawFromPool(c.g, (id) => def(id).tribe === 'neutral'));
+      for (let i = 0; i < c.m; i++) gain(c, drawFromPool(c.g, (id) => def(id).tribe === 'neutral' && def(id).tier <= CONFIG.maxTier));
     },
   },
   scientist: {
@@ -698,7 +698,8 @@ export const EFFECTS: Record<string, Effect> = {
   red_gem: {
     battlecry: (c) => {
       const amt = (3 + gemLevel(c.p, 'red_gem')) * c.m;
-      for (const u of c.board.slice(0, 3)) {
+      // (not counting the Gem itself)
+      for (const u of others(c.board, c.self).slice(0, 3)) {
         if (rand(c.g) < 0.5) buff(u, amt, 0);
         else buff(u, 0, amt);
       }

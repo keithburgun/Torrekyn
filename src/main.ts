@@ -1,10 +1,9 @@
-import '@fontsource/fredoka/latin-400.css';
-import '@fontsource/fredoka/latin-500.css';
-import '@fontsource/fredoka/latin-600.css';
-import '@fontsource/fredoka/latin-700.css';
-import '@fontsource/nunito/latin-400.css';
-import '@fontsource/nunito/latin-700.css';
-import '@fontsource/nunito/latin-800.css';
+import '@fontsource/grenze/latin-400.css';
+import '@fontsource/grenze/latin-400-italic.css';
+import '@fontsource/grenze/latin-500.css';
+import '@fontsource/grenze/latin-600.css';
+import '@fontsource/grenze/latin-700.css';
+import '@fontsource/grenze/latin-800.css';
 import './ui/styles.css';
 import { installDebug } from './ui/debug';
 import { App } from './ui/app';
