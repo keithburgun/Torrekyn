@@ -490,8 +490,8 @@ export class App {
         <div class="tb-label">${upCost === null ? 'Max Tier' : 'Upgrade'}</div>
       </div>
       <div class="tavern-keeper" style="left:${t ? L.cx - t.kp / 2 : L.cx - 66}px;top:${L.tavernY}px">
-        <div class="tk-portrait" style="background-image:url('${heroArt('tavern')}')"></div>
-        <div class="tk-num">${p.tier}</div>
+        <div class="tk-portrait"></div>
+        <div class="tk-num"><small>Tier</small><span>${p.tier}</span></div>
         <div class="tk-tier">${'★'.repeat(p.tier)}</div>
         <div class="tk-label">Tavern · Tier ${p.tier}</div>
       </div>
@@ -735,8 +735,9 @@ export class App {
     }
     // place it beside the card (above it for cards in hand)
     // phones get a much bigger card (zoomed in CSS) and big buttons; numbers here match styles.css
-    const W = L.portrait ? 342 : 210;
-    const H = L.portrait ? 493 + (actions ? 118 : 0) : 300 + (actions ? 54 : 0);
+    // twice the old size: 236x340 card zoomed 1.78 (landscape) or 2.6 (phones)
+    const W = L.portrait ? 614 : 420;
+    const H = L.portrait ? 884 + (actions ? 118 : 0) : 605 + (actions ? 54 : 0);
     let x: number;
     let y: number;
     if (L.popover === 'stack') {
@@ -757,8 +758,8 @@ export class App {
     }
     if (L.popover === 'beside') {
       x = Math.max(220, Math.min(L.W - 210 - W, x));
-      y = Math.max(8, Math.min(L.H - 10 - H, y));
     }
+    y = Math.max(8, Math.min(L.H - 10 - H, y));
     return `<div class="popover ${actions ? 'interactive' : ''}" style="left:${x}px;top:${y}px;width:${W}px">
       <div class="pop-card">${bigCardHtml(v, '', this.me)}</div>${actions ? `<div class="actions">${actions}</div>` : ''}</div>`;
   }

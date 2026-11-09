@@ -369,7 +369,7 @@ b { font-weight: 800; }
 
 /* ---------------- Battlegrounds-style layout pieces ---------------- */
 .tavern-keeper { position: absolute; width: 132px; display: flex; flex-direction: column; align-items: center; }
-.tk-portrait { width: 116px; height: 116px; border-radius: 50%; background-size: cover; filter: saturate(0.6) brightness(0.75); box-shadow: 0 0 0 5px var(--slate), 0 0 0 8px var(--pink), 0 0 34px rgba(255, 127, 191, 0.45); }
+.tk-portrait { width: 116px; height: 116px; border-radius: 50%; background: radial-gradient(circle at 50% 35%, #5a4a7a, #2d2640 70%); box-shadow: 0 0 0 5px var(--slate), 0 0 0 8px var(--pink), 0 0 34px rgba(255, 127, 191, 0.45); }
 .tk-tier { margin-top: -14px; background: var(--slate); border: 2px solid var(--pink); border-radius: 999px; padding: 0 10px; color: #ffcf4a; font-size: 14px; line-height: 20px; z-index: 1; }
 .tk-label { display: none; }
 .tavern-btn {
@@ -402,8 +402,12 @@ b { font-weight: 800; }
   background: radial-gradient(circle at 35% 30%, #fff8cf, var(--coin) 55%, #e59a12); color: #5a3a00; font-family: var(--display); font-weight: 700; font-size: 17px;
   box-shadow: 0 0 0 3px var(--slate); }
 .tb-label { position: absolute; bottom: -28px; left: 50%; transform: translateX(-50%); white-space: nowrap; font-size: 17px; font-weight: 800; color: var(--ink); text-shadow: 0 2px 4px #000; }
-.tk-num { position: absolute; top: 4px; left: 50%; transform: translateX(-50%); width: 110px; text-align: center; font-family: var(--display); font-weight: 700; font-size: 84px; line-height: 108px; color: #fff;
+.tk-num { position: absolute; top: 0; left: 50%; transform: translateX(-50%); width: 116px; height: 116px; display: flex; flex-direction: column; align-items: center; justify-content: center;
+  text-align: center; font-family: var(--display); font-weight: 700; font-size: 76px; line-height: 0.8; color: #fff;
   -webkit-text-stroke: 4px var(--lilac-deep); paint-order: stroke fill; text-shadow: 0 4px 0 var(--pink-deep), 0 0 20px rgba(255, 127, 191, 0.8); pointer-events: none; }
+
+.tk-num small { display: block; font-size: 14px; line-height: 1; letter-spacing: 0.24em; margin: 0 0 4px 0.24em; text-transform: uppercase; color: #ffcf4a;
+  -webkit-text-stroke: 0; text-shadow: 0 1px 3px #000; }
 
 .my-hero { position: absolute; width: 140px; height: 140px; }
 .my-hero .hero-portrait { width: 140px; height: 140px; }
@@ -445,7 +449,7 @@ b { font-weight: 800; }
 .gear:hover { filter: brightness(1.2); }
 
 .popover { position: absolute; z-index: 45; pointer-events: none; display: flex; flex-direction: column; align-items: center; gap: 4px; }
-.popover .pop-card { width: 236px; height: 340px; transform: scale(0.89); transform-origin: top center; margin-bottom: -38px; }
+.popover .pop-card { width: 236px; height: 340px; zoom: 1.78; }
 .popover .actions { display: flex; gap: 6px; pointer-events: auto; }
 .popover .actions .btn { font-size: 16px; padding: 7px 13px; }
 .card.in-hand { z-index: 10; }
@@ -743,10 +747,12 @@ b { font-weight: 800; }
 #stage.portrait .tb-label { font-size: 28px; bottom: -42px; }
 #stage.portrait .tavern-keeper { width: 150px; }
 #stage.portrait .tk-portrait { width: 150px; height: 150px; }
-#stage.portrait .tk-num { width: 150px; top: 0; font-size: 112px; line-height: 150px; }
+#stage.portrait .tk-num { width: 150px; height: 150px; top: 0; font-size: 100px; }
+#stage.portrait .tk-num small { font-size: 18px; }
 #stage.tall .tavern-keeper { width: 172px; }
 #stage.tall .tk-portrait { width: 172px; height: 172px; }
-#stage.tall .tk-num { width: 172px; font-size: 126px; line-height: 172px; }
+#stage.tall .tk-num { width: 172px; height: 172px; font-size: 114px; }
+#stage.tall .tk-num small { font-size: 20px; }
 #stage.portrait .tk-tier { font-size: 22px; line-height: 30px; margin-top: -18px; padding: 0 14px; }
 
 /* cards */
@@ -806,7 +812,7 @@ button.trinket-orb { appearance: none; border: 0; padding: 0; cursor: pointer; }
 
 /* the enlarged card with its buttons */
 #stage.portrait .popover { gap: 16px; }
-#stage.portrait .popover .pop-card { zoom: 1.45; transform: none; margin-bottom: 0; }
+#stage.portrait .popover .pop-card { zoom: 2.6; }
 #stage.portrait .popover .actions { gap: 14px; }
 #stage.portrait .popover .actions .btn { font-size: 34px; min-height: 104px; min-width: 104px; padding: 0 30px; }
 #stage.portrait .target-bar { padding: 18px; gap: 16px; font-size: 28px; font-weight: 700; }
@@ -1222,8 +1228,8 @@ svg.aim-arrow.locked .aim-ring { opacity: 0.9; animation: aim-ring 0.9s ease-in-
 #stage.portrait .overflow-pill { font-size: 22px; }
 
 /* a unit's full card while hovering it in battle (the battle keeps going) */
-.combat-zoom { position: absolute; z-index: 60; width: 300px; pointer-events: none; filter: drop-shadow(0 10px 24px rgba(0, 0, 0, 0.55)); }
-.combat-zoom .bigcard { margin: 0; }
+.combat-zoom { position: absolute; z-index: 60; width: 472px; pointer-events: none; filter: drop-shadow(0 10px 24px rgba(0, 0, 0, 0.55)); }
+.combat-zoom .bigcard { margin: 0; zoom: 2; }
 #stage.combat-paused #clayer { filter: saturate(0.7); }
 
 /* ---- stat badges: Attack = yellow pointed diamond, Health = red circle; big numbers outlined in dark grey ---- */

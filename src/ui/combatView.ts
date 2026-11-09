@@ -130,7 +130,8 @@ export class CombatPlayer {
     // clear of the board: the screen's side away from the unit (top or bottom edge on a tall screen)
     const sr = this.stage.getBoundingClientRect(), k = sr.width / this.L.W, r = el.getBoundingClientRect();
     const cx = (r.left + r.right) / 2 / k - sr.left / k, cy = (r.top + r.bottom) / 2 / k - sr.top / k;
-    const w = 300, h = 420;
+    // the card is zoomed 2x in CSS; position in stage pixels
+    const w = 472, h = 680;
     if (this.L.portrait) {
       this.zoomEl.style.left = `${this.L.cx - w / 2}px`;
       this.zoomEl.style.top = `${cy < this.L.H / 2 ? this.L.H - h - 140 : 120}px`;

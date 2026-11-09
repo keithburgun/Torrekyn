@@ -634,7 +634,7 @@ export const EFFECTS: Record<string, Effect> = {
   },
   robot_boy: {
     endTurn: (c) => {
-      for (let i = 0; i < c.m; i++) gain(c, drawFromPool(c.g, (id) => def(id).tribe === 'neutral' && def(id).tier <= CONFIG.maxTier));
+      for (let i = 0; i < c.m; i++) gain(c, drawFromPool(c.g, (id) => def(id).tribe === 'neutral')); // any Tier, Tier 6 included
     },
   },
   scientist: {
