@@ -208,17 +208,20 @@ describe('hero powers', () => {
     for (const id of p.powers) expect(heroDef(id)).toBeTruthy();
   });
 
-  it('Bill Milton: playing a Business Demon gives 1 gold', () => {
+  it('Bill Milton: buying a Business Demon gives 1 gold back (playing one gives nothing)', () => {
     const { g, p } = setup('bill_milton');
-    const demon = firstOf((id) => isTribe(id, 'demons') && !EFFECTS[id]?.target && !EFFECTS[id]?.battlecry);
-    const other = firstOf((id) => !isTribe(id, 'demons') && !EFFECTS[id]?.target && !EFFECTS[id]?.battlecry);
+    const demon = firstOf((id) => isTribe(id, 'demons') && !EFFECTS[id]?.target && !EFFECTS[id]?.battlecry && !EFFECTS[id]?.onBuy);
+    const other = firstOf((id) => !isTribe(id, 'demons') && !EFFECTS[id]?.target && !EFFECTS[id]?.battlecry && !EFFECTS[id]?.onBuy);
     p.board = [];
-    p.hand = [unit(g, demon), unit(g, other)];
-    const gold = p.gold;
+    p.hand = [];
+    p.gold = 10;
+    p.shop = [unit(g, demon), unit(g, other)];
+    buy(g, p, 0);
+    expect(p.gold).toBe(10 - buyCost(p) + 1);
+    buy(g, p, 0);
+    expect(p.gold).toBe(10 - 2 * buyCost(p) + 1);
     play(g, p, 0, 0);
-    expect(p.gold).toBe(gold + 1);
-    play(g, p, 0, 0);
-    expect(p.gold).toBe(gold + 1);
+    expect(p.gold).toBe(10 - 2 * buyCost(p) + 1);
   });
 
   it('Clover: Avenge (4) summons a Dragon, and each one makes future Dragons bigger', () => {

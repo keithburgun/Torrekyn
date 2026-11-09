@@ -2,6 +2,9 @@
 
 Newest first. The version shows on the title screen.
 
+## 0.4.7 — 2026-11-09
+- Bill Milton's Golden Parachute triggers when you buy a Business Demon (was: play one).
+
 ## 0.4.6 — 2026-11-09
 - Pixel-art unit sprites are now upscaled with Scale2x smoothing plus a soft resize instead of hard nearest-neighbour blocks (rounded edges, slightly soft), and fill the card more evenly.
 

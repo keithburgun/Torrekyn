@@ -180,13 +180,11 @@ describe('heroes', () => {
     expect(heroHooks.battlecryTimes(p)).toBe(2);
   });
 
-  it('Bill Milton: playing a Business Demon gives 1 gold', () => {
+  it('Bill Milton: buying a Business Demon gives 1 gold', () => {
     const { g, p } = withPower('bill_milton');
-    p.gold = 0;
-    p.hand = [makeUnit(g, 'intern'), makeUnit(g, 'ash')];
-    play(g, p, 0, 0);
-    expect(p.gold).toBe(1);
-    play(g, p, 0, 0);
+    p.gold = 3;
+    p.shop = [makeUnit(g, 'intern'), makeUnit(g, 'skel')];
+    buy(g, p, 0);
     expect(p.gold).toBe(1);
   });
 

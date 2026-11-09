@@ -169,8 +169,8 @@ export const HEROES: HeroDef[] = [
   },
   {
     id: 'bill_milton', name: 'Bill Milton', title: 'CEO of the Business Demons', power: 'Golden Parachute', avatar: 11, health: 44, passive: true, needsTribe: 'demons',
-    text: 'Whenever you play a Business Demon, gain 1 Gold.',
-    onPlay: (g, p, u) => { if (isTribe(u, 'demons')) p.gold += 1; },
+    text: 'Whenever you buy a Business Demon, gain 1 Gold.',
+    onBuy: (g, p, u) => { if (isTribe(u, 'demons')) p.gold += 1; },
   },
   {
     id: 'clover', name: 'Clover', title: 'Dragon of Dragon Bridge', power: 'Broodmother', avatar: 12, health: 32, passive: true,
