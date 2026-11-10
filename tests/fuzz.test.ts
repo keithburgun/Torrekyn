@@ -1,4 +1,8 @@
-import { it } from 'vitest';
+// Bug-hunting fuzzers (off by default; they take a while):
+//   FUZZ=150 npx vitest run tests/fuzz.test.ts --testTimeout=0     full bot games with rule checks after every round
+//   FUZZC=20000 npx vitest run tests/fuzz.test.ts --testTimeout=0  random battles between armies of every card (Golden too)
+import { it as vit } from 'vitest';
+const it = (name: string, fn: () => void, t?: number) => (/full games/.test(name) ? (process.env.FUZZ ? vit : vit.skip) : (process.env.FUZZC ? vit : vit.skip))(name, fn, t);
 import { newGame, selectHero, endTurn } from '../src/engine/game';
 import { CARDS, CONFIG, makeUnit, def } from '../src/engine/core';
 import { runCombat } from '../src/engine/combat';
