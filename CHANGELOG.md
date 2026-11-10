@@ -2,6 +2,9 @@
 
 Newest first. The version shows on the title screen.
 
+## 0.5.2 — 2026-11-10
+- Desktop: the short tap-safety delay on Buy / Play / Sell now applies only to touch taps, so quick mouse clicks are never ignored.
+
 ## 0.5.1 — 2026-11-10
 - Phones: tapping a unit can't instantly sell it any more. When the big card has to cover the card you tapped, its Sell / Play / Buy buttons sit above it instead of right under your finger, and those buttons ignore taps for the first moment after a card opens (they fade in as they arm).
 

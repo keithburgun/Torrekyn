@@ -743,7 +743,9 @@ export class App {
 
   /** when the current card was selected (see justSelected) */
   private selAt = 0;
-  private justSelected() { return performance.now() - this.selAt < 450; }
+  /** 'touch' after a tap: only then do the buttons wait a moment (a mouse can't tap through by accident) */
+  private lastPointer = 'mouse';
+  private justSelected() { return this.lastPointer === 'touch' && performance.now() - this.selAt < 450; }
 
   /** The enlarged card shown next to a hovered or selected card (with actions when selected). */
   popoverHtml() {
@@ -1669,6 +1671,7 @@ export class App {
   }
 
   onUp(e: PointerEvent) {
+    this.lastPointer = e.pointerType;
     const press = this.press;
     if (!press || e.pointerId !== press.pointerId) return;
     this.finish(press, this.toStage(e), this.dragging);
