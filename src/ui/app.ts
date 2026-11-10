@@ -173,7 +173,7 @@ export class App {
     else if (this.screen === 'hero') html = this.heroSelectHtml();
     else if (this.screen === 'tribes') html = tribesAnnounceHtml(this.g!);
     else if (this.screen === 'shop') html = this.shopHtml();
-    else if (this.screen === 'over') html = this.shopHtml() + this.overHtml();
+    else if (this.screen === 'over') { this.sel = null; this.hover = null; html = this.shopHtml() + this.overHtml(); } // no zoomed card behind the results
     if (this.options) html += this.optionsHtml();
     if (this.account) html += this.accountHtml();
     if (this.viewer) html += cardViewerHtml(this.viewer, this.g);

@@ -2,6 +2,9 @@
 
 Newest first. The version shows on the title screen.
 
+## 0.5.3 — 2026-11-10
+- The results screen no longer shows a zoomed card left open behind it.
+
 ## 0.5.2 — 2026-11-10
 - Desktop: the short tap-safety delay on Buy / Play / Sell now applies only to touch taps, so quick mouse clicks are never ignored.
 
