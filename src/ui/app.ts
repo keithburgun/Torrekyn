@@ -51,7 +51,7 @@ function handX(i: number, n: number) {
 }
 const ordinal = (n: number) => n + (n === 1 ? 'st' : n === 2 ? 'nd' : n === 3 ? 'rd' : 'th');
 
-/** Interface style: 'pixel' (square, pixel-art frames; the default) or 'smooth' (the original rounded look) */
+/** Interface style: 'smooth' (rounded; the default) or 'pixel' (square pixel-art frames). A new storage key, so everyone starts on Smooth again. */
 /** Pixel-drawn icons for the Tavern buttons (Keith's pixel art; each row is "x,y,width" runs), drawn solid black at any size */
 const pixSvg = (w: number, h: number, runs: string) => `<svg viewBox="0 0 ${w} ${h}" shape-rendering="crispEdges" fill="currentColor" aria-hidden="true">${runs
   .trim().split(/\s+/).map((r) => { const [x, y, rw = '1'] = r.split(','); return `<rect x="${x}" y="${y}" width="${rw}" height="1"/>`; }).join('')}</svg>`;
@@ -62,7 +62,7 @@ const PIX_ICON = {
 };
 
 function uiStyle(): 'pixel' | 'smooth' {
-  return store.get('torrekin-ui') === 'smooth' ? 'smooth' : 'pixel';
+  return store.get('torrekin-ui2') === 'pixel' ? 'pixel' : 'smooth';
 }
 
 export class App {
@@ -429,7 +429,7 @@ export class App {
           <div class="nm">${esc(p.name)}</div>
           <div class="hero-nm">${esc(h?.name ?? '')}${p.human ? '' : ` · ${seatRating(this.g!, p.id)}`}</div>
           <div class="hpbar"><div style="width:${pct}%"></div></div>
-          <div class="nums"><span>❤ ${Math.max(0, p.health)}</span><span>★ ${p.tier}</span>${p.alive && (p.streak ?? 0) >= 2 ? `<span class="streak" title="${p.streak} wins in a row">🔥${p.streak}</span>` : ''}</div>
+          <div class="nums"><span class="lhp"><i class="hp-dot"></i>${Math.max(0, p.health)}</span><span>★ ${p.tier}</span>${p.alive && (p.streak ?? 0) >= 2 ? `<span class="streak" title="${p.streak} wins in a row">🔥${p.streak}</span>` : ''}</div>
         </div>
         ${next ? '<div class="tag">NEXT</div>' : ''}
         <div class="lb-hist">${this.historyHtml(p)}</div>
@@ -660,7 +660,7 @@ export class App {
       <div class="hint" style="margin-top:-8px">Auto picks portrait when the window is taller than it is wide.</div>
       <div class="opt-row"><span>Sound</span>${seg('sound', [['on', 'On'], ['off', 'Off']], isMuted() ? 'off' : 'on')}</div>
       ${this.cloudRowHtml()}
-      <div class="opt-row"><span>Interface</span>${seg('ui-style', [['pixel', 'Pixel'], ['smooth', 'Smooth']], uiStyle())}</div>
+      <div class="opt-row"><span>Interface</span>${seg('ui-style', [['smooth', 'Smooth'], ['pixel', 'Pixel']], uiStyle())}</div>
       <div class="opt-row"><span>Card art</span>${seg('art-style', [['illustrated', 'Illustrated'], ['classic', 'Classic']], getArtStyle())}</div>
       <div class="opt-row"><span>Battle speed</span>${seg('speed', SPEEDS.map((s) => [String(s.v), s.label]), String(speed), 'v')}</div>
       <div class="opt-row"><span>Debug mode (errors on screen)</span>${seg('debug', [['on', 'On'], ['off', 'Off']], debugOn() ? 'on' : 'off')}</div>
@@ -1462,7 +1462,7 @@ export class App {
       case 'sound': setMuted(el.dataset.mode === 'off'); this.render(); break;
       case 'debug': setDebug(el.dataset.mode === 'on'); this.render(); break;
       case 'art-style': setArtStyle(el.dataset.mode as ArtStyle); this.render(); break;
-      case 'ui-style': store.set('torrekin-ui', el.dataset.mode!); this.render(); break;
+      case 'ui-style': store.set('torrekin-ui2', el.dataset.mode!); this.render(); break;
       case 'speed': store.set('torrekin-speed', el.dataset.v!); this.render(); break;
       case 'tribes': this.showTribes = !this.showTribes; this.render(); break;
       case 'to-hero': sfx.click(); this.screen = 'hero'; this.render(); break;

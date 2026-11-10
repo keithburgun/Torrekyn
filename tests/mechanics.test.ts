@@ -157,15 +157,13 @@ describe('heroes', () => {
     expect(canUseHeroPower(g, p, 'bunny_wizard')).toBe(false);
   });
 
-  it('Gelf Lanz: after buying an Azure unit, the next one costs 1 less', async () => {
-    const { buyCost } = await import('../src/engine/heroes');
+  it('Gelf Lanz: Inspire gets 1 cheaper for each Azure unit bought', async () => {
+    const { powerCost, heroDef } = await import('../src/engine/heroes');
     const { g, p } = withPower('gelf_lanz');
     p.gold = 20;
     p.shop = [makeUnit(g, 'knight'), makeUnit(g, 'knight'), makeUnit(g, 'ash')];
-    expect(buyCost(p, 'knight')).toBe(3);
-    buy(g, p, 0);
-    expect(buyCost(p, 'knight')).toBe(2);
-    expect(buyCost(p, 'ash')).toBe(3);
+    buy(g, p, 0); buy(g, p, 0);
+    expect(powerCost(g, p, heroDef('gelf_lanz')!)).toBe(1);
   });
 
   it('Derby Pocket: after 5 Battlecry units, Battlecries trigger twice', async () => {

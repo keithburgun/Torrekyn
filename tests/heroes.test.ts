@@ -51,17 +51,25 @@ describe('hero powers', () => {
     expect(Object.keys(pumpkin!.mem).some((k) => k.startsWith('dr_'))).toBe(false); // gone after the battle
   });
 
-  it('Gelf Lanz: after buying an Azure unit, the next Azure unit costs 1 less', () => {
+  it('Gelf Lanz: 3-gold power gains an Azure unit, and gets 1 cheaper per Azure unit bought', () => {
     const { g, p } = setup('gelf_lanz');
-    const az = firstOf((id) => isTribe(id, 'azure'));
-    const other = firstOf((id) => !isTribe(id, 'azure') && def(id).tribe !== 'neutral');
-    expect(buyCost(p, az)).toBe(3);
-    p.shop = [unit(g, az), unit(g, az)];
-    const gold = p.gold;
+    const h = heroDef('gelf_lanz')!;
+    const az = firstOf((id) => isTribe(id, 'azure') && !EFFECTS[id]?.onBuy);
+    const other = firstOf((id) => !isTribe(id, 'azure') && def(id).tribe !== 'neutral' && !EFFECTS[id]?.onBuy);
+    expect(powerCost(g, p, h)).toBe(3);
+    p.gold = 20;
+    p.shop = [unit(g, az), unit(g, other)];
     buy(g, p, 0);
-    expect(p.gold).toBe(gold - 3);
-    expect(buyCost(p, az)).toBe(2);
-    expect(buyCost(p, other)).toBe(3);
+    expect(buyCost(p, az)).toBe(3); // units themselves aren't discounted
+    expect(powerCost(g, p, h)).toBe(2);
+    buy(g, p, 0);
+    expect(powerCost(g, p, h)).toBe(2);
+    p.hand = [];
+    const gold = p.gold;
+    useHeroPower(g, p);
+    expect(p.gold).toBe(gold - 2);
+    expect(p.hand.length).toBe(1);
+    expect(isTribe(p.hand[0], 'azure')).toBe(true);
   });
 
   it('Derby Pocket: after 5 Battlecry units, Battlecries trigger twice (even one that destroys itself)', () => {

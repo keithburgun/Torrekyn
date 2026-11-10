@@ -71,11 +71,11 @@ export const HEROES: HeroDef[] = [
     onGain: (g, p) => { gainNew(g, p, 'pumpkin'); },
   },
   {
-    id: 'gelf_lanz', name: 'Gelf Lanz', title: 'Leader of the Azure Order', power: 'Inspire', avatar: 1, health: 42, passive: true, needsTribe: 'azure',
-    text: 'After you buy an Azure unit, your next Azure unit costs 1 less.',
-    discount: (p, cardId) => (p.heroMem.inspired && isTribe(cardId, 'azure') ? 1 : 0),
-    onBuy: (g, p, u) => { if (isTribe(u, 'azure')) p.heroMem.inspired = 1; },
-    progress: (g, p) => (p.heroMem.inspired ? 'Next Azure −1' : null),
+    id: 'gelf_lanz', name: 'Gelf Lanz', title: 'Leader of the Azure Order', power: 'Inspire', avatar: 1, health: 42, cost: 3, needsTribe: 'azure',
+    text: 'Gain an Azure unit. This costs 1 less each time you buy an Azure unit.',
+    costFn: (g, p) => Math.max(0, 3 - (p.heroMem.azureBought ?? 0)),
+    onBuy: (g, p, u) => { if (isTribe(u, 'azure')) p.heroMem.azureBought = (p.heroMem.azureBought ?? 0) + 1; },
+    use: (g, p) => { gainNew(g, p, drawFromPool(g, (id) => isTribe(id, 'azure') && def(id).tier <= p.tier)); },
   },
   {
     id: 'derby_pocket', name: 'Derby Pocket', title: 'Ex-Business Demon intern', power: 'Coffee Run', avatar: 2, health: 44, passive: true,

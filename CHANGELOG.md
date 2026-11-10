@@ -2,6 +2,11 @@
 
 Newest first. The version shows on the title screen.
 
+## 0.5.0 — 2026-11-10
+- Gelf Lanz's Inspire is now an active power: 3 Gold, gain an Azure unit; it costs 1 less each time you buy an Azure unit.
+- Interface back to the smooth, rounded look by default (Pixel stays in Options → Interface). The Tavern buttons are rounded pink buttons like Begin Battle with Keith's black pixel icons; the fonts and the red Health orbs stay.
+- Leaderboard Health shows a small red orb instead of a heart.
+
 ## 0.4.8 — 2026-11-09
 - Pixel sprites back to crisp pixel art with only the edges lightly anti-aliased (sharp-bilinear), replacing the over-smoothed Scale2x look.
 - Trinkets use Keith's pixel present art instead of a plain orb; greater trinkets glow pink.
