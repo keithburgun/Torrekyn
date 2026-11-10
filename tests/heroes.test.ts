@@ -274,4 +274,15 @@ describe('hero powers', () => {
     expect(m.board[0].mem.unlockTier).toBeUndefined();
     expect(play(g2, m, 0, 1).ok).toBe(false); // the Tier 4 one still waits
   });
+
+  it('Derby Pocket + Crown of Echoes: a Battlecry triggers 3 times (each adds one extra), not 4', () => {
+    const { g, p } = setup('derby_pocket');
+    p.heroMem.coffee = 99;
+    p.trinkets = ['crown_of_echoes'];
+    p.board = [];
+    p.hand = [unit(g, 'red_gem')];
+    const before = p.battlecriesThisTurn;
+    play(g, p, 0, 0);
+    expect(p.battlecriesThisTurn - before).toBe(3);
+  });
 });

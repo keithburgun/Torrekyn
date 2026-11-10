@@ -386,7 +386,8 @@ export const heroHooks = {
     for (const t of trinketsOf(p)) if (t.onPlay) trinketFx(g, p, t, () => t.onPlay!(g, p));
   },
   onSell: (g: GameState, p: Player, u: Unit) => { for (const h of powersOf(p)) if (h.onSell) heroFx(g, p, h, () => h.onSell!(g, p, u)); },
-  battlecryTimes: (p: Player) => powersOf(p).reduce((s, h) => s * (h.battlecryTimes?.(p) ?? 1), 1),
+  /** extra Battlecry triggers from hero powers (each power's battlecryTimes - 1, added up) */
+  battlecryExtra: (p: Player) => powersOf(p).reduce((s, h) => s + ((h.battlecryTimes?.(p) ?? 1) - 1), 0),
   startTurn: (g: GameState, p: Player) => {
     for (const h of powersOf(p)) if (h.startTurn) heroFx(g, p, h, () => h.startTurn!(g, p));
     for (const t of trinketsOf(p)) if (t.startTurn) trinketFx(g, p, t, () => t.startTurn!(g, p));

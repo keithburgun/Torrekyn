@@ -2,6 +2,9 @@
 
 Newest first. The version shows on the title screen.
 
+## 0.5.5 — 2026-11-10
+- Fix: extra Battlecry triggers multiplied instead of adding up. Derby Pocket + Crown of Echoes now gives 3 triggers (was 4); Gem Wizard + Crown on a Red Gem gives 3 (was 4).
+
 ## 0.5.4 — 2026-11-10
 - Fix: Left Twinbot (0 Attack) never attacked, so its Rally never happened. Units with a Rally now attack even at 0 Attack.
 

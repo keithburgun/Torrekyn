@@ -170,12 +170,12 @@ describe('heroes', () => {
     const { heroHooks } = await import('../src/engine/heroes');
     const { g, p } = withPower('derby_pocket');
     for (let i = 0; i < 5; i++) {
-      expect(heroHooks.battlecryTimes(p)).toBe(1);
+      expect(heroHooks.battlecryExtra(p)).toBe(0);
       p.hand = [makeUnit(g, 'ashlie')];
       play(g, p, 0, 0);
       p.board = [];
     }
-    expect(heroHooks.battlecryTimes(p)).toBe(2);
+    expect(heroHooks.battlecryExtra(p)).toBe(1);
   });
 
   it('Bill Milton: buying a Business Demon gives 1 gold', () => {

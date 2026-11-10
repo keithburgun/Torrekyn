@@ -228,7 +228,7 @@ export class Combat {
   triggerBattlecry(s: Side, u: CUnit) {
     const e = EFFECTS[u.cardId];
     if (!e?.battlecry) return;
-    const times = battlecryTimes(s.owner, u) * (s.owner.trinkets?.includes('crown_of_echoes') ? 2 : 1) * heroHooks.battlecryTimes(s.owner);
+    const times = battlecryTimes(s.owner, u) + (s.owner.trinkets?.includes('crown_of_echoes') ? 1 : 0) + heroHooks.battlecryExtra(s.owner);
     for (let i = 0; i < times; i++) {
       e.battlecry({ g: this.g, p: s.owner, self: u, m: mult(u), board: s.units.filter((x) => x.hp > 0), combat: this, side: s });
       if (s.persistent) onBattlecryTriggered(this.g, s.owner);

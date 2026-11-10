@@ -447,7 +447,8 @@ export function play(g: GameState, p: Player, handIdx: number, pos: number, targ
 export function runBattlecry(g: GameState, p: Player, u: Unit, target?: Unit) {
   const e = EFFECTS[u.cardId];
   if (!e?.battlecry) return;
-  const times = battlecryTimes(p, u) * (hasTrinket(p, 'crown_of_echoes') ? 2 : 1) * heroHooks.battlecryTimes(p);
+  // each "triggers an extra time" adds one: Gem Wizard (+1, Golden +2 for Red Gems), Crown of Echoes (+1), Derby Pocket (+1)
+  const times = battlecryTimes(p, u) + (hasTrinket(p, 'crown_of_echoes') ? 1 : 0) + heroHooks.battlecryExtra(p);
   // repeats happen even if the unit is gone by then (Sword and Shield destroy themselves in their Battlecry)
   for (let i = 0; i < times; i++) {
     withFx(g, p, { unit: u }, i === 0 ? 'Battlecry' : 'Battlecry again!', () => e.battlecry!({ g, p, self: u, m: mult(u), board: p.board, target }));
