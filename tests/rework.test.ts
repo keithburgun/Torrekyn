@@ -246,4 +246,13 @@ describe('rework 2', () => {
     TRINKETS.find((t) => t.id === 'summit_vault')!.onGain!(g, p);
     expect(p.hand.map((x) => def(x.cardId).tier)).toEqual([6, 6]);
   });
+
+  it('Left Twinbot (0 Attack) still attacks, so its Rally happens', () => {
+    const { g, p, o } = setup();
+    p.twinBonus = 0;
+    const c = fight(g, p, o, [u(g, 'left_twinbot', 0, 2), u(g, 'right_twinbot', 0, 2)], [u(g, 'skel', 0, 50)]);
+    c.run();
+    expect(p.twinBonus).toBeGreaterThanOrEqual(1);
+    expect(c.frames.some((f) => /Left Twinbot/.test(f.note ?? ''))).toBe(true);
+  });
 });

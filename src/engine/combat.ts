@@ -436,7 +436,9 @@ export class Combat {
       for (const s of [this.sides[this.attacking], this.sides[1 - this.attacking]]) this.fireBaubles(s);
       const live = (s: Side) => s.units.filter((u) => u.hp > 0);
       if (!live(A).length || !live(B).length) break;
-      const canAttack = (s: Side) => live(s).some((u) => u.atk > 0);
+      // units with 0 Attack don't attack, except ones with a Rally (Left Twinbot), so their Rally can happen
+      const attacks = (u: CUnit) => u.hp > 0 && (u.atk > 0 || !!EFFECTS[u.cardId]?.rally);
+      const canAttack = (s: Side) => s.units.some(attacks);
       if (!canAttack(A) && !canAttack(B)) break;
       const s = this.sides[this.attacking];
       if (!canAttack(s)) {
@@ -447,7 +449,7 @@ export class Combat {
       let attacker: CUnit | undefined;
       for (let k = 0; k < s.units.length; k++) {
         const u = s.units[(s.ptr + k) % s.units.length];
-        if (u.hp > 0 && u.atk > 0) {
+        if (attacks(u)) {
           attacker = u;
           break;
         }

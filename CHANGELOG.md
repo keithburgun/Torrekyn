@@ -2,6 +2,9 @@
 
 Newest first. The version shows on the title screen.
 
+## 0.5.4 — 2026-11-10
+- Fix: Left Twinbot (0 Attack) never attacked, so its Rally never happened. Units with a Rally now attack even at 0 Attack.
+
 ## 0.5.3 — 2026-11-10
 - The results screen no longer shows a zoomed card left open behind it.
 
