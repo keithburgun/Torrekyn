@@ -2,6 +2,9 @@
 
 Newest first. The version shows on the title screen.
 
+## 0.5.1 — 2026-11-10
+- Phones: tapping a unit can't instantly sell it any more. When the big card has to cover the card you tapped, its Sell / Play / Buy buttons sit above it instead of right under your finger, and those buttons ignore taps for the first moment after a card opens (they fade in as they arm).
+
 ## 0.5.0 — 2026-11-10
 - Gelf Lanz's Inspire is now an active power: 3 Gold, gain an Azure unit; it costs 1 less each time you buy an Azure unit.
 - Interface back to the smooth, rounded look by default (Pixel stays in Options → Interface). The Tavern buttons are rounded pink buttons like Begin Battle with Keith's black pixel icons; the fonts and the red Health orbs stay.

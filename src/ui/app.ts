@@ -741,6 +741,10 @@ export class App {
     }
   }
 
+  /** when the current card was selected (see justSelected) */
+  private selAt = 0;
+  private justSelected() { return performance.now() - this.selAt < 450; }
+
   /** The enlarged card shown next to a hovered or selected card (with actions when selected). */
   popoverHtml() {
     const p = this.me;
@@ -768,6 +772,7 @@ export class App {
     const H = L.portrait ? 884 + (actions ? 118 : 0) : 605 + (actions ? 54 : 0);
     let x: number;
     let y: number;
+    let actionsTop = false;
     if (L.popover === 'stack') {
       // portrait: shop cards show it over the army, army cards over the shop, hand cards above the hand
       const cx = s.zone === 'shop' ? shopX(s.idx, p.shop.length) + L.shopCardW / 2
@@ -775,6 +780,10 @@ export class App {
       x = Math.max(8, Math.min(L.W - W - 8, cx - W / 2));
       y = s.zone === 'shop' ? L.shopY + L.shopCardH + 14 : s.zone === 'board' ? L.slotTop - H - 6 : L.handY - H - 12;
       y = Math.max(8, Math.min(L.H - H - 8, y));
+      // if there isn't room above the card, the big card covers it: then the buttons go on top of the
+      // big card (far from your finger) instead of at its bottom, right where you just tapped
+      const cardTop = s.zone === 'board' ? L.slotTop : s.zone === 'hand' ? L.handY : -1;
+      if (actions && cardTop >= 0 && y + H > cardTop) actionsTop = true;
     } else if (s.zone === 'hand') {
       x = handX(s.idx, p.hand.length) + L.handCardW / 2 - W / 2;
       y = L.handY - H - 40;
@@ -788,7 +797,7 @@ export class App {
       x = Math.max(220, Math.min(L.W - 210 - W, x));
     }
     y = Math.max(8, Math.min(L.H - 10 - H, y));
-    return `<div class="popover ${actions ? 'interactive' : ''}" style="left:${x}px;top:${y}px;width:${W}px">
+    return `<div class="popover ${actions ? 'interactive' : ''} ${actionsTop ? 'actions-top' : ''} ${actions && this.justSelected() ? 'arming' : ''}" style="left:${x}px;top:${y}px;width:${W}px">
       <div class="pop-card">${bigCardHtml(v, '', this.me)}</div>${actions ? `<div class="actions">${actions}</div>` : ''}</div>`;
   }
 
@@ -1482,9 +1491,11 @@ export class App {
       case 'reroll': this.result(reroll(g!, p!), sfx.refresh, 'rerolls'); this.sel = null; this.commit(); break;
       case 'freeze': toggleFreeze(p!); sfx.click(); if (p!.frozen) bump('freezes'); this.commit(); if (p!.frozen) this.freezeFx(); break;
       case 'end-turn': sfx.click(); this.endTurn(); break;
-      case 'buy': if (this.sel) { this.lastShopPos = { x: shopX(this.sel.idx, p!.shop.length), y: L.shopY }; this.result(buy(g!, p!, this.sel.idx), sfx.buy, 'bought'); this.sel = null; this.commit(); } break;
-      case 'play': if (this.sel) this.doPlay(this.sel.idx, p!.board.length); break;
-      case 'sell': if (this.sel) { this.result(sell(g!, p!, this.sel.idx), sfx.sell, 'sold'); this.sel = null; this.commit(); } break;
+      // the Buy / Play / Sell buttons ignore taps in the first moments after a card is selected,
+      // so the tap that opened the card (or a quick double-tap) can't land on them by accident
+      case 'buy': if (this.sel && !this.justSelected()) { this.lastShopPos = { x: shopX(this.sel.idx, p!.shop.length), y: L.shopY }; this.result(buy(g!, p!, this.sel.idx), sfx.buy, 'bought'); this.sel = null; this.commit(); } break;
+      case 'play': if (this.sel && !this.justSelected()) this.doPlay(this.sel.idx, p!.board.length); break;
+      case 'sell': if (this.sel && !this.justSelected()) { this.result(sell(g!, p!, this.sel.idx), sfx.sell, 'sold'); this.sel = null; this.commit(); } break;
       case 'left': case 'right': if (this.sel) {
         const to = this.sel.idx + (act === 'left' ? -1 : 1);
         const r = move(p!, this.sel.idx, to);
@@ -1696,6 +1707,7 @@ export class App {
       if (this.targeting) return;
       const same = this.sel && this.sel.zone === press.zone && this.sel.idx === press.idx;
       this.sel = same ? null : { zone: press.zone, idx: press.idx };
+      this.selAt = performance.now();
       this.render();
       return;
     }

@@ -1449,3 +1449,10 @@ svg.aim-arrow.locked .aim-ring { opacity: 0.9; animation: aim-ring 0.9s ease-in-
 /* leaderboard Health: a small red orb, not a heart */
 .leader .hp-dot { display: inline-block; width: 11px; height: 11px; margin-right: 4px; border-radius: 50%; vertical-align: -1px;
   background: radial-gradient(circle at 35% 30%, #ff9a8c, #e8322a 58%, #a8121a); box-shadow: 0 0 0 1.5px rgba(255, 255, 255, 0.8); }
+
+/* phones: when the big card has to cover the card you tapped, its buttons sit above it, away from your finger */
+.popover.actions-top { display: flex; flex-direction: column-reverse; }
+.popover.actions-top .actions { margin: 0 0 14px; }
+/* the buttons fade in as they become tappable (see justSelected in app.ts) */
+.popover.arming .actions { animation: arm-actions 0.45s ease-out; }
+@keyframes arm-actions { 0% { opacity: 0.35; } 90% { opacity: 0.35; } 100% { opacity: 1; } }
