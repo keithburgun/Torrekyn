@@ -140,6 +140,11 @@ export const sfx = {
     tone({ f: 330, f2: 990, d: 0.25, type: 'sine', v: 0.35 });
     tone({ f: 1320, t: 0.12, d: 0.3, type: 'triangle', v: 0.15 });
   },
+  /** a hero power goes off by itself: a bright rising chime */
+  heroFx() {
+    [523, 659, 784, 1047].forEach((f, i) => tone({ f, t: i * 0.07, d: 0.32, type: 'triangle', v: 0.22 }));
+    tone({ f: 262, f2: 524, d: 0.4, type: 'sine', v: 0.25 });
+  },
   /** a unit is destroyed */
   destroy() {
     if (!throttle('destroy', 90)) return;

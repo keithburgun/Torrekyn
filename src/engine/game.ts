@@ -4,7 +4,7 @@ import {
 import { EFFECTS, battlecryTimes, hasBattlecry } from './effects';
 import { runCombat } from './combat';
 import { aiTakeTurn, aiChooseDiscover } from './ai';
-import { setFxPhase, withFx } from './fx';
+import { setFxPhase, withFx, heroPing } from './fx';
 import { PERSONAS, matchPersonas, personaProfile } from './personas';
 import { HEROES, heroHealth, buyCost, gainPower, heroDef, heroEndTurn, heroHooks, hasTrinket, offerTrinkets, shopBonus, GREATER_TRINKET_TURN, LESSER_TRINKET_TURN } from './heroes';
 import type { Discover, GameState, Player, Slot, Tribe, Unit } from './types';
@@ -153,6 +153,7 @@ export function startTurn(g: GameState, p: Player) {
   p.goldNextTurn = 0;
   p.battlecriesLastTurn = p.battlecriesThisTurn;
   p.battlecriesThisTurn = 0;
+  p.battlecryUnitsThisTurn = 0;
   p.usedPowers = [];
   setFxPhase('start');
   heroHooks.startTurn(g, p);
@@ -427,7 +428,7 @@ export function play(g: GameState, p: Player, handIdx: number, pos: number, targ
   pos = Math.max(0, Math.min(pos, p.board.length));
   p.board.splice(pos, 0, u);
   const target = targetUid !== undefined ? p.board.find((b) => b.uid === targetUid) : undefined;
-  if (hasBattlecry(u.cardId)) runBattlecry(g, p, u, target);
+  if (hasBattlecry(u.cardId)) { p.battlecryUnitsThisTurn = (p.battlecryUnitsThisTurn ?? 0) + 1; runBattlecry(g, p, u, target); }
   const onPlay = EFFECTS[u.cardId]?.onPlay;
   if (onPlay) withFx(g, p, { unit: u }, 'Played', () => onPlay({ g, p, self: u, m: mult(u), board: p.board }));
   if (u.golden && u.mem.tripleReward) {
@@ -448,12 +449,18 @@ export function runBattlecry(g: GameState, p: Player, u: Unit, target?: Unit) {
   const e = EFFECTS[u.cardId];
   if (!e?.battlecry) return;
   // each "triggers an extra time" adds one: Gem Wizard (+1, Golden +2 for Red Gems), Crown of Echoes (+1), Derby Pocket (+1)
-  const times = battlecryTimes(p, u) + (hasTrinket(p, 'crown_of_echoes') ? 1 : 0) + heroHooks.battlecryExtra(p);
+  const heroExtra = heroHooks.battlecryExtra(p);
+  const times = battlecryTimes(p, u) + (hasTrinket(p, 'crown_of_echoes') ? 1 : 0) + heroExtra;
+  const fx0 = p.fx?.length ?? 0;
   // repeats happen even if the unit is gone by then (Sword and Shield destroy themselves in their Battlecry)
   for (let i = 0; i < times; i++) {
+    // the hero power announces itself just before the extra Battlecry it causes
+    if (i === times - heroExtra && heroExtra) heroPing(g, p, heroHooks.battlecryExtraName(p), 'Extra Battlecry!');
     withFx(g, p, { unit: u }, i === 0 ? 'Battlecry' : 'Battlecry again!', () => e.battlecry!({ g, p, self: u, m: mult(u), board: p.board, target }));
     onBattlecryTriggered(g, p);
   }
+  // several Battlecries in a row play at double speed
+  if (times > 1) for (const ev of p.fx?.slice(fx0) ?? []) ev.fast = true;
 }
 
 export function onBattlecryTriggered(g: GameState, p: Player) {
@@ -487,7 +494,7 @@ export function reroll(g: GameState, p: Player): ActionResult {
   // "when you Refresh" (Tinker)
   for (const b of [...p.board]) {
     const e = EFFECTS[b.cardId]?.onRefresh;
-    if (e) withFx(g, p, { unit: b }, 'Ability', () => e({ g, p, self: b, m: mult(b), board: p.board }));
+    if (e) withFx(g, p, { unit: b }, 'Refresh', () => e({ g, p, self: b, m: mult(b), board: p.board }));
   }
   return OK;
 }
@@ -604,9 +611,9 @@ export function endTurn(g: GameState): CombatResult[] {
   return results;
 }
 
-/** damage to the loser: 2, plus 2 for each of the winner's surviving units (plus any extras), no cap */
-export const DAMAGE_BASE = 2;
-export const DAMAGE_PER_UNIT = 2;
+/** damage to the loser: 1, plus 1 for each of the winner's surviving units (plus any extras), no cap */
+export const DAMAGE_BASE = 1;
+export const DAMAGE_PER_UNIT = 1;
 export function combatDamage(survivors: number, bonus: number) {
   return DAMAGE_BASE + survivors * DAMAGE_PER_UNIT + bonus;
 }

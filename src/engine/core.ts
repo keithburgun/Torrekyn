@@ -3,7 +3,7 @@ import type { Body, CardDef, GameState, Keyword, Player, Tribe, Unit } from './t
 
 export const CONFIG = {
   players: 6,
-  startHealth: 40,
+  startHealth: 20,
   /** the Tavern's top Tier; Tier 6 units exist but only come from special effects (like Tier 7 in Battlegrounds) */
   maxTier: 5,
   boardSize: 7,

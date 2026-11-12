@@ -19,7 +19,7 @@ When the card text was ambiguous, Hearthstone: Battlegrounds conventions were us
 - "Left-most slot" = slot 1. "Right-most slot" (Devotion) = the slot of your current right-most unit.
 - "This slot" = the slot the unit is in when the effect happens (for combat effects, the slot it started combat in).
 - "Plain slot" (Paradox) = a slot with no bonuses at all.
-- "Locked permanently" (Commitment) = that unit can no longer be moved, sold, consumed or destroyed by your own effects, and can't be part of a triple.
+- "Locked permanently" = that unit can no longer be moved, sold, consumed or destroyed by your own effects, and can't be part of a triple. (Commitment used to lock; since v0.8 it gives the left-most slot +20 Health per Azure unit instead. Units locked in old saves stay locked.)
 - Slot stats can go negative (Virus). A unit's effective Attack never drops below 0 or Health below 1.
 
 ## Keywords
@@ -43,7 +43,7 @@ When the card text was ambiguous, Hearthstone: Battlegrounds conventions were us
 | Ashlie / Romance | Like HS Undead: all your Neverending units, including ones you get later. |
 | Tourmaline / Front and Center | Change slot 1 permanently. |
 | Ocean Sky | Only your own units benefit. |
-| Commitment | Targets your left-most unit other than itself. |
+| Commitment | Counts Azure units in your army, itself included. |
 | Pink Gem / Doctor | Summon a fresh copy (start-of-combat stats) of a friendly unit that died this combat. Pink Gem can't summon another Pink Gem. |
 | Therapist / Organizer / Exploit | Targeted Battlecries (you pick the unit). |
 | Honeysuckle (Kindred) / Ambush | The card summoned from hand is a temporary combat copy; it stays in your hand. |

@@ -189,13 +189,22 @@ describe('rework 2', () => {
     expect(f.sides[0][1]).toMatchObject({ atk: 9, hp: 10 });
   });
 
-  it('Chaos: End of Turn buffs the left-most unit once plus once per Battlecry this turn', () => {
+  it('Chaos: End of Turn buffs the left-most unit once plus once per Battlecry unit played this turn', () => {
     const { g, p } = setup();
     const left = u(g, 'skel', 1, 1);
     p.board = [left, u(g, 'chaos')];
-    p.battlecriesThisTurn = 2;
+    p.battlecriesThisTurn = 5; // extra Battlecry triggers (Derby, Crown) don't count, units played do
+    p.battlecryUnitsThisTurn = 2;
     endTurnEffects(g, p);
     expect([left.atk, left.hp]).toEqual([10, 10]);
+  });
+
+  it('Commitment: the left-most slot gets +20 Health per Azure unit', () => {
+    const { g, p } = setup();
+    p.board = [u(g, 'skel'), u(g, 'knight'), u(g, 'longbow')];
+    p.hand = [u(g, 'commitment')];
+    play(g, p, 0, 3);
+    expect(p.slots[0].hp).toBe(60);
   });
 
   it('Owl and The Mayor: End of Turn grows their slot', () => {

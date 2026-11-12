@@ -347,8 +347,8 @@
    "tier": 5,
    "atk": 8,
    "hp": 20,
-   "text": "Battlecry: Double the stats of your left-most unit. It is locked permanently.",
-   "goldenText": "Battlecry: Triple the stats of your left-most unit. It is locked permanently.",
+   "text": "Battlecry: Give your left-most slot +20 Health for each Azure unit you have.",
+   "goldenText": "Battlecry: Give your left-most slot +40 Health for each Azure unit you have.",
    "keywords": []
   },
   {
@@ -920,8 +920,8 @@
    "tier": 2,
    "atk": 1,
    "hp": 1,
-   "text": "End of Turn: Give your left-most unit +3/+3. Repeat for each Battlecry you triggered this turn.",
-   "goldenText": "End of Turn: Give your left-most unit +6/+6. Repeat for each Battlecry you triggered this turn.",
+   "text": "End of Turn: Give your left-most unit +3/+3. Repeat for each Battlecry unit you played this turn.",
+   "goldenText": "End of Turn: Give your left-most unit +6/+6. Repeat for each Battlecry unit you played this turn.",
    "keywords": []
   },
   {

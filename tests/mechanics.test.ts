@@ -58,10 +58,10 @@ describe('mechanics', () => {
     }
   });
 
-  it('damage is 2 + 2 per surviving unit (no cap)', () => {
-    expect(combatDamage(7, 0)).toBe(16);
-    expect(combatDamage(3, 1)).toBe(9);
-    expect(combatDamage(7, 4)).toBe(20);
+  it('damage is 1 + 1 per surviving unit (no cap)', () => {
+    expect(combatDamage(7, 0)).toBe(8);
+    expect(combatDamage(3, 1)).toBe(5);
+    expect(combatDamage(7, 4)).toBe(12);
   });
 
   it('buying 3 copies makes a golden with combined buffs', () => {

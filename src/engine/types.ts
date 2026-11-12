@@ -108,6 +108,8 @@ export interface Player {
   bannerBonus: number;
   redGemBonus: number;
   battlecriesThisTurn: number;
+  /** Battlecry units played this turn (Chaos) */
+  battlecryUnitsThisTurn?: number;
   battlecriesLastTurn: number;
   battlecriesGame: number;
   /** Refreshes that cost nothing (Gambler) */

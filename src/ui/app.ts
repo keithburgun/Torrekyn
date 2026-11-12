@@ -363,7 +363,7 @@ export class App {
     return `<div class="title-wrap"><div class="panel rules">
       <h3>The Goal</h3>
       Six players draft armies of units and battle automatically each round. Everyone starts at about ${CONFIG.startHealth} Health (stronger heroes start with less).
-      Lose a battle and you take 2 damage for each of the winner's surviving units. If time runs out with both armies still standing, both players take damage that way.
+      Lose a battle and you take 1 damage, plus 1 for each of the winner's surviving units. If time runs out with both armies still standing, both players take damage that way.
       Be the last one standing.
       <h3>Your Turn</h3>
       Buy units from the Tavern for ${CONFIG.buyCost} gold, then play them from your hand into your army (up to ${CONFIG.boardSize}).
@@ -467,7 +467,13 @@ export class App {
       const s = p.slots[i];
       const bonus = [s.atk || s.hp ? `${s.atk >= 0 ? '+' : ''}${s.atk}/${s.hp >= 0 ? '+' : ''}${s.hp}` : '', ...s.kw.map((k) => ({ taunt: 'Taunt', divineShield: 'Shield', reborn: 'Reborn', venomous: 'Venom', poisonous: 'Poison', windfury: 'Windfury' })[k])].filter(Boolean).join(' · ');
       const buffed = s.atk || s.hp || s.kw.length;
-      h += `<div class="slot-plate ${buffed ? 'buffed' : ''}" data-slot="${i}" style="left:${L.slotX(i)}px;top:${L.slotTop}px;width:${L.slotW}px;height:${L.slotH}px"><div class="bonus ${s.atk < 0 || s.hp < 0 ? 'neg' : ''}">${bonus || `Slot ${i + 1}`}</div></div>`;
+      // with a unit standing in it, the slot's Attack shows under the unit's Attack and its Health under its Health,
+      // leaving the middle free for the unit's keyword coins (the slot's keywords are on the unit too)
+      const sgn = (n: number) => `${n >= 0 ? '+' : ''}${n}`;
+      const label = p.board[i] && (s.atk || s.hp)
+        ? `<span class="b-atk">${s.atk ? sgn(s.atk) : ''}</span><span class="b-hp">${s.hp ? sgn(s.hp) : ''}</span>`
+        : p.board[i] ? '' : bonus || `Slot ${i + 1}`;
+      h += `<div class="slot-plate ${buffed ? 'buffed' : ''}" data-slot="${i}" style="left:${L.slotX(i)}px;top:${L.slotTop}px;width:${L.slotW}px;height:${L.slotH}px"><div class="bonus ${s.atk < 0 || s.hp < 0 ? 'neg' : ''} ${p.board[i] ? 'split' : ''}">${label}</div></div>`;
     }
     // cards gained while the hand was full wait here until there's room
     if (p.overflow?.length) h += `<div class="overflow-pill abs" style="left:${L.cx - 160}px;top:${L.handY - 34}px;width:320px">Hand full · ${p.overflow.length} more card${p.overflow.length > 1 ? 's' : ''} waiting for room</div>`;
@@ -1078,7 +1084,8 @@ export class App {
     this.fxHurry = false;
     const hurry = () => { this.fxHurry = true; };
     this.stage.addEventListener('pointerdown', hurry);
-    const wait = (ms: number) => new Promise<void>((r) => setTimeout(r, this.fxHurry ? ms * 0.2 : ms));
+    let speed = 1; // 0.5 for a run of repeated Battlecries
+    const wait = (ms: number) => new Promise<void>((r) => setTimeout(r, this.fxHurry ? ms * 0.2 : ms * speed));
     const card = (uid: number) => this.stage.querySelector(`.card[data-id="${uid}"]:not(.ghost)`) as HTMLElement | null;
     // new cards stay hidden until they arrive
     for (const e of events) for (const uid of [...e.gains, ...e.summons]) { const el = card(uid); if (el) el.style.visibility = 'hidden'; }
@@ -1089,6 +1096,8 @@ export class App {
         const a = el?.querySelector('.stat.atk'); const h = el?.querySelector('.stat.hp');
         if (a && b.atk) a.textContent = String(Number(a.textContent) - b.atk);
         if (h && b.hp) h.textContent = String(Number(h.textContent) - b.hp);
+        // new keywords too (Tinker's Divine Shield etc.) appear when the effect lands
+        for (const k of b.kw) { el?.classList.remove(`kw-${k}`); const sp = el?.querySelector(`.kws .kw-${k}`) as HTMLElement | null; if (sp) sp.style.visibility = 'hidden'; }
       }
     }
     try {
@@ -1104,6 +1113,7 @@ export class App {
         await wait(650);
       }
       for (const e of events) {
+        speed = e.fast ? 0.5 : 1;
         const heroEl = e.hero ? (this.stage.querySelector('.my-hero') as HTMLElement | null) : null;
         const srcEl = heroEl ?? (e.src !== undefined ? card(e.src) : null);
         const src = srcEl ? this.centre(srcEl) : { x: L.cx, y: L.slotTop - 30, h: 0 };
@@ -1120,8 +1130,21 @@ export class App {
         lab.style.top = `${src.y - src.h / 2 - 8}px`;
         this.stage.appendChild(lab);
         for (const c of e.counters) this.popCounter(c.key, c.text, stale, !e.hero);
-        sfx.click();
-        await wait(300);
+        if (e.hero) {
+          // a hero power going off is an event: big flash, a burst of light and its own sound
+          lab.classList.add('hero');
+          const burst = document.createElement('div');
+          burst.className = 'hero-burst';
+          burst.style.left = `${src.x}px`;
+          burst.style.top = `${src.y}px`;
+          this.stage.appendChild(burst);
+          setTimeout(() => burst.remove(), 900);
+          sfx.heroFx();
+          await wait(e.buffs.length || e.gains.length || e.summons.length ? 450 : 700);
+        } else {
+          sfx.click();
+          await wait(300);
+        }
         // 2. orbs fly to each target; buffs, new units and new cards land
         let longest = 0;
         const targets: { uid: number; kind: 'buff' | 'gain' | 'summon'; b?: FxEvent['buffs'][number] }[] = [
@@ -1129,8 +1152,8 @@ export class App {
         ];
         targets.forEach((t, i) => {
           const el = card(t.uid);
-          const dur = this.fxHurry ? 120 : t.kind === 'gain' ? 520 : 340;
-          const delay = (this.fxHurry ? 20 : 70) * i;
+          const dur = this.fxHurry ? 120 : (t.kind === 'gain' ? 520 : 340) * speed;
+          const delay = (this.fxHurry ? 20 : 70 * speed) * i;
           longest = Math.max(longest, dur + delay);
           if (t.kind === 'gain') { this.flyCard(t.uid, src, el, dur, delay, stale); return; }
           if (!el) return;
@@ -1145,6 +1168,7 @@ export class App {
               return;
             }
             const b = t.b!;
+            for (const k of b.kw) { el.classList.add(`kw-${k}`); const sp = el.querySelector(`.kws .kw-${k}`) as HTMLElement | null; if (sp) sp.style.visibility = ''; }
             el.classList.remove('buff-flash');
             void el.offsetWidth;
             el.classList.add('buff-flash');

@@ -26,6 +26,14 @@ export interface FxEvent {
   goldNext: number;
   /** counters that changed: key "hero", "quest" or "u<uid>", with the new text */
   counters: { key: string; text: string }[];
+  /** part of a run of repeated Battlecries: played at double speed */
+  fast?: boolean;
+}
+
+/** a hero power that kicks in without changing anything by itself (e.g. Derby Pocket's extra Battlecry): just show it */
+export function heroPing(g: GameState, p: Player, name: string, label: string) {
+  if (!tracking(g, p)) return;
+  (p.fx ??= []).push({ phase, hero: true, name, label, buffs: [], gains: [], summons: [], gold: 0, goldNext: 0, counters: [] });
 }
 
 /** Progress shown on a card ("2/4"), if it has one. */
@@ -51,20 +59,22 @@ export const setFxPhase = (ph: FxPhase) => { phase = ph; };
 export const tracking = (g: GameState, p: Player) => p.human && !g.simulateAll;
 
 interface Snap {
-  units: Map<number, { atk: number; hp: number; kw: string[]; zone: 'board' | 'hand' }>;
+  units: Map<number, { atk: number; hp: number; kw: string[]; zone: 'board' | 'hand' | 'shop' }>;
   gold: number;
   goldNext: number;
   counters: Map<string, string>;
 }
 
 function snap(g: GameState, p: Player): Snap {
-  const units = new Map<number, { atk: number; hp: number; kw: string[]; zone: 'board' | 'hand' }>();
+  const units = new Map<number, { atk: number; hp: number; kw: string[]; zone: 'board' | 'hand' | 'shop' }>();
   const counters = new Map<string, string>();
   p.board.forEach((u, i) => {
     const s = effStats(p, u, 'board', i);
     units.set(u.uid, { atk: s.atk, hp: s.hp, kw: [...s.kw], zone: 'board' });
   });
   p.hand.forEach((u) => units.set(u.uid, { atk: u.atk, hp: u.hp, kw: [...u.kw], zone: 'hand' }));
+  // the shop too, so a shop unit that gets something (Tinker) shows it; new shop units are just a Refresh
+  p.shop.forEach((u) => { if (!units.has(u.uid)) units.set(u.uid, { atk: u.atk, hp: u.hp, kw: [...u.kw], zone: 'shop' }); });
   for (const u of [...p.board, ...p.hand]) {
     const c = unitCounter(u);
     if (c) counters.set(`u${u.uid}`, c);
@@ -98,7 +108,7 @@ export function withFx<T>(g: GameState, p: Player, who: { unit?: Unit; hero?: bo
     };
     for (const [uid, a] of after.units) {
       const b = before.units.get(uid);
-      if (!b) { (a.zone === 'hand' ? ev.gains : ev.summons).push(uid); continue; }
+      if (!b) { if (a.zone !== 'shop') (a.zone === 'hand' ? ev.gains : ev.summons).push(uid); continue; }
       if (b.zone !== a.zone) continue; // just moved (played)
       const kw = a.kw.filter((k) => !b.kw.includes(k));
       if (a.atk !== b.atk || a.hp !== b.hp || kw.length) ev.buffs.push({ uid, atk: a.atk - b.atk, hp: a.hp - b.hp, kw });

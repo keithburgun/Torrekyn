@@ -2,6 +2,9 @@
 
 Newest first. The version shows on the title screen.
 
+## 0.8.0 — 2026-11-12
+- Hero Health halved; battle damage is now 1 + 1 per surviving unit. New Commitment: Battlecry: give your left-most slot +20 Health per Azure unit. Chaos counts Battlecry units played (not extra triggers). Tinker flashes, then the shop unit it upgraded flashes as its keyword lands. Hero powers going off get a burst of light, a bigger label and their own chime (e.g. Derby Pocket's extra Battlecry). Repeated Battlecries play twice as fast. Taunt shields stick out more. A slot's bonus shows under the unit's Attack and Health so keyword coins don't cover it. Extra keywords on the big card show as coloured italics. Banners no longer show a number over the Tier. Bots: even the weakest persona now plays with real skill (weakest bots averaged 12/11 units by turn 14; now 34/40); new players start mid-ladder (1400) and existing ratings below that move up; persona ratings re-measured; card values re-measured.
+
 ## 0.7.0 — 2026-11-12
 - Smarter bots (+99 Elo vs the old Expert): play the best card in hand when the army is full, value units that grow, better Gem/Banner/Mod/Abandon placement, hold Larva/Green Ninja/Scout, sell Treasure and Message well, faster leveling, pickier rerolls; card values re-measured with Tier 6. May's Root Access costs 2. Fixes: Left Twinbot's Rally gave Health too (Attack only now); Scout Discovered a Tier too low (now shows its current Tier). New ability test checks every card does something.
 

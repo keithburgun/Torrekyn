@@ -68,9 +68,15 @@ export function personaById(id: string | undefined): Persona | undefined {
   return PERSONAS.find((p) => p.id === id);
 }
 
+/**
+ * Even the weakest persona plays with this much skill: below it the bots barely build an army at all, which made
+ * a new player's first lobbies (always the weakest bots) far too easy.
+ */
+export const SKILL_FLOOR = 0.35;
+
 /** The bot profile a persona plays with (skill profile plus quirks). */
 export function personaProfile(per: Persona): BotProfile {
-  const b = profileForSkill(per.skill);
+  const b = profileForSkill(SKILL_FLOOR + (1 - SKILL_FLOOR) * per.skill);
   if (per.quirk?.x) b.x = { ...b.x, ...per.quirk.x };
   if (per.quirk?.tribe) b.tribe = per.quirk.tribe;
   return b;
@@ -82,7 +88,7 @@ export function personaElo(per: Persona): number {
   return ELO[per.id] ?? Math.round(1000 + per.skill * 500);
 }
 
-/** the scale: the Expert bot is 1500, the weakest bot (and a new player) about 1000 */
+/** the scale: the Expert bot is 1500; a new player starts mid-ladder (rating.ts START_RATING) */
 export const EXPERT_ELO = 1500;
 
 /**

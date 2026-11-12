@@ -165,14 +165,14 @@ b { font-weight: 800; }
 /* Taunt: the card itself becomes a steel-rimmed shield (chamfered top corners, pointed bottom) */
 .card.kw-taunt { filter: drop-shadow(0 0 1.5px #2b2833) drop-shadow(0 7px 10px rgba(0, 0, 0, 0.5)); }
 .card.kw-taunt .face {
-  bottom: -22px; border: 0; border-radius: 0; box-shadow: none;
+  top: -20px; left: -10px; right: -10px; bottom: -46px; border: 0; border-radius: 0; box-shadow: none;
   background:
     radial-gradient(circle at 11% 5.5%, #fff 0 2.6%, #6b657c 3%, transparent 3.6%), radial-gradient(circle at 89% 5.5%, #fff 0 2.6%, #6b657c 3%, transparent 3.6%),
     linear-gradient(160deg, #ffffff, #a39db8 26%, #4d4760 60%, #2a2633 82%, #6b657c);
   -webkit-mask: var(--shield-mask) center / 100% 100% no-repeat; mask: var(--shield-mask) center / 100% 100% no-repeat;
 }
 .card.kw-taunt .face::before {
-  content: ''; position: absolute; inset: 9px 9px 12px; background: linear-gradient(170deg, var(--card-hi) 20%, var(--card-lo));
+  content: ''; position: absolute; inset: 13px 13px 16px; background: linear-gradient(170deg, var(--card-hi) 20%, var(--card-lo));
   -webkit-mask: var(--shield-mask) center / 100% 100% no-repeat; mask: var(--shield-mask) center / 100% 100% no-repeat;
 }
 .card { --shield-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 112' preserveAspectRatio='none'%3E%3Cpath d='M9 0H91L100 7V78C100 92 78 103 50 112C22 103 0 92 0 78V7Z'/%3E%3C/svg%3E"); }
@@ -186,7 +186,7 @@ b { font-weight: 800; }
   box-shadow: 0 0 22px rgba(255, 220, 120, 0.55);
   animation: shimmer 2.4s ease-in-out infinite;
 }
-.card.kw-taunt.kw-divineShield::after { inset: -14px -12px -34px; }
+.card.kw-taunt.kw-divineShield::after { inset: -30px -22px -58px; }
 .card.kw-poisonous .art { box-shadow: inset 0 0 18px rgba(120, 230, 90, 0.95), inset 0 0 0 2px #b8ff9a; }
 .card.kw-reborn .art { box-shadow: inset 0 0 20px rgba(150, 230, 255, 0.95), inset 0 0 0 2px #fff; }
 @keyframes shimmer { 50% { opacity: 0.8; } }
@@ -227,6 +227,7 @@ b { font-weight: 800; }
   text-align: center; font-size: 15px; line-height: 1.22; color: var(--plum); background: rgba(255, 255, 255, 0.8); border-radius: 16px; padding: 6px 8px;
 }
 .bigcard .text b { color: var(--pink-deep); }
+.bigcard .text .kw-extra { color: #2f8fe0; font-weight: 700; font-style: italic; }
 .bigcard .stat { position: absolute; bottom: -12px; width: 54px; height: 54px; display: flex; align-items: center; justify-content: center; font-family: var(--display); font-weight: 700; font-size: 25px; color: #fff; text-shadow: 0 2px 0 rgba(80, 30, 80, 0.45); }
 .bigcard .stat.atk { left: -12px; border-radius: 50%; background: radial-gradient(circle at 35% 30%, #fff1b8, var(--atk) 60%, #f0a020); box-shadow: 0 0 0 4px #fff; }
 .bigcard .stat.hp { right: -12px; padding-bottom: 5px; background: radial-gradient(circle at 35% 30%, #ffc4da, var(--hp) 60%, #e23a76);
@@ -1490,3 +1491,23 @@ svg.aim-arrow.locked .aim-ring { opacity: 0.9; animation: aim-ring 0.9s ease-in-
 .card.small .kws span { width: 24px; height: 24px; font-size: 14px; }
 #stage.portrait .card.large .kws span { width: 42px; height: 42px; font-size: 25px; }
 #stage.portrait .card.small .kws span { width: 32px; height: 32px; font-size: 18px; }
+
+/* a hero power going off: a ring of light bursts from the portrait, and its label is bigger and gold */
+.hero-burst { position: absolute; z-index: 24; width: 40px; height: 40px; margin: -20px 0 0 -20px; border-radius: 50%; pointer-events: none;
+  border: 6px solid #ffe38a; box-shadow: 0 0 30px 10px rgba(255, 220, 120, 0.8), inset 0 0 20px rgba(255, 240, 180, 0.9);
+  animation: hero-burst 0.85s ease-out forwards; }
+@keyframes hero-burst { 0% { transform: scale(0.6); opacity: 1; } 100% { transform: scale(6); opacity: 0; border-width: 1px; } }
+.fx-label.hero { font-size: 19px; padding: 8px 20px 9px; background: linear-gradient(#5a3d10, #2d1f0a); border-color: #ffd65a; box-shadow: var(--shadow), 0 0 34px rgba(255, 210, 90, 0.8); }
+.fx-label.hero b { color: #ffe38a; }
+.my-hero.fx-src .hero-portrait { animation: fx-hero-big 1.2s ease-out; }
+@keyframes fx-hero-big {
+  15% { transform: scale(1.18); filter: brightness(1.5); box-shadow: 0 0 0 5px var(--slate), 0 0 0 10px #ffe38a, 0 0 60px 18px rgba(255, 220, 120, 0.95); }
+  35% { transform: scale(1.06); filter: brightness(1.1); }
+  55% { transform: scale(1.14); filter: brightness(1.35); box-shadow: 0 0 0 5px var(--slate), 0 0 0 10px #ffe38a, 0 0 50px 14px rgba(255, 220, 120, 0.85); }
+  100% { transform: none; filter: none; }
+}
+/* a slot with a unit in it: its bonus sits in the corners, under the unit's Attack and Health orbs */
+.slot-plate .bonus.split { display: flex; justify-content: space-between; padding: 0 2px; bottom: -14px; font-weight: 800; font-size: 16px; z-index: 4; pointer-events: none; }
+.slot-plate .bonus.split span:empty { visibility: hidden; }
+.slot-plate .bonus.split span { min-width: 30px; padding: 1px 7px; border-radius: 999px; text-align: center; background: var(--slate, #2a2633); border: 2px solid var(--pink); color: #fff; }
+.slot-plate .bonus.split.neg span { border-color: var(--danger); }

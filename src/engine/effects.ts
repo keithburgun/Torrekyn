@@ -319,11 +319,10 @@ export const EFFECTS: Record<string, Effect> = {
     },
   },
   commitment: {
+    // +20 Health to the left-most slot for each Azure unit you have (this one included)
     battlecry: (c) => {
-      const t = others(c.board, c.self)[0];
-      if (!t) return;
-      buff(t, t.atk * c.m, t.hp * c.m);
-      if (!c.combat) (t as Unit).mem.locked = 1;
+      const n = c.board.filter((b) => isTribe(b, 'azure')).length;
+      if (n) slotBuff(c, 0, 0, 20 * n * c.m);
     },
   },
 
@@ -613,9 +612,9 @@ export const EFFECTS: Record<string, Effect> = {
     },
   },
   chaos: {
-    // once, plus once more for every Battlecry triggered this turn
+    // once, plus once more for every Battlecry unit played this turn
     endTurn: (c) => {
-      const times = 1 + c.p.battlecriesThisTurn;
+      const times = 1 + (c.p.battlecryUnitsThisTurn ?? 0);
       buff(c.board[0], 3 * c.m * times, 3 * c.m * times);
     },
   },

@@ -137,7 +137,7 @@ export function bigCardHtml(u: { cardId: string; golden: boolean; atk: number; h
   <div class="tier">Tier ${d.tier}</div>
   <div class="name">${u.golden ? 'Golden ' : ''}${esc(d.name)}</div>
   <div class="tribe"><span>${esc(TRIBE_NAMES[d.tribe] ?? d.tribe)}${d.token ? ' · Token' : ''}</span></div>
-  <div class="text"><div>${text ? formatText(text) : kwExtra.length ? '' : '<i>No ability.</i>'}${kwExtra.length ? `${text ? '<br>' : ''}<i>Also has ${kwExtra.join(', ')}.</i>` : ''}</div></div>
+  <div class="text"><div>${text ? formatText(text) : kwExtra.length ? '' : '<i>No ability.</i>'}${kwExtra.length ? `${text ? '<br>' : ''}<i class="kw-extra">${kwExtra.join(', ')}</i>` : ''}</div></div>
   <div class="stat atk">${u.atk}</div>
   <div class="stat hp">${u.hp}</div>
 </div>`;
@@ -174,7 +174,6 @@ export function gemText(p: Player, cardId: string, golden: boolean, text: string
 
 /** an improved Gem shows what it gives now */
 function gemNote(p: Player, u: Unit): string | undefined {
-  if ((u.cardId === 'silver_banner' || u.cardId === 'gold_banner') && p.bannerBonus) return `+${(3 + p.bannerBonus) * (u.golden ? 2 : 1)} ${u.cardId === 'silver_banner' ? 'Atk' : 'HP'}`;
   if (!GEMS.includes(u.cardId)) return undefined;
   const l = gemLevel(p, u.cardId);
   if (!l) return undefined;

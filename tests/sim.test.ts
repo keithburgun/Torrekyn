@@ -53,7 +53,7 @@ describe('Torrekin simulation', () => {
     const g = newGame(42);
     selectHero(g, human(g).heroOffer![1]);
     expect(g.players.length).toBe(6);
-    expect(g.players.every((p) => p.health === heroHealth(p.hero) && p.health >= 30 && p.health <= 60)).toBe(true);
+    expect(g.players.every((p) => p.health === heroHealth(p.hero) && p.health >= 15 && p.health <= 30)).toBe(true);
     expect(alivePlayers(g).length).toBe(6);
   });
 });
