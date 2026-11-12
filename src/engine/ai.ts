@@ -8,8 +8,8 @@
  */
 import { CONFIG, def, effStats, isTribe, rand, shuffle, tribeOf } from './core';
 import { Combat } from './combat';
-import { EFFECTS } from './effects';
-import { buy, play, reroll, sell, upgrade, chooseDiscover, validTargets, move, toggleFreeze, handLocked } from './game';
+import { EFFECTS, GEMS, scoutTier } from './effects';
+import { buy, play, reroll, sell, upgrade, chooseDiscover, validTargets, move, toggleFreeze, handLocked, maxGoldFor } from './game';
 import { buyCost, canUseHeroPower, pickTrinket, powerCost, powersOf, trinketDef, useHeroPower } from './heroes';
 import type { BotProfile, Discover, GameState, Player, Unit, Tribe } from './types';
 import cardValues from '../data/cardValues.json';
@@ -18,12 +18,12 @@ import cardValues from '../data/cardValues.json';
 const ABILITY = cardValues as unknown as Record<string, [number, number]>;
 
 /** every feature switch the bot knows */
-export const FEATURES = ['level', 'triples', 'tribe', 'discover', 'hero', 'freeze', 'value', 'econ', 'arrange', 'reroll', 'simbuy', 'spend', 'powerFirst'] as const;
+export const FEATURES = ['level', 'triples', 'tribe', 'discover', 'hero', 'freeze', 'value', 'econ', 'arrange', 'reroll', 'simbuy', 'spend', 'powerFirst', 'growth', 'hold', 'smartsell', 'place', 'hand'] as const;
 export type Feature = (typeof FEATURES)[number];
 
 export const BASELINE: BotProfile = { noise: 0, blunder: 0, f: Object.fromEntries(FEATURES.map((k) => [k, false])) };
 /** features the Expert uses (the others were measured and didn't help: see DESIGN_NOTES "Bots") */
-const EXPERT_OFF: Feature[] = ['level', 'simbuy', 'powerFirst'];
+const EXPERT_OFF: Feature[] = ['simbuy', 'powerFirst'];
 export const EXPERT: BotProfile = { noise: 0, blunder: 0, f: Object.fromEntries(FEATURES.map((k) => [k, !EXPERT_OFF.includes(k)])) };
 
 /** Hero Powers ranked by how well Expert bots did with them (800-game balance run), best first; for Abragail's picks */
@@ -32,7 +32,7 @@ const POWER_RANK = ['may_danaris', 'trevor_l', 'clover', 'andromeda_robin', 'ven
 const prof = (p: Player): BotProfile => p.bot ?? EXPERT;
 const on = (p: Player, k: Feature) => prof(p).f?.[k] ?? EXPERT.f![k] ?? false;
 /** tuning numbers, with the Expert's values as defaults */
-export const KNOBS: Record<string, number> = { valueK: 2.4, tierW: 3.5, atkW: 0.9, hpW: 0.7, lvl3: 5, lvl4: 8, lvl5: 10, cheap: 1, lowHp: 0, spare: 0, econK: 1.6, simOpps: 3, simN: 3, simShuffles: 2, rerollGold: 1, rerollBar: 1.3, simBuyK: 40, simBuyTop: 3, trip2: 60, trip1: 10, tribeW: 3, tribeTierW: 1, lazy: 0, keep: 0 };
+export const KNOBS: Record<string, number> = { valueK: 2.4, tierW: 3.5, atkW: 0.9, hpW: 0.7, lvl3: 4, lvl4: 6, lvl5: 8, cheap: 1, lowHp: 0, spare: 0, econK: 1.6, simOpps: 3, simN: 3, simShuffles: 2, rerollGold: 1, rerollBar: 1.15, simBuyK: 40, simBuyTop: 3, trip2: 60, trip1: 10, tribeW: 3, tribeTierW: 1, lazy: 0, keep: 0, growthK: 0.6, growthTurns: 5 };
 const knob = (p: Player, k: string) => prof(p).x?.[k] ?? EXPERT.x?.[k] ?? KNOBS[k];
 /** evaluation noise for this bot (uniform, symmetric) */
 const jitter = (g: GameState, p: Player, scale = 10) => ((prof(p).noise ?? 0) ? (rand(g) * 2 - 1) * (prof(p).noise ?? 0) * scale : 0);
@@ -44,11 +44,34 @@ const jitter = (g: GameState, p: Player, scale = 10) => ((prof(p).noise ?? 0) ? 
 const ECON: Record<string, number> = {
   memory: 4, storyteller: 4, command: 5, remember: 10, librarian: 10, restore: 12, farmer: 3, honeysuckle_brambor: 5,
   computer: 8, robot_boy: 10, shopkeep: 4, intern: 3, purveyor: 10, miner: 6, pickaxe: 6, scout: 4, grief: 6,
-  omni_gem: 30, exploit: 8, golden_light: 10, potato_lord: 10, jeweler: 3,
+  omni_gem: 30, exploit: 8, golden_light: 10, potato_lord: 10, jeweler: 3, distant_land: 8, larva: 12, adder: 6, invisible_hand: 0,
 };
 
+/**
+ * Units that grow every turn (or every battle): roughly how many stats [Attack, Health] they add per turn, for the
+ * whole army. Battles can't see this (cardValues measures one turn), so it's set by hand. Golden doubles it.
+ */
+const GROWTH: Record<string, [number, number]> = {
+  architect: [2, 2], owl: [2, 0], the_mayor: [0, 20], chaos: [4, 4], aerial_drone: [3, 6], lake: [0, 1], andromeda_robin: [0, 9],
+  patchwork: [1, 2], shadow_place: [4, 4], cursed_vines: [3, 3], warlock: [0, 4], funeral: [0, 2], vampire: [0, 2], locas: [2, 1],
+  ocean_sky: [2, 2], intern: [0, 0], builder: [0, 4],
+};
+
+/** stats a growing unit adds over the turns it will still play, in unit-score points */
+function growthScore(g: GameState, p: Player, u: Unit): number {
+  let gr = GROWTH[u.cardId];
+  if (u.cardId === 'bill_milton') gr = [maxGoldFor(g, p), 0];
+  if (!gr) return 0;
+  const m = u.golden ? 2 : 1;
+  const turns = Math.max(1, Math.min(knob(p, 'growthTurns'), 15 - g.round));
+  return (gr[0] * knob(p, 'atkW') + gr[1] * knob(p, 'hpW')) * m * turns * knob(p, 'growthK');
+}
+
+/** the game the bot is currently thinking about (so unit scores can look at the round) */
+let G: GameState | undefined;
+
 /** Rough value of a unit for a bot. */
-export function unitScore(p: Player, u: Unit, zone: 'board' | 'hand' | 'shop' = 'hand'): number {
+export function unitScore(p: Player, u: Unit, zone: 'board' | 'hand' | 'shop' = 'hand', g?: GameState): number {
   const st = effStats(p, u, zone);
   const d = def(u.cardId);
   let s = st.atk * knob(p, 'atkW') + st.hp * knob(p, 'hpW') + d.tier * knob(p, 'tierW');
@@ -61,6 +84,10 @@ export function unitScore(p: Player, u: Unit, zone: 'board' | 'hand' | 'shop' = 
     if (zone === 'board' && ['command', 'remember', 'librarian'].includes(u.cardId)) e = 0;
     s += e;
   }
+  const gg = g ?? G;
+  if (gg && on(p, 'growth')) s += growthScore(gg, p, u);
+  // Abandon eats the unit on its left every turn: worth less than its stats suggest
+  if (on(p, 'growth') && u.cardId === 'abandon') s -= 10;
   const fav = p.favoriteTribe;
   if (fav && (d.tribe === fav || (on(p, 'tribe') && isTribe(u, fav)))) s += on(p, 'tribe') ? knob(p, 'tribeW') + knob(p, 'tribeTierW') * d.tier : 6 + 2 * d.tier;
   for (const k of st.kw) s += k === 'divineShield' ? st.atk * 0.4 + 4 : k === 'reborn' ? 4 : k === 'venomous' ? 8 : 2;
@@ -122,6 +149,7 @@ function wantsLevel(g: GameState, p: Player): boolean {
 function bestTarget(g: GameState, p: Player, u: Unit): number | undefined {
   const cands = validTargets(p, u.cardId).filter((b) => b !== u);
   if (!cands.length) return undefined;
+  const best = (xs: Unit[], f: (b: Unit) => number) => xs.reduce((a, b) => (f(b) > f(a) ? b : a));
   if (u.cardId === 'exploit') {
     const worst = cands.reduce((a, b) => (unitScore(p, a) < unitScore(p, b) ? a : b));
     return unitScore(p, worst) < 25 ? worst.uid : undefined;
@@ -131,31 +159,104 @@ function bestTarget(g: GameState, p: Player, u: Unit): number | undefined {
     const pool = noTaunt.length ? noTaunt : cands;
     return pool.reduce((a, b) => (effStats(p, a, 'board').hp > effStats(p, b, 'board').hp ? a : b)).uid;
   }
+  if (on(p, 'place')) {
+    const kw = (b: Unit) => effStats(p, b, 'board').kw;
+    // Green Gem: Windfury is worth most on the hardest hitter that doesn't have it yet
+    if (u.cardId === 'green_gem') {
+      const pool = cands.filter((b) => !kw(b).includes('windfury'));
+      return best(pool.length ? pool : cands, (b) => effStats(p, b, 'board').atk).uid;
+    }
+    // Purple Gem: Reborn on the best unit without it
+    if (u.cardId === 'purple_gem') {
+      const pool = cands.filter((b) => !kw(b).includes('reborn'));
+      return best(pool.length ? pool : cands, (b) => unitScore(p, b, 'board')).uid;
+    }
+  }
   return cands.reduce((a, b) => (effStats(p, a, 'board').hp > effStats(p, b, 'board').hp ? a : b)).uid;
 }
 
 const SELL_NOW = ['omni_gem', 'exploit'];
 
+/** cards the bot keeps in hand for now: Larva hatches there, Green Ninja joins from there, Scout grows before it's sold */
+function holdInHand(p: Player, u: Unit): boolean {
+  if (!on(p, 'hold') || p.hand.length >= CONFIG.handSize - 1) return false;
+  if (u.cardId === 'larva' || u.cardId === 'orange_ninja') return true;
+  if (u.cardId === 'scout') return scoutTier(u) < Math.min(CONFIG.maxTier, p.tier + 1);
+  return false;
+}
+
+/** sell this card the moment it's on the board? */
+function sellNow(p: Player, u: Unit): boolean {
+  if (SELL_NOW.includes(u.cardId)) return true;
+  if (on(p, 'hold') && u.cardId === 'scout') return true;
+  // Message: +1/+2 to every slot is worth more than its body once there's an army to stand in them
+  if (on(p, 'smartsell') && u.cardId === 'message' && p.board.length >= 4) return true;
+  return false;
+}
+
+/** cards that are all Battlecry: once it has happened, the body is worth a Gold more than a slot (late on) */
+const isSpell = (id: string) => GEMS.includes(id) || id === 'sword' || id === 'shield_neutral' || id === 'pickaxe'; // (a function: GEMS isn't loaded yet when this module starts)
+
+/** play one card from hand and deal with what follows (Discovers, cards sold on arrival, spent Gem bodies) */
+function playOne(g: GameState, p: Player, idx: number) {
+  const u = p.hand[idx];
+  let pos = u.cardId === 'mod' ? 0 : p.board.length;
+  // Banners: between two units, so both get the bonus
+  if (on(p, 'place') && (u.cardId === 'silver_banner' || u.cardId === 'gold_banner') && p.board.length >= 2) pos = 1;
+  const r = play(g, p, idx, pos, EFFECTS[u.cardId]?.target ? bestTarget(g, p, u) : undefined);
+  if (!r.ok) return false;
+  while (p.discovers.length) chooseDiscover(g, p, aiChooseDiscover(g, p, p.discovers[0]));
+  // cards that pay off when sold (Omni-Gem, Exploit, a grown Scout, Message) are sold right away; so are spent
+  // Gem bodies once the army is big enough that the slot matters more
+  const spent = on(p, 'hand') && isSpell(u.cardId) && p.board.length >= 5 && !u.golden;
+  const sold = p.board.findIndex((b) => b.uid === u.uid && (sellNow(p, b) || spent));
+  if (sold >= 0) {
+    sell(g, p, sold);
+    while (p.discovers.length) chooseDiscover(g, p, aiChooseDiscover(g, p, p.discovers[0]));
+  }
+  return true;
+}
+
 function playHand(g: GameState, p: Player) {
-  for (let guard = 0; guard < 20; guard++) {
-    const idx = p.hand.findIndex((u) => !handLocked(p, u));
-    if (idx < 0) return;
+  for (let guard = 0; guard < 25; guard++) {
+    const ok = p.hand.map((u, i) => [u, i] as const).filter(([u]) => !handLocked(p, u) && !holdInHand(p, u));
+    if (!ok.length) return;
+    if (!on(p, 'hand')) {
+      // the old way: only ever looks at the first playable card
+      const idx = ok[0][1];
+      if (p.board.length >= CONFIG.boardSize) {
+        const worst = worstBoardIndex(p);
+        if (worst < 0 || (unitScore(p, p.board[worst], 'board') >= unitScore(p, p.hand[idx]) && !sellNow(p, p.hand[idx]))) return;
+        sell(g, p, worst);
+      }
+      if (!playOne(g, p, idx)) return;
+      continue;
+    }
+    // best card first (sell-on-arrival cards count as a sure gain)
+    const val = (u: Unit) => unitScore(p, u) + (sellNow(p, u) ? 1000 : 0);
+    const [bu, bi] = ok.reduce((a, b) => (val(b[0]) > val(a[0]) ? b : a));
     if (p.board.length >= CONFIG.boardSize) {
       const worst = worstBoardIndex(p);
-      if (worst < 0 || unitScore(p, p.board[worst], 'board') >= unitScore(p, p.hand[idx])) return;
+      if (worst < 0 || val(bu) <= unitScore(p, p.board[worst], 'board')) {
+        // nothing in hand beats the army; but a Gem played into a freed slot and sold again costs nothing extra,
+        // so only when a swap was going to happen anyway (handled below)
+        return;
+      }
       sell(g, p, worst);
+      // the slot is free for a moment: run every spare Gem through it first, then the new unit takes it
+      for (let k = 0; k < 10; k++) {
+        const gi = p.hand.findIndex((u) => isSpell(u.cardId) && !u.golden && !handLocked(p, u) && u !== bu);
+        if (gi < 0 || p.board.length >= CONFIG.boardSize) break;
+        const before = p.board.length;
+        if (!playOne(g, p, gi)) break;
+        if (p.board.length > before) break; // it stayed (small army): the slot is used
+      }
+      if (p.board.length >= CONFIG.boardSize) continue;
+      const ni = p.hand.indexOf(bu);
+      if (ni < 0 || !playOne(g, p, ni)) return;
+      continue;
     }
-    const u = p.hand[idx];
-    const pos = u.cardId === 'mod' ? 0 : p.board.length;
-    const r = play(g, p, idx, pos, EFFECTS[u.cardId]?.target ? bestTarget(g, p, u) : undefined);
-    if (!r.ok) return;
-    while (p.discovers.length) chooseDiscover(g, p, aiChooseDiscover(g, p, p.discovers[0]));
-    // cards that pay off when sold (Omni-Gem, Exploit) are sold right away
-    const sold = p.board.findIndex((b) => b.uid === u.uid && SELL_NOW.includes(b.cardId));
-    if (sold >= 0) {
-      sell(g, p, sold);
-      while (p.discovers.length) chooseDiscover(g, p, aiChooseDiscover(g, p, p.discovers[0]));
-    }
+    if (!playOne(g, p, bi)) return;
   }
 }
 
@@ -233,6 +334,20 @@ function arrangeBySim(g: GameState, p: Player): boolean {
   return true;
 }
 
+/** Abandon eats the unit on its left at End of Turn: feed it the weakest unit when the army is full, otherwise nothing */
+function placeAbandon(p: Player) {
+  const ai = p.board.findIndex((u) => u.cardId === 'abandon' && !u.mem.locked);
+  if (ai < 0 || p.board.some((u) => u.mem.locked)) return;
+  const ab = p.board[ai];
+  let to = 0;
+  if (p.board.length >= CONFIG.boardSize) {
+    const rest = p.board.filter((u) => u !== ab);
+    const worst = rest.reduce((a, b) => (unitScore(p, b, 'board') < unitScore(p, a, 'board') ? b : a));
+    to = rest.indexOf(worst) + 1;
+  }
+  move(p, ai, to);
+}
+
 function arrange(p: Player) {
   // Taunts and Divine Shields toward the left, damage dealers that like to attack early, big stats in the middle
   const order = [...p.board].filter((u) => !u.mem.locked);
@@ -246,6 +361,13 @@ function arrange(p: Player) {
     return r;
   };
   order.sort((a, b) => rank(a) - rank(b));
+  // Mod gives its stats to the unit on its right: put it just left of the hardest hitter (not at the far right)
+  const mod = order.findIndex((u) => u.cardId === 'mod');
+  if (on(p, 'place') && mod >= 0 && order.length > 1) {
+    const [m] = order.splice(mod, 1);
+    const big = order.reduce((bi, u, i) => (effStats(p, u, 'hand').atk > effStats(p, order[bi], 'hand').atk ? i : bi), 0);
+    order.splice(big, 0, m);
+  }
   for (let i = 0; i < order.length; i++) {
     const from = p.board.indexOf(order[i]);
     if (from !== i && !p.board[i]?.mem.locked) move(p, from, i);
@@ -262,6 +384,7 @@ function shopScore(g: GameState, p: Player, u: Unit): number {
 }
 
 export function aiTakeTurn(g: GameState, p: Player) {
+  G = g;
   while (p.discovers.length) chooseDiscover(g, p, aiChooseDiscover(g, p, p.discovers[0]));
   if (p.trinketOffer) {
     const affordable = p.trinketOffer.filter((t) => trinketDef(t).cost <= p.gold);
@@ -269,6 +392,10 @@ export function aiTakeTurn(g: GameState, p: Player) {
     pickTrinket(g, p, best ?? null);
   }
   const blunder = rand(g) < (prof(p).blunder ?? 0);
+  // Treasure sells for 5 after a lost battle
+  if (on(p, 'smartsell') && p.lostLast) {
+    for (let i = p.board.length - 1; i >= 0; i--) if (p.board[i].cardId === 'treasure' && !p.board[i].mem.locked) sell(g, p, i);
+  }
   if (wantsLevel(g, p) && !(blunder && rand(g) < 0.5)) upgrade(g, p);
   // Hero Powers that pay off over time go first, as long as a buy is still affordable afterwards
   if (on(p, 'powerFirst') && !blunder) {
@@ -340,6 +467,7 @@ export function aiTakeTurn(g: GameState, p: Player) {
   }
   playHand(g, p);
   if (!blunder && !(on(p, 'arrange') && arrangeBySim(g, p))) arrange(p);
+  if (on(p, 'place')) placeAbandon(p);
   // keep a shop worth coming back to
   if (on(p, 'freeze') && !p.frozen && p.shop.some((u) => {
     const copies = [...p.board, ...p.hand].filter((x) => x.cardId === u.cardId && !x.golden).length;
@@ -364,6 +492,7 @@ function useHeroPowers(g: GameState, p: Player) {
 }
 
 export function aiChooseDiscover(g: GameState, p: Player, d: Discover): number {
+  G = g;
   if (d.powers) {
     if (!on(p, 'hero')) return 0;
     const r = (id: string) => { const i = POWER_RANK.indexOf(id); return i < 0 ? 99 : i; };

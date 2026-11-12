@@ -122,7 +122,7 @@ describe('hero powers', () => {
     p.lastOpponentBoard = ids.map((id) => unit(g, id));
     const gold = p.gold;
     expect(useHeroPower(g, p)).toBe(true);
-    expect(p.gold).toBe(gold - 3);
+    expect(p.gold).toBe(gold - 2);
     for (const id of p.discovers[0].options as string[]) expect(ids).toContain(id);
   });
 

@@ -40,7 +40,7 @@ describe('rework', () => {
     expect(kws.length).toBeGreaterThanOrEqual(1);
   });
 
-  it('Left Twinbot: Rally gives all your Twinbots +1/+1 for the rest of the game', () => {
+  it('Left Twinbot: Rally gives all your Twinbots +1 Attack for the rest of the game', () => {
     const { g, p, o } = setup();
     const lt = u(g, 'left_twinbot', 2, 50);
     const c = fight(g, p, o, [lt, u(g, 'right_twinbot', 2, 50)], [u(g, 'skel', 0, 1)]);
@@ -50,6 +50,7 @@ describe('rework', () => {
     p.board = [fresh];
     const c2 = fight(g, p, o, p.board, [u(g, 'skel', 0, 1)]);
     expect(c2.sides[0].units[0].atk).toBe(def('right_twinbot').atk + p.twinBonus!);
+    expect(c2.sides[0].units[0].hp).toBe(def('right_twinbot').hp); // Attack only, as the card says
   });
 
   it('Intern: Avenge (5) makes it sell for 1 more gold, for good', () => {

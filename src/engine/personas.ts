@@ -14,7 +14,8 @@ import eloData from '../data/personaElo.json';
  */
 const UNLOCK: Record<Feature, number> = {
   triples: 0.2, hero: 0.25, discover: 0.3, tribe: 0.35, value: 0.4, freeze: 0.5, econ: 0.55, spend: 0.6, reroll: 0.65, arrange: 0.8,
-  level: 2, simbuy: 2, powerFirst: 2, // never (measured not to help)
+  growth: 0.45, hold: 0.5, smartsell: 0.6, place: 0.7, hand: 0.3,
+  level: 0, simbuy: 2, powerFirst: 2, // level: everyone uses the leveling curve now; simbuy/powerFirst never (measured not to help)
 };
 
 export function profileForSkill(skill: number): BotProfile {
@@ -25,7 +26,7 @@ export function profileForSkill(skill: number): BotProfile {
     // beginners level late and never on a whim
     f.level = true;
     const late = Math.round((0.45 - s) * 11);
-    x.lvl3 = 5 + late; x.lvl4 = 8 + late; x.lvl5 = 10 + late; x.cheap = 0;
+    x.lvl3 = 4 + late; x.lvl4 = 6 + late; x.lvl5 = 8 + late; x.cheap = 0;
   }
   // beginners also wander off with gold unspent and hang on to weak units
   if (s < 0.5) { x.lazy = +((0.5 - s) * 1.2).toFixed(2); x.keep = +((0.5 - s) * 40).toFixed(1); }

@@ -82,11 +82,11 @@ function statWorth(tier: number): number {
 describe.skipIf(!process.env.CARDVALUES)('card values', () => {
   it('measures every card', () => {
     const worth: Record<number, number> = {};
-    for (let t = 1; t <= 5; t++) worth[t] = statWorth(t);
+    for (let t = 1; t <= 6; t++) worth[t] = statWorth(t);
     console.log('win-rate per +1/+1 by tier', worth);
     const out: Record<string, [number, number]> = {};
     for (const c of CARDS) {
-      if (c.token && c.id !== 'pumpkin') continue;
+      if (c.token && c.id !== 'pumpkin' && c.id !== 'purple_gem') continue;
       const v = [false, true].map((golden) => {
         let d = 0;
         for (let s = 0; s < TRIALS; s++) d += trial(c, golden, false, 5000 + s) - trial(c, golden, true, 5000 + s);

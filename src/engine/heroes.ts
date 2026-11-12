@@ -96,7 +96,7 @@ export const HEROES: HeroDef[] = [
     onSummon: (c, s, u) => { u.atk += 1; u.hp += 2; },
   },
   {
-    id: 'may_danaris', name: 'May Danaris', title: 'Hacker from the neon district', power: 'Root Access', avatar: 5, health: 32, cost: 3,
+    id: 'may_danaris', name: 'May Danaris', title: 'Hacker from the neon district', power: 'Root Access', avatar: 5, health: 32, cost: 2,
     text: "Discover a unit from your last opponent's army.",
     locked: (g, p) => (p.lastOpponentBoard.length ? null : 'No opponent fought yet'),
     use: (g, p) => {

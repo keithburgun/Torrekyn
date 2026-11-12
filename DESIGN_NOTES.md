@@ -112,7 +112,20 @@ One bot brain with a profile: feature switches, evaluation noise, a blunder chan
 | arrange | Positions the army by simulated battles against rivals' last-seen armies (7 candidate orders) | +21 |
 | discover, freeze, tribe, hero, spend | Smarter Discovers, freezing triple pieces, re-evaluating its tribe, sensible Hero Power use, rerolling leftover gold | +5 to +12 each |
 
-Tried and dropped (no gain): faster or slower leveling curves (the 5/8/10 curve won), simulation-tested buying (−10 and 5× slower), using Hero Powers before shopping, deeper positioning search.
+**v0.7.0 additions** (measured against the previous Expert, 600 to 1,000 games each):
+
+| Feature | What it does | Measured |
+|---|---|---|
+| hand | With a full army, plays the *best* card in hand (it used to look only at the first one and give up, so strong cards sat in hand all game); spare Gems go through the freed slot and spent Gem bodies are sold once the army is 5+ | +74 |
+| growth | Values units that grow every turn (Architect, The Mayor, Bill Milton, Aerial Drone…) for the turns they still have; Abandon is valued lower | +20 |
+| place | Banners between two units, Green Gem on the hardest hitter, Purple Gem on the best unit without Reborn, Mod left of the hardest hitter, Abandon fed only the weakest unit of a full army | +17 |
+| hold, smartsell | Keeps Larva and Green Ninja in hand, holds Scout until it Discovers a Tier above, sells Treasure after a loss and Message once the army is 4+ | +3 to +4 |
+| level (retuned) | Faster curve: Tier 3 on turn 4, Tier 4 on turn 6, Tier 5 on turn 8 (2 + 2 per unit damage rewards tempo) | +11 to +24 |
+| reroll (retuned) | Rerolls for anything below 1.15× the army average (was 1.3×) | +19 |
+
+Card values (`cardValues.json`) were re-measured with Tier 6 included. **Result: the new Expert finishes above the previous one 64% of the time (+99 Elo) and wins 26% of mixed lobbies against its 7%.**
+
+Tried and dropped (no gain): slower leveling curves, simulation-tested buying (−10 and 5× slower), using Hero Powers before shopping, deeper positioning search.
 
 **Result: the Expert bot finishes above the original bot 77% of the time (+210 Elo) and wins 27% of mixed lobbies against its 6%.**
 

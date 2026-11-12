@@ -2,7 +2,7 @@ import artManifest from '../data/art.json';
 import { store } from '../save/store';
 import artV2 from '../data/artV2.json';
 import { CARDS, def, effStats, TRIBE_NAMES } from '../engine/core';
-import { EFFECTS, GEMS, gemLevel } from '../engine/effects';
+import { EFFECTS, GEMS, gemLevel, scoutTier } from '../engine/effects';
 import type { Keyword, Player, Unit, CombatFrameUnit } from '../engine/types';
 import { unitCounter } from '../engine/fx';
 
@@ -129,6 +129,7 @@ export function bigCardHtml(u: { cardId: string; golden: boolean; atk: number; h
   // the Pumpkin lists the Deathrattles it has collected
   const gained = Object.keys(u.mem ?? {}).filter((k) => k.startsWith('dr_')).map((k) => def(k.slice(3)).name);
   if (gained.length) text += ` Deathrattles: ${gained.join(', ')}.`;
+  if (u.cardId === 'scout' && (u.mem?.age ?? 0) > 0) text = text.replace(/Tier 1 unit/, `Tier ${scoutTier(u)} unit`);
   if (u.cardId === 'intern') text += ` (Sells for ${1 + (u.mem?.sellBonus ?? 0)} Gold)`;
   const kwExtra = u.kw.filter((k) => !d.keywords.includes(k)).map((k) => KW_ICON[k][1]);
   return `<div class="bigcard t-${d.tribe} ${u.golden ? 'golden' : ''} ${extra}">

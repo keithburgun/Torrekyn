@@ -2,6 +2,9 @@
 
 Newest first. The version shows on the title screen.
 
+## 0.7.0 — 2026-11-12
+- Smarter bots (+99 Elo vs the old Expert): play the best card in hand when the army is full, value units that grow, better Gem/Banner/Mod/Abandon placement, hold Larva/Green Ninja/Scout, sell Treasure and Message well, faster leveling, pickier rerolls; card values re-measured with Tier 6. May's Root Access costs 2. Fixes: Left Twinbot's Rally gave Health too (Attack only now); Scout Discovered a Tier too low (now shows its current Tier). New ability test checks every card does something.
+
 ## 0.6.0 — 2026-11-12
 - Damage dealt is now 2 + 2 for each surviving unit (the base 2 shows as stars on the winner's hero).
 - Shield (Neutral) no longer destroys itself.

@@ -748,8 +748,8 @@ export const EFFECTS: Record<string, Effect> = {
   },
   scout: {
     onSell: (c) => {
-      const tier = Math.min(CONFIG.maxTier, 1 + ((c.self.mem.age ?? 1) - 1));
-      discover(c, (id) => def(id).tier === Math.max(1, tier), `Scout: Discover a Tier ${Math.max(1, tier)} unit`, c.m);
+      const tier = scoutTier(c.self);
+      discover(c, (id) => def(id).tier === tier, `Scout: Discover a Tier ${tier} unit`, c.m);
     },
   },
   silver_banner: {
@@ -874,6 +874,11 @@ export const EFFECTS: Record<string, Effect> = {
     },
   },
 };
+
+/** Scout: Tier 1 the turn you get it, one Tier higher each turn after (up to the Tavern's top Tier) */
+export function scoutTier(u: { mem?: Record<string, number> }): number {
+  return Math.min(CONFIG.maxTier, 1 + (u.mem?.age ?? 0));
+}
 
 export function hasBattlecry(id: string) {
   return !!EFFECTS[id]?.battlecry;
