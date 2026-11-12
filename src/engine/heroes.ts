@@ -255,8 +255,13 @@ export const TRINKETS: TrinketDef[] = [
   { id: 'spare_parts', name: 'Spare Parts', cost: 3, text: 'Every time you play a unit, give a random unit in your hand +2/+2.', onPlay: (g, p) => { const u = pick(g, p.hand); if (u) { u.atk += 2; u.hp += 2; } } },
   { id: 'war_drum', name: 'War Drum', cost: 3, text: 'Start of Combat: Give your units +2 Attack.', soc: (c, s) => { for (const u of s.units) u.atk += 2; } },
   { id: 'lucky_coin', name: 'Lucky Coin', cost: 0, text: 'Gain 8 Gold.', onGain: (g, p) => { p.gold += 8; } },
-  { id: 'summit_key', name: 'Summit Key', cost: 2, text: 'Discover a Tier 6 unit.',
-    onGain: (g, p) => queueDiscover(g, p, discoverOptions(g, (id) => def(id).tier === 6), 'Summit Key: Discover a Tier 6 unit') },
+  { id: 'summit_key', name: 'Summit Key', cost: 2, text: 'In two turns, Discover a Tier 6 unit.',
+    onGain: (g, p) => { p.heroMem.summitAt = g.round + 2; },
+    startTurn: (g, p) => {
+      if (p.heroMem.summitAt !== g.round) return;
+      delete p.heroMem.summitAt;
+      queueDiscover(g, p, discoverOptions(g, (id) => def(id).tier === 6), 'Summit Key: Discover a Tier 6 unit');
+    } },
   // greater (offered at the start of turn 9)
   { id: 'bannerlords_standard', name: "Bannerlord's Standard", cost: 3, greater: true, text: 'Give all your slots +3/+3.', onGain: (g, p) => { for (const s of p.slots) { s.atk += 3; s.hp += 3; } } },
   { id: 'aegis_charm', name: 'Aegis Charm', cost: 4, greater: true, text: 'Start of Combat: Give your 2 left-most units Divine Shield.', soc: (c, s) => { for (const u of s.units.slice(0, 2)) addKw(u, 'divineShield'); } },

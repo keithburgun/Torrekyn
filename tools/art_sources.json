@@ -805,12 +805,8 @@
    ]
   },
   "pickaxe": {
-   "src": "K/goldcoin rgb.png",
-   "crop": [
-    0.5,
-    0.5,
-    0.86
-   ]
+   "src": "X/cowboy.png",
+   "px": true
   },
   "scout": {
    "src": "S/Order/longbow-crystal.png",

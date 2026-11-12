@@ -1211,19 +1211,19 @@
    "tier": 1,
    "atk": 1,
    "hp": 3,
-   "text": "Battlecry: Destroy this and give your right-most unit +1/+2 and Taunt.",
-   "goldenText": "Battlecry: Destroy this and give your right-most unit +2/+4 and Taunt.",
+   "text": "Battlecry: Give your right-most unit +1/+2 and Taunt.",
+   "goldenText": "Battlecry: Give your right-most unit +2/+4 and Taunt.",
    "keywords": []
   },
   {
    "id": "pickaxe",
-   "name": "Pickaxe",
+   "name": "Gambler",
    "tribe": "neutral",
    "tier": 1,
    "atk": 2,
    "hp": 2,
-   "text": "End of Turn: Gain 1 Gold next turn.",
-   "goldenText": "End of Turn: Gain 2 Gold next turn.",
+   "text": "Battlecry: Gain 1 free Refresh.",
+   "goldenText": "Battlecry: Gain 2 free Refreshes.",
    "keywords": []
   },
   {

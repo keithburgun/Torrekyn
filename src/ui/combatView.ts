@@ -358,6 +358,7 @@ export class CombatPlayer {
 
   /** Fly glowing bolts from the sources of ability damage to their targets. */
   private async projectiles(fx: CombatFx[]) {
+    await this.gemShots(fx);
     const shots = fx.filter((e) => (e.k === 'hit' || e.k === 'kill') && (e.from !== undefined || e.fromSide !== undefined));
     if (!shots.length) return;
     sfx.zap();
@@ -388,6 +389,37 @@ export class CombatPlayer {
         sfx.hit();
         this.spot('impact', to.x, to.y, this.t(420));
       }).catch(() => p.remove()));
+    });
+    await Promise.all(anims);
+  }
+
+  /** Gems played during battle (Invisible Hand, Bulldozer...): a red gem flies from the unit that played it
+   *  (or from its hero, if that unit is gone) to each unit it buffs, then sparkles there */
+  private async gemShots(fx: CombatFx[]) {
+    const gems = fx.filter((e) => e.k === 'gem');
+    if (!gems.length) return;
+    sfx.buy();
+    const anims: Promise<unknown>[] = [];
+    gems.slice(0, 12).forEach((e, i) => {
+      const from = (e.from !== undefined ? this.center(e.from) : null) ?? this.heroCenter(e.fromSide ?? 0);
+      const to = this.center(e.to);
+      if (!from || !to) return;
+      const p = document.createElement('div');
+      p.className = 'gem-shot';
+      p.style.left = `${from.x}px`;
+      p.style.top = `${from.y}px`;
+      this.fxLayer.appendChild(p);
+      const dx = to.x - from.x;
+      const dy = to.y - from.y;
+      const a = p.animate(
+        [
+          { transform: 'translate(-50%, -50%) scale(.5) rotate(0deg)', opacity: 0.7 },
+          { transform: `translate(calc(-50% + ${dx / 2}px), calc(-50% + ${dy / 2 - 90}px)) scale(1.3) rotate(180deg)`, opacity: 1, offset: 0.5 },
+          { transform: `translate(calc(-50% + ${dx}px), calc(-50% + ${dy}px)) scale(1) rotate(360deg)`, opacity: 1 },
+        ],
+        { duration: this.t(520), delay: i * this.t(90), easing: 'ease-in-out', fill: 'forwards' },
+      );
+      anims.push(a.finished.then(() => { p.remove(); this.spot('gem-pop', to.x, to.y, this.t(500)); }).catch(() => p.remove()));
     });
     await Promise.all(anims);
   }

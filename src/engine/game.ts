@@ -477,8 +477,11 @@ export function move(p: Player, from: number, to: number): ActionResult {
 
 export function reroll(g: GameState, p: Player): ActionResult {
   if (busy(p)) return fail('Choose a card first');
-  if (p.gold < CONFIG.rerollCost) return fail('Not enough gold');
-  p.gold -= CONFIG.rerollCost;
+  if (p.freeRerolls) p.freeRerolls--; // Gambler's free Refreshes are used first
+  else {
+    if (p.gold < CONFIG.rerollCost) return fail('Not enough gold');
+    p.gold -= CONFIG.rerollCost;
+  }
   p.frozen = false;
   rollShop(g, p);
   // "when you Refresh" (Tinker)
@@ -601,10 +604,11 @@ export function endTurn(g: GameState): CombatResult[] {
   return results;
 }
 
-/** damage to the loser: 2 for each of the winner's surviving units (plus extras like Horseman's), no cap */
+/** damage to the loser: 2, plus 2 for each of the winner's surviving units (plus any extras), no cap */
+export const DAMAGE_BASE = 2;
 export const DAMAGE_PER_UNIT = 2;
 export function combatDamage(survivors: number, bonus: number) {
-  return survivors * DAMAGE_PER_UNIT + bonus;
+  return DAMAGE_BASE + survivors * DAMAGE_PER_UNIT + bonus;
 }
 
 export type { CombatResult } from './types';

@@ -2,6 +2,17 @@
 
 Newest first. The version shows on the title screen.
 
+## 0.6.0 — 2026-11-12
+- Damage dealt is now 2 + 2 for each surviving unit (the base 2 shows as stars on the winner's hero).
+- Shield (Neutral) no longer destroys itself.
+- Pickaxe is now Gambler: Battlecry: Gain 1 free Refresh (Golden 2), with new art. The Refresh button shows free Refreshes.
+- Summit Key: In two turns, Discover a Tier 6 unit.
+- Fix: Gems played by an effect (Invisible Hand, Bulldozer) skipped your left-most unit. In battle, each Gem now shows as its own step with a red gem flying to every unit it buffs.
+- Banners show their current (improved) amount on the card.
+- Buff floats: a card's stats now change as each float lands, instead of jumping to the total first.
+- The last-battles popup on the leaderboard now shows above your army.
+- Keyword badges (Reborn purple, Venomous green, Poisonous lime, Windfury blue) are chunky coloured coins in a row under the tribe banner.
+
 ## 0.5.5 — 2026-11-10
 - Fix: extra Battlecry triggers multiplied instead of adding up. Derby Pocket + Crown of Echoes now gives 3 triggers (was 4); Gem Wizard + Crown on a Red Gem gives 3 (was 4).
 

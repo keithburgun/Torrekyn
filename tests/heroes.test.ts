@@ -72,18 +72,19 @@ describe('hero powers', () => {
     expect(isTribe(p.hand[0], 'azure')).toBe(true);
   });
 
-  it('Derby Pocket: after 5 Battlecry units, Battlecries trigger twice (even one that destroys itself)', () => {
+  it('Derby Pocket: after 5 Battlecry units, Battlecries trigger twice', () => {
     const { g, p } = setup('derby_pocket');
     const dummy = unit(g, firstOf((id) => !EFFECTS[id]), 1, 1);
     p.board = [dummy];
-    // Shield destroys itself in its Battlecry: +1/+2 to the right-most unit each trigger
-    const playShield = () => { p.hand = [unit(g, 'shield_neutral')]; expect(play(g, p, 0, p.board.length).ok).toBe(true); };
+    // Shield (played on the left) gives the right-most unit +1/+2 each trigger
+    const playShield = () => { p.hand = [unit(g, 'shield_neutral')]; expect(play(g, p, 0, 0).ok).toBe(true); };
     for (let i = 0; i < 5; i++) playShield();
     expect([dummy.atk, dummy.hp]).toEqual([1 + 5, 1 + 10]);
     expect(p.heroMem.coffee).toBe(5);
-    playShield(); // the extra trigger still happens even though Shield is gone
+    playShield();
     expect([dummy.atk, dummy.hp]).toEqual([1 + 5 + 2, 1 + 10 + 4]);
-    expect(p.board).toEqual([dummy]);
+    expect(p.board.length).toBe(7); // Shield stays now
+    p.board = [dummy];
     // a normal Battlecry unit also fires twice
     const bc = firstOf((id) => !!EFFECTS[id]?.battlecry && !EFFECTS[id]?.target && id !== 'shield_neutral');
     const before = p.battlecriesGame;

@@ -321,7 +321,7 @@ export function aiTakeTurn(g: GameState, p: Player) {
         continue;
       }
     }
-    if (p.gold >= CONFIG.rerollCost + (p.gold >= 4 ? 0 : 99)) {
+    if (p.freeRerolls || p.gold >= CONFIG.rerollCost + (p.gold >= 4 ? 0 : 99)) {
       reroll(g, p);
       continue;
     }

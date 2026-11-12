@@ -7,7 +7,7 @@
  */
 import { addKw, cloneUnit, def, effStats, has, mult, ownerBonus, pick, rand, removeKw, sample, tribeOf, CONFIG } from './core';
 import { EFFECTS, hasBattlecry, battlecryTimes, type CCtx } from './effects';
-import { gainNew, combatDamage, DAMAGE_PER_UNIT, onBattlecryTriggered } from './game';
+import { gainNew, combatDamage, DAMAGE_BASE, DAMAGE_PER_UNIT, onBattlecryTriggered } from './game';
 import { heroHooks, heroSoc } from './heroes';
 import { withFx } from './fx';
 import type { Body, CombatFrame, CombatFrameUnit, CombatFx, CombatResult, GameState, Keyword, Player, Slot, Unit } from './types';
@@ -106,6 +106,12 @@ export class Combat {
       this.fx = [];
     }
     this.frames.push(frame);
+  }
+
+  /** a Gem played during battle landed on these units (see effects playGemOn) */
+  gemFx(to: number[], from: number | undefined, side: Side) {
+    const fromSide = this.sides.indexOf(side) as 0 | 1;
+    for (const id of to) this.addFx({ k: 'gem', to: id, from, fromSide });
   }
 
   private addFx(fx: CombatFx) {
@@ -495,7 +501,7 @@ export function runCombat(g: GameState, a: Player, b: Player, bIsGhost: boolean)
     const survivors = ws.units.filter((u) => u.hp > 0);
     const bonusFrom: number[] = [];
     damage = combatDamage(survivors.length, bonusFrom.length);
-    dmgParts = { tier: 0, perUnit: DAMAGE_PER_UNIT, units: survivors.map((u) => u.id), bonus: bonusFrom };
+    dmgParts = { tier: DAMAGE_BASE, perUnit: DAMAGE_PER_UNIT, units: survivors.map((u) => u.id), bonus: bonusFrom }; // 'tier' = the base 2 (stars on the winner's hero)
   }
   // both armies still standing when time runs out: both players take damage (otherwise two huge armies could
   // draw forever and the game would never end)

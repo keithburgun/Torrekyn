@@ -87,7 +87,19 @@ function playGemOn(c: Ctx, gemId: string, target: Body | undefined) {
   // Gem Wizard: Red Gems trigger twice (three times if Golden), however they're played
   let times = 1;
   if (gemId === 'red_gem') for (const b of c.board) if (b.cardId === 'gem_wizard') times = Math.max(times, b.golden ? 3 : 2);
-  for (let i = 0; i < times; i++) EFFECTS[gemId]?.battlecry?.({ ...c, self: target, m: 1, target });
+  // the Gem itself isn't on the board, so it can't be "this" (Red Gem skips "itself" when picking its 3 units)
+  const gem: Body = { cardId: gemId, golden: false, atk: 0, hp: 0, kw: [], mem: {} } as unknown as Body;
+  const source = c.combat ? (c.self as CUnit) : undefined;
+  for (let i = 0; i < times; i++) {
+    const before = c.combat ? new Map(c.board.map((u) => [u, `${u.atk}/${u.hp}/${u.kw.join()}`])) : null;
+    EFFECTS[gemId]?.battlecry?.({ ...c, self: gem, m: 1, target });
+    // in battle, show each Gem landing: a gem flies from the unit that played it to every unit it changed
+    if (c.combat && before) {
+      const changed = c.board.filter((u) => before.get(u) !== `${u.atk}/${u.hp}/${u.kw.join()}`) as CUnit[];
+      c.combat.gemFx(changed.map((u) => u.id), source?.id, c.side!);
+      c.combat.snap('trigger', { source: source?.id, note: `${source ? def(source.cardId).name + ': ' : ''}${def(gemId).name}` });
+    }
+  }
 }
 
 /** a shop-style context for a combat hook (so Gem Battlecries can run in battle) */
@@ -728,11 +740,11 @@ export const EFFECTS: Record<string, Effect> = {
       const o = others(c.board, c.self);
       const t = o[o.length - 1];
       if (t) { buff(t, c.m, 2 * c.m); addKw(t, 'taunt'); }
-      if (!c.combat) destroyUnit(c.g, c.p, c.self as Unit);
     },
   },
   pickaxe: {
-    endTurn: (c) => { c.p.goldNextTurn += c.m; },
+    // Gambler (id kept as 'pickaxe' so saves still load): Battlecry: 1 free Refresh (Golden 2)
+    battlecry: (c) => { c.p.freeRerolls = (c.p.freeRerolls ?? 0) + c.m; },
   },
   scout: {
     onSell: (c) => {

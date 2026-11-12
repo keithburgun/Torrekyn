@@ -110,6 +110,8 @@ export interface Player {
   battlecriesThisTurn: number;
   battlecriesLastTurn: number;
   battlecriesGame: number;
+  /** Refreshes that cost nothing (Gambler) */
+  freeRerolls?: number;
   /** Deathrattles triggered this game (WARMECH) */
   deathrattlesGame?: number;
   quests: Quest[];
@@ -165,7 +167,7 @@ export interface CombatFrameUnit {
 
 /** Visual effects attached to a combat frame (for animation only). */
 export interface CombatFx {
-  k: 'hit' | 'kill' | 'shield' | 'venom' | 'reborn' | 'summon';
+  k: 'hit' | 'kill' | 'shield' | 'venom' | 'reborn' | 'summon' | 'gem'; // gem: a Gem played in battle lands on this unit
   to: number;
   from?: number; // source unit id
   fromSide?: 0 | 1; // a hero/trinket on this side caused it

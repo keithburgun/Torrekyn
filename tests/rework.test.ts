@@ -255,4 +255,45 @@ describe('rework 2', () => {
     expect(p.twinBonus).toBeGreaterThanOrEqual(1);
     expect(c.frames.some((f) => /Left Twinbot/.test(f.note ?? ''))).toBe(true);
   });
+
+  it('Gambler: Battlecry gives a free Refresh, used before Gold', () => {
+    const { g, p } = setup();
+    p.board = [];
+    p.hand = [u(g, 'pickaxe')];
+    play(g, p, 0, 0);
+    expect(p.freeRerolls).toBe(1);
+    p.gold = 0;
+    expect(reroll(g, p).ok).toBe(true);
+    expect(p.freeRerolls).toBe(0);
+    expect(reroll(g, p).ok).toBe(false);
+  });
+
+  it('Summit Key: Discover a Tier 6 unit two turns later', async () => {
+    const { TRINKETS, heroHooks } = await import('../src/engine/heroes');
+    const { g, p } = setup();
+    p.trinkets = ['summit_key'];
+    p.discovers = [];
+    TRINKETS.find((t) => t.id === 'summit_key')!.onGain!(g, p);
+    expect(p.discovers.length).toBe(0);
+    g.round += 1; heroHooks.startTurn(g, p);
+    expect(p.discovers.length).toBe(0);
+    g.round += 1; heroHooks.startTurn(g, p);
+    expect(p.discovers.length).toBe(1);
+    for (const id of p.discovers[0].options as string[]) expect(def(id).tier).toBe(6);
+  });
+
+  it('Invisible Hand: its Deathrattle plays 2 Red Gems on your 3 left-most units, each shown as its own step', () => {
+    const { g, p, o } = setup();
+    const a = u(g, 'skel', 1, 100), b = u(g, 'skel', 1, 100), d = u(g, 'skel', 1, 100), e = u(g, 'skel', 1, 100);
+    const hand = u(g, 'invisible_hand', 0, 1);
+    hand.kw = [];
+    const c = fight(g, p, o, [hand, a, b, d, e], [u(g, 'skel', 5, 1000)]);
+    c.run();
+    const gemFrames = c.frames.filter((f) => /Invisible Hand: Red Gem/.test(f.note ?? ''));
+    expect(gemFrames.length).toBe(2);
+    // each Red Gem lands on the 3 left-most units, including the first one (it used to be skipped)
+    const targets = gemFrames[0].fx!.filter((x) => x.k === 'gem').map((x) => x.to);
+    const live = gemFrames[0].sides[0].filter((x) => !x.dead).map((x) => x.id);
+    expect(targets).toEqual(live.slice(0, 3));
+  });
 });

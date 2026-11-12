@@ -522,8 +522,8 @@ export class App {
         <div class="tk-tier">${'★'.repeat(p.tier)}</div>
         <div class="tk-label">Tavern · Tier ${p.tier}</div>
       </div>
-      <div class="tavern-btn refresh ${p.gold < CONFIG.rerollCost ? 'off' : ''}" data-act="reroll" style="${at(t?.refresh ?? 0, L.cx + 87)}" title="Refresh the Tavern">
-        <div class="tb-icon">${PIX_ICON.refresh}</div><div class="tb-cost">${CONFIG.rerollCost}</div><div class="tb-label">Refresh</div>
+      <div class="tavern-btn refresh ${p.gold < CONFIG.rerollCost && !p.freeRerolls ? 'off' : ''}" data-act="reroll" style="${at(t?.refresh ?? 0, L.cx + 87)}" title="${p.freeRerolls ? `${p.freeRerolls} free Refresh${p.freeRerolls > 1 ? 'es' : ''} left` : 'Refresh the Tavern'}">
+        <div class="tb-icon">${PIX_ICON.refresh}</div><div class="tb-cost">${p.freeRerolls ? 0 : CONFIG.rerollCost}</div><div class="tb-label">${p.freeRerolls ? `Free ×${p.freeRerolls}` : 'Refresh'}</div>
       </div>
       <div class="tavern-btn freeze ${p.frozen ? 'on' : ''}" data-act="freeze" style="${at(t?.freeze ?? 0, L.cx + 187)}" title="Freeze the Tavern">
         <div class="tb-icon">${PIX_ICON.freeze}</div><div class="tb-label">${p.frozen ? 'Frozen' : 'Freeze'}</div>
@@ -1082,6 +1082,15 @@ export class App {
     const card = (uid: number) => this.stage.querySelector(`.card[data-id="${uid}"]:not(.ghost)`) as HTMLElement | null;
     // new cards stay hidden until they arrive
     for (const e of events) for (const uid of [...e.gains, ...e.summons]) { const el = card(uid); if (el) el.style.visibility = 'hidden'; }
+    // the screen already shows the final stats: wind them back, so each buff's number changes as its float lands
+    if (!stale) {
+      for (const e of events) for (const b of e.buffs) {
+        const el = card(b.uid);
+        const a = el?.querySelector('.stat.atk'); const h = el?.querySelector('.stat.hp');
+        if (a && b.atk) a.textContent = String(Number(a.textContent) - b.atk);
+        if (h && b.hp) h.textContent = String(Number(h.textContent) - b.hp);
+      }
+    }
     try {
       if (stale) {
         // end of turn: say so, then go through the effects one by one
@@ -1141,10 +1150,10 @@ export class App {
             el.classList.add('buff-flash');
             const parts = [b.atk || b.hp ? `${b.atk >= 0 ? '+' : ''}${b.atk}/${b.hp >= 0 ? '+' : ''}${b.hp}` : '', ...b.kw.map((k) => KW_ICON[k as keyof typeof KW_ICON]?.[1] ?? k)].filter(Boolean);
             this.floatText(to.x, to.y - to.h / 2 + 30, parts.join(' '), b.atk < 0 || b.hp < 0 ? 'down' : 'buff');
-            if (stale) {
+            {
               const a = el.querySelector('.stat.atk'); const h = el.querySelector('.stat.hp');
-              if (a) a.textContent = String(Number(a.textContent) + b.atk);
-              if (h) h.textContent = String(Number(h.textContent) + b.hp);
+              if (a && b.atk) { a.textContent = String(Number(a.textContent) + b.atk); a.classList.remove('stat-bump'); void (a as HTMLElement).offsetWidth; a.classList.add('stat-bump'); }
+              if (h && b.hp) { h.textContent = String(Number(h.textContent) + b.hp); h.classList.remove('stat-bump'); void (h as HTMLElement).offsetWidth; h.classList.add('stat-bump'); }
             }
             sfx.zap();
           }, dur + delay);

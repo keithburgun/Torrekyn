@@ -100,7 +100,7 @@ export function cardHtml(u: { cardId: string; golden: boolean; atk: number; hp: 
   const cls = ['card', `t-${d.tribe}`, u.golden ? 'golden' : '', o.small ? 'small' : '', o.large ? 'large' : '', ...kw.map((k) => `kw-${k}`), u.mem?.locked ? 'locked' : '', o.extraClass ?? ''].join(' ');
   const baseAtk = d.atk * (u.golden ? 2 : 1);
   const baseHp = d.hp * (u.golden ? 2 : 1);
-  const icons = kw.filter((k) => k !== 'taunt' && k !== 'divineShield').map((k) => `<span title="${KW_ICON[k][1]}">${KW_ICON[k][0]}</span>`).join('');
+  const icons = kw.filter((k) => k !== 'taunt' && k !== 'divineShield').map((k) => `<span class="kw-${k}" title="${KW_ICON[k][1]}">${KW_ICON[k][0]}</span>`).join('');
   const tags = abilityTags(u.cardId).slice(0, 2).map((t) => `<i>${t}</i>`).join('');
   return `<div class="${cls}" data-zone="${o.zone}" data-idx="${o.idx}" ${o.id !== undefined ? `data-id="${o.id}"` : ''} style="left:${o.x}px;top:${o.y}px">
   <div class="face"></div>
@@ -149,6 +149,12 @@ export function unitView(p: Player, u: Unit, zone: 'board' | 'hand' | 'shop', i:
 
 /** an improved Gem's ability text, with the numbers it gives now */
 export function gemText(p: Player, cardId: string, golden: boolean, text: string): string {
+  // Banners: every Banner you've played adds +1 (Golden +2) to the ones after it
+  if ((cardId === 'silver_banner' || cardId === 'gold_banner') && p.bannerBonus) {
+    const m = golden ? 2 : 1;
+    const n = (3 + p.bannerBonus) * m;
+    return `${text.replace(/\+\d+ (Attack|Health)/, `+${n} $1`)} (Improved ${p.bannerBonus === 1 ? 'once' : `${p.bannerBonus} times`}.)`;
+  }
   if (!GEMS.includes(cardId)) return text;
   const l = gemLevel(p, cardId);
   if (!l) return text;
@@ -167,6 +173,7 @@ export function gemText(p: Player, cardId: string, golden: boolean, text: string
 
 /** an improved Gem shows what it gives now */
 function gemNote(p: Player, u: Unit): string | undefined {
+  if ((u.cardId === 'silver_banner' || u.cardId === 'gold_banner') && p.bannerBonus) return `+${(3 + p.bannerBonus) * (u.golden ? 2 : 1)} ${u.cardId === 'silver_banner' ? 'Atk' : 'HP'}`;
   if (!GEMS.includes(u.cardId)) return undefined;
   const l = gemLevel(p, u.cardId);
   if (!l) return undefined;
@@ -177,7 +184,7 @@ function gemNote(p: Player, u: Unit): string | undefined {
     case 'pink_gem': return `${(1 + l) * m} units`;
     case 'green_gem': return `+${2 + l} Attack`;
     case 'red_gem': return `+${(3 + l) * m}`;
-    case 'ancient_name_brambor': return `+${(4 + l) * m} Health`;
+    case 'ancient_name_brambor': return `+${(8 + l) * m} Health`;
   }
   return undefined;
 }
