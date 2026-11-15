@@ -31,7 +31,6 @@ function randomArmy(g: GameState, tier: number, n: number, tribe?: string): Unit
 
 function reset(p: Player) {
   p.board = []; p.hand = []; p.powers = []; p.trinkets = []; p.quests = []; p.discovers = [];
-  p.slots = p.slots.map(() => ({ atk: 0, hp: 0, kw: [] }));
   p.tribeAtk = {}; p.gold = 0;
 }
 
@@ -61,7 +60,7 @@ function trial(card: CardDef, golden: boolean, plain: boolean, seed: number, bon
   p.discovers = [];
   let score = 0;
   for (let i = 0; i < 4; i++) {
-    const c = new Combat(g, { p, board: p.board, slots: p.slots, tier, persistent: false }, { p: o, board: theirs, slots: o.slots, tier, persistent: false });
+    const c = new Combat(g, { p, board: p.board, tier, persistent: false }, { p: o, board: theirs, tier, persistent: false });
     const w = c.run();
     score += w === 0 ? 1 : w === -1 ? 0.5 : 0;
   }

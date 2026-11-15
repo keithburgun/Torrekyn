@@ -5,19 +5,20 @@
  *  - Divine Shield absorbs one hit; Venomous kills on damage (one use), Poisonous always does; Reborn returns at 1 Health;
  *  - Windfury attacks twice; deaths resolve left-to-right, attacking side first.
  */
-import { addKw, cloneUnit, def, effStats, has, mult, ownerBonus, pick, rand, removeKw, sample, tribeOf, CONFIG } from './core';
+import { addKw, cloneUnit, def, effStats, has, isTribe, mult, ownerBonus, pick, rand, removeKw, sample, tribeOf, CONFIG } from './core';
 import { EFFECTS, hasBattlecry, battlecryTimes, type CCtx } from './effects';
 import { gainNew, combatDamage, DAMAGE_BASE, DAMAGE_PER_UNIT, onBattlecryTriggered } from './game';
 import { heroHooks, heroSoc } from './heroes';
 import { withFx } from './fx';
-import type { Body, CombatFrame, CombatFrameUnit, CombatFx, CombatResult, GameState, Keyword, Player, Slot, Unit } from './types';
+import type { Body, CombatFrame, CombatFrameUnit, CombatFx, CombatResult, GameState, Keyword, Player, Unit } from './types';
 
 export interface CUnit extends Body {
   id: number;
   side: 0 | 1;
   src: number | null;
-  slot: number;
   avenge: number;
+  /** damage taken this battle (Remember works out what a unit gained from it) */
+  taken?: number;
   killedBy?: CUnit;
   startAtk: number;
   startHp: number;
@@ -30,7 +31,6 @@ export interface Side {
   units: CUnit[];
   owner: Player; // a throwaway copy for ghosts
   persistent: boolean;
-  slots: Slot[];
   tier: number;
   died: CUnit[];
   secrets: boolean[];
@@ -51,29 +51,27 @@ export class Combat {
   steps = 0;
   depth = 0;
 
-  constructor(g: GameState, a: { p: Player; board: Unit[]; slots: Slot[]; tier: number; persistent: boolean },
-    b: { p: Player; board: Unit[]; slots: Slot[]; tier: number; persistent: boolean }) {
+  constructor(g: GameState, a: { p: Player; board: Unit[]; tier: number; persistent: boolean },
+    b: { p: Player; board: Unit[]; tier: number; persistent: boolean }) {
     this.g = g;
     this.sides = [this.makeSide(0, a), this.makeSide(1, b)];
   }
 
-  private makeSide(idx: 0 | 1, s: { p: Player; board: Unit[]; slots: Slot[]; tier: number; persistent: boolean }): Side {
+  private makeSide(idx: 0 | 1, s: { p: Player; board: Unit[]; tier: number; persistent: boolean }): Side {
     const side: Side = {
-      idx, units: [], owner: s.p, persistent: s.persistent, slots: s.slots, tier: s.tier,
+      idx, units: [], owner: s.p, persistent: s.persistent, tier: s.tier,
       died: [], secrets: [], ptr: 0, afterFns: [], heroAvenge: {},
     };
     s.board.forEach((u, i) => {
-      // for ghosts use a player-like view with the ghost's slots
-      const view = { ...s.p, slots: s.slots } as Player;
-      const st = effStats(view, u, 'board', i);
-      side.units.push(this.makeCU(idx, u.cardId, u.golden, st.atk, st.hp, st.kw, u.uid, i, { ...u.mem }));
+      const st = effStats(s.p, u, 'board', i);
+      side.units.push(this.makeCU(idx, u.cardId, u.golden, st.atk, st.hp, st.kw, u.uid, { ...u.mem }));
     });
     return side;
   }
 
-  private makeCU(side: 0 | 1, cardId: string, golden: boolean, atk: number, hp: number, kw: Keyword[], src: number | null, slot: number, mem: Record<string, number> = {}): CUnit {
+  private makeCU(side: 0 | 1, cardId: string, golden: boolean, atk: number, hp: number, kw: Keyword[], src: number | null, mem: Record<string, number> = {}): CUnit {
     return {
-      id: this.nextId++, side, cardId, golden, atk, hp, kw: [...kw], mem, src, slot, avenge: 0,
+      id: this.nextId++, side, cardId, golden, atk, hp, kw: [...kw], mem, src, avenge: 0,
       startAtk: atk, startHp: hp, startKw: [...kw],
     };
   }
@@ -135,6 +133,22 @@ export class Combat {
     s.afterFns.push(fn);
   }
 
+  /** Remember: the unit behind this combat unit keeps the stats and keywords it gained in this battle (Golden: doubled) */
+  keepGains(cu: CUnit, m: number) {
+    const s = this.sides[cu.side];
+    const u = s.owner.board.find((x) => x.uid === cu.src);
+    if (!u) return;
+    const a = Math.max(0, cu.atk - cu.startAtk);
+    const h = Math.max(0, cu.hp + (cu.taken ?? 0) - cu.startHp);
+    u.atk += a * m;
+    u.hp += h * m;
+    // any keyword it gained at some point in the battle (a Divine Shield gained and then broken still counts)
+    const seen = new Set<Keyword>(cu.kw);
+    for (const f of this.frames) for (const x of f.sides[cu.side]) if (x.id === cu.id) x.kw.forEach((k) => seen.add(k));
+    for (const k of seen) if (!cu.startKw.includes(k) && !u.kw.includes(k)) u.kw.push(k);
+    if (a || h) s.owner.log.push(`Remember: ${def(u.cardId).name} kept +${a * m}/+${h * m}.`);
+  }
+
   /** Apply a permanent change to the persistent unit behind a combat unit, and an optional stat change in combat. */
   perm(cu: CUnit, fn: (u: Unit) => void, atk = 0, hp = 0) {
     cu.atk += atk;
@@ -151,7 +165,7 @@ export class Combat {
     const m = golden ? 2 : 1;
     // a fresh unit gets the same "all your X units have…" bonuses as the ones you brought in
     const bonus = ownerBonus(s.owner, { cardId, golden } as Body);
-    const cu = this.makeCU(s.idx, cardId, golden, d.atk * m + bonus.atk, d.hp * m + bonus.hp, d.keywords, null, -1);
+    const cu = this.makeCU(s.idx, cardId, golden, d.atk * m + bonus.atk, d.hp * m + bonus.hp, d.keywords, null);
     s.units.splice(Math.max(0, Math.min(pos, s.units.length)), 0, cu);
     this.addFx({ k: 'summon', to: cu.id });
     this.onSummoned(s, cu);
@@ -168,7 +182,7 @@ export class Combat {
 
   spawnCopy(s: Side, d: CUnit, pos: number): CUnit | null {
     if (s.units.filter((u) => u.hp > 0).length >= CONFIG.boardSize) return null;
-    const cu = this.makeCU(s.idx, d.cardId, d.golden, d.startAtk, d.startHp, d.startKw, null, -1, { ...d.mem });
+    const cu = this.makeCU(s.idx, d.cardId, d.golden, d.startAtk, d.startHp, d.startKw, null, { ...d.mem });
     s.units.splice(Math.max(0, Math.min(pos, s.units.length)), 0, cu);
     this.addFx({ k: 'summon', to: cu.id });
     this.onSummoned(s, cu);
@@ -180,7 +194,7 @@ export class Combat {
   spawnUnit(s: Side, u: Unit, pos: number): CUnit | null {
     if (s.units.filter((x) => x.hp > 0).length >= CONFIG.boardSize) return null;
     const st = effStats(s.owner, u, 'hand');
-    const cu = this.makeCU(s.idx, u.cardId, u.golden, st.atk, st.hp, st.kw, null, -1, { ...u.mem });
+    const cu = this.makeCU(s.idx, u.cardId, u.golden, st.atk, st.hp, st.kw, null, { ...u.mem });
     s.units.splice(Math.max(0, Math.min(pos, s.units.length)), 0, cu);
     this.addFx({ k: 'summon', to: cu.id });
     this.onSummoned(s, cu);
@@ -196,6 +210,7 @@ export class Combat {
 
   kill(t: CUnit, source?: CUnit) {
     if (t.hp <= 0) return;
+    t.taken = (t.taken ?? 0) + t.hp;
     t.hp = 0;
     if (source && !t.killedBy) t.killedBy = source;
     this.addFx({ k: 'kill', to: t.id, from: source?.id });
@@ -215,7 +230,9 @@ export class Combat {
     }
     const before = t.hp;
     t.hp -= amount;
+    t.taken = (t.taken ?? 0) + amount;
     if (source && (has(source, 'venomous') || has(source, 'poisonous')) && t.hp > 0) {
+      t.taken = (t.taken ?? 0) + t.hp;
       t.hp = 0;
       if (!has(source, 'poisonous')) removeKw(source, 'venomous'); // Poisonous is never used up
       this.addFx({ k: 'venom', to: t.id });
@@ -309,7 +326,7 @@ export class Combat {
           const m = u.golden ? 2 : 1;
           if (s.units.filter((x) => x.hp > 0).length < CONFIG.boardSize) {
             const r = this.makeCU(s.idx, u.cardId, u.golden, d.atk * m + ownerBonus(s.owner, u).atk, 1,
-              d.keywords.filter((k) => k !== 'reborn'), u.src, u.slot, { ...u.mem });
+              d.keywords.filter((k) => k !== 'reborn'), u.src, { ...u.mem });
             s.units.splice(Math.min(pos, s.units.length), 0, r);
             this.addFx({ k: 'reborn', to: r.id });
             for (const side of this.sides) for (const w of [...side.units]) {
@@ -410,6 +427,15 @@ export class Combat {
   // ---------- main loop ----------
   run(): 0 | 1 | -1 {
     const [A, B] = this.sides;
+    // Remember: the Azure units next to it when the battle starts keep what they gain in it
+    const remembered: { cu: CUnit; m: number }[] = [];
+    for (const s of this.sides) {
+      if (!s.persistent) continue;
+      s.units.forEach((u, i) => {
+        if (u.cardId !== 'remember') return;
+        for (const n of [s.units[i - 1], s.units[i + 1]]) if (n && isTribe(n, 'azure') && !remembered.some((r) => r.cu === n)) remembered.push({ cu: n, m: u.golden ? 2 : 1 });
+      });
+    }
     this.snap('start');
     const aCount = A.units.length;
     const bCount = B.units.length;
@@ -476,6 +502,7 @@ export class Combat {
     const aLive = A.units.filter((u) => u.hp > 0).length;
     const bLive = B.units.filter((u) => u.hp > 0).length;
     const winner = aLive && !bLive ? 0 : bLive && !aLive ? 1 : -1;
+    for (const { cu, m } of remembered) this.keepGains(cu, m);
     this.snap('end');
     return winner;
   }
@@ -488,11 +515,10 @@ function ghostPlayer(p: Player): Player {
 
 export function runCombat(g: GameState, a: Player, b: Player, bIsGhost: boolean): CombatResult {
   const bBoard = bIsGhost ? b.ghost!.board : b.board;
-  const bSlots = bIsGhost ? b.ghost!.slots : b.slots;
   const bTier = bIsGhost ? b.ghost!.tier : b.tier;
   const c = new Combat(g,
-    { p: a, board: a.board, slots: a.slots, tier: a.tier, persistent: true },
-    { p: bIsGhost ? ghostPlayer(b) : b, board: bBoard, slots: bSlots, tier: bTier, persistent: !bIsGhost });
+    { p: a, board: a.board, tier: a.tier, persistent: true },
+    { p: bIsGhost ? ghostPlayer(b) : b, board: bBoard, tier: bTier, persistent: !bIsGhost });
   // anything the battle permanently gave you (cards, growth) is shown when you're back in the shop
   const you = [a, b].find((x) => x.human);
   const winner = you ? withFx(g, you, { name: 'Battle' }, 'From the battle', () => c.run()) : c.run();

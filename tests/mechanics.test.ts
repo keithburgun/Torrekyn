@@ -17,8 +17,8 @@ function fight(g: GameState, a: Unit[], b: Unit[]) {
   const pa = g.players[0], pb = g.players[1];
   pa.board = a; pb.board = b;
   pa.hero = undefined; pb.hero = undefined; pa.powers = []; pb.powers = [];
-  const c = new Combat(g, { p: pa, board: a, slots: pa.slots, tier: 1, persistent: true },
-    { p: pb, board: b, slots: pb.slots, tier: 1, persistent: true });
+  const c = new Combat(g, { p: pa, board: a, tier: 1, persistent: true },
+    { p: pb, board: b, tier: 1, persistent: true });
   return { c, winner: c.run() };
 }
 
@@ -28,8 +28,8 @@ describe('mechanics', () => {
     const pa = g.players[0], pb = g.players[1];
     pa.hero = undefined; pb.hero = undefined; pa.powers = []; pb.powers = [];
     pa.trinkets = ['bronze_compass'];
-    const c = new Combat(g, { p: pa, board: [makeUnit(g, 'skel')], slots: pa.slots, tier: 1, persistent: false },
-      { p: pb, board: [makeUnit(g, 'skel')], slots: pb.slots, tier: 1, persistent: false });
+    const c = new Combat(g, { p: pa, board: [makeUnit(g, 'skel')], tier: 1, persistent: false },
+      { p: pb, board: [makeUnit(g, 'skel')], tier: 1, persistent: false });
     const base = CARDS.find((x) => x.id === 'skel')!.atk;
     expect(c.sides[0].units[0].atk).toBe(base + 12);
     const summoned = c.spawn(c.sides[0], 'skel', false, 1)!;
@@ -44,8 +44,8 @@ describe('mechanics', () => {
       const enemies = [0, 1, 2, 3, 4, 5, 6].map(() => { const u = makeUnit(g, 'skel'); u.atk = 1; u.hp = 1; return u; });
       const pa = g.players[0], pb = g.players[1];
       pa.hero = undefined; pb.hero = undefined; pa.powers = []; pb.powers = [];
-      const c = new Combat(g, { p: pa, board: [pyro], slots: pa.slots, tier: 1, persistent: false },
-        { p: pb, board: enemies, slots: pb.slots, tier: 1, persistent: false });
+      const c = new Combat(g, { p: pa, board: [pyro], tier: 1, persistent: false },
+        { p: pb, board: enemies, tier: 1, persistent: false });
       const mine = c.sides[0].units[0];
       const theirs = c.sides[1].units;
       // hit back while defending: no spill
@@ -101,21 +101,22 @@ describe('mechanics', () => {
     expect(c.frames.some((f) => f.sides[0].some((u) => u.cardId === 'skel'))).toBe(true);
   });
 
-  it('slots carry stats to whoever stands in them', () => {
+  it('army positions carry no bonuses (slots were removed)', () => {
     const g = newGame(5);
     const p: Player = human(g);
     p.discovers = [];
     p.board = [makeUnit(g, 'skel')];
-    p.hand = [makeUnit(g, 'ancient_name_brambor')]; // Potato Gem: +8 Health to the chosen unit's slot
-    play(g, p, 0, 1, p.board[0].uid);
-    expect(p.slots[0].hp).toBe(8);
+    p.hand = [makeUnit(g, 'ancient_name_brambor')]; // Potato Gem: +2 Health to every unit in hand and army
+    const hp0 = p.board[0].hp;
+    play(g, p, 0, 1);
+    expect(p.board[0].hp).toBe(hp0 + 2);
     sell(g, p, 0);
     sell(g, p, 0);
     p.hand = [makeUnit(g, 'skel')];
     play(g, p, 0, 0);
-    const c = new Combat(g, { p, board: p.board, slots: p.slots, tier: 1, persistent: true },
-      { p: g.players[1], board: [], slots: g.players[1].slots, tier: 1, persistent: true });
-    expect(c.sides[0].units[0].hp).toBe(def('skel').hp + 8);
+    const c = new Combat(g, { p, board: p.board, tier: 1, persistent: true },
+      { p: g.players[1], board: [], tier: 1, persistent: true });
+    expect(c.sides[0].units[0].hp).toBe(def('skel').hp);
   });
 
   it('venomous kills big units', () => {
@@ -220,7 +221,7 @@ describe('heroes', () => {
     const pa = g.players[0], pb = g.players[1];
     pa.powers = []; pb.powers = [];
     pa.board = [pumpkin]; pb.board = [makeUnit(g, 'skeleton')];
-    const c = new Combat(g, { p: pa, board: pa.board, slots: pa.slots, tier: 1, persistent: true }, { p: pb, board: pb.board, slots: pb.slots, tier: 1, persistent: true });
+    const c = new Combat(g, { p: pa, board: pa.board, tier: 1, persistent: true }, { p: pb, board: pb.board, tier: 1, persistent: true });
     c.run();
     expect(c.sides[0].units[0].mem.dr_skeleton).toBe(1);
     expect(pumpkin.mem.dr_skeleton).toBeUndefined();
@@ -230,7 +231,7 @@ describe('heroes', () => {
     const g = newGame(6);
     const pa = g.players[0], pb = g.players[1];
     pa.powers = ['croh_vosh']; pb.powers = [];
-    const c = new Combat(g, { p: pa, board: [], slots: pa.slots, tier: 1, persistent: true }, { p: pb, board: [], slots: pb.slots, tier: 1, persistent: true });
+    const c = new Combat(g, { p: pa, board: [], tier: 1, persistent: true }, { p: pb, board: [], tier: 1, persistent: true });
     const u = c.spawn(c.sides[0], 'skel', false, 0)!;
     expect([u.atk, u.hp]).toEqual([2, 3]);
   });
@@ -240,7 +241,7 @@ describe('heroes', () => {
     const g = newGame(7);
     const pa = g.players[0], pb = g.players[1];
     pa.powers = ['clover']; pb.powers = [];
-    const c = new Combat(g, { p: pa, board: [], slots: pa.slots, tier: 1, persistent: true }, { p: pb, board: [], slots: pb.slots, tier: 1, persistent: true });
+    const c = new Combat(g, { p: pa, board: [], tier: 1, persistent: true }, { p: pb, board: [], tier: 1, persistent: true });
     for (let i = 0; i < 4; i++) heroHooks.onFriendlyDeath(c, c.sides[0]);
     expect(c.sides[0].units.map((u) => [u.cardId, u.atk, u.hp])).toEqual([['dragon', 1, 1]]);
     expect(pa.heroMem.brood).toBe(1);
@@ -253,7 +254,7 @@ describe('heroes', () => {
     const g = newGame(8);
     const pa = g.players[0], pb = g.players[1];
     pa.powers = ['trevor_l']; pb.powers = [];
-    const c = new Combat(g, { p: pa, board: [makeUnit(g, 'ash')], slots: pa.slots, tier: 1, persistent: true }, { p: pb, board: [], slots: pb.slots, tier: 1, persistent: true });
+    const c = new Combat(g, { p: pa, board: [makeUnit(g, 'ash')], tier: 1, persistent: true }, { p: pb, board: [], tier: 1, persistent: true });
     const u = c.sides[0].units[0];
     u.kw = [];
     for (let i = 0; i < 5; i++) heroHooks.onFriendlyDeath(c, c.sides[0]);

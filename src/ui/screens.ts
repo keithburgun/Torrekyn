@@ -49,7 +49,6 @@ const ABILITIES: [string, (c: CardDef) => boolean][] = [
   ['End of Turn', (c) => !!EFFECTS[c.id]?.endTurn],
   ['Sell', (c) => !!EFFECTS[c.id]?.onSell],
   ['Discover', (c) => /discover/i.test(c.text)],
-  ['Slots', (c) => /slot/i.test(c.text)],
   ['Taunt', (c) => c.keywords.includes('taunt') || /taunt/i.test(c.text)],
   ['Divine Shield', (c) => c.keywords.includes('divineShield') || /divine shield/i.test(c.text)],
   ['Reborn', (c) => c.keywords.includes('reborn') || /reborn/i.test(c.text)],

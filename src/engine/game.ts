@@ -6,22 +6,19 @@ import { runCombat } from './combat';
 import { aiTakeTurn, aiChooseDiscover } from './ai';
 import { setFxPhase, withFx, heroPing } from './fx';
 import { PERSONAS, matchPersonas, personaProfile } from './personas';
-import { HEROES, heroHealth, buyCost, gainPower, heroDef, heroEndTurn, heroHooks, hasTrinket, offerTrinkets, shopBonus, GREATER_TRINKET_TURN, LESSER_TRINKET_TURN } from './heroes';
-import type { Discover, GameState, Player, Slot, Tribe, Unit } from './types';
+import { TRINKETS, HEROES, heroHealth, buyCost, gainPower, heroDef, heroEndTurn, heroHooks, hasTrinket, offerTrinkets, shopBonus, GREATER_TRINKET_TURN, LESSER_TRINKET_TURN } from './heroes';
+import type { Discover, GameState, Player, Tribe, Unit } from './types';
 
 export const SAVE_VERSION = 5; // 5: Tier 6 and Poisonous (Stealth removed); older games in progress are dropped
 
 
-function emptySlots(): Slot[] {
-  return Array.from({ length: CONFIG.boardSize }, () => ({ atk: 0, hp: 0, kw: [] }));
-}
 
 export function newPlayer(id: number, name: string, human: boolean, avatar: number): Player {
   return {
     id, name, human, avatar,
     health: CONFIG.startHealth, alive: true, placement: 0,
     tier: 1, upgradeCost: CONFIG.upgradeCost[2], gold: 0, maxGoldBonus: 0, goldNextTurn: 0,
-    board: [], hand: [], shop: [], slots: emptySlots(), frozen: false,
+    board: [], hand: [], shop: [], frozen: false,
     tribeAtk: {}, alcoveAtkThisTier: 0, tinkerThisTier: 0, bannerBonus: 0, redGemBonus: 0,
     battlecriesThisTurn: 0, battlecriesLastTurn: 0, battlecriesGame: 0,
     quests: [], discovers: [], powers: [], usedPowers: [], heroMem: {}, heroSeeds: [], trinkets: [], trinketOffer: null, lastOpponent: null, lastOpponentBoard: [], nextOpponent: null, log: [],
@@ -249,10 +246,15 @@ function completeQuest(g: GameState, p: Player, kind: 'devotion' | 'bill', rewar
     p.gold += reward;
     log(p, `Quest complete: gained ${reward} gold.`);
   } else {
-    p.slots[0].kw.includes('reborn') || p.slots[0].kw.push('reborn');
-    const right = Math.max(0, p.board.length - 1);
-    p.slots[right].kw.includes('reborn') || p.slots[right].kw.push('reborn');
-    log(p, 'Devotion complete: your left and right-most slots gained Reborn.');
+    // a free Lesser Trinket of your choice (a random one if a Trinket choice is already waiting)
+    if (!p.trinketOffer) {
+      offerTrinkets(g, p, false);
+      p.trinketFree = true;
+    } else {
+      const t = pick(g, TRINKETS.filter((x) => !x.greater && !p.trinkets.includes(x.id) && !p.trinketOffer!.includes(x.id)));
+      if (t) { p.trinkets.push(t.id); t.onGain?.(g, p); }
+    }
+    log(p, 'Devotion complete: gain a Lesser Trinket.');
   }
 }
 
@@ -597,7 +599,7 @@ export function endTurn(g: GameState): CombatResult[] {
   for (const p of dying) {
     p.alive = false;
     p.placement = place--;
-    p.ghost = { board: p.board.map(cloneUnit), slots: p.slots.map((s) => ({ ...s, kw: [...s.kw] })), tier: p.tier };
+    p.ghost = { board: p.board.map(cloneUnit), tier: p.tier };
     g.deadOrder.push(p.id);
   }
   g.lastCombats = results;

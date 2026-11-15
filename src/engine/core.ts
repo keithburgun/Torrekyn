@@ -140,13 +140,7 @@ export function effStats(p: Player, u: Unit, zone: 'board' | 'hand' | 'shop', in
   let atk = u.atk + bonus.atk;
   let hp = u.hp + bonus.hp;
   const kw = [...u.kw];
-  // (Tinker used to add shop stats here: tinkerThisTier stays 0 in new games)
-  if (zone === 'board' && index >= 0 && p.slots[index]) {
-    const s = p.slots[index];
-    atk += s.atk;
-    hp += s.hp;
-    for (const k of s.kw) if (!kw.includes(k)) kw.push(k);
-  }
+  void zone; void index; // (slots used to add their bonuses here; slots no longer have bonuses)
   return { atk: Math.max(0, atk), hp: Math.max(1, hp), kw };
 }
 

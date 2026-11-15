@@ -28,7 +28,7 @@ const unit = (g: GameState, id: string, atk?: number, hp?: number): Unit => {
 function combat(g: GameState, p: Player, mine: Unit[], theirs: Unit[], persistent = true) {
   const o = g.players[1];
   o.hero = undefined; o.powers = []; o.trinkets = [];
-  return new Combat(g, { p, board: mine, slots: p.slots, tier: p.tier, persistent }, { p: o, board: theirs, slots: o.slots, tier: 1, persistent: false });
+  return new Combat(g, { p, board: mine, tier: p.tier, persistent }, { p: o, board: theirs, tier: 1, persistent: false });
 }
 
 describe('hero powers', () => {

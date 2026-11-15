@@ -36,11 +36,6 @@ export interface Unit extends Body {
   uid: number;
 }
 
-export interface Slot {
-  atk: number;
-  hp: number;
-  kw: Keyword[];
-}
 
 export interface Quest {
   kind: 'devotion' | 'bill';
@@ -98,7 +93,6 @@ export interface Player {
   board: Unit[];
   hand: Unit[];
   shop: Unit[];
-  slots: Slot[];
   frozen: boolean;
   tribeAtk: Partial<Record<Tribe, number>>;
   /** Scientist: extra Attack for Alcove units, for the rest of the game (name kept so saved games still load) */
@@ -147,11 +141,13 @@ export interface Player {
   twinBonus?: number;
   heroOffer?: string[];
   trinkets: string[];
+  /** the Trinket choice waiting is free (Devotion) */
+  trinketFree?: boolean;
   trinketOffer: string[] | null;
   /** triples made by the human player, waiting to be celebrated by the UI */
   tripleEvents?: { cardId: string; uids: number[]; goldenUid: number }[];
   /** snapshot of the board used when this player is a ghost */
-  ghost?: { board: Unit[]; slots: Slot[]; tier: number };
+  ghost?: { board: Unit[]; tier: number };
   log: string[];
 }
 

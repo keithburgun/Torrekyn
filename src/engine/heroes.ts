@@ -254,7 +254,7 @@ export const TRINKETS: TrinketDef[] = [
     },
     progress: (p) => `${p.heroMem.t_old_map ?? 0}/2` },
   { id: 'bronze_compass', name: 'Bronze Compass', cost: 2, text: 'Your Neverending units have +12 Attack.' }, // see effStats
-  { id: 'iron_bracer', name: 'Iron Bracer', cost: 2, text: 'Your left-most slot gains Taunt.', onGain: (g, p) => addKw(p.slots[0], 'taunt') },
+  { id: 'iron_bracer', name: 'Iron Bracer', cost: 2, text: 'Start of Combat: Give your left-most unit Taunt.', soc: (c, s) => { const u = s.units.find((x) => x.hp > 0); if (u) addKw(u, 'taunt'); } },
   { id: 'spare_parts', name: 'Spare Parts', cost: 3, text: 'Every time you play a unit, give a random unit in your hand +2/+2.', onPlay: (g, p) => { const u = pick(g, p.hand); if (u) { u.atk += 2; u.hp += 2; } } },
   { id: 'war_drum', name: 'War Drum', cost: 3, text: 'Start of Combat: Give your units +2 Attack.', soc: (c, s) => { for (const u of s.units) u.atk += 2; } },
   { id: 'lucky_coin', name: 'Lucky Coin', cost: 0, text: 'Gain 8 Gold.', onGain: (g, p) => { p.gold += 8; } },
@@ -266,7 +266,7 @@ export const TRINKETS: TrinketDef[] = [
       queueDiscover(g, p, discoverOptions(g, (id) => def(id).tier === 6), 'Summit Key: Discover a Tier 6 unit');
     } },
   // greater (offered at the start of turn 9)
-  { id: 'bannerlords_standard', name: "Bannerlord's Standard", cost: 3, greater: true, text: 'Give all your slots +3/+3.', onGain: (g, p) => { for (const s of p.slots) { s.atk += 3; s.hp += 3; } } },
+  { id: 'bannerlords_standard', name: "Bannerlord's Standard", cost: 3, greater: true, text: 'Start of Combat: Give your units +3/+3.', soc: (c, s) => { for (const u of s.units) { u.atk += 3; u.hp += 3; } } },
   { id: 'aegis_charm', name: 'Aegis Charm', cost: 4, greater: true, text: 'Start of Combat: Give your 2 left-most units Divine Shield.', soc: (c, s) => { for (const u of s.units.slice(0, 2)) addKw(u, 'divineShield'); } },
   { id: 'hourglass_of_plenty', name: 'Hourglass of Plenty', cost: 4, greater: true, text: 'Avenge (6): Summon a random Deathrattle unit.',
     onFriendlyDeath: (c, s) => {
@@ -275,7 +275,7 @@ export const TRINKETS: TrinketDef[] = [
       const id = pick(c.g, ids);
       if (id && c.spawn(s, id, false, s.units.length)) c.snap('trigger', { note: `Hourglass of Plenty: Summon ${def(id).name}` });
     } },
-  { id: 'phoenix_feather', name: 'Phoenix Feather', cost: 5, greater: true, text: 'Your left-most slot gains Reborn.', onGain: (g, p) => addKw(p.slots[0], 'reborn') },
+  { id: 'phoenix_feather', name: 'Phoenix Feather', cost: 5, greater: true, text: 'Start of Combat: Give your left-most unit Reborn.', soc: (c, s) => { const u = s.units.find((x) => x.hp > 0); if (u) addKw(u, 'reborn'); } },
   { id: 'warlords_horn', name: "Warlord's Horn", cost: 5, greater: true, text: 'Avenge (8): Increase your maximum Gold by 1.',
     onFriendlyDeath: (c, s) => {
       if (!heroAvenge(s, 'warlords_horn', 8)) return;
@@ -412,14 +412,17 @@ export function pickTrinket(g: GameState, p: Player, id: string | null): boolean
   if (!p.trinketOffer) return false;
   if (id === null) {
     p.trinketOffer = null;
+    p.trinketFree = false;
     return true;
   }
   if (!p.trinketOffer.includes(id)) return false;
   const t = trinketDef(id);
-  if (p.gold < t.cost) return false;
-  p.gold -= t.cost;
+  const cost = p.trinketFree ? 0 : t.cost; // Devotion's Trinket is free
+  if (p.gold < cost) return false;
+  p.gold -= cost;
   p.trinkets.push(id);
   p.trinketOffer = null;
+  p.trinketFree = false;
   t.onGain?.(g, p);
   return true;
 }

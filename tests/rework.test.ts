@@ -18,7 +18,7 @@ const u = (g: GameState, id: string, atk?: number, hp?: number, golden = false):
   return x;
 };
 const fight = (g: GameState, p: Player, o: Player, mine: Unit[], theirs: Unit[]) =>
-  new Combat(g, { p, board: mine, slots: p.slots, tier: p.tier, persistent: true }, { p: o, board: theirs, slots: o.slots, tier: 1, persistent: false });
+  new Combat(g, { p, board: mine, tier: p.tier, persistent: true }, { p: o, board: theirs, tier: 1, persistent: false });
 
 describe('rework', () => {
 
@@ -88,19 +88,6 @@ describe('rework', () => {
     p.hand = [];
     fight(g, p, o, [u(g, 'golden_light', 0, 1)], [u(g, 'skel', 1, 1000)]).run();
     expect(p.hand.map((x) => def(x.cardId).tier)).toEqual([6]);
-  });
-
-  it('Andromeda Robin: plays a Potato Gem on its slot each end of turn and improves Potato Gems', () => {
-    const { g, p } = setup();
-    p.board = [u(g, 'andromeda_robin')];
-    const eff = { g, p, self: p.board[0], m: 1, board: p.board };
-    return import('../src/engine/effects').then(({ EFFECTS }) => {
-      EFFECTS.andromeda_robin.endTurn!(eff);
-      expect(p.slots[0].hp).toBe(8);
-      expect(gemLevel(p, 'ancient_name_brambor')).toBe(1);
-      EFFECTS.andromeda_robin.endTurn!(eff);
-      expect(p.slots[0].hp).toBe(8 + 9);
-    });
   });
 
   it('a whole turn with Gem cards in every hand still plays out', () => {
@@ -197,23 +184,6 @@ describe('rework 2', () => {
     p.battlecryUnitsThisTurn = 2;
     endTurnEffects(g, p);
     expect([left.atk, left.hp]).toEqual([10, 10]);
-  });
-
-  it('Commitment: the left-most slot gets +20 Health per Azure unit', () => {
-    const { g, p } = setup();
-    p.board = [u(g, 'skel'), u(g, 'knight'), u(g, 'longbow')];
-    p.hand = [u(g, 'commitment')];
-    play(g, p, 0, 3);
-    expect(p.slots[0].hp).toBe(60);
-  });
-
-  it('Owl and The Mayor: End of Turn grows their slot', () => {
-    const { g, p } = setup();
-    p.board = [u(g, 'owl'), u(g, 'the_mayor')];
-    endTurnEffects(g, p);
-    expect(p.slots[0].atk).toBe(2);
-    expect(p.slots[1].hp).toBe(20);
-    expect(p.slots[1].kw).toContain('reborn');
   });
 
   it('Omni-Gem: selling it gains 3 Tier 5 units', () => {

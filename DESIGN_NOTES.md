@@ -13,14 +13,11 @@ When the card text was ambiguous, Hearthstone: Battlegrounds conventions were us
 - Matchmaking avoids your last opponent where possible. With an odd number alive, one player fights the ghost of the most recently eliminated player.
 - Board 7, hand 10.
 
-## Slots (a Torrekin-specific mechanic)
-- Your army has 7 fixed slots. Units always fill slots from the left (slot 1 = left-most).
-- Slot bonuses (+Attack/+Health, keywords) belong to the slot, not the unit. Whoever stands in that slot gets them, in combat and in the shop display.
-- "Left-most slot" = slot 1. "Right-most slot" (Devotion) = the slot of your current right-most unit.
-- "This slot" = the slot the unit is in when the effect happens (for combat effects, the slot it started combat in).
-- "Plain slot" (Paradox) = a slot with no bonuses at all.
-- "Locked permanently" = that unit can no longer be moved, sold, consumed or destroyed by your own effects, and can't be part of a triple. (Commitment used to lock; since v0.8 it gives the left-most slot +20 Health per Azure unit instead. Units locked in old saves stay locked.)
-- Slot stats can go negative (Virus). A unit's effective Attack never drops below 0 or Health below 1.
+## Army positions
+- Your army has room for 7 units; they fill from the left. Since v0.10 positions have no bonuses (the old slot upgrades are gone; the cards and trinkets that used them were rewritten).
+- "Locked permanently" = that unit can no longer be moved, sold, consumed or destroyed by your own effects, and can't be part of a triple. (No card locks any more; units locked in old saves stay locked.)
+- Remember: the Azure units next to it when a battle starts keep the stats (gained, not counting damage) and any keywords they gained during that battle (Golden: double the stats).
+- Devotion's Trinket is a free choice of Lesser Trinkets (a random one if a Trinket choice is already waiting).
 
 ## Keywords
 - **Rally** = "whenever this attacks" (resolves before the hit, like HS Rally).
@@ -41,7 +38,6 @@ When the card text was ambiguous, Hearthstone: Battlegrounds conventions were us
 | Sickle / Gelf Lanz | "Adjacent units" = the units next to the attack target (cleave). |
 | Necromancer | Spawns the Skeleton card (which has its own Deathrattle). |
 | Ashlie / Romance | Like HS Undead: all your Neverending units, including ones you get later. |
-| Tourmaline / Front and Center | Change slot 1 permanently. |
 | Ocean Sky | Only your own units benefit. |
 | Commitment | Counts Azure units in your army, itself included. |
 | Pink Gem / Doctor | Summon a fresh copy (start-of-combat stats) of a friendly unit that died this combat. Pink Gem can't summon another Pink Gem. |

@@ -42,7 +42,6 @@ function check(g: GameState) {
         uids.set(u.uid, `${zone}:${p.id}`);
       }
     }
-    if (p.slots) for (const s of p.slots) if (s && (!Number.isFinite(s.atk) || !Number.isFinite(s.hp))) note('slot NaN');
   }
 }
 

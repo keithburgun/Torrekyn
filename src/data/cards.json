@@ -246,8 +246,8 @@
    "tier": 2,
    "atk": 6,
    "hp": 3,
-   "text": "When you sell this, give all your slots +1/+2.",
-   "goldenText": "When you sell this, give all your slots +2/+4.",
+   "text": "Battlecry: Give your units with Taunt or Divine Shield +2/+2.",
+   "goldenText": "Battlecry: Give your units with Taunt or Divine Shield +4/+4.",
    "keywords": []
   },
   {
@@ -257,8 +257,8 @@
    "tier": 3,
    "atk": 7,
    "hp": 7,
-   "text": "Battlecry: Give your left-most slot Divine Shield.",
-   "goldenText": "Battlecry: Give your two left-most slots Divine Shield.",
+   "text": "Start of Combat: Give two Azure units Divine Shield.",
+   "goldenText": "Start of Combat: Give two Azure units Divine Shield.",
    "keywords": []
   },
   {
@@ -314,8 +314,8 @@
    "tier": 4,
    "atk": 20,
    "hp": 20,
-   "text": "Battlecry: Discover a unit from your last opponent's army.",
-   "goldenText": "Battlecry: Discover a unit from your last opponent's army, twice.",
+   "text": "Adjacent Azure units keep keywords and stats gained during combat.",
+   "goldenText": "Adjacent Azure units keep the keywords and double the stats gained during combat.",
    "keywords": []
   },
   {
@@ -325,8 +325,8 @@
    "tier": 5,
    "atk": 30,
    "hp": 10,
-   "text": "Rally: Deal half damage to adjacent units.",
-   "goldenText": "Rally: Deal full damage to adjacent units.",
+   "text": "Rally: Gain the Attack of the targeted unit.",
+   "goldenText": "Rally: Gain double the Attack of the targeted unit.",
    "keywords": []
   },
   {
@@ -347,8 +347,8 @@
    "tier": 5,
    "atk": 8,
    "hp": 20,
-   "text": "Battlecry: Give your left-most slot +20 Health for each Azure unit you have.",
-   "goldenText": "Battlecry: Give your left-most slot +40 Health for each Azure unit you have.",
+   "text": "Start of Combat: Give your units +1/+1. Whenever you play a Battlecry, improve this.",
+   "goldenText": "Start of Combat: Give your units +2/+2. Whenever you play a Battlecry, improve this.",
    "keywords": []
   },
   {
@@ -380,8 +380,8 @@
    "tier": 1,
    "atk": 1,
    "hp": 1,
-   "text": "End of Turn: Give this slot +2/+2.",
-   "goldenText": "End of Turn: Give this slot +4/+4.",
+   "text": "End of Turn: Gain +2 Health.",
+   "goldenText": "End of Turn: Gain +4 Health.",
    "keywords": []
   },
   {
@@ -391,8 +391,8 @@
    "tier": 2,
    "atk": 1,
    "hp": 1,
-   "text": "Whenever you gain a Kindred unit, this slot gains +1/+2 permanently.",
-   "goldenText": "Whenever you gain a Kindred unit, this slot gains +2/+4 permanently.",
+   "text": "Whenever you gain a Kindred unit, this gains +1/+4.",
+   "goldenText": "Whenever you gain a Kindred unit, this gains +2/+8.",
    "keywords": []
   },
   {
@@ -446,8 +446,8 @@
    "tier": 3,
    "atk": 7,
    "hp": 3,
-   "text": "Avenge (5): Give this slot +10 Health.",
-   "goldenText": "Avenge (5): Give this slot +20 Health.",
+   "text": "Avenge (3): Give a unit in your hand +10 Health.",
+   "goldenText": "Avenge (3): Give a unit in your hand +20 Health.",
    "keywords": []
   },
   {
@@ -512,8 +512,8 @@
    "tier": 5,
    "atk": 12,
    "hp": 18,
-   "text": "Quest: After you buy 8 Kindred units, your left-most and right-most slots gain Reborn.",
-   "goldenText": "Quest: After you buy 4 Kindred units, your left-most and right-most slots gain Reborn.",
+   "text": "Quest: After you buy 8 Kindred units, gain a Lesser Trinket.",
+   "goldenText": "Quest: After you buy 8 Kindred units, gain a Lesser Trinket.",
    "keywords": []
   },
   {
@@ -603,10 +603,10 @@
    "name": "Elder",
    "tribe": "brambor",
    "tier": 3,
-   "atk": 8,
+   "atk": 1,
    "hp": 18,
-   "text": "Start of Combat: Give your other units the stats of this slot.",
-   "goldenText": "Start of Combat: Give your other units double the stats of this slot.",
+   "text": "Start of Combat: Give your other Brambor units this unit's Attack.",
+   "goldenText": "Start of Combat: Give your other Brambor units double this unit's Attack.",
    "keywords": []
   },
   {
@@ -616,8 +616,8 @@
    "tier": 3,
    "atk": 2,
    "hp": 2,
-   "text": "Rally: Give this slot +2/+2.",
-   "goldenText": "Rally: Give this slot +4/+4.",
+   "text": "Rally: Give another friendly unit +4/+4.",
+   "goldenText": "Rally: Give two other friendly units +4/+4.",
    "keywords": []
   },
   {
@@ -660,8 +660,8 @@
    "tier": 5,
    "atk": 10,
    "hp": 10,
-   "text": "Battlecry: Give a slot +8 Health.",
-   "goldenText": "Battlecry: Give a slot +16 Health.",
+   "text": "Battlecry: Give your units in hand and army +2 Health.",
+   "goldenText": "Battlecry: Give your units in hand and army +4 Health.",
    "keywords": []
   },
   {
@@ -682,8 +682,8 @@
    "tier": 5,
    "atk": 30,
    "hp": 30,
-   "text": "End of Turn: Play a Potato Gem to this slot. Improve your Potato Gems.",
-   "goldenText": "End of Turn: Play a Potato Gem to this slot. Improve your Potato Gems twice.",
+   "text": "End of Turn: Play a Potato Gem on two random friendly units. Improve your Potato Gems.",
+   "goldenText": "End of Turn: Play a Potato Gem on two random friendly units. Improve your Potato Gems twice.",
    "keywords": []
   },
   {
@@ -748,8 +748,8 @@
    "tier": 2,
    "atk": 1,
    "hp": 1,
-   "text": "End of Turn: Give this slot +2 Attack.",
-   "goldenText": "End of Turn: Give this slot +4 Attack.",
+   "text": "End of Turn: Gain a random Tier 1 unit.",
+   "goldenText": "End of Turn: Gain two random Tier 1 units.",
    "keywords": []
   },
   {
@@ -988,8 +988,8 @@
    "tier": 4,
    "atk": 1,
    "hp": 1,
-   "text": "Battlecry: Copy the powers of your left-most slot to a random plain slot.",
-   "goldenText": "Battlecry: Copy the powers of your left-most slot to 2 random plain slots.",
+   "text": "Start of Combat: Gain the Health of your highest-Health other unit.",
+   "goldenText": "Start of Combat: Gain double the Health of your highest-Health other unit.",
    "keywords": []
   },
   {
@@ -1445,10 +1445,10 @@
    "name": "The Mayor",
    "tribe": "kindred",
    "tier": 6,
-   "atk": 20,
-   "hp": 20,
-   "text": "End of Turn: Give this slot Reborn and +20 Health.",
-   "goldenText": "End of Turn: Give this slot Reborn and +40 Health.",
+   "atk": 50,
+   "hp": 5,
+   "text": "Start of Combat: When there is room, summon two random Tier 5 units.",
+   "goldenText": "Start of Combat: When there is room, summon four random Tier 5 units.",
    "keywords": []
   },
   {

@@ -297,7 +297,7 @@ export class App {
   }
 
   /** Last seen stats of your units, so changes can be animated after each action. */
-  private seen: { units: Map<number, { atk: number; hp: number; zone: string }>; slots: string[] } | null = null;
+  private seen: { units: Map<number, { atk: number; hp: number; zone: string }> } | null = null;
 
   /** the Trinket / Discover choice is tucked away so the army can be looked at (no actions until it's made) */
   private modalHidden = false;
@@ -343,9 +343,8 @@ export class App {
     const units = new Map<number, { atk: number; hp: number; zone: string }>();
     p.board.forEach((u, i) => { const v = unitView(p, u, 'board', i); units.set(u.uid, { atk: v.atk, hp: v.hp, zone: 'board' }); });
     p.hand.forEach((u, i) => { const v = unitView(p, u, 'hand', i); units.set(u.uid, { atk: v.atk, hp: v.hp, zone: 'hand' }); });
-    const slots = p.slots.map((s) => `${s.atk}/${s.hp}/${s.kw.join(',')}`);
     const prev = this.seen;
-    this.seen = { units, slots };
+    this.seen = { units };
     if (!prev) return;
     for (const [uid, now] of units) {
       const el = this.stage.querySelector(`.card[data-id="${uid}"]`) as HTMLElement | null;
@@ -370,9 +369,6 @@ export class App {
         setTimeout(() => f.remove(), 1000);
       }
     }
-    slots.forEach((sl, i) => {
-      if (sl !== prev.slots[i]) this.stage.querySelector(`.slot-plate[data-slot="${i}"]`)?.classList.add('flash');
-    });
   }
 
   titleHtml() {
@@ -408,8 +404,8 @@ export class App {
       Buy units from the Tavern for ${CONFIG.buyCost} gold, then play them from your hand into your army (up to ${CONFIG.boardSize}).
       Sell units for ${CONFIG.sellValue} gold. Refresh the Tavern for ${CONFIG.rerollCost}. Freeze it to keep the same units next turn.
       Upgrade your Tavern to find stronger units (Tier 1 to ${CONFIG.maxTier}). Gold refills each turn and grows by 1, up to ${CONFIG.maxGold}.
-      <h3>Slots</h3>
-      Your army stands in 7 slots. Some cards improve a slot instead of a unit. Slot bonuses stay with the slot, so whoever stands there gets them. Drag units to rearrange.
+      <h3>Your Army</h3>
+      Your army has room for 7 units. Units attack in order from left to right, so drag them to rearrange.
       <h3>Golden Units</h3>
       Collect three copies of a unit and they combine into a Golden version with double stats and a stronger ability. Playing it lets you Discover a unit from one tier higher.
       <h3>Heroes and Trinkets</h3>
@@ -501,18 +497,9 @@ export class App {
     });
     const skipping = p.heroMem.skipRound === this.g!.round;
     if (!p.shop.length) h += `<div class="hint abs" style="left:${L.cx - 240}px;top:${L.shopY + 70}px;width:480px">${skipping ? 'You skip your first turn. The Tavern opens next turn.' : 'The Tavern is empty. Refresh for new units.'}</div>`;
-    // army slots
+    // army positions (drop targets)
     for (let i = 0; i < CONFIG.boardSize; i++) {
-      const s = p.slots[i];
-      const bonus = [s.atk || s.hp ? `${s.atk >= 0 ? '+' : ''}${s.atk}/${s.hp >= 0 ? '+' : ''}${s.hp}` : '', ...s.kw.map((k) => ({ taunt: 'Taunt', divineShield: 'Shield', reborn: 'Reborn', venomous: 'Venom', poisonous: 'Poison', windfury: 'Windfury' })[k])].filter(Boolean).join(' · ');
-      const buffed = s.atk || s.hp || s.kw.length;
-      // with a unit standing in it, the slot's Attack shows under the unit's Attack and its Health under its Health,
-      // leaving the middle free for the unit's keyword coins (the slot's keywords are on the unit too)
-      const sgn = (n: number) => `${n >= 0 ? '+' : ''}${n}`;
-      const label = p.board[i] && (s.atk || s.hp)
-        ? `<span class="b-atk">${s.atk ? sgn(s.atk) : ''}</span><span class="b-hp">${s.hp ? sgn(s.hp) : ''}</span>`
-        : p.board[i] ? '' : bonus || `Slot ${i + 1}`;
-      h += `<div class="slot-plate ${buffed ? 'buffed' : ''}" data-slot="${i}" style="left:${L.slotX(i)}px;top:${L.slotTop}px;width:${L.slotW}px;height:${L.slotH}px"><div class="bonus ${s.atk < 0 || s.hp < 0 ? 'neg' : ''} ${p.board[i] ? 'split' : ''}">${label}</div></div>`;
+      h += `<div class="slot-plate" data-slot="${i}" style="left:${L.slotX(i)}px;top:${L.slotTop}px;width:${L.slotW}px;height:${L.slotH}px"></div>`;
     }
     // cards gained while the hand was full wait here until there's room
     if (p.overflow?.length) h += `<div class="overflow-pill abs" style="left:${L.cx - 160}px;top:${L.handY - 34}px;width:320px">Hand full · ${p.overflow.length} more card${p.overflow.length > 1 ? 's' : ''} waiting for room</div>`;
@@ -909,12 +896,13 @@ export class App {
     const offer = p.trinketOffer!;
     const greater = trinketDef(offer[0]).greater;
     return `<div class="modal"><button class="btn modal-hide" data-act="modal-hide" title="Look at your army, then come back">Look at army ▼</button><h2>${greater ? 'Greater' : 'Lesser'} Trinket</h2>
-      <div class="hint lead">Choose one to buy. You have ${p.gold} gold. (Placeholder trinkets.)</div>
+      <div class="hint lead">${p.trinketFree ? 'Devotion: choose one, free.' : `Choose one to buy. You have ${p.gold} gold.`}</div>
       <div class="choices pairs">${offer.map((id) => {
         const t = trinketDef(id);
-        return `<div class="choice trinketcard ${t.greater ? 'greater' : ''} ${t.cost > p.gold ? 'cant' : ''}" data-act="trinket" data-id="${id}">
+        const cost = p.trinketFree ? 0 : t.cost;
+        return `<div class="choice trinketcard ${t.greater ? 'greater' : ''} ${cost > p.gold ? 'cant' : ''}" data-act="trinket" data-id="${id}">
           <div class="gem"></div><div class="tn">${esc(t.name)}</div><div class="tt">${esc(t.text)}</div>
-          <div class="pc" style="font-family:var(--display);color:#e6a10f;font-size:18px">${t.cost} <span class="coin"></span></div></div>`;
+          <div class="pc" style="font-family:var(--display);color:#e6a10f;font-size:18px">${p.trinketFree ? 'Free' : `${t.cost} <span class="coin"></span>`}</div></div>`;
       }).join('')}</div>
       <button class="btn" data-act="trinket-skip">Skip</button></div>`;
   }

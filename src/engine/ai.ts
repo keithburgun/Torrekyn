@@ -44,7 +44,7 @@ const jitter = (g: GameState, p: Player, scale = 10) => ((prof(p).noise ?? 0) ? 
 const ECON: Record<string, number> = {
   memory: 4, storyteller: 4, command: 5, remember: 10, librarian: 10, restore: 12, farmer: 3, honeysuckle_brambor: 5,
   computer: 8, robot_boy: 10, shopkeep: 4, intern: 3, purveyor: 10, miner: 6, pickaxe: 6, scout: 4, grief: 6,
-  omni_gem: 30, exploit: 8, golden_light: 10, potato_lord: 10, jeweler: 3, distant_land: 8, larva: 12, adder: 6, invisible_hand: 0,
+  omni_gem: 30, exploit: 8, golden_light: 10, potato_lord: 10, jeweler: 3, distant_land: 8, larva: 12, adder: 6, invisible_hand: 0, builder: 5,
 };
 
 /**
@@ -52,8 +52,8 @@ const ECON: Record<string, number> = {
  * whole army. Battles can't see this (cardValues measures one turn), so it's set by hand. Golden doubles it.
  */
 const GROWTH: Record<string, [number, number]> = {
-  architect: [2, 2], owl: [2, 0], the_mayor: [0, 20], chaos: [4, 4], aerial_drone: [3, 6], lake: [0, 1], andromeda_robin: [0, 9],
-  patchwork: [1, 2], shadow_place: [4, 4], cursed_vines: [3, 3], warlock: [0, 4], funeral: [0, 2], vampire: [0, 2], locas: [2, 1],
+  architect: [0, 2], owl: [2, 2], chaos: [4, 4], aerial_drone: [3, 6], lake: [0, 1], andromeda_robin: [0, 6],
+  patchwork: [1, 4], shadow_place: [4, 4], warlock: [0, 4], funeral: [0, 2], vampire: [0, 2], locas: [2, 1], commitment: [3, 3],
   ocean_sky: [2, 2], intern: [0, 0], builder: [0, 4],
 };
 
@@ -189,8 +189,6 @@ function holdInHand(p: Player, u: Unit): boolean {
 function sellNow(p: Player, u: Unit): boolean {
   if (SELL_NOW.includes(u.cardId)) return true;
   if (on(p, 'hold') && u.cardId === 'scout') return true;
-  // Message: +1/+2 to every slot is worth more than its body once there's an army to stand in them
-  if (on(p, 'smartsell') && u.cardId === 'message' && p.board.length >= 4) return true;
   return false;
 }
 
@@ -296,7 +294,7 @@ function simScore(g: GameState, p: Player, order: Unit[], opps: ReturnType<typeo
   let k = 0;
   for (const o of opps) {
     for (let i = 0; i < n; i++) {
-      const c = new Combat(g, { p: me, board: order, slots: me.slots, tier: p.tier, persistent: false }, { p: o.owner, board: o.board, slots: o.owner.slots, tier: o.tier, persistent: false });
+      const c = new Combat(g, { p: me, board: order, tier: p.tier, persistent: false }, { p: o.owner, board: o.board, tier: o.tier, persistent: false });
       const w = c.run();
       s += w === 0 ? 1 : w === -1 ? 0.5 : 0;
       k++;

@@ -22,7 +22,7 @@ function setup(seed: number) {
 }
 
 const snap = (g: GameState, p: Player, extra: unknown = null) =>
-  JSON.stringify([p.board, p.hand, p.slots, p.discovers, p.quests, p.gold, p.maxGoldBonus, p.tribeAtk, p.gemBonus, p.redGemBonus,
+  JSON.stringify([p.board, p.hand, p.trinketOffer, p.trinkets, p.discovers, p.quests, p.gold, p.maxGoldBonus, p.tribeAtk, p.gemBonus, p.redGemBonus,
     p.bannerBonus, p.alcoveAtkThisTier, p.twinBonus, p.freeRerolls, p.upgradeCost, p.shop, p.overflow, extra]);
 
 describe('every ability changes something', () => {
@@ -39,7 +39,6 @@ describe('every ability changes something', () => {
             const { g, p } = setup(seed * 7 + ids.indexOf(id));
             p.board = FILL.slice(0, 4).map((x) => makeUnit(g, x));
             p.hand = ['librarian', 'patchwork', 'secret'].map((x) => makeUnit(g, x));
-            p.slots[0].atk = 2; // a slot with powers (Paradox copies it)
             const self = makeUnit(g, id, golden);
             p.board.splice(2, 0, self);
             const before = snap(g, p);
@@ -61,7 +60,7 @@ describe('every ability changes something', () => {
           let changed = false;
           for (let seed = 1; seed <= 6 && !changed; seed++) {
             const { g, p, o } = setup(seed * 13 + ids.indexOf(id));
-            const mine: Unit[] = ['ash', 'shield_azure', 'knight', 'white_ninja', 'hunter'].map((x) => makeUnit(g, x));
+            const mine: Unit[] = ['sapling', 'shield_azure', 'knight', 'white_ninja', 'hunter'].map((x) => makeUnit(g, x));
             const selfU = makeUnit(g, id, golden);
             selfU.atk = Math.max(selfU.atk, 6);
             mine.splice(2, 0, selfU);
@@ -69,9 +68,8 @@ describe('every ability changes something', () => {
             p.hand = ['librarian', 'orange_ninja', 'ambush', 'hug'].map((x) => makeUnit(g, x));
             p.hand[2].atk = 9; // a Cloister unit in hand for Ambush
             p.tier = 3; // Drill Sergeant
-            p.slots[2].hp = 3; // Elder gives this slot's stats
             const theirs = ['ash', 'mod', 'knight', 'sapling'].map((x) => makeUnit(g, x));
-            const c = new Combat(g, { p, board: mine, slots: p.slots, tier: p.tier, persistent: true }, { p: o, board: theirs, slots: o.slots, tier: 1, persistent: false });
+            const c = new Combat(g, { p, board: mine, tier: p.tier, persistent: true }, { p: o, board: theirs, tier: 1, persistent: false });
             const side = c.sides[0];
             const cu = side.units[2];
             cu.killedBy = c.sides[1].units[1];
@@ -94,7 +92,7 @@ describe('every ability changes something', () => {
   }
 
   it('every card with ability text has an ability', () => {
-    const PASSIVE = new Set(['vulnerability', 'root', 'larva', 'orange_ninja', 'pyro', 'treasure', 'warmech', 'gem_wizard', 'sarinee', 'tom_judith', 'horseman', 'shield_azure', 'roll_guard', 'ash', 'white_ninja']);
+    const PASSIVE = new Set(['remember', 'vulnerability', 'root', 'larva', 'orange_ninja', 'pyro', 'treasure', 'warmech', 'gem_wizard', 'sarinee', 'tom_judith', 'horseman', 'shield_azure', 'roll_guard', 'ash', 'white_ninja']);
     const missing = CARDS.filter((c) => !c.token && c.text && !PASSIVE.has(c.id) && !Object.keys(EFFECTS[c.id] ?? {}).length).map((c) => c.id);
     expect(missing).toEqual([]);
     expect(def('skel').text).toBe('');
@@ -102,7 +100,7 @@ describe('every ability changes something', () => {
 
   // ---- abilities that wait for something to happen: make it happen for real ----
   const fightOf = (g: GameState, p: Player, o: Player, mine: Unit[], theirs: Unit[]) =>
-    new Combat(g, { p, board: mine, slots: p.slots, tier: p.tier, persistent: true }, { p: o, board: theirs, slots: o.slots, tier: 1, persistent: false });
+    new Combat(g, { p, board: mine, tier: p.tier, persistent: true }, { p: o, board: theirs, tier: 1, persistent: false });
   const U = (g: GameState, id: string, atk?: number, hp?: number) => { const x = makeUnit(g, id); if (atk !== undefined) x.atk = atk; if (hp !== undefined) x.hp = hp; return x; };
 
   it('event abilities trigger in real battles', () => {
@@ -149,11 +147,12 @@ describe('every ability changes something', () => {
     p.gold = 99; p.hand = [];
     for (const id of ['doctor', 'architect', 'hug', 'command']) { p.shop = [U(g, id)]; buy(g, p, 0); }
     expect(p.hand.length).toBeGreaterThanOrEqual(5);
-    expect(p.slots[3].hp).toBeGreaterThan(0);
-    // Devotion: buying 8 Kindred units gives the outer slots Reborn
+    expect(patch.hp).toBeGreaterThan(def('patchwork').hp);
+    // Devotion: buying 8 Kindred units offers a free Lesser Trinket
     p.board = []; p.hand = [U(g, 'devotion')];
     play(g, p, 0, 0);
     for (let i = 0; i < 8; i++) { p.hand = []; p.shop = [U(g, 'doctor')]; buy(g, p, 0); }
-    expect(p.slots[0].kw).toContain('reborn');
+    expect(p.trinketOffer?.length).toBeGreaterThan(0);
+    expect(p.trinketFree).toBe(true);
   });
 });

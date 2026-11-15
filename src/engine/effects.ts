@@ -2,11 +2,11 @@
  * Card abilities. Each card id maps to a set of hooks.
  *  - Shop hooks receive a Ctx whose `board` is the player's persistent board.
  *  - Battlecries may also be triggered during combat (Returner, Spoonful); then `combat` is set and
- *    `board` holds combat units, so effects there are temporary unless they touch slots/hand/player.
+ *    `board` holds combat units, so effects there are temporary unless they touch hand/player.
  *  - Combat hooks receive a CCtx.
  * m = 1 for normal, 2 for golden.
  */
-import type { Body, Keyword, Player, Slot, Unit, GameState } from './types';
+import type { Body, Keyword, Player, Unit, GameState } from './types';
 import { addKw, CARDS, def, effStats, has, isTribe, log, makeUnit, pick, rand, removeKw, sample, tribeOf, CONFIG } from './core';
 import type { CUnit, Combat, Side } from './combat';
 import {
@@ -115,28 +115,9 @@ const buff = (b: Body | undefined, a: number, h: number) => {
 
 const gain = (c: { g: GameState; p: Player }, id: string | undefined, golden = false) => gainNew(c.g, c.p, id, golden);
 
-function slotIndex(c: Ctx): number {
-  if (c.combat) return (c.self as CUnit).slot;
-  return c.board.indexOf(c.self);
-}
-
-/** Change a slot permanently (if this player is real), and the unit currently using it. */
-function slotBuff(c: Ctx, idx: number, a: number, h: number, kws: Keyword[] = []) {
-  if (idx < 0 || idx >= CONFIG.boardSize) return;
-  const persistent = !c.combat || c.side!.persistent;
-  if (persistent) {
-    const s = c.p.slots[idx];
-    s.atk += a;
-    s.hp += h;
-    for (const k of kws) addKw(s, k);
-  }
-  if (c.combat) {
-    const u = c.side!.units.find((x) => x.slot === idx);
-    if (u) {
-      buff(u, a, h);
-      for (const k of kws) addKw(u, k);
-    }
-  }
+/** a Potato Gem's Health right now (2, +1 per improvement) */
+export function potatoHp(p: Player): number {
+  return 2 + gemLevel(p, 'ancient_name_brambor');
 }
 
 function discover(c: Ctx, filter: (id: string) => boolean, reason: string, times: number) {
@@ -276,10 +257,15 @@ export const EFFECTS: Record<string, Effect> = {
     },
   },
   message: {
-    onSell: (c) => { for (const s of c.p.slots) { s.atk += c.m; s.hp += 2 * c.m; } },
+    // +2/+2 (Golden +4/+4) to your units with Taunt or Divine Shield
+    battlecry: (c) => { for (const u of c.board) if (u !== c.self && (has(u, 'taunt') || has(u, 'divineShield'))) buff(u, 2 * c.m, 2 * c.m); },
   },
   front_and_center: {
-    battlecry: (c) => { for (let i = 0; i < c.m; i++) slotBuff(c, i, 0, 0, ['divineShield']); },
+    // Divine Shield to two Azure units (ones without it; this one counts)
+    soc: (c) => {
+      const pool = c.side.units.filter((u) => u.hp > 0 && isTribe(u, 'azure') && !has(u, 'divineShield'));
+      for (const u of sample(c.g, pool, 2)) addKw(u, 'divineShield');
+    },
   },
   knight: {
     rally: (c) => { for (const u of c.side.units) if (isTribe(u, 'azure')) u.atk += 4 * c.m; },
@@ -304,13 +290,11 @@ export const EFFECTS: Record<string, Effect> = {
     },
   },
   remember: {
-    battlecry: (c) => discoverFrom(c, c.p.lastOpponentBoard.map((u) => u.cardId), 'Discover a card from your last opponent', c.m),
+    // passive: the Azure units next to it at the start of a battle keep what they gain in it (see Combat.keepGains)
   },
   gelf_lanz: {
-    rally: (c, t) => {
-      const dmg = c.m === 2 ? c.self.atk : Math.floor(c.self.atk / 2);
-      for (const u of c.c.adjacent(t)) c.c.damage(u, dmg, c.self);
-    },
+    // gains the Attack of the unit it attacks (Golden: double), for this battle
+    rally: (c, t) => { c.self.atk += Math.max(0, t.atk) * c.m; },
   },
   ocean_sky: {
     onShieldLost: (c, u) => {
@@ -319,13 +303,13 @@ export const EFFECTS: Record<string, Effect> = {
     },
   },
   commitment: {
-    // +20 Health to the left-most slot for each Azure unit you have (this one included)
-    battlecry: (c) => {
-      const n = c.board.filter((b) => isTribe(b, 'azure')).length;
-      if (n) slotBuff(c, 0, 0, 20 * n * c.m);
+    // +1/+1 to your units at Start of Combat, +1/+1 more for every Battlecry unit you've played since (Golden doubles)
+    soc: (c) => {
+      const n = (1 + (c.self.mem.imp ?? 0)) * c.m;
+      for (const u of c.side.units) if (u.hp > 0) buff(u, n, n);
     },
+    onPlayOther: (c, u) => { if (hasBattlecry(u.cardId)) (c.self as Unit).mem.imp = ((c.self as Unit).mem.imp ?? 0) + 1; },
   },
-
   // ===== Kindred Society =====
   doctor: {
     // Fighter: Rally summons random Tier 1 units
@@ -345,14 +329,10 @@ export const EFFECTS: Record<string, Effect> = {
     },
   },
   architect: {
-    endTurn: (c) => slotBuff(c, c.board.indexOf(c.self), 2 * c.m, 2 * c.m),
+    endTurn: (c) => { c.self.hp += 2 * c.m; },
   },
   patchwork: {
-    onGain: (c, u) => {
-      if (!isTribe(u, 'kindred')) return;
-      const i = c.board.indexOf(c.self);
-      if (i >= 0) slotBuff(c, i, c.m, 2 * c.m);
-    },
+    onGain: (c, u) => { if (isTribe(u, 'kindred')) buff(c.self, c.m, 4 * c.m); },
   },
   hug: {
     battlecry: (c) => buff(pick(c.g, c.p.hand.filter((u) => isTribe(u, 'kindred'))), 6 * c.m, 6 * c.m),
@@ -384,10 +364,12 @@ export const EFFECTS: Record<string, Effect> = {
   },
   vulnerability: {}, // passive, see combat
   builder: {
-    avenge: [5, 5],
+    // +10 Health (Golden +20) to a random unit in your hand, for good
+    avenge: [3, 3],
     avengeFn: (c) => {
-      if (c.side.persistent && c.p.slots[c.self.slot]) c.p.slots[c.self.slot].hp += 10 * c.m;
-      c.self.hp += 10 * c.m;
+      if (!c.side.persistent) return;
+      const u = pick(c.g, c.p.hand);
+      if (u) u.hp += 10 * c.m;
     },
   },
   '1000_miles': {
@@ -461,17 +443,12 @@ export const EFFECTS: Record<string, Effect> = {
     },
   },
   elder: {
-    soc: (c) => {
-      const s = c.side.slots[c.self.slot];
-      if (!s) return;
-      for (const u of c.side.units) if (u !== c.self) buff(u, s.atk * c.m, s.hp * c.m);
-    },
+    // your other Brambor units get its Attack (Golden: double)
+    soc: (c) => { for (const u of c.side.units) if (u !== c.self && u.hp > 0 && isTribe(u, 'brambor')) u.atk += c.self.atk * c.m; },
   },
   cursed_vines: {
-    rally: (c) => {
-      if (c.side.persistent && c.p.slots[c.self.slot]) { c.p.slots[c.self.slot].atk += 2 * c.m; c.p.slots[c.self.slot].hp += 2 * c.m; }
-      buff(c.self, 2 * c.m, 2 * c.m);
-    },
+    // +4/+4 to another friendly unit (Golden: two others), for this battle
+    rally: (c) => { for (const u of sample(c.g, c.side.units.filter((x) => x.hp > 0 && x !== c.self), c.m)) buff(u, 4, 4); },
   },
   witch: {
     rally: (c) => { for (let i = 0; i < c.m; i++) c.c.damage(c.c.randomEnemy(c.side), c.self.atk, c.self); },
@@ -483,25 +460,24 @@ export const EFFECTS: Record<string, Effect> = {
     deathrattle: (c) => { for (let i = 0; i < 2 * c.m; i++) gain(c, pick(c.g, GEMS)); },
   },
   ancient_name_brambor: {
-    // Potato Gem: +Health to a slot (the chosen unit's)
-    target: 'friendly',
+    // Potato Gem: +2 Health (Golden +4; +1 per improvement) to every unit in your hand and army
     battlecry: (c) => {
-      const t = gemTarget(c);
-      if (!t) return;
-      slotBuff(c, c.combat ? (t as CUnit).slot : c.board.indexOf(t), 0, (8 + gemLevel(c.p, 'ancient_name_brambor')) * c.m);
+      const n = potatoHp(c.p) * c.m;
+      for (const u of c.board) if (u !== c.self) u.hp += n;
+      if (!c.combat || c.side?.persistent) for (const u of c.p.hand) u.hp += n;
     },
   },
   chosen_name: {
     soc: (c) => buff(c.self, c.self.atk * c.m, c.self.hp * c.m),
   },
   andromeda_robin: {
-    // plays a Potato Gem on its own slot, then improves Potato Gems
+    // a Potato Gem's Health on two random friendly units, then Potato Gems improve (Golden: twice)
     endTurn: (c) => {
-      playGemOn(c, 'ancient_name_brambor', c.self);
+      const n = potatoHp(c.p);
+      for (const u of sample(c.g, c.board, 2)) u.hp += n;
       improveGem(c.p, 'ancient_name_brambor', c.m);
     },
   },
-
   // ===== Cloister =====
   green_gem: {
     target: 'friendly',
@@ -528,7 +504,7 @@ export const EFFECTS: Record<string, Effect> = {
     },
   },
   owl: {
-    endTurn: (c) => slotBuff(c, c.board.indexOf(c.self), 2 * c.m, 0),
+    endTurn: (c) => { for (let i = 0; i < c.m; i++) gain(c, randomTier(c, 1)); },
   },
   secret: {
     soc: (c) => { c.side.secrets.push(c.m === 2); },
@@ -652,10 +628,10 @@ export const EFFECTS: Record<string, Effect> = {
     },
   },
   paradox: {
-    battlecry: (c) => {
-      const src = c.p.slots[0];
-      const plain = c.p.slots.map((s, i) => [s, i] as [Slot, number]).filter(([s, i]) => i > 0 && !s.atk && !s.hp && !s.kw.length);
-      for (const [, i] of sample(c.g, plain, c.m)) slotBuff(c, i, src.atk, src.hp, src.kw);
+    // gains the Health of your highest-Health other unit (Golden: double), for this battle
+    soc: (c) => {
+      const best = c.side.units.filter((u) => u !== c.self && u.hp > 0).reduce<CUnit | undefined>((a, b) => (!a || b.hp > a.hp ? b : a), undefined);
+      if (best) c.self.hp += best.hp * c.m;
     },
   },
   warmech: {}, // stats from Deathrattles triggered this game (core ownerBonus; grows during battle in combat.ts)
@@ -835,7 +811,16 @@ export const EFFECTS: Record<string, Effect> = {
     },
   },
   the_mayor: {
-    endTurn: (c) => slotBuff(c, c.board.indexOf(c.self), 0, 20 * c.m, ['reborn']),
+    // two random Tier 5 units (Golden: four), if there's room
+    soc: (c) => {
+      let pos = c.side.units.indexOf(c.self) + 1;
+      for (let i = 0; i < 2 * c.m; i++) {
+        const id = pick(c.g, CARDS.filter((d) => d.tier === 5 && !d.token).map((d) => d.id));
+        if (!id || !c.c.spawn(c.side, id, false, pos)) break;
+        c.c.snap('trigger', { note: `The Mayor: Summon ${def(id).name}` });
+        pos++;
+      }
+    },
   },
   archnode: {
     // Rally: one random unit of each tribe in your army (Neutral counts) gets +3/+3 (Golden +6/+6) for good

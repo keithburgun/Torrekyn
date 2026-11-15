@@ -106,8 +106,8 @@ feat('alltaunt', 'Shield Wall', 'Have 7 units with Taunt in your army.', 'Feats'
 feat('allshield', 'Holy Order', 'Have 5 units with Divine Shield in your army.', 'Feats', (c) => board(c).filter((_, i) => stat(c, i).kw.includes('divineShield')).length >= 5);
 feat('rich', 'Deep Pockets', 'Have 20 or more gold at once.', 'Feats', (c) => !!c.p && c.p.gold >= 20);
 feat('handfull', 'Full Hands', 'Have 10 cards in your hand.', 'Feats', (c) => !!c.p && c.p.hand.length >= 10);
-feat('slot20', 'Hallowed Ground', 'Have a slot with +20 or more total bonus stats.', 'Feats', (c) => !!c.p && c.p.slots.some((s) => s.atk + s.hp >= 20));
-feat('allslots', 'Fortified', 'Have a bonus on all 7 slots.', 'Feats', (c) => !!c.p && c.p.slots.every((s) => s.atk || s.hp || s.kw.length));
+feat('big50', 'Built to Last', 'Have a unit with at least 50 Attack and 50 Health.', 'Feats', (c) => board(c).some((_, i) => stat(c, i).atk >= 50 && stat(c, i).hp >= 50));
+feat('trinkets3', 'Collector', 'Own 3 Trinkets in one game.', 'Feats', (c) => !!c.p && c.p.trinkets.length >= 3);
 feat('bc5', 'Rapid Fire', 'Trigger 5 Battlecries in one turn.', 'Feats', (c) => !!c.p && c.p.battlecriesThisTurn >= 5);
 feat('bc50', 'Battle Cry', 'Trigger 50 Battlecries in one game.', 'Feats', (c) => !!c.p && c.p.battlecriesGame >= 50);
 feat('disc5', 'Curious Mind', 'Discover 5 units in one game.', 'Feats', (c) => c.game.discovers >= 5);
@@ -116,7 +116,7 @@ feat('earlytri', 'Early Gold', 'Make a Golden unit before turn 5.', 'Feats', (c)
 feat('goldt5', 'Crown Jewel', 'Have a Golden Tier 5 or 6 unit.', 'Feats', (c) => !!c.p && [...c.p.board, ...c.p.hand].some((u) => u.golden && def(u.cardId).tier >= 5));
 feat('trinkets2', 'Fully Accessorized', 'Own 2 Trinkets in one game.', 'Feats', (c) => !!c.p && c.p.trinkets.length >= 2);
 // combat feats
-feat('max15', 'Maximum Damage', 'Deal 15 damage in a single combat.', 'Combat', (c) => !!c.combat?.won && c.combat.damage >= 15);
+feat('max15', 'Maximum Damage', 'Deal 8 damage in a single combat.', 'Combat', (c) => !!c.combat?.won && c.combat.damage >= 8);
 feat('lone', 'Last One Standing', 'Win a combat with only 1 unit left.', 'Combat', (c) => !!c.combat?.won && c.combat.survivors === 1);
 feat('flawless', 'Untouchable', 'Win a combat with all 7 of your units surviving.', 'Combat', (c) => !!c.combat?.won && c.combat.survivors >= 7);
 feat('underdog', 'Underdog', 'Win a combat while outnumbered.', 'Combat', (c) => !!c.combat?.won && c.combat.oppUnits > c.combat.myUnits);
@@ -126,8 +126,8 @@ feat('streak5', 'Rampage', 'Win 5 combats in a row.', 'Combat', (c) => c.game.st
 feat('ghost', 'Ghostbuster', 'Defeat a ghost.', 'Combat', (c) => !!c.combat?.won && c.combat.ghost);
 // end of game feats
 const place = (c: Ctx) => (c.end && c.p ? c.p.placement : 0);
-feat('healthy', 'Barely a Scratch', 'Finish 1st with 30 or more Health.', 'Feats', (c) => place(c) === 1 && c.p!.health >= 30);
-feat('comeback', 'Comeback Kid', 'Finish 1st with 5 or less Health.', 'Feats', (c) => place(c) === 1 && c.p!.health <= 5);
+feat('healthy', 'Barely a Scratch', 'Finish 1st with 15 or more Health.', 'Feats', (c) => place(c) === 1 && c.p!.health >= 15);
+feat('comeback', 'Comeback Kid', 'Finish 1st with 3 or less Health.', 'Feats', (c) => place(c) === 1 && c.p!.health <= 3);
 feat('quick', 'Blitz', 'Finish 1st by turn 12.', 'Feats', (c) => place(c) === 1 && c.g!.round <= 12);
 feat('long', 'War of Attrition', 'Play a game that lasts 20 turns.', 'Feats', (c) => !!c.end && c.g!.round >= 20);
 feat('second', 'So Close', 'Finish 2nd.', 'Career', (c) => place(c) === 2);
