@@ -154,7 +154,7 @@ function bestTarget(g: GameState, p: Player, u: Unit): number | undefined {
     const worst = cands.reduce((a, b) => (unitScore(p, a) < unitScore(p, b) ? a : b));
     return unitScore(p, worst) < 25 ? worst.uid : undefined;
   }
-  if (u.cardId === 'therapist') {
+  if (u.cardId === 'therapist' || u.cardId === 'shield_neutral') {
     const noTaunt = cands.filter((b) => !b.kw.includes('taunt'));
     const pool = noTaunt.length ? noTaunt : cands;
     return pool.reduce((a, b) => (effStats(p, a, 'board').hp > effStats(p, b, 'board').hp ? a : b)).uid;
@@ -193,7 +193,7 @@ function sellNow(p: Player, u: Unit): boolean {
 }
 
 /** cards that are all Battlecry: once it has happened, the body is worth a Gold more than a slot (late on) */
-const isSpell = (id: string) => GEMS.includes(id) || id === 'sword' || id === 'shield_neutral' || id === 'pickaxe'; // (a function: GEMS isn't loaded yet when this module starts)
+const isSpell = (id: string) => GEMS.includes(id) || id === 'sword' || id === 'pickaxe'; // (a function: GEMS isn't loaded yet when this module starts)
 
 /** play one card from hand and deal with what follows (Discovers, cards sold on arrival, spent Gem bodies) */
 function playOne(g: GameState, p: Player, idx: number) {

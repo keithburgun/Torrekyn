@@ -1,6 +1,6 @@
 /** v0.10: slots no longer have bonuses; the cards and trinkets that used them were rewritten. Each one, checked. */
 import { describe, it, expect } from 'vitest';
-import { newGame, play, endTurnEffects, buy } from '../src/engine/game';
+import { newGame, play, endTurnEffects, buy, sell } from '../src/engine/game';
 import { makeUnit, def } from '../src/engine/core';
 import { Combat } from '../src/engine/combat';
 import { gemLevel } from '../src/engine/effects';
@@ -209,5 +209,41 @@ describe('trinkets rewritten without slots', () => {
     expect(f.sides[0][0].kw).toEqual(expect.arrayContaining(['taunt', 'reborn']));
     expect(f.sides[0][1].kw).not.toContain('taunt');
     expect([f.sides[0][1].atk, f.sides[0][1].hp]).toEqual([4, 53]);
+  });
+});
+
+describe('v0.10.2 changes', () => {
+  it('Shield: has Taunt, and its Battlecry gives the chosen unit Taunt (Golden: one more)', () => {
+    const { g, p } = setup();
+    const a = U(g, 'doctor', 2, 2), b = U(g, 'doctor', 2, 2), c = U(g, 'doctor', 2, 2);
+    [a, b, c].forEach((x) => (x.kw = []));
+    p.board = [a, b, c];
+    p.hand = [U(g, 'shield_neutral')];
+    expect(p.hand[0].kw).toContain('taunt');
+    play(g, p, 0, 3, b.uid);
+    expect([a.kw.includes('taunt'), b.kw.includes('taunt'), c.kw.includes('taunt')]).toEqual([false, true, false]);
+    p.hand = [U(g, 'shield_neutral', undefined, undefined, true)];
+    play(g, p, 0, 4, a.uid);
+    expect([a, b, c].filter((x) => x.kw.includes('taunt')).length).toBe(3);
+  });
+
+  it('Storyteller: selling it gains a random Cloister unit (up to your Tier)', () => {
+    for (let seed = 1; seed <= 8; seed++) {
+      const g = newGame(seed, 'You', ['cloister', 'azure', 'kindred', 'alcove']);
+      const p = g.players[0];
+      p.discovers = []; p.hand = [];
+      p.tier = 2;
+      p.board = [U(g, 'storyteller')];
+      sell(g, p, 0);
+      expect(p.hand.length).toBe(1);
+      expect(def(p.hand[0].cardId).tribe).toBe('cloister');
+      expect(def(p.hand[0].cardId).tier).toBeLessThanOrEqual(2);
+    }
+  });
+
+  it('every hero starts with 4 more Health than in v0.10.1', async () => {
+    const { HEROES, heroHealth } = await import('../src/engine/heroes');
+    expect(heroHealth('derby_pocket')).toBe(26);
+    expect(Math.min(...HEROES.map((h) => heroHealth(h.id)))).toBe(20);
   });
 });

@@ -490,7 +490,8 @@ export const EFFECTS: Record<string, Effect> = {
   },
 
   storyteller: {
-    onSell: (c) => { for (let i = 0; i < c.m; i++) gain(c, randomTier(c, 1)); },
+    // a random Cloister unit up to your Tavern Tier (Golden: two)
+    onSell: (c) => { for (let i = 0; i < c.m; i++) gain(c, randomTribeUpTo(c, 'cloister')); },
   },
   disciple: {
     deathrattle: (c) => { for (let i = 0; i < c.m; i++) c.c.damage(c.c.randomEnemy(c.side), 1, c.self); },
@@ -714,10 +715,13 @@ export const EFFECTS: Record<string, Effect> = {
     },
   },
   shield_neutral: {
+    // Taunt on a friendly unit you choose (Golden: and one more random unit without it)
+    target: 'friendly',
     battlecry: (c) => {
-      const o = others(c.board, c.self);
-      const t = o[o.length - 1];
-      if (t) { buff(t, c.m, 2 * c.m); addKw(t, 'taunt'); }
+      const t = gemTarget(c);
+      if (!t) return;
+      addKw(t, 'taunt');
+      if (c.m > 1) { const more = pick(c.g, others(c.board, c.self).filter((u) => u !== t && !has(u, 'taunt'))); if (more) addKw(more, 'taunt'); }
     },
   },
   pickaxe: {

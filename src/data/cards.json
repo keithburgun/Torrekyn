@@ -704,8 +704,8 @@
    "tier": 1,
    "atk": 3,
    "hp": 2,
-   "text": "When you sell this, gain a random Tier 1 unit.",
-   "goldenText": "When you sell this, gain 2 random Tier 1 units.",
+   "text": "When you sell this, gain a random Cloister unit.",
+   "goldenText": "When you sell this, gain 2 random Cloister units.",
    "keywords": []
   },
   {
@@ -1211,9 +1211,11 @@
    "tier": 1,
    "atk": 1,
    "hp": 3,
-   "text": "Battlecry: Give your right-most unit +1/+2 and Taunt.",
-   "goldenText": "Battlecry: Give your right-most unit +2/+4 and Taunt.",
-   "keywords": []
+   "text": "Taunt. Battlecry: Give a friendly unit Taunt.",
+   "goldenText": "Taunt. Battlecry: Give two friendly units Taunt.",
+   "keywords": [
+    "taunt"
+   ]
   },
   {
    "id": "pickaxe",

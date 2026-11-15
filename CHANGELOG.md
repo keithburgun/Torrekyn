@@ -2,6 +2,9 @@
 
 Newest first. The version shows on the title screen.
 
+## 0.10.2 — 2026-11-15
+- Shield: a 1/3 with Taunt. Battlecry: give a friendly unit (you choose) Taunt; Golden gives one more random unit Taunt. Storyteller: selling it gains a random Cloister unit (up to your Tavern Tier; Golden two). Every hero starts with 4 more Health.
+
 ## 0.10.1 — 2026-11-15
 - Battle damage is now the winner's Tavern Tier + 1 for each of their surviving units (at most 12). Tier stars show on the winner's hero again. 'Maximum Damage' achievement: deal 12 in one battle.
 

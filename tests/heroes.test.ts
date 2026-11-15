@@ -76,17 +76,17 @@ describe('hero powers', () => {
     const { g, p } = setup('derby_pocket');
     const dummy = unit(g, firstOf((id) => !EFFECTS[id]), 1, 1);
     p.board = [dummy];
-    // Shield (played on the left) gives the right-most unit +1/+2 each trigger
-    const playShield = () => { p.hand = [unit(g, 'shield_neutral')]; expect(play(g, p, 0, 0).ok).toBe(true); };
-    for (let i = 0; i < 5; i++) playShield();
-    expect([dummy.atk, dummy.hp]).toEqual([1 + 5, 1 + 10]);
+    // Red Gem (played on the right) gives the 3 left-most units +3 Attack each trigger; the dummy stays left-most
+    const playGem = () => { p.hand = [unit(g, 'red_gem')]; expect(play(g, p, 0, p.board.length).ok).toBe(true); };
+    for (let i = 0; i < 5; i++) playGem();
+    expect(dummy.atk).toBe(1 + 15);
     expect(p.heroMem.coffee).toBe(5);
-    playShield();
-    expect([dummy.atk, dummy.hp]).toEqual([1 + 5 + 2, 1 + 10 + 4]);
-    expect(p.board.length).toBe(7); // Shield stays now
+    playGem();
+    expect(dummy.atk).toBe(1 + 15 + 6);
+    expect(p.board.length).toBe(7);
     p.board = [dummy];
     // a normal Battlecry unit also fires twice
-    const bc = firstOf((id) => !!EFFECTS[id]?.battlecry && !EFFECTS[id]?.target && id !== 'shield_neutral');
+    const bc = firstOf((id) => !!EFFECTS[id]?.battlecry && !EFFECTS[id]?.target && id !== 'red_gem');
     const before = p.battlecriesGame;
     p.hand = [unit(g, bc)];
     play(g, p, 0, p.board.length);
