@@ -358,12 +358,18 @@ export const EFFECTS: Record<string, Effect> = {
     battlecry: (c) => buff(pick(c.g, c.p.hand.filter((u) => isTribe(u, 'kindred'))), 6 * c.m, 6 * c.m),
   },
   pink_gem: {
-    // Divine Shield to random friendly units (1, +1 per improvement; Golden doubles); played on a unit, that one first
+    // Divine Shield for this turn on a unit (its target), plus one more random unit per improvement (Golden doubles)
+    target: 'friendly',
     battlecry: (c) => {
+      const first = gemTarget(c);
+      if (!first) return;
       const n = (1 + gemLevel(c.p, 'pink_gem')) * c.m;
-      const pool = others(c.board, c.self).filter((u) => !has(u, 'divineShield') && u !== c.target);
-      const picks = [...(c.target ? [c.target] : []), ...sample(c.g, pool, n)].slice(0, n);
-      for (const u of picks) addKw(u, 'divineShield');
+      const pool = others(c.board, c.self).filter((u) => u !== first && !has(u, 'divineShield'));
+      for (const u of [first, ...sample(c.g, pool, n - 1)]) {
+        if (has(u, 'divineShield')) continue;
+        addKw(u, 'divineShield');
+        if (!c.combat) (u as Unit).mem.tmpShield = 1; // wears off at the start of your next turn
+      }
     },
   },
   therapist: {
@@ -700,10 +706,7 @@ export const EFFECTS: Record<string, Effect> = {
     battlecry: (c) => {
       const amt = (3 + gemLevel(c.p, 'red_gem')) * c.m;
       // (not counting the Gem itself)
-      for (const u of others(c.board, c.self).slice(0, 3)) {
-        if (rand(c.g) < 0.5) buff(u, amt, 0);
-        else buff(u, 0, amt);
-      }
+      for (const u of others(c.board, c.self).slice(0, 3)) buff(u, amt, 0);
     },
   },
   purveyor: {

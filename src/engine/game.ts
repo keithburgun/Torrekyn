@@ -184,13 +184,14 @@ export function startTurn(g: GameState, p: Player) {
   if (p.frozen) p.frozen = false;
   else rollShop(g, p);
   drainOverflow(g, p);
-  // "until your next turn" buffs wear off (Purple Gem)
+  // "until your next turn" buffs wear off (Purple Gem, Pink Gem)
   for (const u of [...p.board, ...p.hand]) {
-    if (u.mem.tmpAtk || u.mem.tmpHp || u.mem.tmpReborn) {
+    if (u.mem.tmpAtk || u.mem.tmpHp || u.mem.tmpReborn || u.mem.tmpShield) {
       u.atk = Math.max(0, u.atk - (u.mem.tmpAtk ?? 0));
       u.hp = Math.max(1, u.hp - (u.mem.tmpHp ?? 0));
       if (u.mem.tmpReborn) u.kw = u.kw.filter((k) => k !== 'reborn');
-      delete u.mem.tmpAtk; delete u.mem.tmpHp; delete u.mem.tmpReborn;
+      if (u.mem.tmpShield) u.kw = u.kw.filter((k) => k !== 'divineShield');
+      delete u.mem.tmpAtk; delete u.mem.tmpHp; delete u.mem.tmpReborn; delete u.mem.tmpShield;
     }
   }
   // a skipped turn (Mazrael Bettencourt's first): no shop and no gold

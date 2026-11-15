@@ -2,6 +2,9 @@
 
 Newest first. The version shows on the title screen.
 
+## 0.9.1 — 2026-11-15
+- Pink Gem: Battlecry: give a unit Divine Shield for this turn (Golden: and 1 other random unit). Red Gem gives +3 Attack (was +3 of a random stat). Zoomed and Discover cards show the Tier as stars, like every other card.
+
 ## 0.9.0 — 2026-11-15
 - Left and Right Twinbot are now 1/2 (no more 0-Attack units). Refresh deals the new cards out one by one from the Refresh button. Longbow and Sniper fire a bullet with a muzzle flash and a gunshot. Units with Avenge show their progress (e.g. 1/3) over their picture in battle. Trinket and Discover choices can be tucked away ('Look at army') to look at your board, then brought back; other actions wait until you choose. Your hand is shown beside your hero during battles: cards gained arrive with a sparkle, cards summoned from it lift away. 'Triple!' and gem/counter badges sit just above the Tier instead of covering it.
 

@@ -135,7 +135,7 @@ export function bigCardHtml(u: { cardId: string; golden: boolean; atk: number; h
   const kwExtra = u.kw.filter((k) => !d.keywords.includes(k)).map((k) => KW_ICON[k][1]);
   return `<div class="bigcard t-${d.tribe} ${u.golden ? 'golden' : ''} ${extra}">
   <div class="art" style="background-image:url('${cardArt(u.cardId)}')"></div>
-  <div class="tier">Tier ${d.tier}</div>
+  <div class="tier" title="Tier ${d.tier}">${'★'.repeat(d.tier)}</div>
   <div class="name">${u.golden ? 'Golden ' : ''}${esc(d.name)}</div>
   <div class="tribe"><span>${esc(TRIBE_NAMES[d.tribe] ?? d.tribe)}${d.token ? ' · Token' : ''}</span></div>
   <div class="text"><div>${text ? formatText(text) : kwExtra.length ? '' : '<i>No ability.</i>'}${kwExtra.length ? `${text ? '<br>' : ''}<i class="kw-extra">${kwExtra.join(', ')}</i>` : ''}</div></div>
@@ -165,9 +165,9 @@ export function gemText(p: Player, cardId: string, golden: boolean, text: string
   switch (cardId) {
     case 'purple_gem': t = t.replace(/\+\d+\/\+\d+/, `+${1 + l}/+${1 + l}`); break;
     case 'tourmaline': t = t.replace(/\+\d+ Health/, `+${(10 + 2 * l) * m} Health`); break;
-    case 'pink_gem': t = t.replace(/(a random unit|\d+ random units)/, `${(1 + l) * m} random units`); break;
+    case 'pink_gem': t = t.replace(/a unit( and 1 other random unit)?/, `a unit and ${(1 + l) * m - 1} other random unit${(1 + l) * m - 1 > 1 ? 's' : ''}`); break;
     case 'green_gem': t = t.replace(/\+\d+ Attack/, `+${2 + l} Attack`); break;
-    case 'red_gem': t = t.replace(/\+\d+ of/, `+${(3 + l) * m} of`); break;
+    case 'red_gem': t = t.replace(/\+\d+ Attack/, `+${(3 + l) * m} Attack`); break;
     case 'ancient_name_brambor': t = t.replace(/\+\d+ Health/, `+${(8 + l) * m} Health`); break;
   }
   return `${t} (Improved ${l === 1 ? 'once' : `${l} times`}.)`;
@@ -184,7 +184,7 @@ function gemNote(p: Player, u: Unit): string | undefined {
     case 'tourmaline': return `+${(10 + 2 * l) * m} Health`;
     case 'pink_gem': return `${(1 + l) * m} units`;
     case 'green_gem': return `+${2 + l} Attack`;
-    case 'red_gem': return `+${(3 + l) * m}`;
+    case 'red_gem': return `+${(3 + l) * m} Atk`;
     case 'ancient_name_brambor': return `+${(8 + l) * m} Health`;
   }
   return undefined;

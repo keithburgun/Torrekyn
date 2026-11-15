@@ -413,8 +413,8 @@
    "tier": 2,
    "atk": 1,
    "hp": 1,
-   "text": "Battlecry: Give a random unit Divine Shield.",
-   "goldenText": "Battlecry: Give 2 random units Divine Shield.",
+   "text": "Battlecry: Give a unit Divine Shield for this turn.",
+   "goldenText": "Battlecry: Give a unit and 1 other random unit Divine Shield for this turn.",
    "keywords": []
   },
   {
@@ -1123,8 +1123,8 @@
    "tier": 3,
    "atk": 1,
    "hp": 4,
-   "text": "Battlecry: Give your 3 left-most units +3 of a random stat.",
-   "goldenText": "Battlecry: Give your 3 left-most units +6 of a random stat.",
+   "text": "Battlecry: Give your 3 left-most units +3 Attack.",
+   "goldenText": "Battlecry: Give your 3 left-most units +6 Attack.",
    "keywords": []
   },
   {

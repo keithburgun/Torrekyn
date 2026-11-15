@@ -1,7 +1,10 @@
 """
 Writes Torrekin.xlsx: every card, hero and trinket with its art, for editing and sending back.
 
-  python3 tools/export_sheets.py out.xlsx
+  python3 tools/export_sheets.py out.xlsx heroes.json trinkets.json
+
+heroes.json / trinkets.json are HEROES / TRINKETS from src/engine/heroes.ts dumped as JSON (id, name, title, power,
+passive, cost, text, health / id, name, greater, cost, text); without them those two sheets are empty.
 
 Sheets:
   Cards     same first 7 columns as the card spreadsheet (tools/import_cards.py reads it as-is),
