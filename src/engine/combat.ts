@@ -7,7 +7,7 @@
  */
 import { addKw, cloneUnit, def, effStats, has, isTribe, mult, ownerBonus, pick, rand, removeKw, sample, tribeOf, CONFIG } from './core';
 import { EFFECTS, hasBattlecry, battlecryTimes, type CCtx } from './effects';
-import { gainNew, combatDamage, DAMAGE_PER_UNIT, onBattlecryTriggered } from './game';
+import { gainNew, combatDamage, drawFromPool, DAMAGE_PER_UNIT, onBattlecryTriggered } from './game';
 import { heroHooks, heroSoc } from './heroes';
 import { withFx } from './fx';
 import type { Body, CombatFrame, CombatFrameUnit, CombatFx, CombatResult, GameState, Keyword, Player, Unit } from './types';
@@ -96,7 +96,7 @@ export class Combat {
   snap(kind: CombatFrame['kind'], extra: Partial<CombatFrame> = {}) {
     const f = (s: Side): CombatFrameUnit[] =>
       s.units.filter((u) => !u.processed).map((u) => ({
-        id: u.id, cardId: u.cardId, golden: u.golden, atk: u.atk, hp: Math.max(0, u.hp), kw: [...u.kw], ...(EFFECTS[u.cardId]?.avenge ? { avenge: u.avenge } : {}), ...(u.hp <= 0 ? { dead: true, ...(u.hp < 0 ? { over: -u.hp } : {}) } : {}),
+        id: u.id, cardId: u.cardId, golden: u.golden, atk: u.atk, hp: Math.max(0, u.hp), kw: [...u.kw], ...(EFFECTS[u.cardId]?.avenge ? { avenge: u.avenge } : {}), ...(u.mem.rattle ? { rattle: 1 } : {}), ...(u.hp <= 0 ? { dead: true, ...(u.hp < 0 ? { over: -u.hp } : {}) } : {}),
       }));
     const frame: CombatFrame = { kind, sides: [f(this.sides[0]), f(this.sides[1])], ...extra };
     const mine = !this.g.simulateAll && this.sides.find((s) => s.persistent && s.owner.human);
@@ -310,10 +310,22 @@ export class Combat {
         // deathrattles (Tom Judith)
         const dr = EFFECTS[u.cardId]?.deathrattle;
         const pumpkinEmpty = u.cardId === 'pumpkin' && !Object.keys(u.mem).some((k) => k.startsWith('dr_'));
+        let times = 1;
+        for (const f of s.units) if (f.cardId === 'tom_judith' && f.hp > 0) times = Math.max(times, f.golden ? 3 : 2);
+        if (s.owner.trinkets?.includes('gravebell')) times++;
+        // Rattler (trinket): "Deathrattle: Summon a random Tier 1 unit", given at Start of Combat
+        if (u.mem.rattle) {
+          let at = Math.min(pos, s.units.length);
+          for (let i = 0; i < times * u.mem.rattle; i++) {
+            const id = drawFromPool(this.g, (cid) => def(cid).tier === 1, false);
+            if (!id || !this.spawn(s, id, false, at)) break;
+            at++;
+            this.snap('trigger', { note: `Rattler: Summon ${def(id).name}` });
+          }
+          if (s.persistent) s.owner.deathrattlesGame = (s.owner.deathrattlesGame ?? 0) + times;
+          for (const w of s.units) if (w.cardId === 'warmech' && w.hp > 0) { w.atk += 4 * mult(w) * times; w.hp += 2 * mult(w) * times; }
+        }
         if (dr && !pumpkinEmpty) {
-          let times = 1;
-          for (const f of s.units) if (f.cardId === 'tom_judith' && f.hp > 0) times = Math.max(times, f.golden ? 3 : 2);
-          if (s.owner.trinkets?.includes('gravebell')) times++;
           for (let i = 0; i < times; i++) dr(this.ctx(u, Math.min(pos, s.units.length)));
           // WARMECH: +4/+2 (Golden +8/+4) per Deathrattle triggered this game, growing as they happen
           if (s.persistent) s.owner.deathrattlesGame = (s.owner.deathrattlesGame ?? 0) + times;
@@ -326,7 +338,7 @@ export class Combat {
           const m = u.golden ? 2 : 1;
           if (s.units.filter((x) => x.hp > 0).length < CONFIG.boardSize) {
             const r = this.makeCU(s.idx, u.cardId, u.golden, d.atk * m + ownerBonus(s.owner, u).atk, 1,
-              d.keywords.filter((k) => k !== 'reborn'), u.src, { ...u.mem });
+              d.keywords.filter((k) => k !== 'reborn'), u.src, { ...u.mem, rattle: 0 });
             s.units.splice(Math.min(pos, s.units.length), 0, r);
             this.addFx({ k: 'reborn', to: r.id });
             for (const side of this.sides) for (const w of [...side.units]) {

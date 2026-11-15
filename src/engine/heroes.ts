@@ -255,6 +255,8 @@ export const TRINKETS: TrinketDef[] = [
     progress: (p) => `${p.heroMem.t_old_map ?? 0}/2` },
   { id: 'bronze_compass', name: 'Bronze Compass', cost: 2, text: 'Your Neverending units have +12 Attack.' }, // see effStats
   { id: 'iron_bracer', name: 'Iron Bracer', cost: 2, text: 'Start of Combat: Give your left-most unit Taunt.', soc: (c, s) => { const u = s.units.find((x) => x.hp > 0); if (u) addKw(u, 'taunt'); } },
+  { id: 'rattler', name: 'Rattler', cost: 2, text: 'Start of Combat: Give 4 random friendly units "Deathrattle: Summon a random Tier 1 unit."',
+    soc: (c, s) => { for (const u of sample(c.g, s.units.filter((x) => x.hp > 0), 4)) u.mem.rattle = (u.mem.rattle ?? 0) + 1; } },
   { id: 'spare_parts', name: 'Spare Parts', cost: 3, text: 'Every time you play a unit, give a random unit in your hand +2/+2.', onPlay: (g, p) => { const u = pick(g, p.hand); if (u) { u.atk += 2; u.hp += 2; } } },
   { id: 'war_drum', name: 'War Drum', cost: 3, text: 'Start of Combat: Give your units +2 Attack.', soc: (c, s) => { for (const u of s.units) u.atk += 2; } },
   { id: 'lucky_coin', name: 'Lucky Coin', cost: 0, text: 'Gain 8 Gold.', onGain: (g, p) => { p.gold += 8; } },

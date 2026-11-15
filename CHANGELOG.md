@@ -2,6 +2,9 @@
 
 Newest first. The version shows on the title screen.
 
+## 0.10.4 — 2026-11-15
+- Omar Evans no longer starts with Venomous. Organizer: Taunt. Deathrattle: Summon a Potato Gem (Golden: a Golden one), whose Battlecry happens as it arrives. Green Ninja is 5/2. Every Gem is a 1/1 (Blue, Red and Potato Gem were bigger). New Lesser Trinket, Rattler (2 Gold): Start of Combat: give 4 random friendly units 'Deathrattle: Summon a random Tier 1 unit' (shown on them in battle).
+
 ## 0.10.3 — 2026-11-15
 - Larva is a one-shot: after its turns in hand it gains its Golden Tier 5 Cloister unit and stays a Larva, marked (Done!) on the card and Done! on its counter.
 

@@ -266,3 +266,33 @@ describe('Larva', () => {
     expect(def(gained[0].cardId).tribe).toBe('cloister');
   });
 });
+
+describe('v0.10.4 changes', () => {
+  it('Organizer: Deathrattle summons a Potato Gem, whose Battlecry happens', () => {
+    const { g, p, o } = setup();
+    const c = fight(g, p, o, [U(g, 'organizer', 1, 1), U(g, 'skel', 1, 50)], [U(g, 'skel', 5, 999)]);
+    c.run();
+    const i = c.frames.findIndex((f) => f.sides[0].some((u) => u.cardId === 'ancient_name_brambor'));
+    expect(i).toBeGreaterThan(0);
+    // the Potato Gem's Battlecry gave the Skel +2 Health (on top of whatever damage it had taken by then)
+    expect(c.frames.some((f, k) => k > 0 && (f.sides[0].find((u) => u.cardId === 'skel')?.hp ?? 0) > (c.frames[k - 1].sides[0].find((u) => u.cardId === 'skel')?.hp ?? 99))).toBe(true);
+  });
+
+  it('Rattler: 4 random units get "Deathrattle: Summon a random Tier 1 unit" at Start of Combat', () => {
+    const { g, p, o } = setup();
+    p.trinkets = ['rattler'];
+    const mine = Array.from({ length: 5 }, () => U(g, 'skel', 1, 1));
+    const c = fight(g, p, o, mine, [U(g, 'skel', 5, 999)]);
+    c.run();
+    const f = c.frames[afterSoc(c)];
+    expect(f.sides[0].filter((u) => u.rattle).length).toBe(4);
+    const summons = c.frames.filter((x) => x.note?.startsWith('Rattler: Summon')).length;
+    expect(summons).toBeGreaterThanOrEqual(4);
+  });
+
+  it('stats: Omar Evans has no Venomous; Green Ninja is 5/2; every Gem is 1/1', () => {
+    expect(def('omar_evans').keywords).not.toContain('venomous');
+    expect([def('orange_ninja').atk, def('orange_ninja').hp]).toEqual([5, 2]);
+    for (const id of ['tourmaline', 'red_gem', 'ancient_name_brambor', 'purple_gem', 'pink_gem', 'green_gem', 'omni_gem']) expect([def(id).atk, def(id).hp]).toEqual([1, 1]);
+  });
+});

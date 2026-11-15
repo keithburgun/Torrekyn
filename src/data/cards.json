@@ -211,8 +211,8 @@
    "name": "Blue Gem",
    "tribe": "neutral",
    "tier": 1,
-   "atk": 5,
-   "hp": 4,
+   "atk": 1,
+   "hp": 1,
    "text": "Battlecry: Give a unit +10 Health.",
    "goldenText": "Battlecry: Give a unit +20 Health.",
    "keywords": []
@@ -545,8 +545,8 @@
    "tier": 1,
    "atk": 1,
    "hp": 6,
-   "text": "Taunt. Battlecry: Give a friendly unit Taunt.",
-   "goldenText": "Taunt. Battlecry: Give a friendly unit Taunt and +4/+4.",
+   "text": "Taunt. Deathrattle: Summon a Potato Gem.",
+   "goldenText": "Taunt. Deathrattle: Summon a Golden Potato Gem.",
    "keywords": [
     "taunt"
    ]
@@ -658,8 +658,8 @@
    "name": "Potato Gem",
    "tribe": "neutral",
    "tier": 5,
-   "atk": 10,
-   "hp": 10,
+   "atk": 1,
+   "hp": 1,
    "text": "Battlecry: Give your units in hand and army +2 Health.",
    "goldenText": "Battlecry: Give your units in hand and army +4 Health.",
    "keywords": []
@@ -735,8 +735,8 @@
    "name": "Green Ninja",
    "tribe": "cloister",
    "tier": 2,
-   "atk": 8,
-   "hp": 3,
+   "atk": 5,
+   "hp": 2,
    "text": "Start of Combat: If this is in your hand, summon a copy of it to the battlefield if there's room.",
    "goldenText": "Start of Combat: If this is in your hand, summon a copy of it to the battlefield if there's room.",
    "keywords": []
@@ -841,11 +841,9 @@
    "tier": 5,
    "atk": 20,
    "hp": 20,
-   "text": "Venomous. Avenge (3): This gains Venomous and attacks immediately.",
-   "goldenText": "Venomous. Avenge (3): This gains Venomous and Divine Shield and attacks immediately.",
-   "keywords": [
-    "venomous"
-   ]
+   "text": "Avenge (3): This gains Venomous and attacks immediately.",
+   "goldenText": "Avenge (3): This gains Venomous and Divine Shield and attacks immediately.",
+   "keywords": []
   },
   {
    "id": "shine_like_a_knife",
@@ -1122,7 +1120,7 @@
    "tribe": "neutral",
    "tier": 3,
    "atk": 1,
-   "hp": 4,
+   "hp": 1,
    "text": "Battlecry: Give your 3 left-most units +3 Attack.",
    "goldenText": "Battlecry: Give your 3 left-most units +6 Attack.",
    "keywords": []

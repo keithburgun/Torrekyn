@@ -163,6 +163,8 @@ export interface CombatFrameUnit {
   kw: Keyword[];
   /** Avenge progress, for units with Avenge */
   avenge?: number;
+  /** has Rattler's "Deathrattle: Summon a random Tier 1 unit" */
+  rattle?: number;
 }
 
 /** Visual effects attached to a combat frame (for animation only). */

@@ -192,7 +192,7 @@ function gemNote(p: Player, u: Unit): string | undefined {
 
 export function frameUnitView(u: CombatFrameUnit) {
   const av = EFFECTS[u.cardId]?.avenge;
-  return { cardId: u.cardId, golden: u.golden, atk: u.atk, hp: u.hp, kw: u.kw, ...(av && u.avenge !== undefined ? { avenge: `${u.avenge}/${av[u.golden ? 1 : 0]}` } : {}) };
+  return { cardId: u.cardId, golden: u.golden, atk: u.atk, hp: u.hp, kw: u.kw, ...(av && u.avenge !== undefined ? { avenge: `${u.avenge}/${av[u.golden ? 1 : 0]}` } : {}), ...(u.rattle ? { note: 'Rattler' } : {}) };
 }
 
 /**
