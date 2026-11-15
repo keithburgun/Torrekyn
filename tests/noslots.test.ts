@@ -247,3 +247,22 @@ describe('v0.10.2 changes', () => {
     expect(Math.min(...HEROES.map((h) => heroHealth(h.id)))).toBe(20);
   });
 });
+
+describe('Larva', () => {
+  it('after 3 turns in hand it gains a Golden Tier 5 Cloister unit once, then stays a Larva marked Done', async () => {
+    const { startRound } = await import('../src/engine/game');
+    const g = newGame(4, 'You', ['cloister', 'azure', 'kindred', 'alcove']);
+    const p = g.players[0];
+    for (const x of g.players) { x.discovers = []; x.heroOffer = undefined; }
+    const larva = U(g, 'larva');
+    p.hand = [larva];
+    for (let t = 0; t < 5; t++) { startRound(g); p.discovers = []; }
+    const gained = p.hand.filter((u) => u !== larva);
+    expect(p.hand).toContain(larva);
+    expect(larva.mem.done).toBe(1);
+    expect(gained.length).toBe(1);
+    expect(gained[0].golden).toBe(true);
+    expect(def(gained[0].cardId).tier).toBe(5);
+    expect(def(gained[0].cardId).tribe).toBe('cloister');
+  });
+});

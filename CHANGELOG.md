@@ -2,6 +2,9 @@
 
 Newest first. The version shows on the title screen.
 
+## 0.10.3 — 2026-11-15
+- Larva is a one-shot: after its turns in hand it gains its Golden Tier 5 Cloister unit and stays a Larva, marked (Done!) on the card and Done! on its counter.
+
 ## 0.10.2 — 2026-11-15
 - Shield: a 1/3 with Taunt. Battlecry: give a friendly unit (you choose) Taunt; Golden gives one more random unit Taunt. Storyteller: selling it gains a random Cloister unit (up to your Tavern Tier; Golden two). Every hero starts with 4 more Health.
 

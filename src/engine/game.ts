@@ -163,16 +163,16 @@ export function startTurn(g: GameState, p: Player) {
   }
   for (const u of [...p.hand, ...p.board]) if (u.cardId === 'scout') withFx(g, p, { unit: u }, 'Growing up', () => { u.mem.age = (u.mem.age ?? 0) + 1; });
   for (const u of [...p.hand]) {
-    if (u.cardId === 'larva') withFx(g, p, { unit: u }, 'Growing', () => {
+    // Larva: a one-shot. It stays a Larva and gains its Golden Tier 5 Cloister unit once, then it's done
+    if (u.cardId === 'larva' && !u.mem.done) withFx(g, p, { unit: u }, 'Growing', () => {
       u.mem.turns = (u.mem.turns ?? 0) + 1;
       if (u.mem.turns >= (u.golden ? 2 : 3)) {
-        const i = p.hand.indexOf(u);
         const id = randomCardOfTier(g, 5, 'cloister');
         if (id) {
-          returnToPool(g, u);
+          u.mem.done = 1;
           const nu = makeUnit(g, id, true);
-          p.hand.splice(i, 1, nu);
-          log(p, `Larva hatched into ${displayName(nu)}!`);
+          gainCard(g, p, nu);
+          log(p, `Larva hatched ${displayName(nu)}!`);
         }
       }
     });

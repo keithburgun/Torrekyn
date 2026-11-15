@@ -130,6 +130,7 @@ export function bigCardHtml(u: { cardId: string; golden: boolean; atk: number; h
   const gained = Object.keys(u.mem ?? {}).filter((k) => k.startsWith('dr_')).map((k) => def(k.slice(3)).name);
   if (gained.length) text += ` Deathrattles: ${gained.join(', ')}.`;
   if (u.cardId === 'scout' && (u.mem?.age ?? 0) > 0) text = text.replace(/Tier 1 unit/, `Tier ${scoutTier(u)} unit`);
+  if (u.cardId === 'larva' && u.mem?.done) text += ' (Done!)';
   if (u.cardId === 'intern') text += ` (Sells for ${1 + (u.mem?.sellBonus ?? 0)} Gold)`;
   const kwExtra = u.kw.filter((k) => !d.keywords.includes(k)).map((k) => KW_ICON[k][1]);
   return `<div class="bigcard t-${d.tribe} ${u.golden ? 'golden' : ''} ${extra}">

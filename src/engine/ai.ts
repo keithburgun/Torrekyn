@@ -78,7 +78,7 @@ export function unitScore(p: Player, u: Unit, zone: 'board' | 'hand' | 'shop' = 
   if (u.golden) s += 10;
   if (on(p, 'value')) s += knob(p, 'valueK') * (ABILITY[u.cardId]?.[u.golden ? 1 : 0] ?? 0);
   if (on(p, 'econ')) {
-    let e = (ECON[u.cardId] ?? 0) * knob(p, 'econK') * (u.golden ? 1.8 : 1);
+    let e = (u.mem.done ? 0 : ECON[u.cardId] ?? 0) * knob(p, 'econK') * (u.golden ? 1.8 : 1);
     if (u.cardId === 'grief' && p.tier >= CONFIG.maxTier) e = 0;
     // Battlecries and Discovers pay off when played; once on the board only recurring effects still matter
     if (zone === 'board' && ['command', 'remember', 'librarian'].includes(u.cardId)) e = 0;
@@ -180,7 +180,7 @@ const SELL_NOW = ['omni_gem', 'exploit'];
 /** cards the bot keeps in hand for now: Larva hatches there, Green Ninja joins from there, Scout grows before it's sold */
 function holdInHand(p: Player, u: Unit): boolean {
   if (!on(p, 'hold') || p.hand.length >= CONFIG.handSize - 1) return false;
-  if (u.cardId === 'larva' || u.cardId === 'orange_ninja') return true;
+  if ((u.cardId === 'larva' && !u.mem.done) || u.cardId === 'orange_ninja') return true;
   if (u.cardId === 'scout') return scoutTier(u) < Math.min(CONFIG.maxTier, p.tier + 1);
   return false;
 }
