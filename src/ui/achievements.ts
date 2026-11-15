@@ -116,7 +116,7 @@ feat('earlytri', 'Early Gold', 'Make a Golden unit before turn 5.', 'Feats', (c)
 feat('goldt5', 'Crown Jewel', 'Have a Golden Tier 5 or 6 unit.', 'Feats', (c) => !!c.p && [...c.p.board, ...c.p.hand].some((u) => u.golden && def(u.cardId).tier >= 5));
 feat('trinkets2', 'Fully Accessorized', 'Own 2 Trinkets in one game.', 'Feats', (c) => !!c.p && c.p.trinkets.length >= 2);
 // combat feats
-feat('max15', 'Maximum Damage', 'Deal 8 damage in a single combat.', 'Combat', (c) => !!c.combat?.won && c.combat.damage >= 8);
+feat('max15', 'Maximum Damage', 'Deal 12 damage in a single combat.', 'Combat', (c) => !!c.combat?.won && c.combat.damage >= 12);
 feat('lone', 'Last One Standing', 'Win a combat with only 1 unit left.', 'Combat', (c) => !!c.combat?.won && c.combat.survivors === 1);
 feat('flawless', 'Untouchable', 'Win a combat with all 7 of your units surviving.', 'Combat', (c) => !!c.combat?.won && c.combat.survivors >= 7);
 feat('underdog', 'Underdog', 'Win a combat while outnumbered.', 'Combat', (c) => !!c.combat?.won && c.combat.oppUnits > c.combat.myUnits);

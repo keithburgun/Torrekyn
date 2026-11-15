@@ -2,6 +2,9 @@
 
 Newest first. The version shows on the title screen.
 
+## 0.10.1 — 2026-11-15
+- Battle damage is now the winner's Tavern Tier + 1 for each of their surviving units (at most 12). Tier stars show on the winner's hero again. 'Maximum Damage' achievement: deal 12 in one battle.
+
 ## 0.10.0 — 2026-11-15
 - Slots no longer have upgrades: the slot system is gone, along with its labels and help text. Rewritten without slots: Message, Front and Center (new picture), Remember, Commitment, Gelf Lanz, Architect, Patchwork, Builder, Devotion (a free Lesser Trinket), The Mayor (50/5), Cursed Vines, Elder (1 Attack), Andromeda Robin, Owl, Paradox and the Potato Gem. Trinkets: Iron Bracer and Phoenix Feather give your left-most unit Taunt / Reborn at Start of Combat; Bannerlord's Standard gives your units +3/+3 at Start of Combat. Two slot achievements replaced (Built to Last, Collector); three achievements retuned for the halved Health and new damage.
 

@@ -614,11 +614,11 @@ export function endTurn(g: GameState): CombatResult[] {
   return results;
 }
 
-/** damage to the loser: 1, plus 1 for each of the winner's surviving units (plus any extras), no cap */
-export const DAMAGE_BASE = 1;
+/** damage to the loser: the winner's Tavern Tier + 1 per surviving unit */
 export const DAMAGE_PER_UNIT = 1;
-export function combatDamage(survivors: number, bonus: number) {
-  return DAMAGE_BASE + survivors * DAMAGE_PER_UNIT + bonus;
+/** the winner's Tavern Tier, plus 1 for each of their surviving units (at most 5 + 7 = 12) */
+export function combatDamage(tier: number, survivors: number, bonus = 0) {
+  return tier + survivors * DAMAGE_PER_UNIT + bonus;
 }
 
 export type { CombatResult } from './types';

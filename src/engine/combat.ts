@@ -7,7 +7,7 @@
  */
 import { addKw, cloneUnit, def, effStats, has, isTribe, mult, ownerBonus, pick, rand, removeKw, sample, tribeOf, CONFIG } from './core';
 import { EFFECTS, hasBattlecry, battlecryTimes, type CCtx } from './effects';
-import { gainNew, combatDamage, DAMAGE_BASE, DAMAGE_PER_UNIT, onBattlecryTriggered } from './game';
+import { gainNew, combatDamage, DAMAGE_PER_UNIT, onBattlecryTriggered } from './game';
 import { heroHooks, heroSoc } from './heroes';
 import { withFx } from './fx';
 import type { Body, CombatFrame, CombatFrameUnit, CombatFx, CombatResult, GameState, Keyword, Player, Unit } from './types';
@@ -528,15 +528,15 @@ export function runCombat(g: GameState, a: Player, b: Player, bIsGhost: boolean)
     const ws = c.sides[winner];
     const survivors = ws.units.filter((u) => u.hp > 0);
     const bonusFrom: number[] = [];
-    damage = combatDamage(survivors.length, bonusFrom.length);
-    dmgParts = { tier: DAMAGE_BASE, perUnit: DAMAGE_PER_UNIT, units: survivors.map((u) => u.id), bonus: bonusFrom }; // 'tier' = the base 2 (stars on the winner's hero)
+    damage = combatDamage(ws.tier, survivors.length, bonusFrom.length);
+    dmgParts = { tier: ws.tier, perUnit: DAMAGE_PER_UNIT, units: survivors.map((u) => u.id), bonus: bonusFrom }; // tier: stars on the winner's hero
   }
   // both armies still standing when time runs out: both players take damage (otherwise two huge armies could
   // draw forever and the game would never end)
   let stalemate: CombatResult['stalemate'];
   if (winner === -1) {
     const left = c.sides.map((s) => s.units.filter((u) => u.hp > 0).length);
-    if (left[0] && left[1]) stalemate = [combatDamage(left[1], 0), combatDamage(left[0], 0)];
+    if (left[0] && left[1]) stalemate = [combatDamage(c.sides[1].tier, left[1]), combatDamage(c.sides[0].tier, left[0])];
   }
   // end of combat: Root
   for (const s of c.sides) {
