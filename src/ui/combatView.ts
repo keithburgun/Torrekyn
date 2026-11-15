@@ -34,6 +34,25 @@ const sleep = async (ms: number) => {
   while (paused) await new Promise((r) => setTimeout(r, 120));
 };
 
+/**
+ * The battle can play on the shop screen itself (the default now): the opponent's army stands where the Tavern's
+ * units were, with their hero in the Tavern's circle; yours stays in its places; your hero, hand, leaderboard and the
+ * rest of the screen stay put. App draws that screen and passes where things are.
+ */
+export interface BattleOnShop {
+  /** your units' x by position (they fill from the left, as in the shop) */
+  myX: (i: number) => number;
+  myY: number;
+  enemyY: number;
+  myHero: { x: number; y: number };
+  enemyHero: { x: number; y: number };
+  /** your hand cards: where, and at what size */
+  handPos: (i: number, n: number) => { x: number; y: number };
+  handSize: { small: boolean; large: boolean; w: number; h: number };
+  /** where the Speed / Pause / Skip buttons go (the Begin Battle button's place) */
+  controls: { x: number; y: number };
+}
+
 export class CombatPlayer {
   els = new Map<number, HTMLElement>();
   speed = 1;
@@ -53,7 +72,7 @@ export class CombatPlayer {
   private ghost = false;
   private oppId = 0;
 
-  constructor(private stage: HTMLElement, private g: GameState, private r: CombatResult, private me: 0 | 1, private round: number, private done: () => void) {
+  constructor(private stage: HTMLElement, private g: GameState, private r: CombatResult, private me: 0 | 1, private round: number, private done: () => void, private onShop?: BattleOnShop) {
     this.speed = speedSetting();
     const meP = g.players[0];
     const oppId = me === 0 ? (r.b === -1 ? r.ghostOf! : r.b) : r.a;
@@ -63,6 +82,22 @@ export class CombatPlayer {
     this.hpBefore = (id: number) => g.players[id].health + (id === loserId ? r.damage : 0);
     this.ghost = r.b === -1;
     this.oppId = oppId;
+    const controls = (x: number, y: number, col: boolean) => `<div class="abs combat-ctl ${col ? 'col' : ''}" style="left:${x}px;top:${y}px">
+        <button class="btn" data-cact="speed">Speed ${speedLabel(this.speed)}</button>
+        <button class="btn" data-cact="pause">Pause</button>
+        <button class="btn" data-cact="skip">Skip</button>
+      </div>`;
+    if (onShop) {
+      const L = this.L;
+      const bannerY = (onShop.enemyY + L.cardH + onShop.myY) / 2;
+      this.L = { ...L, combat: { ...L.combat, myY: onShop.myY, enemyY: onShop.enemyY, myHero: onShop.myHero, enemyHero: onShop.enemyHero, banner: bannerY } };
+      const add = document.createElement('div');
+      add.innerHTML = `${controls(onShop.controls.x, onShop.controls.y, true).replace("combat-ctl ", "combat-ctl onshop ")}
+        <div class="vs-banner fleeting" style="left:${L.cx}px;top:${bannerY}px">ROUND ${round} · BATTLE</div>
+        <div id="clayer" class="abs" style="inset:0;pointer-events:none"></div>
+        <div id="fxlayer" class="abs" style="inset:0;pointer-events:none;z-index:40"></div>`;
+      stage.append(...add.childNodes);
+    } else {
     // phones: when neither army ever has more than 5 units, use the bigger shop-size cards
     const most = Math.max(0, ...r.frames.map((f) => Math.max(f.sides[0].length, f.sides[1].length)));
     if (this.L.portrait && most <= 5) this.L = { ...this.L, small: false, large: true, cardW: 168, cardH: 228, combat: { ...this.L.combat, step: 176 } };
@@ -79,8 +114,9 @@ export class CombatPlayer {
       </div>
       <div id="clayer" class="abs" style="inset:0;pointer-events:none"></div>
       <div id="fxlayer" class="abs" style="inset:0;pointer-events:none;z-index:40"></div>`;
+    }
     this.layer = stage.querySelector('#clayer') as HTMLElement;
-    placeHud(stage, this.L);
+    if (!onShop) placeHud(stage, this.L);
     this.fxLayer = stage.querySelector('#fxlayer') as HTMLElement;
     stage.querySelector('[data-cact="speed"]')!.addEventListener('click', (e) => {
       const i = SPEEDS.findIndex((s) => s.v === this.speed);
@@ -113,19 +149,23 @@ export class CombatPlayer {
   private showHand(f: CombatFrame, instant: boolean) {
     if (!f.hand) return;
     const L = this.L;
-    const sc = L.portrait ? 0.62 : 0.58; // card scale
-    const w = L.cardW * sc;
+    const on = this.onShop;
+    const sc = on ? 1 : L.portrait ? 0.62 : 0.58; // card scale
+    const w = on ? on.handSize.w : L.cardW * sc;
+    const ch = on ? on.handSize.h : L.cardH * sc;
     const n = f.hand.length;
     const hero = L.combat.myHero;
     const step = Math.min(w * 0.82, (L.portrait ? 840 : 560) / Math.max(1, n));
-    const pos = (i: number) => L.portrait
+    const pos = (i: number) => on ? on.handPos(i, n) : L.portrait
       ? { x: hero.x - ((n - 1) * step) / 2 + i * step - w / 2, y: Math.min(L.H - L.cardH * sc - 8, hero.y + 120) }
       : { x: hero.x - 150 - w - (n - 1 - i) * step, y: hero.y - (L.cardH * sc) / 2 + 10 };
     const seen = new Set<number>();
     f.hand.forEach((c, i) => {
       seen.add(c.uid);
       const { x, y } = pos(i);
-      const html = cardHtml({ cardId: c.cardId, golden: c.golden, atk: c.atk, hp: c.hp, kw: c.kw }, { zone: 'combat', idx: i, x, y, small: L.small, extraClass: 'combat-hand' });
+      const html = cardHtml({ cardId: c.cardId, golden: c.golden, atk: c.atk, hp: c.hp, kw: c.kw }, on
+        ? { zone: 'combat', idx: i, x, y, small: on.handSize.small, large: on.handSize.large, extraClass: 'in-hand battle-hand' }
+        : { zone: 'combat', idx: i, x, y, small: L.small, extraClass: 'combat-hand' });
       const tmp = document.createElement('div');
       tmp.innerHTML = html;
       const fresh = tmp.firstElementChild as HTMLElement;
@@ -137,7 +177,7 @@ export class CombatPlayer {
         this.handEls.set(c.uid, el);
         if (!instant && this.handEls.size > 0 && f.kind !== 'start') {
           el.classList.add('hand-gain');
-          this.spot('buff-glow', x + w / 2, y + (L.cardH * sc) / 2, this.t(700));
+          this.spot('buff-glow', x + w / 2, y + ch / 2, this.t(700));
           sfx.buy();
         }
       } else {
@@ -348,7 +388,7 @@ export class CombatPlayer {
     const map = new Map<number, { u: CombatFrameUnit; x: number; y: number; side: 0 | 1 }>();
     const mine = f.sides[this.me];
     const theirs = f.sides[1 - this.me];
-    mine.forEach((u, i) => map.set(u.id, { u, x: this.rowX(i, mine.length), y: this.L.combat.myY, side: this.me }));
+    mine.forEach((u, i) => map.set(u.id, { u, x: this.onShop ? this.onShop.myX(i) : this.rowX(i, mine.length), y: this.L.combat.myY, side: this.me }));
     theirs.forEach((u, i) => map.set(u.id, { u, x: this.rowX(i, theirs.length), y: this.L.combat.enemyY, side: (1 - this.me) as 0 | 1 }));
     return map;
   }

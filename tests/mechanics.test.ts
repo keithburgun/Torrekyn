@@ -297,8 +297,8 @@ describe('Gems', () => {
     expect(gemLevel(p, 'green_gem')).toBe(1);
   });
 
-  it('Purple Gem: Reborn and +1/+1 until your next turn', async () => {
-    const { play } = await import('../src/engine/game');
+  it('Purple Gem: +1/+1 for good, Reborn until your next turn', async () => {
+    const { play, startRound } = await import('../src/engine/game');
     const g = newGame(22); const p = g.players[0];
     p.discovers = []; p.trinketOffer = null;
     const t = makeUnit(g, 'skel');
@@ -308,6 +308,9 @@ describe('Gems', () => {
     play(g, p, 0, 1, t.uid);
     expect([t.atk, t.hp]).toEqual([base[0] + 1, base[1] + 1]);
     expect(t.kw).toContain('reborn');
+    startRound(g);
+    expect([t.atk, t.hp]).toEqual([base[0] + 1, base[1] + 1]);
+    expect(t.kw).not.toContain('reborn');
   });
 });
 

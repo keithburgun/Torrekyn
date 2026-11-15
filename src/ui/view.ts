@@ -109,7 +109,7 @@ export function cardHtml(u: { cardId: string; golden: boolean; atk: number; hp: 
   <div class="abil">${tags}</div>
   <div class="name">${esc(d.name)}</div>
   <div class="tribe-plate ${(TRIBE_SHORT[d.tribe] ?? d.tribe).length > 8 ? 'long' : ''}">${TRIBE_SHORT[d.tribe] ?? d.tribe}</div>${o.badge ?? ''}
-  ${(u as { avenge?: string }).avenge ? `<div class="avenge-count" title="Avenge: friendly units died / needed">${(u as { avenge?: string }).avenge}</div>` : ''}
+  ${(u as { avenge?: string }).avenge ? `<div class="avenge-count" title="Avenge: friendly units died / needed"><i>⚔</i>${(u as { avenge?: string }).avenge}</div>` : ''}
   ${(() => { const c = (u as { note?: string }).note ?? (u.mem && (o.zone === "board" || o.zone === "combat") ? unitCounter(u as Unit) : null); return c ? `<div class="counter">${c}</div>` : ''; })()}
   <div class="stat atk ${atk > baseAtk ? 'buffed' : ''}">${atk}</div>
   <div class="stat hp ${hp > baseHp ? 'buffed' : hp < baseHp ? 'hurt' : ''}">${hp}</div>
@@ -163,7 +163,7 @@ export function gemText(p: Player, cardId: string, golden: boolean, text: string
   const m = golden ? 2 : 1;
   let t = text;
   switch (cardId) {
-    case 'purple_gem': t = t.replace(/\+\d+\/\+\d+/, `+${1 + l}/+${1 + l}`); break;
+    case 'purple_gem': t = t.replace(/\+\d+\/\+\d+/, `+${(1 + l) * m}/+${(1 + l) * m}`); break;
     case 'tourmaline': t = t.replace(/\+\d+ Health/, `+${(10 + 2 * l) * m} Health`); break;
     case 'pink_gem': t = t.replace(/a unit( and 1 other random unit)?/, `a unit and ${(1 + l) * m - 1} other random unit${(1 + l) * m - 1 > 1 ? 's' : ''}`); break;
     case 'green_gem': t = t.replace(/\+\d+ Attack/, `+${2 + l} Attack`); break;
@@ -180,7 +180,7 @@ function gemNote(p: Player, u: Unit): string | undefined {
   if (!l) return undefined;
   const m = u.golden ? 2 : 1;
   switch (u.cardId) {
-    case 'purple_gem': return `+${1 + l}/+${1 + l}`;
+    case 'purple_gem': return `+${(1 + l) * m}/+${(1 + l) * m}`;
     case 'tourmaline': return `+${(10 + 2 * l) * m} Health`;
     case 'pink_gem': return `${(1 + l) * m} units`;
     case 'green_gem': return `+${2 + l} Attack`;

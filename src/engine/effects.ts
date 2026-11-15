@@ -224,21 +224,16 @@ export const EFFECTS: Record<string, Effect> = {
     endTurn: (c) => buff(pick(c.g, c.p.hand), 0, c.m),
   },
   purple_gem: {
-    // Reborn and +1/+1 (+1/+1 per improvement) until your next turn
+    // +1/+1 for good (+1/+1 per improvement; Golden doubles), and Reborn until your next turn
     target: 'friendly',
     battlecry: (c) => {
       const t = gemTarget(c);
       if (!t) return;
-      const n = 1 + gemLevel(c.p, 'purple_gem');
+      const n = (1 + gemLevel(c.p, 'purple_gem')) * c.m;
       buff(t, n, n);
       const hadReborn = has(t, 'reborn');
       addKw(t, 'reborn');
-      if (!c.combat) {
-        const u = t as Unit;
-        u.mem.tmpAtk = (u.mem.tmpAtk ?? 0) + n;
-        u.mem.tmpHp = (u.mem.tmpHp ?? 0) + n;
-        if (!hadReborn) u.mem.tmpReborn = 1;
-      }
+      if (!c.combat && !hadReborn) (t as Unit).mem.tmpReborn = 1;
     },
   },
   tourmaline: {

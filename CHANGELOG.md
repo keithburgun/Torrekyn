@@ -2,6 +2,9 @@
 
 Newest first. The version shows on the title screen.
 
+## 0.11.0 — 2026-11-15
+- Battles play on the shop screen: your army, hero, hand, gold and leaderboard stay where they are; your opponent's army takes the Tavern's row and their hero the Tavern's circle; Speed / Pause / Skip replace Begin Battle. You can hover your hero, the leaderboard and units during the battle; nothing can be bought, moved or played until it's over. No more intro and wipe screens. Purple Gem: give a unit +1/+1 (for good; Golden +2/+2), and Reborn for 1 turn.
+
 ## 0.10.4 — 2026-11-15
 - Omar Evans no longer starts with Venomous. Organizer: Taunt. Deathrattle: Summon a Potato Gem (Golden: a Golden one), whose Battlecry happens as it arrives. Green Ninja is 5/2. Every Gem is a 1/1 (Blue, Red and Potato Gem were bigger). New Lesser Trinket, Rattler (2 Gold): Start of Combat: give 4 random friendly units 'Deathrattle: Summon a random Tier 1 unit' (shown on them in battle).
 

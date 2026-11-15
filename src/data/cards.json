@@ -1401,8 +1401,8 @@
    "tier": 2,
    "atk": 1,
    "hp": 1,
-   "text": "Battlecry: Give a unit Reborn and +1/+1 for 1 turn.",
-   "goldenText": "Battlecry: Give a unit Reborn and +1/+1 for 1 turn.",
+   "text": "Battlecry: Give a unit +1/+1. Also give it Reborn for 1 turn.",
+   "goldenText": "Battlecry: Give a unit +2/+2. Also give it Reborn for 1 turn.",
    "keywords": []
   },
   {

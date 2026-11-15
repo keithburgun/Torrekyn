@@ -1355,7 +1355,7 @@ svg.aim-arrow.locked .aim-ring { opacity: 0.9; animation: aim-ring 0.9s ease-in-
 #stage.pix .my-hero .tb-cost { clip-path: none; border-radius: 50%; background: radial-gradient(circle at 35% 30%, #fff8cf, var(--coin) 55%, #e59a12); box-shadow: 0 0 0 3px var(--slate); }
 
 /* Hero Health: a red circle (like a unit's Health) beside the portrait, not a heart over the face */
-.hero-portrait .hp, .scene-tx.battle .tx-hp, .combat-name .hpb {
+.hero-portrait .hp, .scene-tx.battle .tx-hp, .combat-name .hpb, .enemy-keeper .tk-portrait .hp {
   -webkit-mask: none; mask: none; padding-bottom: 0; border-radius: 50%;
   background: radial-gradient(circle at 35% 30%, #ff9a8c, #e8322a 58%, #a8121a);
   box-shadow: 0 0 0 3px #fff, 0 3px 6px rgba(90, 0, 0, 0.35);
@@ -1524,7 +1524,7 @@ svg.aim-arrow.locked .aim-ring { opacity: 0.9; animation: aim-ring 0.9s ease-in-
 .card .avenge-count { position: absolute; left: 50%; top: 40%; transform: translate(-50%, -50%); z-index: 5; pointer-events: none;
   padding: 1px 10px 2px; border-radius: 999px; background: rgba(40, 20, 50, 0.82); border: 2px solid #ff7a9c; color: #fff;
   font-family: var(--display); font-weight: 700; font-size: 19px; line-height: 1.1; white-space: nowrap; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5); }
-.card .avenge-count::before { content: '\2694\FE0E  '; font-size: 0.8em; color: #ffb3c6; }
+.card .avenge-count i { font-style: normal; font-size: 0.8em; color: #ffb3c6; margin-right: 3px; }
 .card.small .avenge-count { font-size: 15px; }
 .card.large .avenge-count { font-size: 24px; }
 .card .avenge-count.tick { animation: avenge-tick 0.55s ease-out; }
@@ -1544,3 +1544,24 @@ svg.aim-arrow.locked .aim-ring { opacity: 0.9; animation: aim-ring 0.9s ease-in-
 .card.combat-hand.hand-gain { animation: hand-gain 0.7s ease-out; }
 @keyframes hand-gain { 0% { opacity: 0; translate: 0 -60px; filter: brightness(2.2) drop-shadow(0 0 20px #ffe38a); } 60% { opacity: 1; filter: brightness(1.5) drop-shadow(0 0 16px #ffe38a); } 100% { translate: 0 0; } }
 .card.combat-hand.hand-leave { transition: opacity 0.45s, translate 0.45s; opacity: 0; translate: 0 -80px; }
+
+/* ---- battles play on the shop screen ---- */
+#stage.in-battle .end-turn, #stage.in-battle .undo-btn { display: none; }
+.combat-ctl { display: flex; gap: 10px; z-index: 30; }
+.combat-ctl.col { flex-direction: column; width: 190px; }
+.combat-ctl.col .btn { width: 100%; }
+.enemy-keeper .tk-portrait { position: relative; background-size: cover; background-position: center; box-shadow: 0 0 0 5px var(--slate), 0 0 0 8px var(--pink), 0 0 34px rgba(255, 127, 191, 0.55); }
+.enemy-keeper .tk-portrait .hp { position: absolute; right: -16px; bottom: -10px; width: 56px; height: 56px; display: flex; align-items: center; justify-content: center; font-family: var(--display); font-weight: 700; font-size: 26px; color: #fff; }
+.enemy-keeper .tk-name { position: absolute; left: calc(100% + 26px); top: 40px; text-align: left; font-family: var(--display); font-weight: 700; font-size: 18px; color: var(--ink); white-space: nowrap; text-shadow: 0 2px 6px rgba(0, 0, 0, 0.6); }
+#stage.portrait .enemy-keeper .tk-name { font-size: 26px; }
+#stage.portrait .enemy-keeper .tk-portrait .hp { width: 76px; height: 72px; font-size: 32px; }
+.battle-av .hpb { transition: transform 0.3s; }
+.battle-av.hp-focus .hpb { transform: scale(1.8); transform-origin: 70% 70%; z-index: 5; transition: transform 0.3s cubic-bezier(.3, 1.5, .5, 1); }
+.battle-av .hpb.tick { animation: hp-tick 0.18s ease-out; }
+.battle-av.hit { animation: hero-hit 0.35s ease-in-out infinite; }
+.battle-av.ko { animation: hero-ko 0.5s ease-in forwards; }
+.vs-banner.fleeting { animation: banner-fleet 1.8s ease-in forwards; pointer-events: none; }
+@keyframes banner-fleet { 0% { opacity: 0; transform: translate(-50%, -50%) scale(0.8); } 12%, 70% { opacity: 1; transform: translate(-50%, -50%) scale(1); } 100% { opacity: 0; transform: translate(-50%, -50%) scale(1); } }
+.card.battle-hand { pointer-events: none; }
+#stage.portrait .combat-ctl.onshop { right: auto !important; bottom: auto !important; width: 252px; gap: 10px !important; }
+#stage.portrait .combat-ctl.onshop .btn { font-size: 24px; min-width: 0; padding: 8px 10px; }

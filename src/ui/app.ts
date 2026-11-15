@@ -90,6 +90,8 @@ export class App {
   lastRating: { before: number; after: number; delta: number } | null = null;
   seenBoards = new Map<number, CombatResult['frames'][number]['sides'][number]>();
   combat: CombatPlayer | null = null;
+  /** the battle being shown on the shop screen: who you're fighting, and everyone's Health before it */
+  battle: { r: CombatResult; meSide: 0 | 1; oppId: number; ghost: boolean; before: (id: number) => number } | null = null;
 
   constructor(stage: HTMLElement) {
     this.stage = stage;
@@ -160,7 +162,8 @@ export class App {
     this.stage.style.setProperty('--bg', `url('${new URL(art('art/bg.png'), document.baseURI).href}')`);
     this.stage.style.setProperty('--trinket-art', `url('${new URL(art('art/trinket.png'), document.baseURI).href}')`);
     placeBoardBg(this.stage, L, null);
-    if (this.screen === 'combat') return; // combat view owns the stage
+    if (this.screen === 'combat' && this.combat) return; // the battle is playing on this screen; leave it be
+    this.stage.classList.toggle('in-battle', this.screen === 'combat');
     // a new screen fades in quickly (shop and battle also fade out first; see afterEndTurn / startCombat)
     if (this.shownScreen !== this.screen) {
       if (this.shownScreen !== null && !this.noFade) fadeIn(this.stage);
@@ -173,6 +176,7 @@ export class App {
     else if (this.screen === 'hero') html = this.heroSelectHtml();
     else if (this.screen === 'tribes') html = tribesAnnounceHtml(this.g!);
     else if (this.screen === 'shop') html = this.shopHtml();
+    else if (this.screen === 'combat') html = this.battleHtml();
     else if (this.screen === 'over') { this.sel = null; this.hover = null; html = this.shopHtml() + this.overHtml(); } // no zoomed card behind the results
     if (this.options) html += this.optionsHtml();
     if (this.account) html += this.accountHtml();
@@ -538,6 +542,34 @@ export class App {
     if (!p.discovers.length && !p.trinketOffer) this.modalHidden = false;
     if (this.inspect !== null) h += this.inspectHtml();
     return h;
+  }
+
+  /**
+   * The shop screen while a battle plays on it: everything stays where it was (leaderboard, your hero, gold,
+   * the Cards button...), the Tavern's circle shows your opponent, and the battle draws both armies and your hand.
+   */
+  battleHtml() {
+    const g = this.g!;
+    const b = this.battle!;
+    // everyone's Health as it was before this battle (the damage is shown when it lands)
+    const saved = g.players.map((x) => x.health);
+    g.players.forEach((x) => { x.health = b.before(x.id); });
+    try {
+      const opp = g.players[b.oppId];
+      const t = L.phone?.tavern;
+      const kp = t ? t.kp : 116;
+      let h = this.leaderboardHtml();
+      h += `<div class="tavern-keeper enemy-keeper" style="left:${L.cx - (t ? t.kp : 132) / 2}px;top:${L.tavernY}px;${t ? `width:${t.kp}px` : ''}">
+        <div class="tk-portrait battle-av" id="avatar-enemy" style="background-image:url('${heroArt(opp.hero)}');${t ? `width:${kp}px;height:${kp}px` : ''}"><div class="hp hpb">${b.ghost ? '💀' : Math.max(0, b.before(opp.id))}</div></div>
+        <div class="tk-name">${b.ghost ? 'Ghost of ' : ''}${esc(opp.name)}</div>
+      </div>`;
+      for (let i = 0; i < CONFIG.boardSize; i++) h += `<div class="slot-plate" data-slot="${i}" style="left:${L.slotX(i)}px;top:${L.slotTop}px;width:${L.slotW}px;height:${L.slotH}px"></div>`;
+      h += this.heroAreaHtml().replace('class="hero-portrait"', 'class="hero-portrait battle-av" id="avatar-me"').replace('<div class="hp">', '<div class="hp hpb">');
+      h += this.rightSideHtml();
+      return h;
+    } finally {
+      g.players.forEach((x, i) => { x.health = saved[i]; });
+    }
   }
 
   /** Top of the screen, as in Battlegrounds: Upgrade — Tavern — Refresh, Freeze. */
@@ -1465,45 +1497,51 @@ export class App {
     const oppId = meSide === 0 ? (mine.b === -1 ? mine.ghostOf! : mine.b) : mine.a;
     if (mine.frames[0]) this.seenBoards.set(oppId, mine.frames[0].sides[1 - meSide]);
     const opp = g.players[oppId];
-    // health shown on the intro is from before this battle's damage
-    const before = (pl: Player) => pl.health + (mine.winner !== -1 && (mine.winner === 0 ? mine.b : mine.a) === pl.id ? mine.damage : 0);
-    this.busy = true;
-    // the shop fades out, then the battle intro plays over it
-    void fadeOut(this.stage).then(() => battleIntro(this.stage, { hero: p.hero, name: p.name, health: before(p) }, { hero: opp.hero, name: opp.name, health: before(opp), sub: `${heroDef(opp.hero)?.name ?? ''}${opp.persona ? ` · ${seatRating(g, opp.id)}` : ''}` }, round, mine.b === -1, () => {
-      this.screen = 'combat';
-      this.shownScreen = 'combat';
-      fadeClear(this.stage);
-      this.startCombat(mine, meSide, round);
-    })).then(() => {
-      this.busy = false;
-      this.combat?.play();
-    });
+    // the battle plays right here on the shop screen: Health shown is from before this battle's damage
+    const loserId = mine.winner === -1 ? -2 : mine.winner === 0 ? mine.b : mine.a;
+    this.battle = { r: mine, meSide, oppId, ghost: mine.b === -1, before: (id) => g.players[id].health + (id === loserId ? mine.damage : 0) };
+    this.screen = 'combat';
+    this.sel = null;
+    this.hover = null;
+    this.noFade = true;
+    this.render();
+    this.startCombat(mine, meSide, round);
+    void this.combat?.play();
   }
 
   private startCombat(mine: CombatResult, meSide: 0 | 1, round: number) {
     const g = this.g!;
+    const t = L.phone?.tavern;
+    const kp = t ? t.kp : 116;
+    const onShop = {
+      myX: boardCardX,
+      myY: L.boardY,
+      enemyY: L.shopY + ((L.shopBig ? L.shopCardH : L.cardH) - L.cardH) / 2,
+      myHero: { x: L.cx, y: L.heroY },
+      enemyHero: { x: L.cx, y: L.tavernY + kp / 2 },
+      handPos: (i: number, n: number) => ({ x: handX(i, n), y: L.handY }),
+      handSize: { small: !L.shopBig, large: !!L.shopBig, w: L.handCardW, h: L.handCardH },
+      controls: L.phone ? { x: L.endTurn.x, y: L.endTurn.y } : { x: L.endTurn.x, y: L.endTurn.y - 6 },
+    };
     this.combat = new CombatPlayer(this.stage, g, mine, meSide, round, () => {
       this.combat = null;
-      const toShop = () => {
-        this.screen = g.phase === 'over' ? 'over' : 'shop';
-        const last = mine.frames[mine.frames.length - 1];
-        recordCombat(g, {
-          won: mine.winner === meSide, lost: mine.winner === 1 - meSide, tie: mine.winner === -1, damage: mine.damage,
-          myUnits: mine.frames[0]?.sides[meSide].length ?? 0, oppUnits: mine.frames[0]?.sides[1 - meSide].length ?? 0,
-          survivors: last?.sides[meSide].length ?? 0, ghost: mine.b === -1,
-        });
-        if (g.phase === 'over') this.gameEnded(g);
-        this.commit();
-      };
-      if (g.phase === 'over') void fadeOut(this.stage).then(toShop); // fades back in on the results screen
-      else {
-        this.busy = true;
-        let open!: () => void;
-        this.fxGate = new Promise<void>((r) => { open = r; });
-        // the battle fades out, then the Recruit sweep brings in the shop
-        void fadeOut(this.stage).then(() => recruitWipe(this.stage, g.round, () => { this.noFade = true; fadeClear(this.stage); toShop(); })).then(() => { this.busy = false; open(); this.fxGate = Promise.resolve(); });
+      this.battle = null;
+      const last = mine.frames[mine.frames.length - 1];
+      recordCombat(g, {
+        won: mine.winner === meSide, lost: mine.winner === 1 - meSide, tie: mine.winner === -1, damage: mine.damage,
+        myUnits: mine.frames[0]?.sides[meSide].length ?? 0, oppUnits: mine.frames[0]?.sides[1 - meSide].length ?? 0,
+        survivors: last?.sides[meSide].length ?? 0, ghost: mine.b === -1,
+      });
+      if (g.phase === 'over') {
+        // fades back in on the results screen
+        void fadeOut(this.stage).then(() => { this.screen = 'over'; this.gameEnded(g); this.commit(); });
+        return;
       }
-    });
+      // straight back to the shop: same screen, the Tavern's new units are dealt in
+      this.screen = 'shop';
+      this.noFade = true;
+      this.commit();
+    }, onShop);
   }
 
   // ---------------- input ----------------
@@ -1522,6 +1560,8 @@ export class App {
     const p = g ? this.me : null;
     // while a Trinket / Discover choice is tucked away you can look around, but not act
     const LOCKED = ['upgrade', 'reroll', 'freeze', 'end-turn', 'buy', 'play', 'sell', 'left', 'right', 'hero-power', 'undo'];
+    // during a battle (it plays on the shop screen) you can look at everything, but not act
+    if (this.screen === 'combat' && [...LOCKED, 'discover', 'trinket', 'trinket-skip', 'no-target', 'cancel-target'].includes(act)) return;
     if (p && this.screen === 'shop' && (p.discovers.length || p.trinketOffer) && LOCKED.includes(act)) {
       this.toast(p.discovers.length ? 'Make your Discover choice first' : 'Choose a Trinket (or Skip) first');
       return;
