@@ -98,9 +98,11 @@ export class Combat {
   snap(kind: CombatFrame['kind'], extra: Partial<CombatFrame> = {}) {
     const f = (s: Side): CombatFrameUnit[] =>
       s.units.filter((u) => !u.processed).map((u) => ({
-        id: u.id, cardId: u.cardId, golden: u.golden, atk: u.atk, hp: Math.max(0, u.hp), kw: [...u.kw], ...(u.hp <= 0 ? { dead: true, ...(u.hp < 0 ? { over: -u.hp } : {}) } : {}),
+        id: u.id, cardId: u.cardId, golden: u.golden, atk: u.atk, hp: Math.max(0, u.hp), kw: [...u.kw], ...(EFFECTS[u.cardId]?.avenge ? { avenge: u.avenge } : {}), ...(u.hp <= 0 ? { dead: true, ...(u.hp < 0 ? { over: -u.hp } : {}) } : {}),
       }));
     const frame: CombatFrame = { kind, sides: [f(this.sides[0]), f(this.sides[1])], ...extra };
+    const mine = !this.g.simulateAll && this.sides.find((s) => s.persistent && s.owner.human);
+    if (mine) frame.hand = mine.owner.hand.map((u) => ({ uid: u.uid, cardId: u.cardId, golden: u.golden, atk: u.atk, hp: u.hp, kw: [...u.kw] }));
     if (this.fx.length) {
       frame.fx = this.fx;
       this.fx = [];

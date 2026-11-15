@@ -2,6 +2,9 @@
 
 Newest first. The version shows on the title screen.
 
+## 0.9.0 — 2026-11-15
+- Left and Right Twinbot are now 1/2 (no more 0-Attack units). Refresh deals the new cards out one by one from the Refresh button. Longbow and Sniper fire a bullet with a muzzle flash and a gunshot. Units with Avenge show their progress (e.g. 1/3) over their picture in battle. Trinket and Discover choices can be tucked away ('Look at army') to look at your board, then brought back; other actions wait until you choose. Your hand is shown beside your hero during battles: cards gained arrive with a sparkle, cards summoned from it lift away. 'Triple!' and gem/counter badges sit just above the Tier instead of covering it.
+
 ## 0.8.0 — 2026-11-12
 - Hero Health halved; battle damage is now 1 + 1 per surviving unit. New Commitment: Battlecry: give your left-most slot +20 Health per Azure unit. Chaos counts Battlecry units played (not extra triggers). Tinker flashes, then the shop unit it upgraded flashes as its keyword lands. Hero powers going off get a burst of light, a bigger label and their own chime (e.g. Derby Pocket's extra Battlecry). Repeated Battlecries play twice as fast. Taunt shields stick out more. A slot's bonus shows under the unit's Attack and Health so keyword coins don't cover it. Extra keywords on the big card show as coloured italics. Banners no longer show a number over the Tier. Bots: even the weakest persona now plays with real skill (weakest bots averaged 12/11 units by turn 14; now 34/40); new players start mid-ladder (1400) and existing ratings below that move up; persona ratings re-measured; card values re-measured.
 

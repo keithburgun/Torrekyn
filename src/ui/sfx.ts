@@ -140,6 +140,15 @@ export const sfx = {
     tone({ f: 330, f2: 990, d: 0.25, type: 'sine', v: 0.35 });
     tone({ f: 1320, t: 0.12, d: 0.3, type: 'triangle', v: 0.15 });
   },
+  /** a gunshot (Longbow, Sniper) */
+  shot() {
+    noise({ d: 0.09, v: 0.35, lp: 3000, hp: 600 });
+    tone({ f: 180, f2: 60, d: 0.1, type: 'square', v: 0.18 });
+  },
+  /** a card dealt into the Tavern: a soft flick */
+  deal() {
+    tone({ f: 1400, f2: 700, d: 0.05, type: 'triangle', v: 0.1 });
+  },
   /** a hero power goes off by itself: a bright rising chime */
   heroFx() {
     [523, 659, 784, 1047].forEach((f, i) => tone({ f, t: i * 0.07, d: 0.32, type: 'triangle', v: 0.22 }));

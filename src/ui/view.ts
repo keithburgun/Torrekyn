@@ -110,6 +110,7 @@ export function cardHtml(u: { cardId: string; golden: boolean; atk: number; hp: 
   <div class="abil">${tags}</div>
   <div class="name">${esc(d.name)}</div>
   <div class="tribe-plate ${(TRIBE_SHORT[d.tribe] ?? d.tribe).length > 8 ? 'long' : ''}">${TRIBE_SHORT[d.tribe] ?? d.tribe}</div>${o.badge ?? ''}
+  ${(u as { avenge?: string }).avenge ? `<div class="avenge-count" title="Avenge: friendly units died / needed">${(u as { avenge?: string }).avenge}</div>` : ''}
   ${(() => { const c = (u as { note?: string }).note ?? (u.mem && (o.zone === "board" || o.zone === "combat") ? unitCounter(u as Unit) : null); return c ? `<div class="counter">${c}</div>` : ''; })()}
   <div class="stat atk ${atk > baseAtk ? 'buffed' : ''}">${atk}</div>
   <div class="stat hp ${hp > baseHp ? 'buffed' : hp < baseHp ? 'hurt' : ''}">${hp}</div>
@@ -190,7 +191,8 @@ function gemNote(p: Player, u: Unit): string | undefined {
 }
 
 export function frameUnitView(u: CombatFrameUnit) {
-  return { cardId: u.cardId, golden: u.golden, atk: u.atk, hp: u.hp, kw: u.kw };
+  const av = EFFECTS[u.cardId]?.avenge;
+  return { cardId: u.cardId, golden: u.golden, atk: u.atk, hp: u.hp, kw: u.kw, ...(av && u.avenge !== undefined ? { avenge: `${u.avenge}/${av[u.golden ? 1 : 0]}` } : {}) };
 }
 
 /**

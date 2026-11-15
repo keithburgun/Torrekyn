@@ -165,6 +165,8 @@ export interface CombatFrameUnit {
   atk: number;
   hp: number;
   kw: Keyword[];
+  /** Avenge progress, for units with Avenge */
+  avenge?: number;
 }
 
 /** Visual effects attached to a combat frame (for animation only). */
@@ -183,6 +185,8 @@ export interface CombatFrame {
   target?: number;
   source?: number;
   note?: string;
+  /** your hand at this moment (only for your own battles), so cards gained or summoned from it show up */
+  hand?: { uid: number; cardId: string; golden: boolean; atk: number; hp: number; kw: Keyword[] }[];
 }
 
 export interface CombatResult {

@@ -103,6 +103,60 @@ export class CombatPlayer {
 
   /** the unit each card shows right now (for the zoomed card) */
   private units = new Map<number, CombatFrameUnit>();
+  /** your hand during the battle: card elements by uid */
+  private handEls = new Map<number, HTMLElement>();
+
+  /**
+   * Your hand, shown small beside your hero during the battle (left of it on wide screens, under it on phones):
+   * cards gained in battle arrive with a sparkle, cards summoned from it lift away.
+   */
+  private showHand(f: CombatFrame, instant: boolean) {
+    if (!f.hand) return;
+    const L = this.L;
+    const sc = L.portrait ? 0.62 : 0.58; // card scale
+    const w = L.cardW * sc;
+    const n = f.hand.length;
+    const hero = L.combat.myHero;
+    const step = Math.min(w * 0.82, (L.portrait ? 840 : 560) / Math.max(1, n));
+    const pos = (i: number) => L.portrait
+      ? { x: hero.x - ((n - 1) * step) / 2 + i * step - w / 2, y: Math.min(L.H - L.cardH * sc - 8, hero.y + 120) }
+      : { x: hero.x - 150 - w - (n - 1 - i) * step, y: hero.y - (L.cardH * sc) / 2 + 10 };
+    const seen = new Set<number>();
+    f.hand.forEach((c, i) => {
+      seen.add(c.uid);
+      const { x, y } = pos(i);
+      const html = cardHtml({ cardId: c.cardId, golden: c.golden, atk: c.atk, hp: c.hp, kw: c.kw }, { zone: 'combat', idx: i, x, y, small: L.small, extraClass: 'combat-hand' });
+      const tmp = document.createElement('div');
+      tmp.innerHTML = html;
+      const fresh = tmp.firstElementChild as HTMLElement;
+      fresh.style.setProperty('--hs', String(sc));
+      let el = this.handEls.get(c.uid);
+      if (!el) {
+        el = fresh;
+        this.layer.appendChild(el);
+        this.handEls.set(c.uid, el);
+        if (!instant && this.handEls.size > 0 && f.kind !== 'start') {
+          el.classList.add('hand-gain');
+          this.spot('buff-glow', x + w / 2, y + (L.cardH * sc) / 2, this.t(700));
+          sfx.buy();
+        }
+      } else {
+        const ox = parseFloat(el.style.left);
+        el.className = fresh.className + (el.classList.contains('hand-gain') ? ' hand-gain' : '');
+        el.innerHTML = fresh.innerHTML;
+        el.style.left = `${x}px`;
+        el.style.top = `${y}px`;
+        if (!instant && ox !== x) el.animate([{ translate: `${ox - x}px 0px` }, { translate: '0px 0px' }], { duration: this.t(300), easing: 'ease-out', fill: 'backwards' });
+      }
+    });
+    for (const [uid, el] of this.handEls) {
+      if (seen.has(uid)) continue;
+      this.handEls.delete(uid);
+      if (instant) { el.remove(); continue; }
+      el.classList.add('hand-leave');
+      setTimeout(() => el.remove(), this.t(500));
+    }
+  }
   private zoomId: number | null = null;
   private zoomEl: HTMLElement | null = null;
 
@@ -361,13 +415,40 @@ export class CombatPlayer {
     await this.gemShots(fx);
     const shots = fx.filter((e) => (e.k === 'hit' || e.k === 'kill') && (e.from !== undefined || e.fromSide !== undefined));
     if (!shots.length) return;
-    sfx.zap();
+    if (shots.some((e) => !['longbow', 'sniper'].includes(this.units.get(e.from ?? -1)?.cardId ?? ''))) sfx.zap();
     const flight = this.t(380);
     const anims: Promise<unknown>[] = [];
     shots.slice(0, 12).forEach((e, i) => {
       const from = e.from !== undefined ? this.center(e.from) : this.heroCenter(e.fromSide!);
       const to = this.center(e.to);
       if (!from || !to || (from.x === to.x && from.y === to.y)) return;
+      // Longbow and Sniper fire a bullet: straight, fast, pointed at the target, with a muzzle flash
+      const shooter = e.from !== undefined ? this.units.get(e.from)?.cardId : undefined;
+      if (shooter === 'longbow' || shooter === 'sniper') {
+        const dx = to.x - from.x;
+        const dy = to.y - from.y;
+        const ang = (Math.atan2(dy, dx) * 180) / Math.PI;
+        const b = document.createElement('div');
+        b.className = 'bullet';
+        b.style.left = `${from.x}px`;
+        b.style.top = `${from.y}px`;
+        this.fxLayer.appendChild(b);
+        const delay = i * this.t(110);
+        setTimeout(() => { sfx.shot(); this.spot('muzzle', from.x, from.y, this.t(260)); }, delay);
+        const a = b.animate(
+          [
+            { transform: `translate(-50%, -50%) rotate(${ang}deg)` },
+            { transform: `translate(calc(-50% + ${dx}px), calc(-50% + ${dy}px)) rotate(${ang}deg)` },
+          ],
+          { duration: this.t(Math.max(140, Math.min(260, Math.hypot(dx, dy) * 0.4))), delay, easing: 'linear', fill: 'forwards' },
+        );
+        anims.push(a.finished.then(() => {
+          b.remove();
+          sfx.hit();
+          this.spot('impact', to.x, to.y, this.t(380));
+        }).catch(() => b.remove()));
+        return;
+      }
       const p = document.createElement('div');
       p.className = `projectile ${e.k === 'kill' ? 'kill' : e.from === undefined ? 'hero' : ''}`;
       p.style.left = `${from.x}px`;
@@ -519,10 +600,13 @@ export class CombatPlayer {
         if (!before.kw.includes('reborn') && u.kw.includes('reborn')) this.spot('kw-gain', x + this.L.cardW / 2, y + 30, this.t(800), '☥');
         if (!before.kw.includes('venomous') && u.kw.includes('venomous')) this.spot('kw-gain', x + this.L.cardW / 2, y + 30, this.t(800), '☠');
       }
+      if (before && u.avenge !== undefined && before.avenge !== u.avenge) el.querySelector('.avenge-count')?.classList.add('tick');
       if (fxFor(id, 'venom')) this.spot('venom-pop', x + this.L.cardW / 2, y + this.L.cardH / 2, this.t(700));
       if (fxFor(id, 'kill')) this.spot('kill-pop', x + this.L.cardW / 2, y + this.L.cardH / 2, this.t(700), '✖');
     }
+    this.showHand(f, instant);
     if (instant) return;
+
 
     // 4. the attack lunge
     if (f.kind === 'attack' && f.attacker !== undefined && f.target !== undefined) {

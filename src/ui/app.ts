@@ -299,7 +299,46 @@ export class App {
   /** Last seen stats of your units, so changes can be animated after each action. */
   private seen: { units: Map<number, { atk: number; hp: number; zone: string }>; slots: string[] } | null = null;
 
+  /** the Trinket / Discover choice is tucked away so the army can be looked at (no actions until it's made) */
+  private modalHidden = false;
+
+  /** shop cards on the last render, so new ones (a Refresh, a new turn) can be dealt out one by one */
+  private shopSeen = new Set<number>();
+  /** when the current deal finishes (shop effects like Tinker wait for it) */
+  private dealUntil = 0;
+
+  private dealShop() {
+    const els = [...this.stage.querySelectorAll('.card[data-zone="shop"]')] as HTMLElement[];
+    const prev = this.shopSeen;
+    this.shopSeen = new Set(els.map((e) => Number(e.dataset.id)));
+    const fresh = els.filter((e) => !prev.has(Number(e.dataset.id)));
+    // a single new card is a Discover/gain, not a Refresh; nothing to deal on the very first shop either
+    if (fresh.length < 2 || this.fxHurry) return;
+    const btn = this.stage.querySelector('[data-act="reroll"]') as HTMLElement | null;
+    const st = this.stage.getBoundingClientRect();
+    const scale = st.width / this.stage.offsetWidth || 1;
+    const ob = btn?.getBoundingClientRect();
+    const ox = ob ? (ob.left + ob.width / 2 - st.left) / scale : this.stage.offsetWidth / 2;
+    const oy = ob ? (ob.top + ob.height / 2 - st.top) / scale : 0;
+    const step = 85;
+    fresh.forEach((el, i) => {
+      const x = parseFloat(el.style.left) + el.offsetWidth / 2;
+      const y = parseFloat(el.style.top) + el.offsetHeight / 2;
+      el.animate(
+        [
+          { translate: `${ox - x}px ${oy - y}px`, scale: '0.25', rotate: '-14deg', opacity: 0 },
+          { opacity: 1, offset: 0.25 },
+          { translate: '0px 0px', scale: '1', rotate: '0deg', opacity: 1 },
+        ],
+        { duration: 300, delay: i * step, easing: 'cubic-bezier(.2,.9,.3,1.12)', fill: 'backwards' },
+      );
+      setTimeout(() => sfx.deal(), i * step);
+    });
+    this.dealUntil = performance.now() + fresh.length * step + 300;
+  }
+
   private shopFeedback() {
+    this.dealShop();
     const p = this.me;
     const units = new Map<number, { atk: number; hp: number; zone: string }>();
     p.board.forEach((u, i) => { const v = unitView(p, u, 'board', i); units.set(u.uid, { atk: v.atk, hp: v.hp, zone: 'board' }); });
@@ -505,8 +544,11 @@ export class App {
         ${tgt.kind === 'play' ? '<button class="btn" data-act="no-target">No target</button>' : ''}
         <button class="btn" data-act="cancel-target">Cancel</button></div>`;
     }
-    if (p.discovers.length) h += this.discoverHtml();
+    if ((p.discovers.length || p.trinketOffer) && this.modalHidden) {
+      h += `<button class="btn primary modal-return" data-act="modal-show">${p.discovers.length ? 'Back to your Discover' : 'Back to the Trinkets'} ▲</button>`;
+    } else if (p.discovers.length) h += this.discoverHtml();
     else if (p.trinketOffer) h += this.trinketHtml();
+    if (!p.discovers.length && !p.trinketOffer) this.modalHidden = false;
     if (this.inspect !== null) h += this.inspectHtml();
     return h;
   }
@@ -845,7 +887,7 @@ export class App {
   discoverHtml() {
     const d = this.me.discovers[0];
     if (d.powers) {
-      return `<div class="modal"><h2>${esc(d.reason)}</h2><div class="choices pairs">${d.options.map((id, i) => {
+      return `<div class="modal"><button class="btn modal-hide" data-act="modal-hide" title="Look at your army, then come back">Look at army ▼</button><h2>${esc(d.reason)}</h2><div class="choices pairs">${d.options.map((id, i) => {
         const h = heroDef(id)!;
         return `<div class="choice herocard" data-act="discover" data-idx="${i}">
           <div class="hero-portrait" style="background-image:url('${heroArt(h.id)}')"></div>
@@ -855,7 +897,7 @@ export class App {
         </div>`;
       }).join('')}</div></div>`;
     }
-    return `<div class="modal"><h2>${esc(d.reason)}</h2><div class="choices">${d.options.map((id, i) => {
+    return `<div class="modal"><button class="btn modal-hide" data-act="modal-hide" title="Look at your army, then come back">Look at army ▼</button><h2>${esc(d.reason)}</h2><div class="choices">${d.options.map((id, i) => {
       const dd = def(id);
       const m = d.golden ? 2 : 1;
       return `<div class="choice" data-act="discover" data-idx="${i}">${bigCardHtml({ cardId: id, golden: !!d.golden, atk: dd.atk * m, hp: dd.hp * m, kw: [...dd.keywords] }, '', this.me)}</div>`;
@@ -866,7 +908,7 @@ export class App {
     const p = this.me;
     const offer = p.trinketOffer!;
     const greater = trinketDef(offer[0]).greater;
-    return `<div class="modal"><h2>${greater ? 'Greater' : 'Lesser'} Trinket</h2>
+    return `<div class="modal"><button class="btn modal-hide" data-act="modal-hide" title="Look at your army, then come back">Look at army ▼</button><h2>${greater ? 'Greater' : 'Lesser'} Trinket</h2>
       <div class="hint lead">Choose one to buy. You have ${p.gold} gold. (Placeholder trinkets.)</div>
       <div class="choices pairs">${offer.map((id) => {
         const t = trinketDef(id);
@@ -1084,6 +1126,9 @@ export class App {
     this.fxHurry = false;
     const hurry = () => { this.fxHurry = true; };
     this.stage.addEventListener('pointerdown', hurry);
+    // a Refresh deals its cards out first; effects on them (Tinker) start once they've landed
+    const dealLeft = this.dealUntil - performance.now();
+    if (dealLeft > 0) await new Promise((r) => setTimeout(r, dealLeft));
     let speed = 1; // 0.5 for a run of repeated Battlecries
     const wait = (ms: number) => new Promise<void>((r) => setTimeout(r, this.fxHurry ? ms * 0.2 : ms * speed));
     const card = (uid: number) => this.stage.querySelector(`.card[data-id="${uid}"]:not(.ghost)`) as HTMLElement | null;
@@ -1487,7 +1532,15 @@ export class App {
     if ((el as HTMLButtonElement).disabled) return;
     const g = this.g;
     const p = g ? this.me : null;
+    // while a Trinket / Discover choice is tucked away you can look around, but not act
+    const LOCKED = ['upgrade', 'reroll', 'freeze', 'end-turn', 'buy', 'play', 'sell', 'left', 'right', 'hero-power', 'undo'];
+    if (p && this.screen === 'shop' && (p.discovers.length || p.trinketOffer) && LOCKED.includes(act)) {
+      this.toast(p.discovers.length ? 'Make your Discover choice first' : 'Choose a Trinket (or Skip) first');
+      return;
+    }
     switch (act) {
+      case 'modal-hide': this.modalHidden = true; this.render(); break;
+      case 'modal-show': this.modalHidden = false; this.render(); break;
       case 'new': clearSave(); this.newGame(); break;
       case 'continue': this.continueGame(); break;
       case 'rules': this.screen = 'rules'; this.render(); break;
