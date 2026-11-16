@@ -165,6 +165,8 @@ export interface CombatFrameUnit {
   kw: Keyword[];
   /** Avenge progress, for units with Avenge */
   avenge?: number;
+  /** Intern: extra Gold it sells for */
+  sellBonus?: number;
   /** has Rattler's "Deathrattle: Summon a random Tier 1 unit" */
   rattle?: number;
 }

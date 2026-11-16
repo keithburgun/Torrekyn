@@ -410,3 +410,33 @@ describe('v0.12 card changes', () => {
     expect(def('restore').text).toContain('Avenge (2)');
   });
 });
+
+describe('Buzz-Boink', () => {
+  it('a Tier 1 Alcove 1/1 with Divine Shield; Deathrattle summons a 1/1 Robo (Golden: 2)', () => {
+    expect([def('buzz_boink').tier, def('buzz_boink').tribe, def('buzz_boink').atk, def('buzz_boink').hp]).toEqual([1, 'alcove', 1, 1]);
+    expect(def('buzz_boink').keywords).toContain('divineShield');
+    expect(def('robo').token).toBe(true);
+    for (const golden of [false, true]) {
+      const { g, p, o } = setup();
+      const c = fight(g, p, o, [U(g, 'buzz_boink', 1, 1, golden)], [U(g, 'skel', 1, 999)]);
+      c.run();
+      const robos = Math.max(...c.frames.map((f) => f.sides[0].filter((u) => u.cardId === 'robo').length));
+      expect(robos).toBe(golden ? 2 : 1);
+      const r = c.frames.flatMap((f) => f.sides[0]).find((u) => u.cardId === 'robo')!;
+      expect([r.atk, r.hp]).toEqual([1, 1]);
+    }
+  });
+});
+
+it('Intern: in battle its card shows the Gold it now sells for (1 + its bonus)', async () => {
+  const { frameUnitView, bigCardHtml } = await import('../src/ui/view').catch(() => ({ frameUnitView: undefined, bigCardHtml: undefined }));
+  const { g, p, o } = setup();
+  const intern = U(g, 'intern', 1, 500);
+  p.board = [U(g, 'skel', 1, 1), U(g, 'skel', 1, 1), U(g, 'skel', 1, 1), U(g, 'skel', 1, 1), U(g, 'skel', 1, 1), intern];
+  const c = fight(g, p, o, p.board, [U(g, 'skel', 1, 999)]);
+  c.run();
+  expect(intern.mem.sellBonus).toBe(1);
+  const last = c.frames.flatMap((f) => f.sides[0]).filter((u) => u.cardId === 'intern').at(-1)!;
+  expect(last.sellBonus).toBe(1);
+  if (frameUnitView && bigCardHtml) expect(bigCardHtml(frameUnitView(last))).toContain('Sells for 2 Gold');
+});

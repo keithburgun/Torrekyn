@@ -158,6 +158,9 @@ export const EFFECTS: Record<string, Effect> = {
   skeleton: {
     deathrattle: (c) => c.c.spawnMany(c.side, 'skel', false, c.m === 2 ? 4 : 2, c.pos),
   },
+  buzz_boink: {
+    deathrattle: (c) => c.c.spawnMany(c.side, 'robo', false, c.m, c.pos),
+  },
   memory: {
     onSell: (c) => { for (let i = 0; i < c.m; i++) gain(c, randomTier(c, 1)); },
   },

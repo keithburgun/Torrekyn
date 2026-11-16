@@ -2,6 +2,9 @@
 
 Newest first. The version shows on the title screen.
 
+## 0.12.1 — 2026-11-16
+- New Tier 1 Alcove unit, Buzz-Boink: 1/1, Divine Shield. Deathrattle: Summon a 1/1 Robo (Golden: two). Intern's card in battle shows what it really sells for (it always said 1 Gold there).
+
 ## 0.12.0 — 2026-11-16
 - Lake: a 3/3; after you buy 3 Azure units its stats double (once). Scientist: Tier 3, 4/1. Funeral: 5/1. Restore: Avenge (2). Omni-Gem: 10/10. New art for Front and Center, Adder, Honeysuckle, Sickle, Larva, Scout and Aerial Drone (each was the same picture as another card); Scientist re-cropped on the character; Right Twinbot faces the other way. The Attack diamond and Health orb are flat colours, the orb a deeper crimson.
 

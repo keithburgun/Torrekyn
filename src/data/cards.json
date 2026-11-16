@@ -1359,6 +1359,19 @@
    "keywords": []
   },
   {
+   "id": "buzz_boink",
+   "name": "Buzz-Boink",
+   "tribe": "alcove",
+   "tier": 1,
+   "atk": 1,
+   "hp": 1,
+   "text": "Divine Shield. Deathrattle: Summon a 1/1 Robo.",
+   "goldenText": "Divine Shield. Deathrattle: Summon 2 1/1 Robos.",
+   "keywords": [
+    "divineShield"
+   ]
+  },
+  {
    "id": "skel",
    "name": "Skel",
    "tribe": "neverending",
@@ -1496,6 +1509,18 @@
    "text": "Avenge (3): Give a random friendly unit Divine Shield.",
    "goldenText": "Avenge (3): Give 2 random friendly units Divine Shield.",
    "keywords": []
+  },
+  {
+   "id": "robo",
+   "name": "Robo",
+   "tribe": "alcove",
+   "tier": 1,
+   "atk": 1,
+   "hp": 1,
+   "text": "",
+   "goldenText": "",
+   "keywords": [],
+   "token": true
   }
  ]
 }

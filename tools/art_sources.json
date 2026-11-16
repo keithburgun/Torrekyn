@@ -932,6 +932,14 @@
   "blue_dragon": {
    "src": "X/dragon.png",
    "px": true
+  },
+  "buzz_boink": {
+   "src": "X/robot-ram.png",
+   "px": true
+  },
+  "robo": {
+   "src": "X/ram bot.png",
+   "px": true
   }
  }
 }
