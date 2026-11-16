@@ -330,7 +330,7 @@ export class Combat {
           // WARMECH: +4/+2 (Golden +8/+4) per Deathrattle triggered this game, growing as they happen
           if (s.persistent) s.owner.deathrattlesGame = (s.owner.deathrattlesGame ?? 0) + times;
           for (const w of s.units) if (w.cardId === 'warmech' && w.hp > 0) { w.atk += 4 * mult(w) * times; w.hp += 2 * mult(w) * times; }
-          this.snap('trigger', { note: `${def(u.cardId).name}: Deathrattle` });
+          this.snap('trigger', { source: u.id, note: `${def(u.cardId).name}: Deathrattle` });
         }
         // reborn
         if (has(u, 'reborn')) {

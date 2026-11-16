@@ -411,11 +411,16 @@ export class CombatPlayer {
   }
 
   // ---------- small effect helpers ----------
+  /** where each unit was last seen: a unit whose Deathrattle deals damage (Gargoil) is already gone when it fires */
+  private lastSeen = new Map<number, { x: number; y: number }>();
+
   private center(id: number | undefined): { x: number; y: number } | null {
     if (id === undefined) return null;
     const el = this.els.get(id);
-    if (!el) return null;
-    return { x: parseFloat(el.style.left) + this.L.cardW / 2, y: parseFloat(el.style.top) + this.L.cardH / 2 };
+    if (!el) return this.lastSeen.get(id) ?? null;
+    const c = { x: parseFloat(el.style.left) + this.L.cardW / 2, y: parseFloat(el.style.top) + this.L.cardH / 2 };
+    this.lastSeen.set(id, c);
+    return c;
   }
 
   private heroCenter(side: 0 | 1) {
@@ -565,7 +570,13 @@ export class CombatPlayer {
   private flashSource(id: number | undefined) {
     if (id === undefined) return false;
     const el = this.els.get(id);
-    if (!el) return false;
+    if (!el) {
+      // already gone (a Deathrattle): a glow where it stood, so you can see where the ability comes from
+      const at = this.lastSeen.get(id);
+      if (!at) return false;
+      this.spot('buff-glow', at.x, at.y, this.t(650));
+      return true;
+    }
     el.classList.remove('activate');
     void el.offsetWidth;
     el.style.setProperty('--life', `${this.t(650)}ms`);
@@ -590,6 +601,7 @@ export class CombatPlayer {
     // 2. units that are gone fade away slowly
     for (const [id, el] of this.els) {
       if (pos.has(id)) continue;
+      this.center(id); // remember where it stood (its Deathrattle may shoot from there)
       this.els.delete(id);
       if (id === this.zoomId) this.showZoom(null);
       if (instant) { el.remove(); continue; }

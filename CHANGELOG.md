@@ -2,6 +2,9 @@
 
 Newest first. The version shows on the title screen.
 
+## 0.11.9 — 2026-11-16
+- Abilities that damage units shoot a projectile from their unit even when it's a Deathrattle (Gargoil and the like used to have nowhere to fire from); the spot where it stood glows first.
+
 ## 0.11.8 — 2026-11-16
 - Larva shows how many turns it has left ('2 turns left', then 'Done!'), in your hand too; other counters (e.g. Scout's Tier) now show on hand cards as well.
 
