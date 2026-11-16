@@ -73,7 +73,7 @@ describe('mechanics', () => {
     buy(g, p, 0); buy(g, p, 0); buy(g, p, 0);
     expect(p.hand.length).toBe(1);
     expect(p.hand[0].golden).toBe(true);
-    expect(p.hand[0].atk).toBe(6);
+    expect(p.hand[0].atk).toBe(def("ash").atk * 2 + 2);
     play(g, p, 0, 0);
     expect(p.discovers.length).toBe(1); // triple reward
   });

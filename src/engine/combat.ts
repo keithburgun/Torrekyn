@@ -337,7 +337,9 @@ export class Combat {
           const d = def(u.cardId);
           const m = u.golden ? 2 : 1;
           if (s.units.filter((x) => x.hp > 0).length < CONFIG.boardSize) {
-            const r = this.makeCU(s.idx, u.cardId, u.golden, d.atk * m + ownerBonus(s.owner, u).atk, 1,
+            // Horseman comes back with its full stats (as it started the battle); others with 1 Health
+            const full = u.cardId === 'horseman';
+            const r = this.makeCU(s.idx, u.cardId, u.golden, full ? u.startAtk : d.atk * m + ownerBonus(s.owner, u).atk, full ? u.startHp : 1,
               d.keywords.filter((k) => k !== 'reborn'), u.src, { ...u.mem, rattle: 0 });
             s.units.splice(Math.min(pos, s.units.length), 0, r);
             this.addFx({ k: 'reborn', to: r.id });

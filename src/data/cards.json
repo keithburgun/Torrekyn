@@ -26,8 +26,8 @@
    "name": "Ash",
    "tribe": "neverending",
    "tier": 1,
-   "atk": 2,
-   "hp": 2,
+   "atk": 3,
+   "hp": 3,
    "text": "Taunt.",
    "goldenText": "Taunt.",
    "keywords": [
@@ -96,8 +96,8 @@
    "tier": 3,
    "atk": 5,
    "hp": 5,
-   "text": "Reborn.",
-   "goldenText": "Reborn.",
+   "text": "Reborn. Comes back with full stats.",
+   "goldenText": "Reborn. Comes back with full stats.",
    "keywords": [
     "reborn"
    ]

@@ -630,6 +630,7 @@ export const EFFECTS: Record<string, Effect> = {
       if (best) c.self.hp += best.hp * c.m;
     },
   },
+  horseman: {}, // Reborn with full stats: see the reborn code in combat.ts
   warmech: {}, // stats from Deathrattles triggered this game (core ownerBonus; grows during battle in combat.ts)
   may_danaris: {
     // a 20/20 Phoenix, with a random Gem played on it (two if Golden)

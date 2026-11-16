@@ -593,6 +593,14 @@ export function endTurn(g: GameState): CombatResult[] {
       if (h.length > 6) h.shift();
     }
   }
+  // Another Chance (Greater Trinket): the first time you run out of Health, back to 10 and 10 Gold next turn
+  for (const p of alivePlayers(g)) {
+    if (p.health > 0 || !p.trinkets.includes('another_chance') || p.heroMem.anotherChanceUsed) continue;
+    p.heroMem.anotherChanceUsed = 1;
+    p.health = 10;
+    p.goldNextTurn += 10;
+    log(p, 'Another Chance! Back to 10 Health, and 10 Gold next turn.');
+  }
   // eliminations
   const dying = alivePlayers(g).filter((p) => p.health <= 0).sort((a, b) => a.health - b.health);
   let place = aliveBefore;

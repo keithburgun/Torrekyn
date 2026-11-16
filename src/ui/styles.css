@@ -1531,7 +1531,7 @@ svg.aim-arrow.locked .aim-ring { opacity: 0.9; animation: aim-ring 0.9s ease-in-
 @keyframes avenge-tick { 30% { transform: translate(-50%, -50%) scale(1.5); background: #ff4f7b; box-shadow: 0 0 18px #ff7a9c; } }
 
 /* tuck a Trinket / Discover choice away to look at your army, then bring it back */
-.modal .modal-hide { position: absolute; top: 22px; right: 26px; font-size: 17px; padding: 8px 18px; }
+.modal .modal-hide { position: absolute; top: 22px; right: 140px; font-size: 17px; padding: 8px 18px; }
 .modal-return { position: absolute; z-index: 55; left: 50%; bottom: 26px; transform: translateX(-50%); font-size: 22px; padding: 12px 30px;
   box-shadow: var(--shadow), 0 0 26px rgba(255, 120, 190, 0.75); animation: return-pulse 1.6s ease-in-out infinite; }
 @keyframes return-pulse { 50% { box-shadow: var(--shadow), 0 0 40px 6px rgba(255, 120, 190, 0.95); } }
@@ -1581,3 +1581,8 @@ svg.aim-arrow.locked .aim-ring { opacity: 0.9; animation: aim-ring 0.9s ease-in-
 .zoom-related.left { right: calc(100% + 16px); flex-direction: row-reverse; }
 .zoom-related.below { top: calc(100% + 16px); left: 50%; transform: translateX(-50%); }
 .zoom-related.above { top: auto; bottom: calc(100% + 16px); left: 50%; transform: translateX(-50%); }
+
+/* trinket prices: big enough to read at a glance */
+.trinketcard .pc { font-size: 30px !important; display: flex; align-items: center; gap: 6px; margin-top: auto; }
+.trinketcard .pc .coin { width: 28px; height: 28px; }
+#stage.portrait .trinketcard .pc { font-size: 34px !important; }

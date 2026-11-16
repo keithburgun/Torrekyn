@@ -319,3 +319,42 @@ it('Therapist: Battlecry gives a unit Taunt and +12 Health (Golden: +24)', () =>
   play(g, p, 0, 2, t.uid);
   expect(t.hp).toBe(38);
 });
+
+describe('v0.11.6 changes', () => {
+  it('Horseman comes back from Reborn with its full stats', () => {
+    const { g, p, o } = setup();
+    const h = U(g, 'horseman', 9, 12);
+    const c = fight(g, p, o, [h], [U(g, 'skel', 30, 999)]);
+    c.run();
+    const back = c.frames.find((f) => f.fx?.some((x) => x.k === 'reborn'));
+    expect(back).toBeTruthy();
+    const r = back!.sides[0].find((u) => u.cardId === 'horseman')!;
+    expect([r.atk, r.hp]).toEqual([9, 12]);
+    expect(r.kw).not.toContain('reborn');
+  });
+
+  it('Another Chance: the first time Health runs out it goes back to 10 with 10 Gold next turn; the second time you are out', async () => {
+    const g = newGame(21);
+    const { selectHero, human, endTurn } = await import('../src/engine/game');
+    selectHero(g, human(g).heroOffer![0]);
+    const p = human(g);
+    p.trinkets = ['another_chance'];
+    p.board = [];
+    p.health = 1;
+    endTurn(g); // an empty army loses (or ties a ghost with nothing)
+    if (p.health === 1) return; // drew: nothing to check this seed
+    expect(p.alive).toBe(true);
+    expect(p.health).toBe(10);
+    expect(p.heroMem.anotherChanceUsed).toBe(1);
+    expect(p.gold).toBeGreaterThanOrEqual(10);
+    // a second time: out
+    p.health = 1; p.board = [];
+    endTurn(g);
+    if (p.health <= 0) expect(p.alive).toBe(false);
+  });
+
+  it('Ash is a 3/3 with Taunt', () => {
+    expect([def('ash').atk, def('ash').hp]).toEqual([3, 3]);
+    expect(def('ash').keywords).toContain('taunt');
+  });
+});

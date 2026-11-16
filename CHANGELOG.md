@@ -2,6 +2,9 @@
 
 Newest first. The version shows on the title screen.
 
+## 0.11.6 — 2026-11-16
+- Horseman comes back from Reborn with its full stats. New Greater Trinket, Another Chance (4 Gold): the first time you run out of Health, your Health goes back to 10 and you get 10 Gold next turn. Trinket prices are much bigger. Ash is a 3/3. ('Look at army' no longer sits on the sound button.)
+
 ## 0.11.5 — 2026-11-16
 - Bill Milton (card): End of Turn: gain +1/+1 for each maximum Gold you have (Golden +2/+2).
 
