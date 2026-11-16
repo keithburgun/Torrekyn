@@ -2,6 +2,9 @@
 
 Newest first. The version shows on the title screen.
 
+## 0.11.10 — 2026-11-16
+- The triple animation spins the other way. Options has a debug control for your rating (-100, -25, +25, +100), which picks the bots in your next game.
+
 ## 0.11.9 — 2026-11-16
 - Abilities that damage units shoot a projectile from their unit even when it's a Deathrattle (Gargoil and the like used to have nowhere to fire from); the spot where it stood glows first.
 

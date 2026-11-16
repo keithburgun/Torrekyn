@@ -48,6 +48,14 @@ function save(r: RatingState) {
   store.setJSON(KEY, r);
 }
 
+/** Debug: set your rating by hand (Options). It decides which bots your next games are against. */
+export function setRatingDebug(n: number) {
+  const r = getRating();
+  r.rating = Math.round(Math.max(800, Math.min(2200, n)));
+  r.peak = Math.max(r.peak, r.rating);
+  save(r);
+}
+
 export const isProvisional = (r: RatingState) => r.games < PROVISIONAL_GAMES;
 
 /** Rating of a seat in the lobby (a persona's measured Elo). */

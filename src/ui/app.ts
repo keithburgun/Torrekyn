@@ -21,7 +21,7 @@ import { placeBoardBg, placeHud } from './hud';
 import { puff } from './fx';
 import type { FxEvent } from '../engine/fx';
 import { battleIntro, recruitWipe, fadeOut, fadeClear, fadeIn } from './transitions';
-import { getRating, isProvisional, rateGame, seatRating } from './rating';
+import { getRating, isProvisional, rateGame, seatRating, setRatingDebug } from './rating';
 import { EXPERT_ELO, personaById } from '../engine/personas';
 import { bump, evaluate, newGameStarted, noteGame, onUnlock, recordCombat, recordGameEnd, type AchievementDef } from './achievements';
 import { currentLayout, getMode, LANDSCAPE, setMode, type Layout, type LayoutMode } from './layout';
@@ -733,6 +733,12 @@ export class App {
       <div class="opt-row"><span>Card art</span>${seg('art-style', [['illustrated', 'Illustrated'], ['classic', 'Classic']], getArtStyle())}</div>
       <div class="opt-row"><span>Battle speed</span>${seg('speed', SPEEDS.map((s) => [String(s.v), s.label]), String(speed), 'v')}</div>
       <div class="opt-row"><span>Debug mode (errors on screen)</span>${seg('debug', [['on', 'On'], ['off', 'Off']], debugOn() ? 'on' : 'off')}</div>
+      <div class="opt-row"><span>Your rating (debug)</span><div class="seg rating-adjust">
+        ${[-100, -25].map((d) => `<button class="btn" data-act="rating-adj" data-d="${d}">${d}</button>`).join('')}
+        <b class="rating-val">${getRating().rating}</b>
+        ${[25, 100].map((d) => `<button class="btn" data-act="rating-adj" data-d="${d}">+${d}</button>`).join('')}
+      </div></div>
+      <div class="hint" style="margin-top:-8px">Picks the bots in your next game: the weakest are about 1230, the Expert 1500, the strongest about 1520.</div>
       <div style="display:flex;gap:12px;justify-content:center">
         <button class="btn" data-act="cards">Card Viewer</button>
         <button class="btn" data-act="achievements">Achievements</button>
@@ -1625,6 +1631,7 @@ export class App {
       case 'layout': setMode(el.dataset.mode as LayoutMode); break;
       case 'sound': setMuted(el.dataset.mode === 'off'); this.render(); break;
       case 'debug': setDebug(el.dataset.mode === 'on'); this.render(); break;
+      case 'rating-adj': setRatingDebug(getRating().rating + Number(el.dataset.d)); this.render(); break;
       case 'art-style': setArtStyle(el.dataset.mode as ArtStyle); this.render(); break;
       case 'ui-style': store.set('torrekin-ui2', el.dataset.mode!); this.render(); break;
       case 'speed': store.set('torrekin-speed', el.dataset.v!); this.render(); break;

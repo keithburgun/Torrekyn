@@ -60,7 +60,7 @@ export async function playTriple(stage: HTMLElement, L: Layout, cardId: string, 
 
   // 2. spin together and merge
   const merge = clones.map((el, i) => el.animate(
-    [{ opacity: 1 }, { transform: `${getComputedStyle(el).transform === 'none' ? '' : getComputedStyle(el).transform} rotate(${180 + i * 60}deg) scale(.4)`, opacity: 0 }],
+    [{ opacity: 1 }, { transform: `${getComputedStyle(el).transform === 'none' ? '' : getComputedStyle(el).transform} rotate(${-(180 + i * 60)}deg) scale(.4)`, opacity: 0 }],
     { duration: skip.on ? 1 : 320, easing: 'ease-in', fill: 'forwards' },
   ).finished);
   await Promise.all(merge).catch(() => undefined);
