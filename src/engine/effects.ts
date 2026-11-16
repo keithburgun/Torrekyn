@@ -221,7 +221,16 @@ export const EFFECTS: Record<string, Effect> = {
 
   // ===== Azure Order =====
   lake: {
-    endTurn: (c) => buff(pick(c.g, c.p.hand), 0, c.m),
+    // once only (not written on the card): after 3 Azure units are bought, its stats double (Golden: triple)
+    onBuy: (c, u) => {
+      const me = c.self as Unit;
+      if (me.mem.done || !isTribe(u, 'azure')) return;
+      me.mem.buys = (me.mem.buys ?? 0) + 1;
+      if (me.mem.buys >= 3) {
+        me.mem.done = 1;
+        buff(me, me.atk * c.m, me.hp * c.m);
+      }
+    },
   },
   purple_gem: {
     // +1/+1 for good (+1/+1 per improvement; Golden doubles), and Reborn until your next turn
@@ -388,7 +397,7 @@ export const EFFECTS: Record<string, Effect> = {
     },
   },
   restore: {
-    avenge: [3, 3],
+    avenge: [2, 2],
     avengeFn: (c) => gain(c, 'pink_gem'),
   },
   honeysuckle_kindred: {

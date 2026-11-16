@@ -2,6 +2,9 @@
 
 Newest first. The version shows on the title screen.
 
+## 0.12.0 — 2026-11-16
+- Lake: a 3/3; after you buy 3 Azure units its stats double (once). Scientist: Tier 3, 4/1. Funeral: 5/1. Restore: Avenge (2). Omni-Gem: 10/10. New art for Front and Center, Adder, Honeysuckle, Sickle, Larva, Scout and Aerial Drone (each was the same picture as another card); Scientist re-cropped on the character; Right Twinbot faces the other way. The Attack diamond and Health orb are flat colours, the orb a deeper crimson.
+
 ## 0.11.10 — 2026-11-16
 - The triple animation spins the other way. Options has a debug control for your rating (-100, -25, +25, +100), which picks the bots in your next game.
 

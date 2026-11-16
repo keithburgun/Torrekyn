@@ -21,6 +21,8 @@
   --good: #36b37e;
   --atk: #ffc23d;
   --hp: #ff5c93;
+  /* the Health orb: one flat, deep crimson */
+  --hp-orb: #c4203c;
   --coin: #ffc93d;
   --card-hi: #efe8e1;       /* warm grey card face */
   --card-lo: #c9bfb5;
@@ -1242,13 +1244,13 @@ svg.aim-arrow.locked .aim-ring { opacity: 0.9; animation: aim-ring 0.9s ease-in-
 }
 .card .stat.atk, .bigcard .stat.atk {
   border-radius: 0; box-shadow: none; padding-bottom: 0;
-  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 48 48' preserveAspectRatio='none'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='0' y2='1'%3E%3Cstop offset='0' stop-color='%23fff1b0'/%3E%3Cstop offset='.55' stop-color='%23ffc23d'/%3E%3Cstop offset='1' stop-color='%23e89512'/%3E%3C/linearGradient%3E%3C/defs%3E%3Cpath d='M24 2 46 24 24 46 2 24Z' fill='url(%23g)' stroke='%23fff' stroke-width='3' stroke-linejoin='round'/%3E%3Cpath d='M24 2 46 24 24 46 2 24Z' fill='none' stroke='%23b06a08' stroke-width='1' stroke-linejoin='round' opacity='.5'/%3E%3C/svg%3E") center/contain no-repeat;
-  filter: drop-shadow(0 3px 3px rgba(80, 40, 0, 0.35));
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 48 48' preserveAspectRatio='none'%3E%3Cpath d='M24 2 46 24 24 46 2 24Z' fill='%23ffbf2e' stroke='%23fff' stroke-width='3' stroke-linejoin='round'/%3E%3C/svg%3E") center/contain no-repeat;
+  filter: none;
 }
 .card .stat.hp, .bigcard .stat.hp {
   -webkit-mask: none; mask: none; padding-bottom: 0; border-radius: 50%;
-  background: radial-gradient(circle at 35% 30%, #ff9a8c, #e8322a 58%, #a8121a);
-  box-shadow: 0 0 0 3px #fff, 0 3px 6px rgba(90, 0, 0, 0.35);
+  background: var(--hp-orb);
+  box-shadow: 0 0 0 3px #fff;
 }
 .card .stat.atk { left: -13px; width: 54px; } .card .stat.hp { right: -9px; }
 .card.small .stat.atk { width: 48px; } .card.large .stat.atk { width: 62px; }
@@ -1256,7 +1258,7 @@ svg.aim-arrow.locked .aim-ring { opacity: 0.9; animation: aim-ring 0.9s ease-in-
 .card.small .stat { width: 40px; height: 40px; font-size: 22px; }
 .card.large .stat { width: 54px; height: 54px; font-size: 30px; }
 .bigcard .stat { width: 62px; height: 62px; font-size: 33px; }
-.bigcard .stat.atk { left: -18px; width: 72px; } .bigcard .stat.hp { right: -12px; box-shadow: 0 0 0 4px #fff, 0 3px 6px rgba(90, 0, 0, 0.35); }
+.bigcard .stat.atk { left: -18px; width: 72px; } .bigcard .stat.hp { right: -12px; box-shadow: 0 0 0 4px #fff; }
 #stage.portrait .card.large .stat { width: 66px; height: 66px; font-size: 40px; }
 #stage.portrait .card.small .stat { width: 52px; height: 52px; font-size: 32px; }
 .card .stat.buffed { color: #d9ffb0; }
@@ -1357,8 +1359,8 @@ svg.aim-arrow.locked .aim-ring { opacity: 0.9; animation: aim-ring 0.9s ease-in-
 /* Hero Health: a red circle (like a unit's Health) beside the portrait, not a heart over the face */
 .hero-portrait .hp, .scene-tx.battle .tx-hp, .combat-name .hpb, .enemy-keeper .tk-portrait .hp {
   -webkit-mask: none; mask: none; padding-bottom: 0; border-radius: 50%;
-  background: radial-gradient(circle at 35% 30%, #ff9a8c, #e8322a 58%, #a8121a);
-  box-shadow: 0 0 0 3px #fff, 0 3px 6px rgba(90, 0, 0, 0.35);
+  background: var(--hp-orb);
+  box-shadow: 0 0 0 3px #fff;
   -webkit-text-stroke: 3px #7a0d14; paint-order: stroke fill; text-shadow: none;
 }
 .hero-portrait .hp { width: 56px; height: 56px; font-size: 27px; right: auto; left: calc(100% + 2px); bottom: 2px; }
@@ -1403,7 +1405,7 @@ svg.aim-arrow.locked .aim-ring { opacity: 0.9; animation: aim-ring 0.9s ease-in-
 #stage.pix.portrait .tavern-btn .tb-cost { width: 40px; height: 40px; font-size: 22px; }
 /* the "You took N damage" screen: your Health as the same red orb */
 .rb-heart { width: 84px; height: 84px; padding-bottom: 0; -webkit-mask: none; mask: none; border-radius: 50%;
-  background: radial-gradient(circle at 35% 30%, #ff9a8c, #e8322a 58%, #a8121a); box-shadow: 0 0 0 4px #fff, 0 4px 8px rgba(90, 0, 0, 0.4);
+  background: var(--hp-orb); box-shadow: 0 0 0 4px #fff;
   -webkit-text-stroke: 4px #7a0d14; paint-order: stroke fill; text-shadow: none; }
 #stage.portrait .rb-heart { width: 118px; height: 118px; }
 
@@ -1449,7 +1451,7 @@ svg.aim-arrow.locked .aim-ring { opacity: 0.9; animation: aim-ring 0.9s ease-in-
 
 /* leaderboard Health: a small red orb, not a heart */
 .leader .hp-dot { display: inline-block; width: 11px; height: 11px; margin-right: 4px; border-radius: 50%; vertical-align: -1px;
-  background: radial-gradient(circle at 35% 30%, #ff9a8c, #e8322a 58%, #a8121a); box-shadow: 0 0 0 1.5px rgba(255, 255, 255, 0.8); }
+  background: var(--hp-orb); box-shadow: 0 0 0 1.5px rgba(255, 255, 255, 0.8); }
 
 /* phones: when the big card has to cover the card you tapped, its buttons sit above it, away from your finger */
 .popover.actions-top { display: flex; flex-direction: column-reverse; }

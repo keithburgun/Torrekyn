@@ -293,7 +293,7 @@ describe('v0.10.4 changes', () => {
   it('stats: Omar Evans has no Venomous; Green Ninja is 5/2; every Gem is 1/1', () => {
     expect(def('omar_evans').keywords).not.toContain('venomous');
     expect([def('orange_ninja').atk, def('orange_ninja').hp]).toEqual([5, 2]);
-    for (const id of ['tourmaline', 'red_gem', 'ancient_name_brambor', 'purple_gem', 'pink_gem', 'green_gem', 'omni_gem']) expect([def(id).atk, def(id).hp]).toEqual([1, 1]);
+    for (const id of ['tourmaline', 'red_gem', 'ancient_name_brambor', 'purple_gem', 'pink_gem', 'green_gem']) expect([def(id).atk, def(id).hp]).toEqual([1, 1]);
   });
 });
 
@@ -381,5 +381,32 @@ describe('New Power (Greater Trinket)', () => {
     expect(me.powers).toEqual([choice]);
     expect(pumpkins()).toBe(had);
     expect(HEROES.find((h) => h.id === choice)).toBeTruthy();
+  });
+});
+
+describe('v0.12 card changes', () => {
+  it('Lake: after 3 Azure units are bought, its stats double, once', () => {
+    const { g, p } = setup();
+    const lake = U(g, 'lake');
+    expect([lake.atk, lake.hp]).toEqual([3, 3]);
+    p.board = [lake];
+    const buyOne = (id: string) => { p.hand = []; p.shop = [U(g, id)]; buy(g, p, 0); };
+    buyOne('doctor'); // not Azure: doesn't count
+    buyOne('knight'); buyOne('longbow');
+    expect([lake.atk, lake.hp]).toEqual([3, 3]);
+    buyOne('royal_guard');
+    expect([lake.atk, lake.hp]).toEqual([6, 6]);
+    buyOne('knight'); buyOne('longbow'); buyOne('royal_guard');
+    expect([lake.atk, lake.hp]).toEqual([6, 6]); // only once
+    expect(def('lake').text).not.toMatch(/once/i);
+  });
+
+  it('stats: Scientist Tier 3 4/1, Funeral 5/1, Omni-Gem 10/10; Restore is Avenge (2)', async () => {
+    const { EFFECTS } = await import('../src/engine/effects');
+    expect([def('scientist').tier, def('scientist').atk, def('scientist').hp]).toEqual([3, 4, 1]);
+    expect([def('funeral').atk, def('funeral').hp]).toEqual([5, 1]);
+    expect([def('omni_gem').atk, def('omni_gem').hp]).toEqual([10, 10]);
+    expect(EFFECTS.restore.avenge).toEqual([2, 2]);
+    expect(def('restore').text).toContain('Avenge (2)');
   });
 });

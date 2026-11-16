@@ -52,7 +52,7 @@ const ECON: Record<string, number> = {
  * whole army. Battles can't see this (cardValues measures one turn), so it's set by hand. Golden doubles it.
  */
 const GROWTH: Record<string, [number, number]> = {
-  architect: [0, 2], owl: [2, 2], chaos: [4, 4], aerial_drone: [3, 6], lake: [0, 1], andromeda_robin: [0, 6],
+  architect: [0, 2], owl: [2, 2], chaos: [4, 4], aerial_drone: [3, 6], andromeda_robin: [0, 6],
   patchwork: [1, 4], shadow_place: [4, 4], warlock: [0, 4], funeral: [0, 2], vampire: [0, 2], locas: [2, 1], commitment: [3, 3],
   ocean_sky: [2, 2], intern: [0, 0], builder: [0, 4],
 };

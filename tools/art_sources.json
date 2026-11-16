@@ -168,7 +168,7 @@
    ]
   },
   "sickle": {
-   "src": "S/Skelly/fanatic.png",
+   "src": "X/chantsprite.png",
    "px": true
   },
   "horseman": {
@@ -257,7 +257,7 @@
    "px": true
   },
   "front_and_center": {
-   "src": "S/Order/ordercavalry.png",
+   "src": "X/winchip.png",
    "px": true
   },
   "knight": {
@@ -385,8 +385,12 @@
    ]
   },
   "honeysuckle_kindred": {
-   "src": "S/Generic/bunnyfighter.png",
-   "px": true
+   "src": "X/rico2.png",
+   "crop": [
+    0.47,
+    0.3,
+    0.85
+   ]
   },
   "devotion": {
    "src": "N/introScene4.png",
@@ -557,14 +561,8 @@
    "px": true
   },
   "larva": {
-   "src": "S/Generic/sandgolem.png",
-   "px": true,
-   "box": [
-    0,
-    0,
-    64,
-    64
-   ]
+   "src": "X/slime.png",
+   "px": true
   },
   "ambush": {
    "src": "M/ambush sketch.png",
@@ -604,7 +602,8 @@
   },
   "right_twinbot": {
    "src": "S/Alcove/twinbot-sheet2.png",
-   "px": true
+   "px": true,
+   "flip": true
   },
   "tinker": {
    "src": "S/Alcove/engineer.png",
@@ -627,7 +626,7 @@
    ]
   },
   "aerial_drone": {
-   "src": "S/Alcove/twinbot 1.png",
+   "src": "X/robot-gemeater.png",
    "px": true
   },
   "computer": {
@@ -653,9 +652,9 @@
   "scientist": {
    "src": "C/december.png",
    "crop": [
-    0.4,
-    0.4,
-    0.75
+    0.56,
+    0.27,
+    0.6
    ]
   },
   "paradox": {
@@ -809,8 +808,14 @@
    "px": true
   },
   "scout": {
-   "src": "S/Order/longbow-crystal.png",
-   "px": true
+   "src": "X/tennor spritesheet.png",
+   "px": true,
+   "box": [
+    0,
+    0,
+    192,
+    192
+   ]
   },
   "silver_banner": {
    "src": "S/flag-blue-animated.png",
@@ -917,7 +922,7 @@
    "px": true
   },
   "adder": {
-   "src": "S/Generic/ninja.png",
+   "src": "X/deviltower.png",
    "px": true
   },
   "potato_lord": {
