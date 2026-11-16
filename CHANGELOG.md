@@ -2,6 +2,9 @@
 
 Newest first. The version shows on the title screen.
 
+## 0.11.2 — 2026-11-16
+- Therapist: Battlecry: give a unit Taunt and +12 Health (Golden +24). Iron Bracer: Start of Combat: give 2 random friendly units Divine Shield.
+
 ## 0.11.1 — 2026-11-16
 - Iron Bracer: Start of Combat: give your left-most unit Taunt and Reborn.
 

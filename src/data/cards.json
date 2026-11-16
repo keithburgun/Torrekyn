@@ -424,8 +424,8 @@
    "tier": 3,
    "atk": 2,
    "hp": 3,
-   "text": "Battlecry: Give a unit Taunt. If it already has Taunt, remove it.",
-   "goldenText": "Battlecry: Give a unit Taunt and +4/+4. If it already has Taunt, remove it.",
+   "text": "Battlecry: Give a unit Taunt and +12 Health.",
+   "goldenText": "Battlecry: Give a unit Taunt and +24 Health.",
    "keywords": []
   },
   {

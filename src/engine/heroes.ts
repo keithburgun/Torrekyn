@@ -254,7 +254,7 @@ export const TRINKETS: TrinketDef[] = [
     },
     progress: (p) => `${p.heroMem.t_old_map ?? 0}/2` },
   { id: 'bronze_compass', name: 'Bronze Compass', cost: 2, text: 'Your Neverending units have +12 Attack.' }, // see effStats
-  { id: 'iron_bracer', name: 'Iron Bracer', cost: 2, text: 'Start of Combat: Give your left-most unit Taunt and Reborn.', soc: (c, s) => { const u = s.units.find((x) => x.hp > 0); if (u) { addKw(u, 'taunt'); addKw(u, 'reborn'); } } },
+  { id: 'iron_bracer', name: 'Iron Bracer', cost: 2, text: 'Start of Combat: Give 2 random friendly units Divine Shield.', soc: (c, s) => { for (const u of sample(c.g, s.units.filter((x) => x.hp > 0 && !x.kw.includes('divineShield')), 2)) addKw(u, 'divineShield'); } },
   { id: 'rattler', name: 'Rattler', cost: 2, text: 'Start of Combat: Give 4 random friendly units "Deathrattle: Summon a random Tier 1 unit."',
     soc: (c, s) => { for (const u of sample(c.g, s.units.filter((x) => x.hp > 0), 4)) u.mem.rattle = (u.mem.rattle ?? 0) + 1; } },
   { id: 'spare_parts', name: 'Spare Parts', cost: 3, text: 'Every time you play a unit, give a random unit in your hand +2/+2.', onPlay: (g, p) => { const u = pick(g, p.hand); if (u) { u.atk += 2; u.hp += 2; } } },

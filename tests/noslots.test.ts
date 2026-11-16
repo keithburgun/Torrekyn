@@ -200,14 +200,14 @@ describe('cards rewritten without slots', () => {
 });
 
 describe('trinkets rewritten without slots', () => {
-  it('Iron Bracer: Taunt and Reborn; Phoenix Feather: Reborn (left-most unit); Bannerlord: +3/+3 at Start of Combat', () => {
+  it('Phoenix Feather: Reborn (left-most unit); Bannerlord: +3/+3 at Start of Combat', () => {
     const { g, p, o } = setup();
-    p.trinkets = ['iron_bracer', 'phoenix_feather', 'bannerlords_standard'];
+    p.trinkets = ['phoenix_feather', 'bannerlords_standard'];
     const c = fight(g, p, o, [U(g, 'doctor', 1, 50), U(g, 'doctor', 1, 50)], [U(g, 'skel', 1, 999)]);
     c.run();
     const f = c.frames[afterSoc(c)];
-    expect(f.sides[0][0].kw).toEqual(expect.arrayContaining(['taunt', 'reborn']));
-    expect(f.sides[0][1].kw).not.toContain('taunt');
+    expect(f.sides[0][0].kw).toContain('reborn');
+    expect(f.sides[0][1].kw).not.toContain('reborn');
     expect([f.sides[0][1].atk, f.sides[0][1].hp]).toEqual([4, 53]);
   });
 });
@@ -297,12 +297,25 @@ describe('v0.10.4 changes', () => {
   });
 });
 
-it('Iron Bracer alone gives the left-most unit Taunt and Reborn', () => {
+it('Iron Bracer: 2 random friendly units get Divine Shield at Start of Combat', () => {
   const { g, p, o } = setup();
   p.trinkets = ['iron_bracer'];
-  const c = fight(g, p, o, [U(g, 'doctor', 1, 50), U(g, 'doctor', 1, 50)], [U(g, 'skel', 1, 999)]);
+  const mine = [U(g, 'doctor', 1, 50), U(g, 'doctor', 1, 50), U(g, 'doctor', 1, 50), U(g, 'doctor', 1, 50)];
+  mine.forEach((u) => (u.kw = []));
+  const c = fight(g, p, o, mine, [U(g, 'skel', 1, 999)]);
   c.run();
-  const f = c.frames[afterSoc(c)];
-  expect(f.sides[0][0].kw).toEqual(expect.arrayContaining(['taunt', 'reborn']));
-  expect(f.sides[0][1].kw).not.toContain('reborn');
+  expect(c.frames[afterSoc(c)].sides[0].filter((u) => u.kw.includes('divineShield')).length).toBe(2);
+});
+
+it('Therapist: Battlecry gives a unit Taunt and +12 Health (Golden: +24)', () => {
+  const { g, p } = setup();
+  const t = U(g, 'doctor', 2, 2); t.kw = ['taunt'];
+  p.board = [t];
+  p.hand = [U(g, 'therapist')];
+  play(g, p, 0, 1, t.uid);
+  expect(t.kw).toContain('taunt'); // keeps it (no longer removed)
+  expect(t.hp).toBe(14);
+  p.hand = [U(g, 'therapist', undefined, undefined, true)];
+  play(g, p, 0, 2, t.uid);
+  expect(t.hp).toBe(38);
 });

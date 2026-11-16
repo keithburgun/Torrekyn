@@ -350,11 +350,11 @@ export const EFFECTS: Record<string, Effect> = {
   therapist: {
     target: 'friendly',
     battlecry: (c) => {
-      const t = c.target ?? (c.combat ? pick(c.g, others(c.board, c.self)) : undefined);
+      // Taunt and +12 Health (Golden +24), for good
+      const t = gemTarget(c);
       if (!t) return;
-      if (has(t, 'taunt')) removeKw(t, 'taunt');
-      else addKw(t, 'taunt');
-      if (c.m === 2) buff(t, 4, 4);
+      addKw(t, 'taunt');
+      buff(t, 0, 12 * c.m);
     },
   },
   vulnerability: {}, // passive, see combat
