@@ -2,6 +2,9 @@
 
 Newest first. The version shows on the title screen.
 
+## 0.12.2 — 2026-11-16
+- Potato Gem is Tier 2 (was Tier 5). Broken Land improves all your Gems twice (Golden: four times).
+
 ## 0.12.1 — 2026-11-16
 - New Tier 1 Alcove unit, Buzz-Boink: 1/1, Divine Shield. Deathrattle: Summon a 1/1 Robo (Golden: two). Intern's card in battle shows what it really sells for (it always said 1 Gold there).
 

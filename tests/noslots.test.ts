@@ -440,3 +440,14 @@ it('Intern: in battle its card shows the Gold it now sells for (1 + its bonus)',
   expect(last.sellBonus).toBe(1);
   if (frameUnitView && bigCardHtml) expect(bigCardHtml(frameUnitView(last))).toContain('Sells for 2 Gold');
 });
+
+it('Broken Land improves every Gem twice (Golden: four times); Potato Gem is Tier 2', async () => {
+  const { gemLevel, GEMS } = await import('../src/engine/effects');
+  for (const golden of [false, true]) {
+    const { g, p } = setup();
+    p.hand = [U(g, 'broken_land', undefined, undefined, golden)];
+    play(g, p, 0, 0);
+    for (const id of GEMS) expect(gemLevel(p, id)).toBe(golden ? 4 : 2);
+  }
+  expect(def('ancient_name_brambor').tier).toBe(2);
+});

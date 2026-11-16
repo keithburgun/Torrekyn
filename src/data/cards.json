@@ -657,7 +657,7 @@
    "id": "ancient_name_brambor",
    "name": "Potato Gem",
    "tribe": "neutral",
-   "tier": 5,
+   "tier": 2,
    "atk": 1,
    "hp": 1,
    "text": "Battlecry: Give your units in hand and army +2 Health.",
@@ -1332,8 +1332,8 @@
    "tier": 5,
    "atk": 19,
    "hp": 82,
-   "text": "Battlecry: Improve ALL your Gems this game.",
-   "goldenText": "Battlecry: Improve ALL your Gems this game, twice.",
+   "text": "Battlecry: Improve ALL your Gems this game twice.",
+   "goldenText": "Battlecry: Improve ALL your Gems this game four times.",
    "keywords": []
   },
   {

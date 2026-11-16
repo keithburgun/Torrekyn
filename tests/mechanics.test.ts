@@ -290,11 +290,11 @@ describe('Gems', () => {
     p.hand = [makeUnit(g, 'tourmaline')];
     play(g, p, 0, 2, t.uid);
     expect(t.hp).toBe(def('skel').hp + 10 + 14);
-    // Broken Land improves every Gem, Red included
+    // Broken Land improves every Gem twice, Red included
     p.hand = [makeUnit(g, 'broken_land')];
     play(g, p, 0, 0);
-    expect(gemLevel(p, 'red_gem')).toBe(1);
-    expect(gemLevel(p, 'green_gem')).toBe(1);
+    expect(gemLevel(p, 'red_gem')).toBe(2);
+    expect(gemLevel(p, 'green_gem')).toBe(2);
   });
 
   it('Purple Gem: +1/+1 for good, Reborn until your next turn', async () => {

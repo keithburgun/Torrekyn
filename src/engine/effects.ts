@@ -796,7 +796,8 @@ export const EFFECTS: Record<string, Effect> = {
   },
   sarinee: {}, // see endTurnEffects
   broken_land: {
-    battlecry: (c) => { for (const id of GEMS) improveGem(c.p, id, c.m); },
+    // twice (Golden: four times)
+    battlecry: (c) => { for (const id of GEMS) improveGem(c.p, id, 2 * c.m); },
   },
   tom_judith: {}, // see combat deathrattle multiplier
   omni_gem: {
