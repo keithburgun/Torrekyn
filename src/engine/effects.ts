@@ -345,19 +345,20 @@ export const EFFECTS: Record<string, Effect> = {
     battlecry: (c) => buff(pick(c.g, c.p.hand.filter((u) => isTribe(u, 'kindred'))), 6 * c.m, 6 * c.m),
   },
   pink_gem: {
-    // Divine Shield for this turn on a unit (its target), plus one more random unit per improvement (Golden doubles)
+    // Divine Shield and +1/+1 (+1/+1 per improvement; Golden doubles); a Kindred unit gets the +1/+1 twice
     target: 'friendly',
     battlecry: (c) => {
-      const first = gemTarget(c);
-      if (!first) return;
-      const n = (1 + gemLevel(c.p, 'pink_gem')) * c.m;
-      const pool = others(c.board, c.self).filter((u) => u !== first && !has(u, 'divineShield'));
-      for (const u of [first, ...sample(c.g, pool, n - 1)]) {
-        if (has(u, 'divineShield')) continue;
-        addKw(u, 'divineShield');
-        if (!c.combat) (u as Unit).mem.tmpShield = 1; // wears off at the start of your next turn
-      }
+      const t = gemTarget(c);
+      if (!t) return;
+      addKw(t, 'divineShield');
+      const n = (1 + gemLevel(c.p, 'pink_gem')) * c.m * (isTribe(t, 'kindred') ? 2 : 1);
+      buff(t, n, n);
     },
+  },
+  // Peebnup Bubber is handled by peebSync (fx.ts) in the shop and Combat.peebSync in battle
+  peebnup_bubber: {},
+  elemental: {
+    onSellOther: (c, sold) => { if (isTribe(sold, 'kindred')) buff(c.self, sold.atk * c.m, sold.hp * c.m); },
   },
   therapist: {
     target: 'friendly',
@@ -389,14 +390,10 @@ export const EFFECTS: Record<string, Effect> = {
     soc: (c) => buff(c.self, c.self.atk * c.m, c.self.hp * c.m),
   },
   life: {
-    // spawn two Pink Gems; their Battlecry happens as they arrive
+    // a Pink Gem into your hand at the start of each battle (Golden: two)
     soc: (c) => {
-      for (let i = 0; i < 2; i++) {
-        const cu = c.c.spawn(c.side, 'pink_gem', c.m === 2, c.side.units.indexOf(c.self) + 1 + i);
-        if (!cu) break;
-        c.c.snap('trigger', i === 0 ? { note: 'Summon Pink Gem' } : {});
-        c.c.triggerBattlecry(c.side, cu);
-      }
+      for (let i = 0; i < c.m; i++) gain(c, 'pink_gem');
+      c.c.snap('trigger', { note: `Life: Gain ${c.m === 2 ? '2 Pink Gems' : 'a Pink Gem'}` });
     },
   },
   restore: {
@@ -788,10 +785,10 @@ export const EFFECTS: Record<string, Effect> = {
     },
   },
   grief: {
-    // Deathrattle: upgrading costs 3 less (Golden 6), never below 0
+    // Deathrattle: upgrading costs 2 less (Golden 4), never below 0
     deathrattle: (c) => {
       if (!c.side.persistent) return;
-      c.c.after(c.side, () => { c.p.upgradeCost = Math.max(0, c.p.upgradeCost - 3 * c.m); });
+      c.c.after(c.side, () => { c.p.upgradeCost = Math.max(0, c.p.upgradeCost - 2 * c.m); });
     },
   },
   sarinee: {}, // see endTurnEffects

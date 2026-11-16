@@ -413,8 +413,8 @@
    "tier": 2,
    "atk": 1,
    "hp": 1,
-   "text": "Battlecry: Give a unit Divine Shield for this turn.",
-   "goldenText": "Battlecry: Give a unit and 1 other random unit Divine Shield for this turn.",
+   "text": "Battlecry: Give a unit Divine Shield and +1/+1. If it's Kindred, give it +1/+1 again.",
+   "goldenText": "Battlecry: Give a unit Divine Shield and +2/+2. If it's Kindred, give it +2/+2 again.",
    "keywords": []
   },
   {
@@ -479,8 +479,8 @@
    "tier": 4,
    "atk": 2,
    "hp": 3,
-   "text": "Start of Combat: When there is room, summon two Pink Gems.",
-   "goldenText": "Start of Combat: When there is room, summon two Golden Pink Gems.",
+   "text": "Start of Combat: Gain a Pink Gem to your hand.",
+   "goldenText": "Start of Combat: Gain 2 Pink Gems to your hand.",
    "keywords": []
   },
   {
@@ -498,7 +498,7 @@
    "id": "honeysuckle_kindred",
    "name": "Honeysuckle",
    "tribe": "kindred",
-   "tier": 5,
+   "tier": 4,
    "atk": 55,
    "hp": 55,
    "text": "Deathrattle: Summon the highest-Health Kindred unit from your hand into battle.",
@@ -1310,8 +1310,8 @@
    "tier": 2,
    "atk": 1,
    "hp": 1,
-   "text": "Deathrattle: Upgrading your Tavern costs 3 less Gold.",
-   "goldenText": "Deathrattle: Upgrading your Tavern costs 6 less Gold.",
+   "text": "Deathrattle: Upgrading your Tavern costs 2 less Gold.",
+   "goldenText": "Deathrattle: Upgrading your Tavern costs 4 less Gold.",
    "keywords": []
   },
   {
@@ -1462,6 +1462,28 @@
    "hp": 5,
    "text": "Start of Combat: When there is room, summon two random Tier 5 units.",
    "goldenText": "Start of Combat: When there is room, summon four random Tier 5 units.",
+   "keywords": []
+  },
+  {
+   "id": "peebnup_bubber",
+   "name": "Peebnup Bubber",
+   "tribe": "kindred",
+   "tier": 5,
+   "atk": 8,
+   "hp": 8,
+   "text": "Whenever another friendly unit gains Health, this gains that much too.",
+   "goldenText": "Whenever another friendly unit gains Health, this gains twice that much.",
+   "keywords": []
+  },
+  {
+   "id": "elemental",
+   "name": "Elemental",
+   "tribe": "kindred",
+   "tier": 6,
+   "atk": 10,
+   "hp": 10,
+   "text": "When you sell a Kindred unit, this gains its stats.",
+   "goldenText": "When you sell a Kindred unit, this gains double its stats.",
    "keywords": []
   },
   {

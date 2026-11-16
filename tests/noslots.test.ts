@@ -4,6 +4,7 @@ import { newGame, play, endTurnEffects, buy, sell } from '../src/engine/game';
 import { makeUnit, def } from '../src/engine/core';
 import { Combat } from '../src/engine/combat';
 import { gemLevel } from '../src/engine/effects';
+import { peebSync } from '../src/engine/fx';
 import { pickTrinket } from '../src/engine/heroes';
 import type { GameState, Player, Unit } from '../src/engine/types';
 
@@ -450,4 +451,79 @@ it('Broken Land improves every Gem twice (Golden: four times); Potato Gem is Tie
     for (const id of GEMS) expect(gemLevel(p, id)).toBe(golden ? 4 : 2);
   }
   expect(def('ancient_name_brambor').tier).toBe(2);
+});
+
+it('Life: Start of Combat gains a Pink Gem to your hand (Golden: 2); Grief: Upgrading costs 2 less (Golden 4)', () => {
+  for (const golden of [false, true]) {
+    const { g, p, o } = setup();
+    p.hand = [];
+    fight(g, p, o, [U(g, 'life', 1, 99, golden)], [U(g, 'skel', 1, 99)]).run();
+    expect(p.hand.filter((u) => u.cardId === 'pink_gem').length).toBe(golden ? 2 : 1);
+    const { g: g2, p: p2, o: o2 } = setup();
+    p2.upgradeCost = 7;
+    const c2 = fight(g2, p2, o2, [U(g2, 'grief', 1, 1, golden)], [U(g2, 'skel', 5, 99)]);
+    c2.run();
+    for (const fn of c2.sides[0].afterFns) fn(); // runCombat does this after the battle
+    expect(p2.upgradeCost).toBe(golden ? 3 : 5);
+  }
+});
+
+describe('v0.12.3 Kindred', () => {
+  it('Pink Gem: Divine Shield and +1/+1, twice over for a Kindred unit (Golden doubles); the Shield stays', () => {
+    for (const golden of [false, true]) {
+      const { g, p } = setup();
+      const k = U(g, 'therapist', 2, 2); k.kw = [];
+      const n = U(g, 'ash', 2, 2); n.kw = [];
+      p.board = [k, n];
+      p.hand = [U(g, 'pink_gem', undefined, undefined, golden), U(g, 'pink_gem', undefined, undefined, golden)];
+      play(g, p, 0, 2, k.uid);
+      play(g, p, 0, 3, n.uid);
+      const m = golden ? 2 : 1;
+      expect([k.atk, k.hp, n.atk, n.hp]).toEqual([2 + 2 * m, 2 + 2 * m, 2 + m, 2 + m]);
+      expect(k.kw).toContain('divineShield'); expect(n.kw).toContain('divineShield');
+      expect(k.mem.tmpShield).toBeUndefined();
+    }
+    expect(def('honeysuckle_kindred').tier).toBe(4);
+  });
+
+  it('Elemental: Tier 6 Kindred 10/10; selling a Kindred unit gives it that unit\'s stats (Golden: double)', () => {
+    for (const golden of [false, true]) {
+      const { g, p } = setup();
+      const e = U(g, 'elemental', undefined, undefined, golden);
+      expect([def('elemental').tier, def('elemental').tribe, def('elemental').atk, def('elemental').hp]).toEqual([6, 'kindred', 10, 10]);
+      p.board = [e, U(g, 'therapist', 3, 5), U(g, 'ash', 4, 4)];
+      sell(g, p, 1);
+      const m = golden ? 2 : 1;
+      expect([e.atk, e.hp]).toEqual([e.golden ? 20 + 3 * m : 10 + 3 * m, e.golden ? 20 + 5 * m : 10 + 5 * m]);
+      const before = [e.atk, e.hp];
+      sell(g, p, 1); // not Kindred
+      expect([e.atk, e.hp]).toEqual(before);
+    }
+  });
+
+  it('Peebnup Bubber: gains the Health other friendly units gain, in the shop and in battle (Golden: double)', () => {
+    for (const golden of [false, true]) {
+      const { g, p, o } = setup();
+      const pb = U(g, 'peebnup_bubber', 8, 8, golden);
+      expect([def('peebnup_bubber').tier, def('peebnup_bubber').tribe]).toEqual([5, 'kindred']);
+      const k = U(g, 'therapist', 2, 2); k.kw = [];
+      p.board = [pb, k]; p.hand = [U(g, 'pink_gem')];
+      peebSync(g, p); // (in a real game, units on the board have always been seen)
+      play(g, p, 0, 2, k.uid); // Therapist gets +2 Health
+      expect(pb.hp).toBe(8 + 2 * (golden ? 2 : 1));
+      // played with Health it had in hand: no gain
+      const hp0 = pb.hp;
+      p.hand = [U(g, 'doctor', 1, 30)];
+      play(g, p, 0, 3);
+      expect(pb.hp).toBe(hp0);
+      // in battle: Bannerlord's Standard gives everyone +3/+3 at Start of Combat
+      p.trinkets = ['bannerlords_standard'];
+      const a = U(g, 'doctor', 1, 50), b = U(g, 'doctor', 1, 50), bub = U(g, 'peebnup_bubber', 1, 8, golden);
+      const c = fight(g, p, o, [a, b, bub], [U(g, 'skel', 0, 99)]);
+      c.run();
+      const f = afterSoc(c);
+      // each of the 2 others gained 3 Health (Bannerlord's), so Peebnup gains 6 (Golden 12) on top of its own 3
+      expect(at(c, f, 'peebnup_bubber')!.hp).toBe(8 + 3 + 6 * (golden ? 2 : 1));
+    }
+  });
 });

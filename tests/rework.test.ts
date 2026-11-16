@@ -201,7 +201,7 @@ describe('rework 2', () => {
     c.run();
     for (const fn of c.sides[0].afterFns) fn(); // runCombat does this after the battle
     expect(p.alcoveAtkThisTier).toBe(2);
-    expect(p.upgradeCost).toBe(7);
+    expect(p.upgradeCost).toBe(8);
   });
 
   it('Alabaster: the first 3 friendly summons get Reborn', () => {

@@ -2,6 +2,9 @@
 
 Newest first. The version shows on the title screen.
 
+## 0.12.3 — 2026-11-16
+- Battle intro: the Tavern clears and your opponent's army drops in one by one. Grief: Upgrading costs 2 less (Golden 4). Life: Start of Combat gain a Pink Gem. Pink Gem: Divine Shield and +1/+1 (twice for Kindred). Honeysuckle Tier 4. New Kindred: Peebnup Bubber (T5) and Elemental (T6).
+
 ## 0.12.2 — 2026-11-16
 - Potato Gem is Tier 2 (was Tier 5). Broken Land improves all your Gems twice (Golden: four times).
 

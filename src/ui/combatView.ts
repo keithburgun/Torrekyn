@@ -256,6 +256,30 @@ export class CombatPlayer {
     return ms / (BASE_SPEED * this.speed);
   }
 
+  /**
+   * Your opponent arrives: their hero pops into the Tavern's circle, then their units drop in from the top one at a
+   * time, as if stepping up to face you. Quick (about a second), and faster at higher speeds.
+   */
+  private async intro(f: CombatFrame) {
+    if (this.skip) return;
+    const keeper = this.stage.querySelector('.enemy-keeper') as HTMLElement | null;
+    keeper?.animate([{ opacity: 0, transform: 'translateY(-90px) scale(0.6)' }, { opacity: 1, transform: 'none' }],
+      { duration: this.t(300), easing: 'cubic-bezier(.2,.9,.3,1.25)', fill: 'backwards' });
+    const enemy = f.sides[1 - this.me];
+    const start = this.t(180);
+    const step = this.t(90);
+    const fall = this.t(320);
+    enemy.forEach((u, i) => {
+      const el = this.els.get(u.id);
+      if (!el) return;
+      const dy = parseFloat(el.style.top) + this.L.cardH + 60;
+      el.animate([{ translate: `0px ${-dy}px`, opacity: 0 }, { opacity: 1, offset: 0.35 }, { translate: '0px 6px', offset: 0.85 }, { translate: '0px 0px', opacity: 1 }],
+        { duration: fall, delay: start + i * step, easing: 'cubic-bezier(.3,.8,.4,1)', fill: 'backwards' });
+      window.setTimeout(() => sfx.deal(), start + i * step + fall * 0.8);
+    });
+    await sleep(start + Math.max(0, enemy.length - 1) * step + fall + this.t(180));
+  }
+
   async play() {
     const frames = this.r.frames;
     let prev: CombatFrame | null = null;
@@ -708,6 +732,8 @@ export class CombatPlayer {
       this.layer.appendChild(n);
       setTimeout(() => n.remove(), this.t(1250));
     }
+    // on the shop screen, the battle opens with your opponent arriving
+    if (!prev && !instant && this.onShop) { await this.intro(f); return; }
     let wait = DUR[f.kind];
     if (fx.some((e) => e.k === 'reborn')) wait = Math.max(wait, REBORN_FADE * 0.8);
     if (fx.some((e) => e.k === 'summon')) wait = Math.max(wait, 650);

@@ -1545,13 +1545,22 @@ export class App {
     // the battle plays right here on the shop screen: Health shown is from before this battle's damage
     const loserId = mine.winner === -1 ? -2 : mine.winner === 0 ? mine.b : mine.a;
     this.battle = { r: mine, meSide, oppId, ghost: mine.b === -1, before: (id) => g.players[id].health + (id === loserId ? mine.damage : 0) };
-    this.screen = 'combat';
     this.sel = null;
     this.hover = null;
-    this.noFade = true;
-    this.render();
-    this.startCombat(mine, meSide, round);
-    void this.combat?.play();
+    this.busy = true;
+    // the Tavern clears out (its units lift away, the Tavern's buttons fade), then the battle screen takes over
+    const leaving = [...this.stage.querySelectorAll('.card[data-zone="shop"], .tavern-keeper, .tavern-bar, .tavern-btn, [data-act="upgrade"], [data-act="reroll"], [data-act="freeze"], #popover')] as HTMLElement[];
+    const out = this.fxHurry ? 0 : 220;
+    leaving.forEach((el, i) => el.animate([{ opacity: 1 }, { opacity: 0, translate: el.classList.contains('card') ? '0 -60px' : '0 0' }],
+      { duration: out, delay: el.classList.contains('card') ? i * 25 : 0, easing: 'ease-in', fill: 'forwards' }));
+    window.setTimeout(() => {
+      this.busy = false;
+      this.screen = 'combat';
+      this.noFade = true;
+      this.render();
+      this.startCombat(mine, meSide, round);
+      void this.combat?.play();
+    }, out + (leaving.length ? 60 : 0));
   }
 
   private startCombat(mine: CombatResult, meSide: 0 | 1, round: number) {

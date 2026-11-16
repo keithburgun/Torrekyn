@@ -195,7 +195,7 @@ export function gemText(p: Player, cardId: string, golden: boolean, text: string
   switch (cardId) {
     case 'purple_gem': t = t.replace(/\+\d+\/\+\d+/, `+${(1 + l) * m}/+${(1 + l) * m}`); break;
     case 'tourmaline': t = t.replace(/\+\d+ Health/, `+${(10 + 2 * l) * m} Health`); break;
-    case 'pink_gem': t = t.replace(/a unit( and 1 other random unit)?/, `a unit and ${(1 + l) * m - 1} other random unit${(1 + l) * m - 1 > 1 ? 's' : ''}`); break;
+    case 'pink_gem': t = t.replace(/\+\d+\/\+\d+/g, `+${(1 + l) * m}/+${(1 + l) * m}`); break;
     case 'green_gem': t = t.replace(/\+\d+ Attack/, `+${2 + l} Attack`); break;
     case 'red_gem': t = t.replace(/\+\d+ Attack/, `+${(3 + l) * m} Attack`); break;
     case 'ancient_name_brambor': t = t.replace(/\+\d+ Health/, `+${(2 + l) * m} Health`); break;
@@ -212,7 +212,7 @@ function gemNote(p: Player, u: Unit): string | undefined {
   switch (u.cardId) {
     case 'purple_gem': return `+${(1 + l) * m}/+${(1 + l) * m}`;
     case 'tourmaline': return `+${(10 + 2 * l) * m} Health`;
-    case 'pink_gem': return `${(1 + l) * m} units`;
+    case 'pink_gem': return `+${(1 + l) * m}/+${(1 + l) * m}`;
     case 'green_gem': return `+${2 + l} Attack`;
     case 'red_gem': return `+${(3 + l) * m} Atk`;
     case 'ancient_name_brambor': return `+${(2 + l) * m} Health`;

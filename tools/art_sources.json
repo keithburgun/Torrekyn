@@ -940,6 +940,18 @@
   "robo": {
    "src": "X/ram bot.png",
    "px": true
+  },
+  "peebnup_bubber": {
+   "src": "S/Potato/turtlepult.png",
+   "px": true
+  },
+  "elemental": {
+   "src": "K/water rgb.png",
+   "crop": [
+    0.5,
+    0.5,
+    0.86
+   ]
   }
  }
 }

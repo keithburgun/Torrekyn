@@ -4,7 +4,7 @@ import {
 import { EFFECTS, battlecryTimes, hasBattlecry } from './effects';
 import { runCombat } from './combat';
 import { aiTakeTurn, aiChooseDiscover } from './ai';
-import { setFxPhase, withFx, heroPing } from './fx';
+import { setFxPhase, withFx, heroPing, peebSync } from './fx';
 import { PERSONAS, matchPersonas, personaProfile } from './personas';
 import { TRINKETS, HEROES, heroHealth, buyCost, gainPower, heroDef, heroEndTurn, heroHooks, hasTrinket, offerTrinkets, shopBonus, GREATER_TRINKET_TURN, LESSER_TRINKET_TURN } from './heroes';
 import type { Discover, GameState, Player, Tribe, Unit } from './types';
@@ -153,6 +153,7 @@ export function startTurn(g: GameState, p: Player) {
   p.battlecryUnitsThisTurn = 0;
   p.usedPowers = [];
   setFxPhase('start');
+  peebSync(g, p); // Health your units kept from the battle (Peebnup Bubber)
   heroHooks.startTurn(g, p);
   if (g.round === LESSER_TRINKET_TURN) offerTrinkets(g, p, false);
   if (g.round === GREATER_TRINKET_TURN) offerTrinkets(g, p, true);
@@ -191,6 +192,7 @@ export function startTurn(g: GameState, p: Player) {
       delete u.mem.tmpAtk; delete u.mem.tmpHp; delete u.mem.tmpReborn; delete u.mem.tmpShield;
     }
   }
+  for (const u of p.board) u.mem.pv = u.hp; // Health lost as those wear off isn't a change Peebnup Bubber tracks
   // a skipped turn (Mazrael Bettencourt's first): no shop and no gold
   if (p.heroMem.skipRound === g.round) {
     for (const u of p.shop) returnToPool(g, u);
@@ -430,6 +432,7 @@ export function play(g: GameState, p: Player, handIdx: number, pos: number, targ
   p.hand.splice(handIdx, 1);
   pos = Math.max(0, Math.min(pos, p.board.length));
   p.board.splice(pos, 0, u);
+  u.mem.pv = u.hp; // Health it had in hand doesn't count as gained (Peebnup Bubber)
   const target = targetUid !== undefined ? p.board.find((b) => b.uid === targetUid) : undefined;
   if (hasBattlecry(u.cardId)) { p.battlecryUnitsThisTurn = (p.battlecryUnitsThisTurn ?? 0) + 1; runBattlecry(g, p, u, target); }
   const onPlay = EFFECTS[u.cardId]?.onPlay;

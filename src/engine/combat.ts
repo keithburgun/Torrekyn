@@ -93,7 +93,24 @@ export class Combat {
   /** a hero power / trinket of this side is acting */
   heroSide: 0 | 1 | undefined;
 
+  /** Health each unit has gained so far (its Health plus damage taken), for Peebnup Bubber */
+  private seenHp = new Map<number, number>();
+  private peebSync() {
+    for (const s of this.sides) {
+      const peebs = s.units.filter((u) => u.cardId === 'peebnup_bubber' && u.hp > 0 && !u.processed);
+      let gained = 0;
+      for (const u of s.units) {
+        const v = u.hp + (u.taken ?? 0);
+        const was = this.seenHp.get(u.id);
+        if (was !== undefined && v > was && u.hp > 0 && u.cardId !== 'peebnup_bubber') gained += v - was;
+        this.seenHp.set(u.id, v);
+      }
+      if (gained > 0) for (const pb of peebs) { pb.hp += gained * mult(pb); this.seenHp.set(pb.id, pb.hp + (pb.taken ?? 0)); }
+    }
+  }
+
   snap(kind: CombatFrame['kind'], extra: Partial<CombatFrame> = {}) {
+    this.peebSync();
     const f = (s: Side): CombatFrameUnit[] =>
       s.units.filter((u) => !u.processed).map((u) => ({
         id: u.id, cardId: u.cardId, golden: u.golden, atk: u.atk, hp: Math.max(0, u.hp), kw: [...u.kw], ...(EFFECTS[u.cardId]?.avenge ? { avenge: u.avenge } : {}), ...(u.mem.rattle ? { rattle: 1 } : {}), ...(u.mem.sellBonus ? { sellBonus: u.mem.sellBonus } : {}), ...(u.hp <= 0 ? { dead: true, ...(u.hp < 0 ? { over: -u.hp } : {}) } : {}),
