@@ -1,7 +1,7 @@
 import { heroDef } from '../engine/heroes';
 import { store } from '../save/store';
 import type { CombatFrame, CombatFrameUnit, CombatFx, CombatResult, GameState } from '../engine/types';
-import { bigCardHtml, cardHtml, esc, frameUnitView, heroArt } from './view';
+import { bigCardHtml, cardHtml, esc, frameUnitView, heroArt, relatedCards, relatedCardHtml } from './view';
 import { sfx } from './sfx';
 import { currentLayout, type Layout } from './layout';
 import { placeBoardBg, placeHud } from './hud';
@@ -198,6 +198,7 @@ export class CombatPlayer {
     }
   }
   private zoomId: number | null = null;
+  private relTimer = 0;
   private zoomEl: HTMLElement | null = null;
 
   private hoverAt(e: PointerEvent) {
@@ -213,14 +214,30 @@ export class CombatPlayer {
   private showZoom(id: number | null) {
     const u = id === null ? undefined : this.units.get(id);
     const el = id === null ? undefined : this.els.get(id);
-    if (!u || !el) { this.zoomEl?.remove(); this.zoomEl = null; this.zoomId = null; return; }
+    if (!u || !el) { this.zoomEl?.remove(); this.zoomEl = null; this.zoomId = null; clearTimeout(this.relTimer); return; }
+    const same = this.zoomId === id;
     if (!this.zoomEl) {
       this.zoomEl = document.createElement('div');
       this.zoomEl.className = 'combat-zoom';
       this.stage.appendChild(this.zoomEl);
     }
     this.zoomId = id;
+    const rel = this.zoomEl.querySelector('.zoom-related');
     this.zoomEl.innerHTML = bigCardHtml(frameUnitView(u));
+    // the cards its text names appear beside it after half a second (kept while the same unit stays zoomed)
+    if (same && rel) this.zoomEl.appendChild(rel);
+    else {
+      clearTimeout(this.relTimer);
+      const ids = relatedCards(u.cardId);
+      if (ids.length) this.relTimer = window.setTimeout(() => {
+        if (this.zoomId !== id || !this.zoomEl) return;
+        const r = document.createElement('div');
+        const toLeft = !this.L.portrait && parseFloat(this.zoomEl.style.left) > this.L.cx;
+        r.className = `zoom-related ${this.L.portrait ? (parseFloat(this.zoomEl.style.top) < this.L.H / 2 ? 'below' : 'above') : toLeft ? 'left' : 'right'}`;
+        r.innerHTML = ids.map((x) => relatedCardHtml(x)).join('');
+        this.zoomEl.appendChild(r);
+      }, 500);
+    }
     // clear of the board: the screen's side away from the unit (top or bottom edge on a tall screen)
     const sr = this.stage.getBoundingClientRect(), k = sr.width / this.L.W, r = el.getBoundingClientRect();
     const cx = (r.left + r.right) / 2 / k - sr.left / k, cy = (r.top + r.bottom) / 2 / k - sr.top / k;

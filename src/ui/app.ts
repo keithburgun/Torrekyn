@@ -10,7 +10,7 @@ import {
 import { HEROES, buyCost, canUseHeroPower, heroDef, heroHealth, mainActive, pickTrinket, powerCost, powersOf, trinketDef, useHeroPower, type HeroDef } from '../engine/heroes';
 import type { CombatResult, GameState, Player } from '../engine/types';
 import { CombatPlayer, SPEEDS, speedSetting } from './combatView';
-import { art, bigCardHtml, cardHtml, esc, getArtStyle, heroArt, setArtStyle, unitView, KEYWORD_HELP, KW_ICON, type ArtStyle } from './view';
+import { art, bigCardHtml, cardHtml, esc, getArtStyle, heroArt, relatedCards, relatedCardHtml, setArtStyle, unitView, KEYWORD_HELP, KW_ICON, type ArtStyle } from './view';
 import { clearSave, loadSave, save } from './save';
 import { debugOn, setDebug } from './debug';
 import { checkForUpdates, versionLabel } from './update';
@@ -192,6 +192,7 @@ export class App {
     this.slideCards(before);
     if (this.screen === 'shop') this.shopFeedback();
     if (this.screen === 'shop' && this.targeting) this.drawArrow();
+    this.related();
   }
 
   // ---------------- targeting arrow ----------------
@@ -867,7 +868,7 @@ export class App {
     }
     y = Math.max(8, Math.min(L.H - 10 - H, y));
     return `<div class="popover ${actions ? 'interactive' : ''} ${actionsTop ? 'actions-top' : ''} ${actions && this.justSelected() ? 'arming' : ''}" style="left:${x}px;top:${y}px;width:${W}px">
-      <div class="pop-card">${bigCardHtml(v, '', this.me)}</div>${actions ? `<div class="actions">${actions}</div>` : ''}</div>`;
+      <div class="pop-card" data-card="${v.cardId}">${bigCardHtml(v, '', this.me)}</div>${actions ? `<div class="actions">${actions}</div>` : ''}</div>`;
   }
 
   /** Phones: details for your hero power or a trinket, with a big Use button where it applies. */
@@ -1002,6 +1003,43 @@ export class App {
   updateDetail() {
     const el = this.stage.querySelector('#popover');
     if (el) el.innerHTML = this.popoverHtml();
+    this.related();
+  }
+
+  /** the zoomed card, and when it was first shown (its related cards appear beside it after half a second) */
+  private relKey = '';
+  private relAt = 0;
+  private relTimer = 0;
+
+  /** after a card has been zoomed in for half a second, show the cards its text names beside it */
+  private related() {
+    const pc = this.stage.querySelector('#popover .pop-card') as HTMLElement | null;
+    const id = pc?.dataset.card ?? '';
+    if (id !== this.relKey) {
+      this.relKey = id;
+      this.relAt = performance.now();
+      clearTimeout(this.relTimer);
+      if (id && relatedCards(id).length) this.relTimer = window.setTimeout(() => this.showRelated(), 500);
+      return;
+    }
+    if (id && performance.now() - this.relAt >= 500) this.showRelated(true);
+  }
+
+  private showRelated(instant = false) {
+    const pop = this.stage.querySelector('#popover .popover') as HTMLElement | null;
+    const pc = pop?.querySelector('.pop-card') as HTMLElement | null;
+    if (!pop || !pc || pc.dataset.card !== this.relKey || pop.querySelector('.pop-related')) return;
+    const ids = relatedCards(pc.dataset.card!);
+    if (!ids.length) return;
+    const x = parseFloat(pop.style.left);
+    const w = pop.offsetWidth;
+    const y = parseFloat(pop.style.top);
+    // beside it on the roomier side; on a tall screen above or below it
+    const where = L.portrait ? (y > L.H / 2 ? 'above' : 'below') : x + w / 2 < L.W / 2 ? 'right' : 'left';
+    const el = document.createElement('div');
+    el.className = `pop-related ${where} ${instant ? '' : 'fresh'}`;
+    el.innerHTML = ids.map((id) => `<div class="pop-card rel">${relatedCardHtml(id, this.me)}</div>`).join('');
+    pop.appendChild(el);
   }
 
   toast(msg: string) {

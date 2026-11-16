@@ -122,6 +122,36 @@ export function formatText(text: string): string {
   return t;
 }
 
+// ---- cards a card's text names (Bulldozer → Red Gem): shown beside it when it's zoomed in ----
+const NAME_ID = new Map<string, string>();
+let NAME_RE: RegExp | null = null;
+/** cards whose text names another card without saying its name exactly */
+const ALSO: Record<string, string[]> = { left_twinbot: ['right_twinbot'], right_twinbot: ['left_twinbot'] };
+
+/** the cards this card's text refers to (at most 2), e.g. Bulldozer → Red Gem, Organizer → Potato Gem */
+export function relatedCards(cardId: string): string[] {
+  if (!NAME_RE) {
+    for (const c of CARDS) NAME_ID.set(c.name.toLowerCase(), c.id);
+    const names = [...NAME_ID.keys()].sort((a, b) => b.length - a.length).map((n) => n.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'));
+    NAME_RE = new RegExp(`\\b(${names.join('|')})(s|es)?\\b`, 'gi');
+  }
+  const d = def(cardId);
+  // keyword phrases first ("Divine Shield" is not the Shield card)
+  const text = `${d.text} ${d.goldenText}`.replace(/Divine Shield/gi, '');
+  const out: string[] = [...(ALSO[cardId] ?? [])];
+  for (const m of text.matchAll(NAME_RE)) {
+    const id = NAME_ID.get(m[1].toLowerCase());
+    if (id && id !== cardId && !out.includes(id)) out.push(id);
+  }
+  return out.slice(0, 2);
+}
+
+/** a related card, as shown beside a zoomed one (its base stats) */
+export function relatedCardHtml(id: string, p?: Player): string {
+  const d = def(id);
+  return bigCardHtml({ cardId: id, golden: false, atk: d.atk, hp: d.hp, kw: [...d.keywords] }, '', p);
+}
+
 export function bigCardHtml(u: { cardId: string; golden: boolean; atk: number; hp: number; kw: Keyword[]; mem?: Record<string, number> }, extra = '', p?: Player): string {
   const d = def(u.cardId);
   let text = u.golden ? d.goldenText : d.text;

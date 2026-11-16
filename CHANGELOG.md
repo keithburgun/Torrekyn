@@ -2,6 +2,9 @@
 
 Newest first. The version shows on the title screen.
 
+## 0.11.3 — 2026-11-16
+- Zoomed cards show the cards their text names beside them after half a second (Bulldozer shows the Red Gem, Organizer the Potato Gem, Life the Pink Gem, Secret the Forest Abomination...), in the shop and in battle.
+
 ## 0.11.2 — 2026-11-16
 - Therapist: Battlecry: give a unit Taunt and +12 Health (Golden +24). Iron Bracer: Start of Combat: give 2 random friendly units Divine Shield.
 

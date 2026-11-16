@@ -1565,3 +1565,19 @@ svg.aim-arrow.locked .aim-ring { opacity: 0.9; animation: aim-ring 0.9s ease-in-
 .card.battle-hand { pointer-events: none; }
 #stage.portrait .combat-ctl.onshop { right: auto !important; bottom: auto !important; width: 252px; gap: 10px !important; }
 #stage.portrait .combat-ctl.onshop .btn { font-size: 24px; min-width: 0; padding: 8px 10px; }
+
+/* cards a zoomed card names (Bulldozer → Red Gem), shown beside it after half a second */
+.popover .pop-related { position: absolute; top: 0; display: flex; gap: 14px; pointer-events: none; }
+.pop-related.right { left: calc(100% + 16px); }
+.pop-related.left { right: calc(100% + 16px); flex-direction: row-reverse; }
+.pop-related.above { bottom: calc(100% + 16px); top: auto; left: 50%; transform: translateX(-50%); }
+.pop-related.below { top: calc(100% + 16px); left: 50%; transform: translateX(-50%); }
+.pop-related.fresh, .zoom-related { animation: related-in 0.25s ease-out; }
+@keyframes related-in { from { opacity: 0; translate: 0 10px; } }
+#stage.portrait .popover .pop-related .pop-card { zoom: 1.5; }
+.combat-zoom .zoom-related { position: absolute; top: 0; display: flex; gap: 12px; }
+.combat-zoom .zoom-related .bigcard { zoom: 1.5; }
+.zoom-related.right { left: calc(100% + 16px); }
+.zoom-related.left { right: calc(100% + 16px); flex-direction: row-reverse; }
+.zoom-related.below { top: calc(100% + 16px); left: 50%; transform: translateX(-50%); }
+.zoom-related.above { top: auto; bottom: calc(100% + 16px); left: 50%; transform: translateX(-50%); }
