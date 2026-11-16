@@ -2,6 +2,9 @@
 
 Newest first. The version shows on the title screen.
 
+## 0.11.8 — 2026-11-16
+- Larva shows how many turns it has left ('2 turns left', then 'Done!'), in your hand too; other counters (e.g. Scout's Tier) now show on hand cards as well.
+
 ## 0.11.7 — 2026-11-16
 - New Greater Trinket, New Power (4 Gold): Discover one of 3 Hero Powers to replace yours. Whatever your old power gave you stays (Andromeda's Pumpkin, gained cards, stats).
 
