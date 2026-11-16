@@ -312,9 +312,9 @@ export function queueDiscover(g: GameState, p: Player, options: string[], reason
 }
 
 /** Discover a Hero Power (Abragail): the first one replaces Well-Studied, the second is added. */
-export function queuePowerDiscover(g: GameState, p: Player, options: string[], reason: string) {
+export function queuePowerDiscover(g: GameState, p: Player, options: string[], reason: string, replace = 'abragail') {
   if (!options.length) return;
-  const d: Discover = { options, reason, powers: true };
+  const d: Discover = { options, reason, powers: true, replace };
   if (p.human && !g.simulateAll) p.discovers.push(d);
   else takeDiscover(g, p, d, aiChooseDiscover(g, p, d));
 }
@@ -322,7 +322,7 @@ export function queuePowerDiscover(g: GameState, p: Player, options: string[], r
 function takeDiscover(g: GameState, p: Player, d: Discover, idx: number) {
   const id = d.options[Math.max(0, Math.min(idx, d.options.length - 1))];
   if (d.powers) {
-    gainPower(g, p, id, 'abragail');
+    gainPower(g, p, id, d.replace ?? 'abragail');
     log(p, `Learned ${heroDef(id)?.power}.`);
     return;
   }

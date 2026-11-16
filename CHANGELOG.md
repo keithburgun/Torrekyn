@@ -2,6 +2,9 @@
 
 Newest first. The version shows on the title screen.
 
+## 0.11.7 — 2026-11-16
+- New Greater Trinket, New Power (4 Gold): Discover one of 3 Hero Powers to replace yours. Whatever your old power gave you stays (Andromeda's Pumpkin, gained cards, stats).
+
 ## 0.11.6 — 2026-11-16
 - Horseman comes back from Reborn with its full stats. New Greater Trinket, Another Chance (4 Gold): the first time you run out of Health, your Health goes back to 10 and you get 10 Gold next turn. Trinket prices are much bigger. Ash is a 3/3. ('Look at army' no longer sits on the sound button.)
 

@@ -52,6 +52,8 @@ export interface Discover {
   /** the unit waits in your hand until your Tavern reaches this tier (Mazrael Bettencourt) */
   unlockTier?: number;
   reason: string;
+  /** a Hero Power choice: the power the chosen one replaces */
+  replace?: string;
 }
 
 /**

@@ -358,3 +358,28 @@ describe('v0.11.6 changes', () => {
     expect(def('ash').keywords).toContain('taunt');
   });
 });
+
+describe('New Power (Greater Trinket)', () => {
+  it('offers 3 Hero Powers; the chosen one replaces yours, and what the old one gave you stays', async () => {
+    const { selectHero, human, chooseDiscover } = await import('../src/engine/game');
+    const { HEROES } = await import('../src/engine/heroes');
+    const g = newGame(31);
+    const me = human(g);
+    selectHero(g, 'andromeda_robin');
+    const pumpkins = () => [...me.board, ...me.hand].filter((u) => u.cardId === 'pumpkin').length;
+    const had = pumpkins();
+    expect(had).toBe(1); // Andromeda's Pumpkin
+    me.trinketOffer = ['new_power'];
+    me.gold = 10;
+    expect(pickTrinket(g, me, 'new_power')).toBe(true);
+    const d = me.discovers[0];
+    expect(d.powers).toBe(true);
+    expect(d.options.length).toBe(3);
+    expect(d.options).not.toContain('andromeda_robin');
+    const choice = d.options[1];
+    chooseDiscover(g, me, 1);
+    expect(me.powers).toEqual([choice]);
+    expect(pumpkins()).toBe(had);
+    expect(HEROES.find((h) => h.id === choice)).toBeTruthy();
+  });
+});

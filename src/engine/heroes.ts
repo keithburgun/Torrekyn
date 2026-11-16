@@ -277,6 +277,12 @@ export const TRINKETS: TrinketDef[] = [
       const id = pick(c.g, ids);
       if (id && c.spawn(s, id, false, s.units.length)) c.snap('trigger', { note: `Hourglass of Plenty: Summon ${def(id).name}` });
     } },
+  { id: 'new_power', name: 'New Power', cost: 4, greater: true, text: 'Discover a new Hero Power to replace your current one. (You keep what your old one gave you.)',
+    onGain: (g, p) => {
+      const current = p.powers[0] ?? p.hero!;
+      const pool = HEROES.filter((h) => h.id !== 'abragail' && !p.powers.includes(h.id) && h.id !== p.hero && (!h.needsTribe || g.tribes.includes(h.needsTribe)));
+      queuePowerDiscover(g, p, sample(g, pool, 3).map((h) => h.id), 'New Power: Choose a Hero Power to replace yours', current);
+    } },
   { id: 'another_chance', name: 'Another Chance', cost: 4, greater: true, text: 'The first time you run out of Health, restore your Health to 10 and gain 10 Gold.' }, // see endCombat (game.ts)
   { id: 'phoenix_feather', name: 'Phoenix Feather', cost: 5, greater: true, text: 'Start of Combat: Give your left-most unit Reborn.', soc: (c, s) => { const u = s.units.find((x) => x.hp > 0); if (u) addKw(u, 'reborn'); } },
   { id: 'warlords_horn', name: "Warlord's Horn", cost: 5, greater: true, text: 'Avenge (8): Increase your maximum Gold by 1.',
