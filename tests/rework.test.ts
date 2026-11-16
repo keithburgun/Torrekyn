@@ -109,15 +109,15 @@ describe('Sniper', () => {
 });
 
 describe('rework 2', () => {
-  it('Bill Milton (card): end of turn gains Attack equal to your maximum gold', async () => {
+  it('Bill Milton (card): end of turn gains +1/+1 per maximum gold', async () => {
     const { EFFECTS } = await import('../src/engine/effects');
     const { maxGoldFor } = await import('../src/engine/game');
     const { g, p } = setup();
     const b = u(g, 'bill_milton');
     p.board = [b];
-    const before = b.atk;
+    const before = [b.atk, b.hp];
     EFFECTS.bill_milton.endTurn!({ g, p, self: b, m: 1, board: p.board });
-    expect(b.atk).toBe(before + maxGoldFor(g, p));
+    expect([b.atk, b.hp]).toEqual([before[0] + maxGoldFor(g, p), before[1] + maxGoldFor(g, p)]);
   });
 
   it('Bulldozer: Rally gains a Red Gem and plays one (twice with Gem Wizard)', () => {

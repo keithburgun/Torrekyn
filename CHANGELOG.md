@@ -2,6 +2,9 @@
 
 Newest first. The version shows on the title screen.
 
+## 0.11.5 — 2026-11-16
+- Bill Milton (card): End of Turn: gain +1/+1 for each maximum Gold you have (Golden +2/+2).
+
 ## 0.11.4 — 2026-11-16
 - Hovering a card zooms it in after a quarter of a second (and only if the mouse is still on it), and never while there's a button under the mouse, so cards dealt out of the Refresh button no longer pop up.
 

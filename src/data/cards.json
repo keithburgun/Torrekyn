@@ -1165,8 +1165,8 @@
    "tier": 5,
    "atk": 40,
    "hp": 40,
-   "text": "End of Turn: Gain 1 Attack per maximum Gold you have.",
-   "goldenText": "End of Turn: Gain 2 Attack per maximum Gold you have.",
+   "text": "End of Turn: Gain +1/+1 for each maximum Gold you have.",
+   "goldenText": "End of Turn: Gain +2/+2 for each maximum Gold you have.",
    "keywords": []
   },
   {

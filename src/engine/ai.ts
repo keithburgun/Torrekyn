@@ -60,7 +60,7 @@ const GROWTH: Record<string, [number, number]> = {
 /** stats a growing unit adds over the turns it will still play, in unit-score points */
 function growthScore(g: GameState, p: Player, u: Unit): number {
   let gr = GROWTH[u.cardId];
-  if (u.cardId === 'bill_milton') gr = [maxGoldFor(g, p), 0];
+  if (u.cardId === 'bill_milton') gr = [maxGoldFor(g, p), maxGoldFor(g, p)];
   if (!gr) return 0;
   const m = u.golden ? 2 : 1;
   const turns = Math.max(1, Math.min(knob(p, 'growthTurns'), 15 - g.round));

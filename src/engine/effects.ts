@@ -695,7 +695,8 @@ export const EFFECTS: Record<string, Effect> = {
     rally: (c) => { for (let i = 0; i < c.m; i++) { gain(c, 'red_gem'); playGemOn(cctx(c), 'red_gem', c.self); } },
   },
   bill_milton: {
-    endTurn: (c) => buff(c.self, maxGoldFor(c.g, c.p) * c.m, 0),
+    // +1/+1 per maximum Gold (Golden: +2/+2)
+    endTurn: (c) => { const n = maxGoldFor(c.g, c.p) * c.m; buff(c.self, n, n); },
   },
   gem_wizard: {}, // see battlecryTimes
   exploit: {
