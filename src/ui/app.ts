@@ -110,6 +110,7 @@ export class App {
     }));
     stage.addEventListener('click', (e) => this.onClick(e));
     stage.addEventListener('mouseover', (e) => this.onHover(e));
+    stage.addEventListener('mousemove', (e) => { this.mouse = { x: e.clientX, y: e.clientY }; });
     stage.addEventListener('contextmenu', (e) => e.preventDefault());
     stage.addEventListener('input', (e) => {
       const t = e.target as HTMLInputElement;
@@ -1697,14 +1698,37 @@ export class App {
     }
   }
 
+  /** a card the mouse has just moved onto: it zooms in after a short wait (see onHover) */
+  private hoverWait = 0;
+  private mouse = { x: 0, y: 0 };
+
+  /** which card (if any) should zoom for the mouse at this screen point */
+  private hoverTarget(cx: number, cy: number): { zone: Zone; idx: number } | null {
+    const stack = document.elementsFromPoint(cx, cy) as HTMLElement[];
+    const el = stack[0]?.closest('.card[data-zone]') as HTMLElement | null;
+    if (!el || !['shop', 'hand', 'board'].includes(el.dataset.zone!)) return null;
+    // a button under the card (e.g. Refresh, while new cards fly out of it): the mouse is there for the button
+    if (stack.some((x) => !el.contains(x) && x.closest('button, .btn, [data-act]') && !x.closest('.card'))) return null;
+    return { zone: el.dataset.zone as Zone, idx: Number(el.dataset.idx) };
+  }
+
   onHover(e: MouseEvent) {
     // phones have no hover (a tap would fire it too), so previews there only come from selecting a card
     if (this.screen !== 'shop' || this.dragging || this.sel || L.portrait) { if (L.portrait && this.hover) { this.hover = null; this.updateDetail(); } return; }
-    const el = (e.target as HTMLElement).closest('.card[data-zone]') as HTMLElement | null;
-    const next = el && ['shop', 'hand', 'board'].includes(el.dataset.zone!) ? { zone: el.dataset.zone as Zone, idx: Number(el.dataset.idx) } : null;
-    if (JSON.stringify(next) === JSON.stringify(this.hover)) return;
-    this.hover = next;
-    this.updateDetail();
+    this.mouse = { x: e.clientX, y: e.clientY };
+    const next = this.hoverTarget(e.clientX, e.clientY);
+    if (JSON.stringify(next) === JSON.stringify(this.hover)) { clearTimeout(this.hoverWait); return; }
+    clearTimeout(this.hoverWait);
+    if (!next) { this.hover = null; this.updateDetail(); return; }
+    // zoom in after a quarter of a second, if the mouse is still on that card (cards dealt out of the Refresh
+    // button pass under it for a moment)
+    this.hoverWait = window.setTimeout(() => {
+      if (this.screen !== 'shop' || this.dragging || this.sel) return;
+      const still = this.hoverTarget(this.mouse.x, this.mouse.y);
+      if (JSON.stringify(still) !== JSON.stringify(next)) return;
+      this.hover = next;
+      this.updateDetail();
+    }, 250);
   }
 
   toStage(e: PointerEvent) {

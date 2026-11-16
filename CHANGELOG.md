@@ -2,6 +2,9 @@
 
 Newest first. The version shows on the title screen.
 
+## 0.11.4 — 2026-11-16
+- Hovering a card zooms it in after a quarter of a second (and only if the mouse is still on it), and never while there's a button under the mouse, so cards dealt out of the Refresh button no longer pop up.
+
 ## 0.11.3 — 2026-11-16
 - Zoomed cards show the cards their text names beside them after half a second (Bulldozer shows the Red Gem, Organizer the Potato Gem, Life the Pink Gem, Secret the Forest Abomination...), in the shop and in battle.
 
