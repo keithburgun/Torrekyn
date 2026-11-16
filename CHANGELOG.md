@@ -2,6 +2,9 @@
 
 Newest first. The version shows on the title screen.
 
+## 0.11.1 — 2026-11-16
+- Iron Bracer: Start of Combat: give your left-most unit Taunt and Reborn.
+
 ## 0.11.0 — 2026-11-15
 - Battles play on the shop screen: your army, hero, hand, gold and leaderboard stay where they are; your opponent's army takes the Tavern's row and their hero the Tavern's circle; Speed / Pause / Skip replace Begin Battle. You can hover your hero, the leaderboard and units during the battle; nothing can be bought, moved or played until it's over. No more intro and wipe screens. Purple Gem: give a unit +1/+1 (for good; Golden +2/+2), and Reborn for 1 turn.
 

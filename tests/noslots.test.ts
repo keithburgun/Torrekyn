@@ -200,7 +200,7 @@ describe('cards rewritten without slots', () => {
 });
 
 describe('trinkets rewritten without slots', () => {
-  it('Iron Bracer: Taunt; Phoenix Feather: Reborn (left-most unit); Bannerlord: +3/+3 at Start of Combat', () => {
+  it('Iron Bracer: Taunt and Reborn; Phoenix Feather: Reborn (left-most unit); Bannerlord: +3/+3 at Start of Combat', () => {
     const { g, p, o } = setup();
     p.trinkets = ['iron_bracer', 'phoenix_feather', 'bannerlords_standard'];
     const c = fight(g, p, o, [U(g, 'doctor', 1, 50), U(g, 'doctor', 1, 50)], [U(g, 'skel', 1, 999)]);
@@ -295,4 +295,14 @@ describe('v0.10.4 changes', () => {
     expect([def('orange_ninja').atk, def('orange_ninja').hp]).toEqual([5, 2]);
     for (const id of ['tourmaline', 'red_gem', 'ancient_name_brambor', 'purple_gem', 'pink_gem', 'green_gem', 'omni_gem']) expect([def(id).atk, def(id).hp]).toEqual([1, 1]);
   });
+});
+
+it('Iron Bracer alone gives the left-most unit Taunt and Reborn', () => {
+  const { g, p, o } = setup();
+  p.trinkets = ['iron_bracer'];
+  const c = fight(g, p, o, [U(g, 'doctor', 1, 50), U(g, 'doctor', 1, 50)], [U(g, 'skel', 1, 999)]);
+  c.run();
+  const f = c.frames[afterSoc(c)];
+  expect(f.sides[0][0].kw).toEqual(expect.arrayContaining(['taunt', 'reborn']));
+  expect(f.sides[0][1].kw).not.toContain('reborn');
 });
