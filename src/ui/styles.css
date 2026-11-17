@@ -665,7 +665,9 @@ b { font-weight: 800; }
 .triple-spark { position: absolute; width: 14px; height: 14px; pointer-events: none; transform: translate(-50%, -50%);
   background: radial-gradient(circle, #fff 0 25%, #ffd36a 50%, rgba(255, 211, 106, 0) 70%); animation: spark-out 1.1s cubic-bezier(.2, .7, .3, 1) both; }
 @keyframes spark-out { 0% { opacity: 1; transform: translate(-50%, -50%) scale(1.4); } 100% { opacity: 0; transform: translate(calc(-50% + var(--dx)), calc(-50% + var(--dy))) scale(0.3); } }
-.triple-card { position: absolute; width: 236px; height: 340px; transform-origin: center; animation: tcard 0.7s cubic-bezier(.3, 1.6, .5, 1) both; filter: drop-shadow(0 0 30px rgba(255, 211, 106, 0.9)); }
+.triple-card { position: absolute; width: 236px; height: 340px; transform-origin: center; filter: drop-shadow(0 0 30px rgba(255, 211, 106, 0.9)); }
+/* a card turning white (triples): a white sheet over the whole card, faded in or out */
+.whiteout { position: absolute; inset: 0; border-radius: inherit; background: #fff; opacity: 0; pointer-events: none; z-index: 50; }
 @keyframes tcard { 0% { opacity: 0; transform: scale(0.2) rotate(25deg); } 100% { opacity: 1; transform: scale(1) rotate(0); } }
 .triple-banner { position: absolute; transform: translate(-50%, -50%); pointer-events: none; transition: opacity 0.3s; }
 .triple-banner .tb-big { font-family: var(--display); font-weight: 700; font-size: 96px; color: #fff; letter-spacing: 0.04em; white-space: nowrap;

@@ -1065,10 +1065,10 @@ export class App {
     const fx = this.screen === 'shop' ? this.takeFx() : [];
     this.trackUndo();
     // remember where the copies were before they disappear from the screen
-    const where = new Map<number, { x: number; y: number }>();
+    const where = new Map<number, { x: number; y: number; gained?: boolean }>();
     for (const e of events) for (const uid of e.uids) {
       const el = this.stage.querySelector(`.card[data-id="${uid}"]`) as HTMLElement | null;
-      if (el) where.set(uid, { x: parseFloat(el.style.left), y: parseFloat(el.style.top) });
+      if (el) where.set(uid, { x: parseFloat(el.style.left), y: parseFloat(el.style.top), gained: el.dataset.zone === 'shop' });
     }
     // units that effect playback animates itself are left alone by the generic feedback
     this.fxSkip = new Set(fx.flatMap((e) => [...e.buffs.map((b) => b.uid), ...e.gains, ...e.summons]));
@@ -1402,12 +1402,13 @@ export class App {
   }
 
   /** Play the triple ceremony for each triple, one after another. */
-  async celebrate(events: { cardId: string; uids: number[]; goldenUid: number }[], where: Map<number, { x: number; y: number }>) {
+  async celebrate(events: { cardId: string; uids: number[]; goldenUid: number }[], where: Map<number, { x: number; y: number; gained?: boolean }>) {
     this.busy = true;
     save(this.g!);
     for (const e of events) {
       const fallback = this.lastShopPos ?? { x: L.cx - L.cardW / 2, y: L.shopY };
-      const sources = e.uids.map((uid, i) => where.get(uid) ?? { x: fallback.x + (i - 1) * 30, y: fallback.y });
+      // a copy that wasn't on screen (gained straight into your hand) comes in from the shop row like a bought card
+      const sources = e.uids.map((uid, i) => where.get(uid) ?? { x: fallback.x + (i - 1) * 30, y: fallback.y, gained: true });
       const golden = this.me.hand.find((u) => u.uid === e.goldenUid);
       const view = golden ? unitView(this.me, golden, 'hand', 0) : { cardId: e.cardId, golden: true, atk: def(e.cardId).atk * 2, hp: def(e.cardId).hp * 2, kw: [...def(e.cardId).keywords] };
       const handEl = this.stage.querySelector(`.card[data-id="${e.goldenUid}"]`) as HTMLElement | null;

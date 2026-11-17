@@ -413,8 +413,8 @@
    "tier": 2,
    "atk": 1,
    "hp": 1,
-   "text": "Battlecry: Give a unit Divine Shield and +1/+1. If it's Kindred, give it +1/+1 again.",
-   "goldenText": "Battlecry: Give a unit Divine Shield and +2/+2. If it's Kindred, give it +2/+2 again.",
+   "text": "Battlecry: Give a unit +6/+6 and Divine Shield until next turn. If it's Kindred, do it again.",
+   "goldenText": "Battlecry: Give a unit +12/+12 and Divine Shield until next turn. If it's Kindred, do it again.",
    "keywords": []
   },
   {

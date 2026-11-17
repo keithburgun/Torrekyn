@@ -49,6 +49,8 @@ export interface Effect {
   startTurn?(c: Ctx): void;
   soc?(c: CCtx): void;
   rally?(c: CCtx, target: CUnit): void;
+  /** the Rally only damages the units next to the target: it lands together with the attack (one impact) */
+  splash?: boolean;
   deathrattle?(c: CCtx): void;
   avenge?: [number, number]; // [normal, golden]
   avengeFn?(c: CCtx): void;
@@ -180,6 +182,7 @@ export const EFFECTS: Record<string, Effect> = {
     },
   },
   sickle: {
+    splash: true,
     rally: (c, t) => { for (const u of c.c.adjacent(t)) c.c.damage(u, 4, c.self); }, // Golden: same 4 (just bigger stats)
   },
   funeral: {
@@ -350,14 +353,16 @@ export const EFFECTS: Record<string, Effect> = {
     },
   },
   pink_gem: {
-    // Divine Shield and +1/+1 (+1/+1 per improvement; Golden doubles); a Kindred unit gets the +1/+1 twice
+    // +6/+6 and Divine Shield until next turn (+2/+2 more per improvement; Golden doubles); a Kindred unit gets it twice
     target: 'friendly',
     battlecry: (c) => {
       const t = gemTarget(c);
       if (!t) return;
-      addKw(t, 'divineShield');
-      const n = (1 + gemLevel(c.p, 'pink_gem')) * c.m * (isTribe(t, 'kindred') ? 2 : 1);
+      const n = (6 + 2 * gemLevel(c.p, 'pink_gem')) * c.m * (isTribe(t, 'kindred') ? 2 : 1);
       buff(t, n, n);
+      t.mem.tmpAtk = (t.mem.tmpAtk ?? 0) + n;
+      t.mem.tmpHp = (t.mem.tmpHp ?? 0) + n;
+      if (!t.kw.includes('divineShield')) { addKw(t, 'divineShield'); t.mem.tmpShield = 1; }
     },
   },
   // Peebnup Bubber is handled by peebSync (fx.ts) in the shop and Combat.peebSync in battle
@@ -821,6 +826,7 @@ export const EFFECTS: Record<string, Effect> = {
   },
   tank: {
     // Rally: its Attack (Golden: double) to the units next to the target
+    splash: true,
     rally: (c, t) => { for (const u of c.c.adjacent(t)) c.c.damage(u, c.self.atk * c.m, c.self); },
   },
   alabaster: {

@@ -177,7 +177,7 @@ export interface CombatFrameUnit {
 
 /** Visual effects attached to a combat frame (for animation only). */
 export interface CombatFx {
-  k: 'hit' | 'kill' | 'shield' | 'venom' | 'reborn' | 'summon' | 'gem'; // gem: a Gem played in battle lands on this unit
+  k: 'hit' | 'kill' | 'shield' | 'venom' | 'reborn' | 'summon' | 'gem' | 'splash'; // splash: hit by the attack's spill-over // gem: a Gem played in battle lands on this unit
   to: number;
   from?: number; // source unit id
   fromSide?: 0 | 1; // a hero/trinket on this side caused it
@@ -189,6 +189,8 @@ export interface CombatFrame {
   fx?: CombatFx[];
   attacker?: number;
   target?: number;
+  /** an attack whose damage also lands on these units (Tank, Sickle): they're hit at the same moment */
+  splash?: number[];
   source?: number;
   note?: string;
   /** your hand at this moment (only for your own battles), so cards gained or summoned from it show up */

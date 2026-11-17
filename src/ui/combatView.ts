@@ -694,6 +694,7 @@ export class CombatPlayer {
         if (!before.kw.includes('venomous') && u.kw.includes('venomous')) this.spot('kw-gain', x + this.L.cardW / 2, y + 30, this.t(800), '☠');
       }
       if (before && u.avenge !== undefined && before.avenge !== u.avenge) el.querySelector('.avenge-count')?.classList.add('tick');
+      if (fxFor(id, 'splash')) this.spot('impact', x + this.L.cardW / 2, y + this.L.cardH / 2, this.t(380));
       if (fxFor(id, 'venom')) this.spot('venom-pop', x + this.L.cardW / 2, y + this.L.cardH / 2, this.t(700));
       if (fxFor(id, 'kill')) this.spot('kill-pop', x + this.L.cardW / 2, y + this.L.cardH / 2, this.t(700), '✖');
     }
@@ -713,7 +714,12 @@ export class CombatPlayer {
           [{ transform: 'none' }, { transform: `translate(${dx * 0.12}px, ${dy * 0.12 - (dy > 0 ? 14 : -14)}px) scale(1.1)`, offset: 0.4 },
             { transform: `translate(${dx * 0.82}px, ${dy * 0.82}px) scale(1.06)`, offset: 0.7 }, { transform: 'none' }],
           { duration: this.t(DUR.attack + 140), easing: 'ease-in-out' });
-        setTimeout(() => { sfx.hit(); this.spot('impact big', parseFloat(t.style.left) + this.L.cardW / 2, parseFloat(t.style.top) + this.L.cardH / 2, this.t(380)); }, this.t((DUR.attack + 140) * 0.7));
+        setTimeout(() => {
+          sfx.hit();
+          this.spot('impact big', parseFloat(t.style.left) + this.L.cardW / 2, parseFloat(t.style.top) + this.L.cardH / 2, this.t(380));
+          // Tank / Sickle: the units next to the target are struck in the same instant
+          for (const id of f.splash ?? []) { const c = this.center(id); if (c) this.spot('impact', c.x, c.y, this.t(380)); }
+        }, this.t((DUR.attack + 140) * 0.7));
         await anim.finished.catch(() => undefined);
         a.style.zIndex = '';
         return;

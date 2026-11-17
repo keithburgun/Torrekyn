@@ -467,7 +467,8 @@ it('Life: Start of Combat gains a Pink Gem to your hand (Golden: 2); Grief: Upgr
 });
 
 describe('v0.12.3 Kindred', () => {
-  it('Pink Gem: Divine Shield and +1/+1, twice over for a Kindred unit (Golden doubles); the Shield stays', () => {
+  it('Pink Gem: +6/+6 and Divine Shield until next turn, twice over for a Kindred unit (Golden doubles)', async () => {
+    const { startTurn } = await import('../src/engine/game');
     for (const golden of [false, true]) {
       const { g, p } = setup();
       const k = U(g, 'therapist', 2, 2); k.kw = [];
@@ -477,9 +478,11 @@ describe('v0.12.3 Kindred', () => {
       play(g, p, 0, 2, k.uid);
       play(g, p, 0, 3, n.uid);
       const m = golden ? 2 : 1;
-      expect([k.atk, k.hp, n.atk, n.hp]).toEqual([2 + 2 * m, 2 + 2 * m, 2 + m, 2 + m]);
+      expect([k.atk, k.hp, n.atk, n.hp]).toEqual([2 + 12 * m, 2 + 12 * m, 2 + 6 * m, 2 + 6 * m]);
       expect(k.kw).toContain('divineShield'); expect(n.kw).toContain('divineShield');
-      expect(k.mem.tmpShield).toBeUndefined();
+      startTurn(g, p);
+      expect([k.atk, k.hp, n.atk, n.hp]).toEqual([2, 2, 2, 2]);
+      expect(k.kw).not.toContain('divineShield'); expect(n.kw).not.toContain('divineShield');
     }
     expect(def('honeysuckle_kindred').tier).toBe(4);
   });
@@ -507,8 +510,8 @@ describe('v0.12.3 Kindred', () => {
       const k = U(g, 'therapist', 2, 2); k.kw = [];
       p.board = [pb, k]; p.hand = [U(g, 'pink_gem')];
       peebSync(g, p); // (in a real game, units on the board have always been seen)
-      play(g, p, 0, 2, k.uid); // Therapist gets +2 Health
-      expect(pb.hp).toBe(8 + 2 * (golden ? 2 : 1));
+      play(g, p, 0, 2, k.uid); // Therapist (Kindred) gets +12 Health
+      expect(pb.hp).toBe(8 + 12 * (golden ? 2 : 1));
       // played with Health it had in hand: no gain
       const hp0 = pb.hp;
       p.hand = [U(g, 'doctor', 1, 30)];
@@ -592,5 +595,23 @@ describe('v0.12.4 cards', () => {
     expect(new Set(seen.map((u) => u.id)).size).toBe(3);
     // the Owl brought in started at 4/8 (2 played Owls) and grew with each of the 2 summoned
     expect(Math.max(...seen.map((u) => u.atk))).toBe(6);
+  });
+});
+
+describe('splash attacks', () => {
+  it('Tank: the units next to the target are hit in the same frame as the target', () => {
+    const { g, p, o } = setup();
+    const c = fight(g, p, o, [U(g, 'tank', 5, 50)], [U(g, 'skel', 0, 20), U(g, 'skel', 0, 20), U(g, 'skel', 0, 20)]);
+    c.run();
+    const ai = c.frames.findIndex((f) => f.kind === 'attack' && f.splash?.length);
+    expect(ai).toBeGreaterThanOrEqual(0);
+    const atk = c.frames[ai];
+    const hit = c.frames[ai + 1];
+    expect(hit.kind).toBe('hit');
+    const enemy = (f: typeof hit) => f.sides[1];
+    const hpBefore = new Map(enemy(atk).map((u) => [u.id, u.hp]));
+    const hurt = enemy(hit).filter((u) => u.hp < hpBefore.get(u.id)!).map((u) => u.id);
+    expect(hurt).toContain(atk.target);
+    for (const id of atk.splash!) expect(hurt).toContain(id);
   });
 });

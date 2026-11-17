@@ -241,7 +241,8 @@ export class Combat {
   /** `spill`: this is Pyro's excess damage, which doesn't spill again (it used to chain through a whole army) */
   damage(t: CUnit | undefined, amount: number, source?: CUnit, spill = false, attacking = false) {
     if (!t || t.hp <= 0 || amount <= 0) return;
-    if (!this.inExchange) this.addFx({ k: 'hit', to: t.id, from: source?.id, fromSide: source ? undefined : this.heroSide });
+    if (spill) this.addFx({ k: 'splash', to: t.id });
+    else if (!this.inExchange) this.addFx({ k: 'hit', to: t.id, from: source?.id, fromSide: source ? undefined : this.heroSide });
     if (has(t, 'divineShield')) {
       removeKw(t, 'divineShield');
       this.addFx({ k: 'shield', to: t.id });
@@ -423,10 +424,18 @@ export class Combat {
     let t = forced && forced.hp > 0 ? forced : this.chooseTarget(a);
     if (!t) return;
     const side = this.sides[a.side];
-    this.snap('attack', { attacker: a.id, target: t.id });
-    // Rally
     const e = EFFECTS[a.cardId];
-    if (e?.rally) {
+    // Tank and Sickle: the Rally only hits the units next to the target, so it lands with the attack itself
+    const splash = !!(e?.rally && e.splash);
+    this.snap('attack', { attacker: a.id, target: t.id, ...(splash ? { splash: this.adjacent(t).map((u) => u.id) } : {}) });
+    if (splash) {
+      this.inExchange = true;
+      e!.rally!(this.ctx(a), t);
+      this.inExchange = false;
+      for (const w of [...side.units]) if (w.hp > 0) EFFECTS[w.cardId]?.onRallyFriendly?.(this.ctx(w), a);
+    }
+    // Rally
+    if (e?.rally && !splash) {
       e.rally(this.ctx(a), t);
       for (const w of [...side.units]) if (w.hp > 0) EFFECTS[w.cardId]?.onRallyFriendly?.(this.ctx(w), a);
       this.snap('trigger', { source: a.id, note: `${def(a.cardId).name}: Rally` });

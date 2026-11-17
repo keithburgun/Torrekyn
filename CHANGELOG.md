@@ -2,6 +2,9 @@
 
 Newest first. The version shows on the title screen.
 
+## 0.12.5 — 2026-11-17
+- Pink Gem: +6/+6 and Divine Shield until next turn (twice for Kindred). Tank and Sickle: the units next to the target are hit at the same moment as the target. New triple animation: the card arrives in your hand, then the three copies spin together, turn white and become the Golden card. Bots: re-measured card values.
+
 ## 0.12.4 — 2026-11-17
 - Amalgam (T2 Neutral, all factions), Owl Summoner (T5 Cloister), Beast Vine (T5 Brambor, all factions). Owl reworked: 2/4, +1/+2 per Owl summoned. Stuffie Magic: Kindred in the Tavern +2/+2 for the rest of the game. Larva is now Slime. New Witch art. Modified stats are bright green.
 
