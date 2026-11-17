@@ -762,16 +762,12 @@ interface Plan {
 }
 const has = (id: string, hook: keyof (typeof EFFECTS)[string]) => !!EFFECTS[id]?.[hook];
 export const PLANS: Plan[] = [
-  { id: 'red_gems', pieces: ['purveyor', 'jeweler', 'gem_wizard', 'broken_land', 'invisible_hand'], fuel: (id) => id === 'red_gem' || id === 'sarinee' },
-  { id: 'potato_gems', pieces: ['andromeda_robin', 'broken_land', 'organizer', 'farmer'], fuel: (id) => id === 'ancient_name_brambor' || id === 'sarinee' || id === 'peebnup_bubber' },
-  { id: 'peebnup', pieces: ['peebnup_bubber', 'andromeda_robin', 'therapist', 'architect'], fuel: (id) => ['tourmaline', 'ancient_name_brambor', 'sarinee', 'builder'].includes(id), carry: ['peebnup_bubber'] },
-  { id: 'battlecries', pieces: ['chaos', 'aerial_drone', 'commitment', 'returner'], fuel: (id) => has(id, 'battlecry') || id === 'sarinee', carry: ['barton', 'chosen_name'] },
-  { id: 'doubler', pieces: ['barton', 'chosen_name', 'vulnerability', 'mod'], fuel: (id) => BUFF_GEMS.includes(id) || id === 'chaos', carry: ['barton', 'chosen_name'] },
-  { id: 'deathrattles', pieces: ['warmech', 'tom_judith', 'vampire', 'scientist', 'necromancer'], fuel: (id) => has(id, 'deathrattle') },
-  { id: 'owls', pieces: ['owl', 'owl_summoner', 'tom_judith', 'shadow_place'] },
-  { id: 'shields', pieces: ['ocean_sky', 'time_cannot_destroy', 'blue_dragon', 'royal_guard', 'message'], fuel: (id) => def(id).keywords.includes('divineShield') || id === 'pink_gem' },
-  { id: 'neverending', pieces: ['ashlie', 'romance', 'bramble', 'necromancer', 'abandon'], fuel: (id) => def(id).tribe === 'neverending' || id === 'sarinee' },
-  { id: 'sell_loop', pieces: ['elemental', 'hug'], fuel: (id) => def(id).tribe === 'kindred' },
+  // found by pop-off mining (tests/mine.test.ts): cards and pairs over-represented in armies that reached triple digits
+  { id: 'deathrattles', pieces: ['warmech', 'tom_judith', 'necromancer', 'scientist', 'lich', 'returner', 'invisible_hand', 'owl_summoner', 'may_danaris'], fuel: (id) => has(id, 'deathrattle') },
+  { id: 'bill_milton', pieces: ['bill_milton', 'sarinee', 'investor'] },
+  { id: 'abandon', pieces: ['abandon', 'sarinee', 'ancient_name_neverending', 'broken_land'] },
+  { id: 'battlecries', pieces: ['chaos', 'life', 'aerial_drone', 'commitment'], fuel: (id) => has(id, 'battlecry') || id === 'sarinee' || id === 'organizer' },
+  { id: 'potato_gems', pieces: ['andromeda_robin', 'broken_land', 'organizer', 'peebnup_bubber'], fuel: (id) => id === 'ancient_name_brambor' || id === 'sarinee' },
 ];
 /** Gems that buff one unit (worth piling on a carry) */
 const BUFF_GEMS = ['tourmaline', 'purple_gem', 'pink_gem', 'green_gem'];
