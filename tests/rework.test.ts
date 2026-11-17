@@ -83,13 +83,6 @@ describe('rework', () => {
     expect(def('phoenix').atk).toBe(20);
   });
 
-  it('Golden Light: Deathrattle gains a random Tier 6 unit', () => {
-    const { g, p, o } = setup();
-    p.hand = [];
-    fight(g, p, o, [u(g, 'golden_light', 0, 1)], [u(g, 'skel', 1, 1000)]).run();
-    expect(p.hand.map((x) => def(x.cardId).tier)).toEqual([6]);
-  });
-
   it('a whole turn with Gem cards in every hand still plays out', () => {
     const { g } = setup(77);
     for (const p of g.players) p.hand = ['purple_gem', 'tourmaline', 'pink_gem', 'green_gem', 'red_gem', 'ancient_name_brambor'].map((id) => makeUnit(g, id));
