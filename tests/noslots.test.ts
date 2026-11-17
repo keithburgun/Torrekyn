@@ -615,3 +615,14 @@ describe('splash attacks', () => {
     for (const id of atk.splash!) expect(hurt).toContain(id);
   });
 });
+
+describe('v0.12.7 workbook', () => {
+  it('Catapult: 25 damage to the right-most enemy (Golden: 50)', () => {
+    for (const golden of [false, true]) {
+      const { g, p, o } = setup();
+      const c = fight(g, p, o, [U(g, 'catapult', 2, 7, golden)], [U(g, 'skel', 0, 5), U(g, 'skel', 0, 100), U(g, 'skel', 0, 100)]);
+      c.run();
+      expect(c.frames[afterSoc(c)].sides[1].map((u) => u.hp)).toEqual([5, 100, golden ? 50 : 75]);
+    }
+  });
+});

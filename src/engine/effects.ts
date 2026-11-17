@@ -195,7 +195,7 @@ export const EFFECTS: Record<string, Effect> = {
     deathrattle: (c) => c.c.spawnMany(c.side, 'skeleton', c.m === 2, 2, c.pos),
   },
   romance: {
-    avenge: [3, 3],
+    avenge: [2, 2],
     avengeFn: (c) => {
       c.p.tribeAtk.neverending = (c.p.tribeAtk.neverending ?? 0) + c.m;
       for (const u of c.side.units) if (isTribe(u, 'neverending')) u.atk += c.m;
@@ -290,13 +290,10 @@ export const EFFECTS: Record<string, Effect> = {
     avengeFn: (c) => { addKw(c.self, 'divineShield'); addKw(c.self, 'taunt'); },
   },
   catapult: {
+    // 25 damage (Golden: 50) to the right-most enemy unit
     soc: (c) => {
-      for (let i = 0; i < c.m; i++) {
-        const live = c.c.enemy(c.side).units.filter((u) => u.hp > 0);
-        if (!live.length) return;
-        const low = live.reduce((a, b) => (b.hp < a.hp ? b : a));
-        c.c.damage(low, 25, c.self);
-      }
+      const live = c.c.enemy(c.side).units.filter((u) => u.hp > 0);
+      if (live.length) c.c.damage(live[live.length - 1], 25 * c.m, c.self);
     },
   },
   remember: {
