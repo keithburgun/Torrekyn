@@ -1022,8 +1022,8 @@
    "tier": 5,
    "atk": 1,
    "hp": 1,
-   "text": "Deathrattle: Gain a random Tier 6 unit.",
-   "goldenText": "Deathrattle: Gain a random Tier 6 unit.",
+   "text": "When this kills a unit, gain a random Tier 5 unit.",
+   "goldenText": "When this kills a unit, gain 2 random Tier 5 units.",
    "keywords": []
   },
   {

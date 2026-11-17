@@ -260,7 +260,11 @@ export class Combat {
       if (!has(source, 'poisonous')) removeKw(source, 'venomous'); // Poisonous is never used up
       this.addFx({ k: 'venom', to: t.id });
     }
-    if (t.hp <= 0 && source && !t.killedBy) t.killedBy = source;
+    if (t.hp <= 0 && source && !t.killedBy) {
+      t.killedBy = source;
+      const k = EFFECTS[source.cardId]?.onKill;
+      if (k) { k(this.ctx(source), t); if (!this.inExchange) this.snap('trigger', { source: source.id, note: `${def(source.cardId).name}` }); }
+    }
     if (t.hp > 0) EFFECTS[t.cardId]?.onDamaged?.(this.ctx(t));
     // Pyro only spills when it's the one attacking (not when it's hit back while defending)
     if (t.hp <= 0 && !spill && attacking && source?.cardId === 'pyro' && source.hp > 0) {

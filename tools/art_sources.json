@@ -678,12 +678,8 @@
    ]
   },
   "golden_light": {
-   "src": "R/may 3 rgb version.png",
-   "crop": [
-    0.5,
-    0.42,
-    0.75
-   ]
+   "src": "S/Alcove/swap portal.png",
+   "px": true
   },
   "phoenix": {
    "src": "R/eve 2 rgb version.png",

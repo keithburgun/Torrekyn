@@ -61,6 +61,8 @@ export interface Effect {
   onRallyFriendly?(c: CCtx, u: CUnit): void;
   /** this attacked and killed `dead` (its Attack and max Health just before the hit) */
   onAttackKill?(c: CCtx, dead: CUnit, atk: number, maxHp: number): void;
+  /** this unit killed a unit (any way) */
+  onKill?(c: CCtx, dead: CUnit): void;
   /** another friendly unit was summoned during battle */
   onSummonFriendly?(c: CCtx, u: CUnit): void;
 }
@@ -663,7 +665,8 @@ export const EFFECTS: Record<string, Effect> = {
     },
   },
   golden_light: {
-    deathrattle: (c) => gain(c, randomTier(c, 6)),
+    // any kill: attacking, defending or with an ability
+    onKill: (c) => { for (let i = 0; i < c.m; i++) gain(c, randomTier(c, 5)); },
   },
 
   // ===== Business Demons =====

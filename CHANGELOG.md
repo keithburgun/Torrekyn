@@ -2,6 +2,9 @@
 
 Newest first. The version shows on the title screen.
 
+## 0.12.8 — 2026-11-17
+- Golden Light: When this kills a unit, gain a random Tier 5 unit (Golden: 2). New art.
+
 ## 0.12.7 — 2026-11-17
 - Workbook: Lich Tier 3; Romance Avenge (2); Catapult hits the right-most enemy (25, Golden 50); Honeysuckle (Kindred) 40/30; Life Tier 3 3/9; Beast Vine 10/10; Grief 6/5.
 

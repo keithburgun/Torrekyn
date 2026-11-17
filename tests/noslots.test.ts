@@ -626,3 +626,16 @@ describe('v0.12.7 workbook', () => {
     }
   });
 });
+
+describe('Golden Light', () => {
+  it('gains a random Tier 5 unit for each unit it kills (Golden: 2)', async () => {
+    const { def } = await import('../src/engine/core');
+    for (const golden of [false, true]) {
+      const { g, p, o } = setup();
+      p.hand = [];
+      fight(g, p, o, [U(g, 'golden_light', 10, 100, golden)], [U(g, 'skel', 1, 3), U(g, 'skel', 1, 3)]).run();
+      expect(p.hand.length).toBe(2 * (golden ? 2 : 1));
+      for (const u of p.hand) expect(def(u.cardId).tier).toBe(5);
+    }
+  });
+});
