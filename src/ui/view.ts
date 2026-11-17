@@ -96,7 +96,7 @@ export function cardHtml(u: { cardId: string; golden: boolean; atk: number; hp: 
   const atk = o.atk ?? u.atk;
   const hp = o.hp ?? u.hp;
   const kw = o.kw ?? u.kw;
-  const cls = ['card', `t-${d.tribe}`, u.golden ? 'golden' : '', o.small ? 'small' : '', o.large ? 'large' : '', ...kw.map((k) => `kw-${k}`), u.mem?.locked ? 'locked' : '', o.extraClass ?? ''].join(' ');
+  const cls = ['card', `t-${d.tribe}`, d.allTribes ? 't-all' : '', u.golden ? 'golden' : '', o.small ? 'small' : '', o.large ? 'large' : '', ...kw.map((k) => `kw-${k}`), u.mem?.locked ? 'locked' : '', o.extraClass ?? ''].join(' ');
   const baseAtk = d.atk * (u.golden ? 2 : 1);
   const baseHp = d.hp * (u.golden ? 2 : 1);
   const icons = kw.filter((k) => k !== 'taunt' && k !== 'divineShield').map((k) => `<span class="kw-${k}" title="${KW_ICON[k][1]}">${KW_ICON[k][0]}</span>`).join('');
@@ -108,11 +108,11 @@ export function cardHtml(u: { cardId: string; golden: boolean; atk: number; hp: 
   <div class="kws">${icons}</div>
   <div class="abil">${tags}</div>
   <div class="name">${esc(d.name)}</div>
-  <div class="tribe-plate ${(TRIBE_SHORT[d.tribe] ?? d.tribe).length > 8 ? 'long' : ''}">${TRIBE_SHORT[d.tribe] ?? d.tribe}</div>${o.badge ?? ''}
+  <div class="tribe-plate ${(TRIBE_SHORT[d.tribe] ?? d.tribe).length > 8 && !d.allTribes ? 'long' : ''}">${d.allTribes ? 'ALL' : TRIBE_SHORT[d.tribe] ?? d.tribe}</div>${o.badge ?? ''}
   ${(u as { avenge?: string }).avenge ? `<div class="avenge-count" title="Avenge: friendly units died / needed"><i>⚔</i>${(u as { avenge?: string }).avenge}</div>` : ''}
   ${(() => { const c = (u as { note?: string }).note ?? (u.mem && (o.zone === "board" || o.zone === "combat" || o.zone === "hand") ? unitCounter(u as Unit) : null); return c ? `<div class="counter">${c}</div>` : ''; })()}
-  <div class="stat atk ${atk > baseAtk ? 'buffed' : ''}">${atk}</div>
-  <div class="stat hp ${hp > baseHp ? 'buffed' : hp < baseHp ? 'hurt' : ''}">${hp}</div>
+  <div class="stat atk ${atk !== baseAtk ? 'buffed' : ''}" data-base="${baseAtk}">${atk}</div>
+  <div class="stat hp ${hp > baseHp ? 'buffed' : hp < baseHp ? 'hurt' : ''}" data-base="${baseHp}">${hp}</div>
 </div>`;
 }
 
@@ -163,14 +163,15 @@ export function bigCardHtml(u: { cardId: string; golden: boolean; atk: number; h
   if (u.cardId === 'larva' && u.mem?.done) text += ' (Done!)';
   if (u.cardId === 'intern') text += ` (Sells for ${1 + (u.mem?.sellBonus ?? 0)} Gold)`;
   const kwExtra = u.kw.filter((k) => !d.keywords.includes(k)).map((k) => KW_ICON[k][1]);
-  return `<div class="bigcard t-${d.tribe} ${u.golden ? 'golden' : ''} ${extra}">
+  const bA = d.atk * (u.golden ? 2 : 1), bH = d.hp * (u.golden ? 2 : 1);
+  return `<div class="bigcard t-${d.tribe} ${d.allTribes ? 't-all' : ''} ${u.golden ? 'golden' : ''} ${extra}">
   <div class="art" style="background-image:url('${cardArt(u.cardId)}')"></div>
   <div class="tier" title="Tier ${d.tier}">${'★'.repeat(d.tier)}</div>
   <div class="name">${u.golden ? 'Golden ' : ''}${esc(d.name)}</div>
-  <div class="tribe"><span>${esc(TRIBE_NAMES[d.tribe] ?? d.tribe)}${d.token ? ' · Token' : ''}</span></div>
+  <div class="tribe"><span>${d.allTribes ? 'All Factions' : esc(TRIBE_NAMES[d.tribe] ?? d.tribe)}${d.token ? ' · Token' : ''}</span></div>
   <div class="text"><div>${text ? formatText(text) : kwExtra.length ? '' : '<i>No ability.</i>'}${kwExtra.length ? `${text ? '<br>' : ''}<i class="kw-extra">${kwExtra.join(', ')}</i>` : ''}</div></div>
-  <div class="stat atk">${u.atk}</div>
-  <div class="stat hp">${u.hp}</div>
+  <div class="stat atk ${u.atk !== bA ? 'buffed' : ''}">${u.atk}</div>
+  <div class="stat hp ${u.hp > bH ? 'buffed' : u.hp < bH ? 'hurt' : ''}">${u.hp}</div>
 </div>`;
 }
 

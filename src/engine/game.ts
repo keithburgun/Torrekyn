@@ -173,7 +173,7 @@ export function startTurn(g: GameState, p: Player) {
           u.mem.done = 1;
           const nu = makeUnit(g, id, true);
           gainCard(g, p, nu);
-          log(p, `Larva hatched ${displayName(nu)}!`);
+          log(p, `Slime hatched ${displayName(nu)}!`);
         }
       }
     });
@@ -209,7 +209,10 @@ export function rollShop(g: GameState, p: Player) {
     // Teched Up: no Tier 1 or 2 (a Tier 1-2 tavern still sees Tier 3)
     const teched = hasTrinket(p, 'healing_draught');
     const id = drawFromPool(g, (cid) => (teched ? def(cid).tier >= 3 && def(cid).tier <= Math.max(3, p.tier) : def(cid).tier <= p.tier));
-    if (id) p.shop.push(makeUnit(g, id));
+    if (!id) continue;
+    const u = makeUnit(g, id);
+    if (p.stuffieBonus && isTribe(u, 'kindred')) { u.atk += p.stuffieBonus; u.hp += p.stuffieBonus; } // Stuffie Magic
+    p.shop.push(u);
   }
 }
 
@@ -432,6 +435,7 @@ export function play(g: GameState, p: Player, handIdx: number, pos: number, targ
   p.hand.splice(handIdx, 1);
   pos = Math.max(0, Math.min(pos, p.board.length));
   p.board.splice(pos, 0, u);
+  if (u.cardId === 'owl') p.owlsSummoned = (p.owlsSummoned ?? 0) + 1;
   u.mem.pv = u.hp; // Health it had in hand doesn't count as gained (Peebnup Bubber)
   const target = targetUid !== undefined ? p.board.find((b) => b.uid === targetUid) : undefined;
   if (hasBattlecry(u.cardId)) { p.battlecryUnitsThisTurn = (p.battlecryUnitsThisTurn ?? 0) + 1; runBattlecry(g, p, u, target); }

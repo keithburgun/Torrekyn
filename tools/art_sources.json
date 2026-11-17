@@ -465,7 +465,7 @@
    ]
   },
   "witch": {
-   "src": "S/Potato/wizard_andromeda.png",
+   "src": "S/Potato/reaper.png",
    "px": true
   },
   "warlock": {
@@ -952,6 +952,18 @@
     0.5,
     0.86
    ]
+  },
+  "amalgam": {
+   "src": "S/Demons/garbage.png",
+   "px": true
+  },
+  "owl_summoner": {
+   "src": "S/Skelly/fanatic.png",
+   "px": true
+  },
+  "beast_vine": {
+   "src": "S/Potato/spore1.png",
+   "px": true
   }
  }
 }

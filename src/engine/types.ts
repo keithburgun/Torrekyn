@@ -102,6 +102,10 @@ export interface Player {
   /** Tinker: extra stats for Alcove units in the shop, for the rest of the game (name kept so saved games still load) */
   tinkerThisTier: number;
   bannerBonus: number;
+  /** Stuffie Magic: extra stats for Kindred units dealt into the Tavern */
+  stuffieBonus?: number;
+  /** Owls summoned (played or summoned in battle) this game */
+  owlsSummoned?: number;
   redGemBonus: number;
   battlecriesThisTurn: number;
   /** Battlecry units played this turn (Chaos) */

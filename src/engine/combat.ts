@@ -180,6 +180,11 @@ export class Combat {
     if (s.units.filter((u) => u.hp > 0).length >= CONFIG.boardSize) return null;
     const d = def(cardId);
     const m = golden ? 2 : 1;
+    if (cardId === 'owl') {
+      // Owls have +1/+2 for each Owl summoned this game: this one counts, and the Owls already fighting grow too
+      s.owner.owlsSummoned = (s.owner.owlsSummoned ?? 0) + 1;
+      for (const o of s.units) if (o.cardId === 'owl' && o.hp > 0) { o.atk += mult(o); o.hp += 2 * mult(o); }
+    }
     // a fresh unit gets the same "all your X units have…" bonuses as the ones you brought in
     const bonus = ownerBonus(s.owner, { cardId, golden } as Body);
     const cu = this.makeCU(s.idx, cardId, golden, d.atk * m + bonus.atk, d.hp * m + bonus.hp, d.keywords, null);

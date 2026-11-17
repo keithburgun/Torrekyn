@@ -23,7 +23,7 @@ function setup(seed: number) {
 
 const snap = (g: GameState, p: Player, extra: unknown = null) =>
   JSON.stringify([p.board, p.hand, p.trinketOffer, p.trinkets, p.discovers, p.quests, p.gold, p.maxGoldBonus, p.tribeAtk, p.gemBonus, p.redGemBonus,
-    p.bannerBonus, p.alcoveAtkThisTier, p.twinBonus, p.freeRerolls, p.upgradeCost, p.shop, p.overflow, extra]);
+    p.bannerBonus, p.alcoveAtkThisTier, p.twinBonus, p.stuffieBonus, p.freeRerolls, p.upgradeCost, p.shop, p.overflow, extra]);
 
 describe('every ability changes something', () => {
   const ids = CARDS.filter((c) => EFFECTS[c.id]).map((c) => c.id);
@@ -92,7 +92,7 @@ describe('every ability changes something', () => {
   }
 
   it('every card with ability text has an ability', () => {
-    const PASSIVE = new Set(['remember', 'vulnerability', 'root', 'larva', 'orange_ninja', 'pyro', 'treasure', 'warmech', 'gem_wizard', 'sarinee', 'tom_judith', 'horseman', 'shield_azure', 'roll_guard', 'ash', 'white_ninja', 'peebnup_bubber']);
+    const PASSIVE = new Set(['remember', 'vulnerability', 'root', 'larva', 'orange_ninja', 'pyro', 'treasure', 'warmech', 'gem_wizard', 'sarinee', 'tom_judith', 'horseman', 'shield_azure', 'roll_guard', 'ash', 'white_ninja', 'peebnup_bubber', 'owl']);
     const missing = CARDS.filter((c) => !c.token && c.text && !PASSIVE.has(c.id) && !Object.keys(EFFECTS[c.id] ?? {}).length).map((c) => c.id);
     expect(missing).toEqual([]);
     expect(def('skel').text).toBe('');

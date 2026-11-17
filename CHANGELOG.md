@@ -2,6 +2,9 @@
 
 Newest first. The version shows on the title screen.
 
+## 0.12.4 — 2026-11-17
+- Amalgam (T2 Neutral, all factions), Owl Summoner (T5 Cloister), Beast Vine (T5 Brambor, all factions). Owl reworked: 2/4, +1/+2 per Owl summoned. Stuffie Magic: Kindred in the Tavern +2/+2 for the rest of the game. Larva is now Slime. New Witch art. Modified stats are bright green.
+
 ## 0.12.3 — 2026-11-16
 - Battle intro: the Tavern clears and your opponent's army drops in one by one. Grief: Upgrading costs 2 less (Golden 4). Life: Start of Combat gain a Pink Gem. Pink Gem: Divine Shield and +1/+1 (twice for Kindred). Honeysuckle Tier 4. New Kindred: Peebnup Bubber (T5) and Elemental (T6).
 

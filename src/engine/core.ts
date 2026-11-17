@@ -126,6 +126,11 @@ export function ownerBonus(p: Player, b: Body): { atk: number; hp: number } {
   if (p.trinkets?.includes('bronze_compass') && isTribe(b, 'neverending')) atk += 12; // Bronze Compass
   if (isTribe(b, 'alcove')) atk += p.alcoveAtkThisTier ?? 0; // Scientist
   if (b.cardId === 'left_twinbot' || b.cardId === 'right_twinbot') { atk += p.twinBonus ?? 0; }
+  if (b.cardId === 'owl') {
+    // +1/+2 per Owl summoned this game (Golden: double)
+    atk += mult(b) * (p.owlsSummoned ?? 0);
+    hp += 2 * mult(b) * (p.owlsSummoned ?? 0);
+  }
   if (b.cardId === 'warmech') {
     // +4/+2 per Deathrattle triggered this game (Golden: double)
     atk += 4 * mult(b) * (p.deathrattlesGame ?? 0);

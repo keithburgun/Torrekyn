@@ -1261,7 +1261,7 @@ svg.aim-arrow.locked .aim-ring { opacity: 0.9; animation: aim-ring 0.9s ease-in-
 .bigcard .stat.atk { left: -18px; width: 72px; } .bigcard .stat.hp { right: -12px; box-shadow: 0 0 0 4px #fff; }
 #stage.portrait .card.large .stat { width: 66px; height: 66px; font-size: 40px; }
 #stage.portrait .card.small .stat { width: 52px; height: 52px; font-size: 32px; }
-.card .stat.buffed { color: #d9ffb0; }
+.card .stat.buffed, .bigcard .stat.buffed { color: #3dff5a; }
 .card .stat.hurt { color: #ffd2d2; text-decoration: none; }
 
 /* =====================================================================
@@ -1590,3 +1590,9 @@ svg.aim-arrow.locked .aim-ring { opacity: 0.9; animation: aim-ring 0.9s ease-in-
 #stage.portrait .trinketcard .pc { font-size: 34px !important; }
 .rating-adjust { align-items: center; }
 .rating-adjust .rating-val { min-width: 74px; text-align: center; font-family: var(--display); font-size: 22px; }
+
+/* units of every faction (Amalgam, Beast Vine, Pumpkin): a rainbow plate */
+.card.t-all .tribe-plate, .bigcard.t-all .tribe span {
+  background: linear-gradient(90deg, var(--t-kindred), var(--t-demons), var(--t-alcove), var(--t-cloister), var(--t-azure), var(--t-neverending));
+  color: #fff; text-shadow: 0 1px 0 rgba(0, 0, 0, 0.55), 0 0 3px rgba(0, 0, 0, 0.5); letter-spacing: 0.12em;
+}

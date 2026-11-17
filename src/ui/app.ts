@@ -1206,6 +1206,7 @@ export class App {
         const a = el?.querySelector('.stat.atk'); const h = el?.querySelector('.stat.hp');
         if (a && b.atk) a.textContent = String(Number(a.textContent) - b.atk);
         if (h && b.hp) h.textContent = String(Number(h.textContent) - b.hp);
+        restat(a); restat(h);
         // new keywords too (Tinker's Divine Shield etc.) appear when the effect lands
         for (const k of b.kw) { el?.classList.remove(`kw-${k}`); const sp = el?.querySelector(`.kws .kw-${k}`) as HTMLElement | null; if (sp) sp.style.visibility = 'hidden'; }
       }
@@ -1288,6 +1289,7 @@ export class App {
               const a = el.querySelector('.stat.atk'); const h = el.querySelector('.stat.hp');
               if (a && b.atk) { a.textContent = String(Number(a.textContent) + b.atk); a.classList.remove('stat-bump'); void (a as HTMLElement).offsetWidth; a.classList.add('stat-bump'); }
               if (h && b.hp) { h.textContent = String(Number(h.textContent) + b.hp); h.classList.remove('stat-bump'); void (h as HTMLElement).offsetWidth; h.classList.add('stat-bump'); }
+              restat(a); restat(h);
             }
             sfx.zap();
           }, dur + delay);
@@ -1930,4 +1932,15 @@ export class App {
     this.sel = null;
     this.commit();
   }
+}
+
+/** a stat badge's colour follows its number: bright green when it differs from the card's base stat (red tint: hurt) */
+function restat(el: Element | null | undefined) {
+  if (!el) return;
+  const base = Number((el as HTMLElement).dataset.base);
+  if (Number.isNaN(base)) return;
+  const v = Number(el.textContent);
+  const hp = el.classList.contains('hp');
+  el.classList.toggle('buffed', hp ? v > base : v !== base);
+  el.classList.toggle('hurt', hp && v < base);
 }

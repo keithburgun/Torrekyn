@@ -100,14 +100,12 @@ describe('cards rewritten without slots', () => {
     expect(gl.atk).toBe(5); // not kept
   });
 
-  it('Architect +2 Health and Owl gains a Tier 1 unit, each End of Turn', () => {
+  it('Architect +2 Health each End of Turn', () => {
     const { g, p } = setup();
     const ar = U(g, 'architect', 1, 1);
-    p.board = [ar, U(g, 'owl')];
+    p.board = [ar];
     endTurnEffects(g, p);
     expect(ar.hp).toBe(3);
-    expect(p.hand.length).toBe(1);
-    expect(def(p.hand[0].cardId).tier).toBe(1);
   });
 
   it('Patchwork gains +1/+4 whenever you gain a Kindred unit', () => {
@@ -525,5 +523,74 @@ describe('v0.12.3 Kindred', () => {
       // each of the 2 others gained 3 Health (Bannerlord's), so Peebnup gains 6 (Golden 12) on top of its own 3
       expect(at(c, f, 'peebnup_bubber')!.hp).toBe(8 + 3 + 6 * (golden ? 2 : 1));
     }
+  });
+});
+
+describe('v0.12.4 cards', () => {
+  it('Amalgam is a Tier 2 Neutral 3/2 of every faction; Beast Vine (Tier 5 Brambor 50/50) too', async () => {
+    const { isTribe } = await import('../src/engine/core');
+    const { g } = setup();
+    expect([def('amalgam').tier, def('amalgam').tribe, def('amalgam').atk, def('amalgam').hp]).toEqual([2, 'neutral', 3, 2]);
+    for (const t of ['kindred', 'brambor', 'cloister', 'alcove', 'demons', 'azure', 'neverending'] as const) {
+      expect(isTribe(U(g, 'amalgam'), t)).toBe(true);
+      expect(isTribe(U(g, 'beast_vine'), t)).toBe(true);
+    }
+    expect(def('larva').name).toBe('Slime');
+  });
+
+  it('Beast Vine: Battlecry and Deathrattle gain 2 random Gems (Golden: 4)', async () => {
+    const { GEMS } = await import('../src/engine/effects');
+    for (const golden of [false, true]) {
+      const { g, p, o } = setup();
+      p.hand = [U(g, 'beast_vine', undefined, undefined, golden)];
+      play(g, p, 0, 0);
+      expect(p.hand.filter((u) => GEMS.includes(u.cardId)).length).toBe(golden ? 4 : 2);
+      p.hand = [];
+      fight(g, p, o, [U(g, 'beast_vine', 1, 1, golden)], [U(g, 'skel', 5, 99)]).run();
+      expect(p.hand.filter((u) => GEMS.includes(u.cardId)).length).toBe(golden ? 4 : 2);
+    }
+  });
+
+  it('Stuffie Magic: Kindred units in the Tavern have +2/+2 from now on (Golden +4/+4)', async () => {
+    const { rollShop } = await import('../src/engine/game');
+    for (const golden of [false, true]) {
+      const { g, p } = setup();
+      p.tier = 6;
+      rollShop(g, p);
+      const before = p.shop.map((u) => [u.cardId, u.atk, u.hp] as const);
+      p.hand = [U(g, 'hug', undefined, undefined, golden)];
+      play(g, p, 0, 0);
+      const n = golden ? 4 : 2;
+      p.shop.forEach((u, i) => {
+        const k = def(u.cardId).tribe === 'kindred' || def(u.cardId).allTribes;
+        expect([u.atk, u.hp]).toEqual([before[i][1] + (k ? n : 0), before[i][2] + (k ? n : 0)]);
+      });
+      for (let r = 0; r < 20; r++) {
+        rollShop(g, p);
+        for (const u of p.shop) if (def(u.cardId).tribe === 'kindred') expect([u.atk, u.hp]).toEqual([def(u.cardId).atk + n, def(u.cardId).hp + n]);
+      }
+    }
+  });
+
+  it('Owl: 2/4, +1/+2 for each Owl summoned this game; Owl Summoner (Tier 5, Reborn) summons Owls', async () => {
+    const { effStats } = await import('../src/engine/core');
+    const { g, p, o } = setup();
+    expect([def('owl').atk, def('owl').hp]).toEqual([2, 4]);
+    const a = U(g, 'owl'), b = U(g, 'owl');
+    p.hand = [a, b];
+    play(g, p, 0, 0);
+    expect(effStats(p, a, 'board')).toMatchObject({ atk: 3, hp: 6 });
+    play(g, p, 0, 1);
+    expect(effStats(p, a, 'board')).toMatchObject({ atk: 4, hp: 8 });
+    // in battle: Owl Summoner (Reborn) dies twice and summons 2 Owls; the Owls in the fight grow with each
+    expect([def('owl_summoner').tier, def('owl_summoner').tribe, def('owl_summoner').keywords]).toEqual([5, 'cloister', ['reborn']]);
+    const own = U(g, 'owl_summoner', 1, 1); own.kw = ['reborn', 'taunt'];
+    const c = fight(g, p, o, [own, U(g, 'owl', 2, 4)], [U(g, 'skel', 1, 999)]);
+    c.run();
+    expect(p.owlsSummoned).toBe(4);
+    const seen = c.frames.flatMap((f) => f.sides[0]).filter((u) => u.cardId === 'owl');
+    expect(new Set(seen.map((u) => u.id)).size).toBe(3);
+    // the Owl brought in started at 4/8 (2 played Owls) and grew with each of the 2 summoned
+    expect(Math.max(...seen.map((u) => u.atk))).toBe(6);
   });
 });

@@ -342,7 +342,12 @@ export const EFFECTS: Record<string, Effect> = {
     onGain: (c, u) => { if (isTribe(u, 'kindred')) buff(c.self, c.m, 4 * c.m); },
   },
   hug: {
-    battlecry: (c) => buff(pick(c.g, c.p.hand.filter((u) => isTribe(u, 'kindred'))), 6 * c.m, 6 * c.m),
+    // Stuffie Magic: Kindred units in the Tavern have +2/+2 from now on (the ones there now, and every one dealt later)
+    battlecry: (c) => {
+      const n = 2 * c.m;
+      c.p.stuffieBonus = (c.p.stuffieBonus ?? 0) + n;
+      for (const u of c.p.shop) if (isTribe(u, 'kindred')) buff(u, n, n);
+    },
   },
   pink_gem: {
     // Divine Shield and +1/+1 (+1/+1 per improvement; Golden doubles); a Kindred unit gets the +1/+1 twice
@@ -508,8 +513,13 @@ export const EFFECTS: Record<string, Effect> = {
       }
     },
   },
-  owl: {
-    endTurn: (c) => { for (let i = 0; i < c.m; i++) gain(c, randomTier(c, 1)); },
+  owl: {}, // +1/+2 per Owl summoned this game: an aura (core.ts ownerBonus), counted in play() and Combat.spawn
+  owl_summoner: {
+    deathrattle: (c) => c.c.spawnMany(c.side, 'owl', c.m === 2, 1, c.pos),
+  },
+  beast_vine: {
+    battlecry: (c) => { for (let i = 0; i < 2 * c.m; i++) gain(c, pick(c.g, GEMS)); },
+    deathrattle: (c) => { for (let i = 0; i < 2 * c.m; i++) gain(c, pick(c.g, GEMS)); c.c.snap('trigger', { note: `Beast Vine: Gain ${2 * c.m} Gems` }); },
   },
   secret: {
     soc: (c) => { c.side.secrets.push(c.m === 2); },

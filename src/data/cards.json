@@ -402,8 +402,8 @@
    "tier": 2,
    "atk": 4,
    "hp": 4,
-   "text": "Battlecry: Give a random Kindred unit in your hand +6/+6.",
-   "goldenText": "Battlecry: Give a random Kindred unit in your hand +12/+12.",
+   "text": "Battlecry: Kindred units in the Tavern have +2/+2 for the rest of the game.",
+   "goldenText": "Battlecry: Kindred units in the Tavern have +4/+4 for the rest of the game.",
    "keywords": []
   },
   {
@@ -746,10 +746,10 @@
    "name": "Owl",
    "tribe": "cloister",
    "tier": 2,
-   "atk": 1,
-   "hp": 1,
-   "text": "End of Turn: Gain a random Tier 1 unit.",
-   "goldenText": "End of Turn: Gain two random Tier 1 units.",
+   "atk": 2,
+   "hp": 4,
+   "text": "Has +1/+2 for each Owl you've summoned this game.",
+   "goldenText": "Has +2/+4 for each Owl you've summoned this game.",
    "keywords": []
   },
   {
@@ -803,7 +803,7 @@
   },
   {
    "id": "larva",
-   "name": "Larva",
+   "name": "Slime",
    "tribe": "cloister",
    "tier": 4,
    "atk": 1,
@@ -1498,6 +1498,18 @@
    "keywords": []
   },
   {
+   "id": "amalgam",
+   "name": "Amalgam",
+   "tribe": "neutral",
+   "tier": 2,
+   "atk": 3,
+   "hp": 2,
+   "text": "",
+   "goldenText": "",
+   "keywords": [],
+   "allTribes": true
+  },
+  {
    "id": "adder",
    "name": "Adder",
    "tribe": "cloister",
@@ -1511,6 +1523,19 @@
    ]
   },
   {
+   "id": "owl_summoner",
+   "name": "Owl Summoner",
+   "tribe": "cloister",
+   "tier": 5,
+   "atk": 6,
+   "hp": 6,
+   "text": "Reborn. Deathrattle: Summon an Owl.",
+   "goldenText": "Reborn. Deathrattle: Summon a Golden Owl.",
+   "keywords": [
+    "reborn"
+   ]
+  },
+  {
    "id": "potato_lord",
    "name": "Potato Lord",
    "tribe": "brambor",
@@ -1520,6 +1545,18 @@
    "text": "Rally: Gain a random Tier 5 unit.",
    "goldenText": "Rally: Gain 2 random Tier 5 units.",
    "keywords": []
+  },
+  {
+   "id": "beast_vine",
+   "name": "Beast Vine",
+   "tribe": "brambor",
+   "tier": 5,
+   "atk": 50,
+   "hp": 50,
+   "text": "Battlecry and Deathrattle: Gain 2 random Gems.",
+   "goldenText": "Battlecry and Deathrattle: Gain 4 random Gems.",
+   "keywords": [],
+   "allTribes": true
   },
   {
    "id": "blue_dragon",
