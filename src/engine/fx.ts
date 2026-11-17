@@ -56,6 +56,7 @@ export const fxHooks: { heroProgress: (g: GameState, p: Player) => string } = { 
 
 let phase: FxPhase = 'shop';
 export const setFxPhase = (ph: FxPhase) => { phase = ph; };
+export const getFxPhase = () => phase;
 
 export const tracking = (g: GameState, p: Player) => p.human && !g.simulateAll;
 

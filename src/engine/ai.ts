@@ -9,7 +9,8 @@
 import { CONFIG, def, effStats, isTribe, rand, shuffle, tribeOf } from './core';
 import { Combat } from './combat';
 import { EFFECTS, GEMS, scoutTier } from './effects';
-import { buy, play, reroll, sell, upgrade, chooseDiscover, validTargets, move, toggleFreeze, handLocked, maxGoldFor } from './game';
+import { buy, play, reroll, sell, upgrade, chooseDiscover, validTargets, move, toggleFreeze, handLocked, maxGoldFor, startTurn, endTurnEffects } from './game';
+import { getFxPhase, setFxPhase } from './fx';
 import { buyCost, canUseHeroPower, pickTrinket, powerCost, powersOf, trinketDef, useHeroPower } from './heroes';
 import type { BotProfile, Discover, GameState, Player, Unit, Tribe } from './types';
 import cardValues from '../data/cardValues.json';
@@ -18,12 +19,12 @@ import cardValues from '../data/cardValues.json';
 const ABILITY = cardValues as unknown as Record<string, [number, number]>;
 
 /** every feature switch the bot knows */
-export const FEATURES = ['level', 'triples', 'tribe', 'discover', 'hero', 'freeze', 'value', 'econ', 'arrange', 'reroll', 'simbuy', 'spend', 'powerFirst', 'growth', 'hold', 'smartsell', 'place', 'hand'] as const;
+export const FEATURES = ['level', 'triples', 'tribe', 'discover', 'hero', 'freeze', 'value', 'econ', 'arrange', 'reroll', 'simbuy', 'spend', 'powerFirst', 'growth', 'hold', 'smartsell', 'place', 'hand', 'engine'] as const;
 export type Feature = (typeof FEATURES)[number];
 
 export const BASELINE: BotProfile = { noise: 0, blunder: 0, f: Object.fromEntries(FEATURES.map((k) => [k, false])) };
 /** features the Expert uses (the others were measured and didn't help: see DESIGN_NOTES "Bots") */
-const EXPERT_OFF: Feature[] = ['simbuy', 'powerFirst'];
+const EXPERT_OFF: Feature[] = ['simbuy', 'powerFirst', 'engine'];
 export const EXPERT: BotProfile = { noise: 0, blunder: 0, f: Object.fromEntries(FEATURES.map((k) => [k, !EXPERT_OFF.includes(k)])) };
 
 /** Hero Powers ranked by how well Expert bots did with them (800-game balance run), best first; for Abragail's picks */
@@ -32,7 +33,7 @@ const POWER_RANK = ['may_danaris', 'trevor_l', 'clover', 'andromeda_robin', 'ven
 const prof = (p: Player): BotProfile => p.bot ?? EXPERT;
 const on = (p: Player, k: Feature) => prof(p).f?.[k] ?? EXPERT.f![k] ?? false;
 /** tuning numbers, with the Expert's values as defaults */
-export const KNOBS: Record<string, number> = { valueK: 2.4, tierW: 3.5, atkW: 0.9, hpW: 0.7, lvl3: 4, lvl4: 6, lvl5: 8, cheap: 1, lowHp: 0, spare: 0, econK: 1.6, simOpps: 3, simN: 3, simShuffles: 2, rerollGold: 1, rerollBar: 1.15, simBuyK: 40, simBuyTop: 3, trip2: 60, trip1: 10, tribeW: 3, tribeTierW: 1, lazy: 0, keep: 0, growthK: 0.6, growthTurns: 5 };
+export const KNOBS: Record<string, number> = { valueK: 2.4, tierW: 3.5, atkW: 0.9, hpW: 0.7, lvl3: 4, lvl4: 6, lvl5: 8, cheap: 1, lowHp: 0, spare: 0, econK: 1.6, simOpps: 3, simN: 3, simShuffles: 2, rerollGold: 1, rerollBar: 1.15, simBuyK: 40, simBuyTop: 3, trip2: 60, trip1: 10, tribeW: 3, tribeTierW: 1, lazy: 0, keep: 0, growthK: 0.6, growthTurns: 5, engK: 0.5, engTurns: 5, engSeeds: 2, engTop: 4 };
 const knob = (p: Player, k: string) => prof(p).x?.[k] ?? EXPERT.x?.[k] ?? KNOBS[k];
 /** evaluation noise for this bot (uniform, symmetric) */
 const jitter = (g: GameState, p: Player, scale = 10) => ((prof(p).noise ?? 0) ? (rand(g) * 2 - 1) * (prof(p).noise ?? 0) * scale : 0);
@@ -236,7 +237,8 @@ function playHand(g: GameState, p: Player) {
     const [bu, bi] = ok.reduce((a, b) => (val(b[0]) > val(a[0]) ? b : a));
     if (p.board.length >= CONFIG.boardSize) {
       const worst = worstBoardIndex(p);
-      if (worst < 0 || val(bu) <= unitScore(p, p.board[worst], 'board')) {
+      const extra = on(p, 'engine') && worst >= 0 && !sellNow(p, bu) ? engineValue(g, p, bu) : 0;
+      if (worst < 0 || val(bu) + extra <= boardScore(p, p.board[worst])) {
         // nothing in hand beats the army; but a Gem played into a freed slot and sold again costs nothing extra,
         // so only when a swap was going to happen anyway (handled below)
         return;
@@ -264,12 +266,30 @@ function worstBoardIndex(p: Player): number {
   let ws = Infinity;
   p.board.forEach((u, i) => {
     if (u.mem.locked) return;
-    let s = unitScore(p, u, 'board');
+    let s = boardScore(p, u);
     // don't sell half of a triple
     if (on(p, 'triples') && !u.golden && [...p.board, ...p.hand].filter((x) => x.cardId === u.cardId && !x.golden).length >= 2) s += 15;
     if (s < ws) { ws = s; w = i; }
   });
   return w;
+}
+
+/** a unit's worth in the army: its score plus (lookahead bots, full army) what it keeps generating */
+const keepCache = new Map<string, number>();
+function boardScore(p: Player, u: Unit): number {
+  let s = unitScore(p, u, 'board');
+  const g = G;
+  if (g && on(p, 'engine') && p.board.length >= CONFIG.boardSize - 1) {
+    const key = `${p.id}:${g.round}:${u.uid}:${p.board.map((b) => `${b.uid}.${b.atk}.${b.hp}`).join(',')}`;
+    let v = keepCache.get(key);
+    if (v === undefined) {
+      if (keepCache.size > 2000) keepCache.clear();
+      v = keepValue(g, p, u);
+      keepCache.set(key, v);
+    }
+    s += v;
+  }
+  return s;
 }
 
 // ---------------- battle simulation (Expert positioning) ----------------
@@ -432,10 +452,19 @@ export function aiTakeTurn(g: GameState, p: Player) {
           scored.sort((a, b) => b.s - a.s);
         }
       }
+      // lookahead: the best few are played out over the next turns (engines that grow the army get their due)
+      if (on(p, 'engine') && !blunder && scored.length) {
+        for (const c of scored.slice(0, knob(p, 'engTop'))) {
+          const e = engineValue(g, p, p.shop[c.i]);
+          c.s += e;
+          c.raw += e;
+        }
+        scored.sort((a, b) => b.s - a.s);
+      }
       if (scored.length) { bi = scored[0].i; bs = scored[0].raw; }
       const full = p.board.length >= CONFIG.boardSize;
       const worst = worstBoardIndex(p);
-      const worstScore = worst >= 0 ? unitScore(p, p.board[worst], 'board') : -Infinity;
+      const worstScore = worst >= 0 ? boardScore(p, p.board[worst]) : -Infinity;
       // picky: with gold to spare, skip a shop unit that's clearly worse than the army's average and reroll instead
       let picky = false;
       if (on(p, 'reroll') && !blunder && bi >= 0 && p.board.length >= 4 && p.gold >= CONFIG.buyCost + CONFIG.rerollCost * knob(p, 'rerollGold')) {
@@ -511,3 +540,178 @@ export function aiChooseDiscover(g: GameState, p: Player, d: Discover): number {
   });
   return best;
 }
+
+// ---------------- lookahead: what a card does for the army over the next turns ----------------
+/**
+ * Battle values and stats only see the army as it is now. Good players build engines: units whose abilities keep
+ * growing the army turn after turn (and combos that multiply each other), whatever their printed stats. To see that,
+ * the bot plays the next turns out in a private copy of the game, with and without a card, and measures the stats
+ * the army GENERATES (beyond the printed stats of the cards in it): shop effects, End of Turn, battles (permanent
+ * gains), and the next turn's shopping with a simple, synergy-minded policy.
+ */
+interface Ledger { base: Map<number, number> }
+
+/** a private copy of the game for one player: their own state deep-copied, everything else shared but untouched */
+function sandbox(g: GameState, p: Player, seed: number): { g: GameState; p: Player } {
+  const pc = structuredClone({ ...p, log: [], history: [], lastOpponentBoard: [], lastFightBoard: [], ghost: undefined, fx: [] }) as Player;
+  pc.human = false;
+  pc.bot = { ...prof(p), f: { ...prof(p).f, engine: false, simbuy: false, arrange: false } };
+  const players = g.players.map((q) => (q === p ? pc : q));
+  const gc = { ...g, pool: { ...g.pool }, players, rng: seed, simulateAll: true, lastCombats: [] } as GameState;
+  return { g: gc, p: pc };
+}
+
+/** a unit's stats, minus what wears off next turn (Pink Gem and the like) */
+const statsOf = (p: Player, u: Unit, zone: 'board' | 'hand') => { const s = effStats(p, u, zone); return s.atk + s.hp - (u.mem.tmpAtk ?? 0) - (u.mem.tmpHp ?? 0); };
+const printed = (u: Unit) => (def(u.cardId).atk + def(u.cardId).hp) * (u.golden ? 2 : 1);
+
+function openLedger(p: Player): Ledger {
+  const base = new Map<number, number>();
+  for (const u of p.board) base.set(u.uid, statsOf(p, u, 'board'));
+  for (const u of p.hand) base.set(u.uid, statsOf(p, u, 'hand'));
+  return { base };
+}
+/** stats generated since the ledger opened: units still with you count what they've grown (new units: beyond their printed stats) */
+function generated(p: Player, L: Ledger): number {
+  let t = 0;
+  for (const u of p.board) t += statsOf(p, u, 'board') - (L.base.get(u.uid) ?? printed(u));
+  return t;
+}
+
+/** the tribe this army is built around (most units), for the sandbox's shopping */
+function mainTribe(p: Player): Tribe | undefined {
+  const n = new Map<Tribe, number>();
+  for (const u of p.board) { const t = tribeOf(u); if (t !== 'neutral') n.set(t, (n.get(t) ?? 0) + 1); }
+  let best: Tribe | undefined; let k = 0;
+  for (const [t, c] of n) if (c > k) { best = t; k = c; }
+  return p.favoriteTribe ?? best;
+}
+
+/** sandbox shopping: buy what fits the army (its tribe, triples, higher tiers), play it, swap out the smallest unit when full */
+function sandboxShop(g: GameState, p: Player, keep: Set<number>) {
+  const tribe = mainTribe(p);
+  for (let k = 0; k < 4; k++) {
+    if (!p.shop.length || p.gold < CONFIG.buyCost) break;
+    const want = (u: Unit) => def(u.cardId).tier * 3 + (tribe && isTribe(u, tribe) ? 8 : 0)
+      + ([...p.board, ...p.hand].some((x) => x.cardId === u.cardId && !x.golden) ? 6 : 0) + (u.atk + u.hp) * 0.05;
+    const i = p.shop.reduce((b, u, j) => (want(u) > want(p.shop[b]) ? j : b), 0);
+    if (p.gold < buyCost(p, p.shop[i].cardId) || !buy(g, p, i).ok) break;
+    while (p.discovers.length) chooseDiscover(g, p, 0);
+    for (let h = p.hand.length - 1; h >= 0; h--) {
+      if (handLocked(p, p.hand[h])) continue;
+      if (p.board.length >= CONFIG.boardSize) {
+        let w = -1; let ws = Infinity;
+        p.board.forEach((u, j) => { if (keep.has(u.uid) || u.mem.locked) return; const s = statsOf(p, u, 'board'); if (s < ws) { ws = s; w = j; } });
+        if (w < 0) break;
+        sell(g, p, w);
+        while (p.discovers.length) chooseDiscover(g, p, 0);
+      }
+      const hu = p.hand[h];
+      if (!hu) continue;
+      play(g, p, h, p.board.length, EFFECTS[hu.cardId]?.target ? bestTarget(g, p, hu) : undefined);
+      while (p.discovers.length) chooseDiscover(g, p, 0);
+    }
+  }
+}
+
+/** a battle in the sandbox against an army the bot has seen; permanent results (Remember, Deathrattle growth...) stay */
+function sandboxBattle(g: GameState, p: Player, opp: { owner: Player; board: Unit[]; tier: number } | undefined) {
+  if (!opp) return;
+  const c = new Combat(g, { p, board: p.board, tier: p.tier, persistent: true }, { p: opp.owner, board: opp.board, tier: opp.tier, persistent: false });
+  c.run();
+  for (const fn of c.sides[0].afterFns) fn();
+}
+
+/**
+ * Stats the army generates over this turn's end and the next turn, with `add` (bought now, played first) and/or
+ * without `remove`. Returns [generated by the end of this turn, generated over the next turn].
+ */
+function playOut(g: GameState, p: Player, seed: number, add?: Unit, remove?: number): [number, number] {
+  const phase = getFxPhase();
+  const pool = { ...g.pool };
+  const sb = sandbox(g, p, seed);
+  const sg = sb.g; const sp = sb.p;
+  const keep = new Set<number>();
+  try {
+    if (remove !== undefined) {
+      const i = sp.board.findIndex((u) => u.uid === remove);
+      if (i >= 0) sp.board.splice(i, 1);
+    }
+    const L = openLedger(sp);
+    if (add) {
+      // the card is in the copy's shop or hand already: take it from there
+      sp.shop = sp.shop.filter((x) => x.uid !== add.uid);
+      sp.hand = sp.hand.filter((x) => x.uid !== add.uid);
+      const u = structuredClone(add);
+      keep.add(u.uid);
+      if (sp.board.length >= CONFIG.boardSize) {
+        let w = -1; let ws = Infinity;
+        sp.board.forEach((b, j) => { const s = statsOf(sp, b, 'board'); if (s < ws) { ws = s; w = j; } });
+        if (w >= 0) sp.board.splice(w, 1);
+      }
+      sp.hand.push(u);
+      play(sg, sp, sp.hand.length - 1, sp.board.length, EFFECTS[u.cardId]?.target ? bestTarget(sg, sp, u) : undefined);
+      while (sp.discovers.length) chooseDiscover(sg, sp, 0);
+    }
+    const opps = field(g, p);
+    // the same luck in every play-out (with or without the card) at every step, so the difference is the card's doing
+    const luck = (k: number) => { sg.rng = (seed + k * 0x51ed27) | 0; };
+    luck(1); endTurnEffects(sg, sp);
+    luck(2); sandboxBattle(sg, sp, opps[0]);
+    const g1 = generated(sp, L);
+    luck(3); startTurn(sg, sp);
+    luck(4); sandboxShop(sg, sp, keep);
+    luck(5); endTurnEffects(sg, sp);
+    luck(6); sandboxBattle(sg, sp, opps[1] ?? opps[0]);
+    return [g1, generated(sp, L) - g1];
+  } catch {
+    return [0, 0];
+  } finally {
+    for (const id of Object.keys(g.pool)) g.pool[id] = pool[id];
+    setFxPhase(phase);
+  }
+}
+
+/** engine value (in unit-score points) of buying `u` now, compared with this army as it is */
+function engineValue(g: GameState, p: Player, u: Unit): number {
+  const seeds = knob(p, 'engSeeds');
+  const left = Math.max(1, Math.min(knob(p, 'engTurns'), 15 - g.round));
+  let d = 0;
+  for (let k = 0; k < seeds; k++) {
+    const seed = (g.rng ^ (k * 0x9e3779b1)) | 0;
+    const [a1, a2] = playOut(g, p, seed, u);
+    const [b1, b2] = baseOut(g, p, seed);
+    d += (a1 - b1) + (a2 - b2) * left;
+  }
+  return knob(p, 'engK') * 0.8 * (d / seeds);
+}
+
+/** the army's own play-out (no change), cached per board state */
+const baseCache = new Map<string, [number, number]>();
+function baseOut(g: GameState, p: Player, seed: number): [number, number] {
+  const key = `${p.id}:${g.round}:${seed}:${p.board.map((u) => `${u.uid}.${u.atk}.${u.hp}`).join(',')}`;
+  let v = baseCache.get(key);
+  if (!v) {
+    if (baseCache.size > 500) baseCache.clear();
+    v = playOut(g, p, seed);
+    baseCache.set(key, v);
+  }
+  return v;
+}
+
+/** engine value of a unit already in the army: what the army would lose without it */
+function keepValue(g: GameState, p: Player, u: Unit): number {
+  const seeds = knob(p, 'engSeeds');
+  const left = Math.max(1, Math.min(knob(p, 'engTurns'), 15 - g.round));
+  let d = 0;
+  for (let k = 0; k < seeds; k++) {
+    const seed = (g.rng ^ (k * 0x9e3779b1)) | 0;
+    const [a1, a2] = baseOut(g, p, seed);
+    const [b1, b2] = playOut(g, p, seed, undefined, u.uid);
+    d += (a1 - b1) + (a2 - b2) * left;
+  }
+  return knob(p, 'engK') * 0.8 * (d / seeds);
+}
+
+/** for tests and tools: a card's lookahead value for this player right now */
+export function engineValueForTest(g: GameState, p: Player, u: Unit): number { G = g; return engineValue(g, p, u); }

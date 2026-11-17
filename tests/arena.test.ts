@@ -45,7 +45,7 @@ describe.skipIf(!process.env.ARENA)('arena', () => {
     const A: BotProfile = process.env.ARENA_A ? JSON.parse(process.env.ARENA_A) : BASELINE;
     const B: BotProfile = process.env.ARENA_B ? JSON.parse(process.env.ARENA_B) : EXPERT;
     const games = Number(process.env.ARENA_GAMES ?? 600);
-    const r = arena([A, B], games);
+    const r = arena([A, B], games, Number(process.env.ARENA_SEED ?? 7000));
     const [a, b] = r.place;
     console.log(`games ${games} in ${(r.ms / 1000).toFixed(1)}s | A avg ${(a.sum / a.n).toFixed(2)} win ${(100 * a.wins / a.n).toFixed(1)}% | B avg ${(b.sum / b.n).toFixed(2)} win ${(100 * b.wins / b.n).toFixed(1)}% | B above A ${(100 * r.h2h[1][0] / (r.h2h[1][0] + r.h2h[0][1])).toFixed(1)}% => B is ${eloGap(r.h2h[1][0], r.h2h[0][1])} Elo vs A`);
   }, 3600000);

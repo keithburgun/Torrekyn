@@ -15,7 +15,7 @@ import eloData from '../data/personaElo.json';
 const UNLOCK: Record<Feature, number> = {
   triples: 0.2, hero: 0.25, discover: 0.3, tribe: 0.35, value: 0.4, freeze: 0.5, econ: 0.55, spend: 0.6, reroll: 0.65, arrange: 0.8,
   growth: 0.45, hold: 0.5, smartsell: 0.6, place: 0.7, hand: 0.3,
-  level: 0, simbuy: 2, powerFirst: 2, // level: everyone uses the leveling curve now; simbuy/powerFirst never (measured not to help)
+  level: 0, simbuy: 2, powerFirst: 2, engine: 2, // level: everyone uses the leveling curve now; simbuy/powerFirst never (measured not to help)
 };
 
 export function profileForSkill(skill: number): BotProfile {
