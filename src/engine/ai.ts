@@ -19,12 +19,12 @@ import cardValues from '../data/cardValues.json';
 const ABILITY = cardValues as unknown as Record<string, [number, number]>;
 
 /** every feature switch the bot knows */
-export const FEATURES = ['level', 'triples', 'tribe', 'discover', 'hero', 'freeze', 'value', 'econ', 'arrange', 'reroll', 'simbuy', 'spend', 'powerFirst', 'growth', 'hold', 'smartsell', 'place', 'hand', 'engine'] as const;
+export const FEATURES = ['level', 'triples', 'tribe', 'discover', 'hero', 'freeze', 'value', 'econ', 'arrange', 'reroll', 'simbuy', 'spend', 'powerFirst', 'growth', 'hold', 'smartsell', 'place', 'hand', 'engine', 'plans'] as const;
 export type Feature = (typeof FEATURES)[number];
 
 export const BASELINE: BotProfile = { noise: 0, blunder: 0, f: Object.fromEntries(FEATURES.map((k) => [k, false])) };
 /** features the Expert uses (the others were measured and didn't help: see DESIGN_NOTES "Bots") */
-const EXPERT_OFF: Feature[] = ['simbuy', 'powerFirst', 'engine'];
+const EXPERT_OFF: Feature[] = ['simbuy', 'powerFirst', 'engine', 'plans'];
 export const EXPERT: BotProfile = { noise: 0, blunder: 0, f: Object.fromEntries(FEATURES.map((k) => [k, !EXPERT_OFF.includes(k)])) };
 
 /** Hero Powers ranked by how well Expert bots did with them (800-game balance run), best first; for Abragail's picks */
@@ -33,7 +33,7 @@ const POWER_RANK = ['may_danaris', 'trevor_l', 'clover', 'andromeda_robin', 'ven
 const prof = (p: Player): BotProfile => p.bot ?? EXPERT;
 const on = (p: Player, k: Feature) => prof(p).f?.[k] ?? EXPERT.f![k] ?? false;
 /** tuning numbers, with the Expert's values as defaults */
-export const KNOBS: Record<string, number> = { valueK: 2.4, tierW: 3.5, atkW: 0.9, hpW: 0.7, lvl3: 4, lvl4: 6, lvl5: 8, cheap: 1, lowHp: 0, spare: 0, econK: 1.6, simOpps: 3, simN: 3, simShuffles: 2, rerollGold: 1, rerollBar: 1.15, simBuyK: 40, simBuyTop: 3, trip2: 60, trip1: 10, tribeW: 3, tribeTierW: 1, lazy: 0, keep: 0, growthK: 0.6, growthTurns: 5, engK: 0.5, engTurns: 5, engSeeds: 2, engTop: 4 };
+export const KNOBS: Record<string, number> = { valueK: 2.4, tierW: 3.5, atkW: 0.9, hpW: 0.7, lvl3: 4, lvl4: 6, lvl5: 8, cheap: 1, lowHp: 0, spare: 0, econK: 1.6, simOpps: 3, simN: 3, simShuffles: 2, rerollGold: 1, rerollBar: 1.15, simBuyK: 40, simBuyTop: 3, trip2: 60, trip1: 10, tribeW: 3, tribeTierW: 1, lazy: 0, keep: 0, growthK: 0.6, growthTurns: 5, engK: 0.5, engTurns: 5, engSeeds: 2, engTop: 4, planPiece: 30, planTier: 2, planFuel: 8, planCommit: 2, planHunt: 3 };
 const knob = (p: Player, k: string) => prof(p).x?.[k] ?? EXPERT.x?.[k] ?? KNOBS[k];
 /** evaluation noise for this bot (uniform, symmetric) */
 const jitter = (g: GameState, p: Player, scale = 10) => ((prof(p).noise ?? 0) ? (rand(g) * 2 - 1) * (prof(p).noise ?? 0) * scale : 0);
@@ -88,6 +88,7 @@ export function unitScore(p: Player, u: Unit, zone: 'board' | 'hand' | 'shop' = 
   }
   const gg = g ?? G;
   if (gg && on(p, 'growth')) s += growthScore(gg, p, u);
+  if (on(p, 'plans')) s += planBonus(p, u);
   // Abandon eats the unit on its left every turn: worth less than its stats suggest
   if (on(p, 'growth') && u.cardId === 'abandon') s -= 10;
   const fav = p.favoriteTribe;
@@ -151,6 +152,11 @@ function wantsLevel(g: GameState, p: Player): boolean {
 function bestTarget(g: GameState, p: Player, u: Unit): number | undefined {
   const cands = validTargets(p, u.cardId).filter((b) => b !== u);
   if (!cands.length) return undefined;
+  // a plan with a carry: every buff goes on it
+  if (on(p, 'plans') && BUFF_GEMS.includes(u.cardId)) {
+    const c = carryOf(p);
+    if (c && cands.includes(c)) return c.uid;
+  }
   const best = (xs: Unit[], f: (b: Unit) => number) => xs.reduce((a, b) => (f(b) > f(a) ? b : a));
   if (u.cardId === 'exploit') {
     const worst = cands.reduce((a, b) => (unitScore(p, a) < unitScore(p, b) ? a : b));
@@ -426,8 +432,10 @@ export function aiTakeTurn(g: GameState, p: Player) {
     }
   }
 
+  let hunts = 0;
   for (let guard = 0; guard < 30; guard++) {
     chooseFavorite(g, p);
+    if (on(p, 'plans')) updatePlan(p);
     playHand(g, p);
     // beginners sometimes just stop shopping
     if (guard > 0 && rand(g) < knob(p, 'lazy')) break;
@@ -471,6 +479,12 @@ export function aiTakeTurn(g: GameState, p: Player) {
         const avg = p.board.reduce((t, u) => t + unitScore(p, u, 'board'), 0) / p.board.length;
         picky = bs < avg * knob(p, 'rerollBar');
       }
+      // a committed plan hunts its missing pieces: no piece or fuel in the Tavern and gold to spare, look again
+      if (on(p, 'plans') && !blunder && p.plan && bi >= 0 && hunts < knob(p, 'planHunt') && missingPieces(p).length
+        && p.gold >= CONFIG.buyCost + CONFIG.rerollCost && !p.shop.some((u) => planBonus(p, u) > 0)) {
+        picky = true;
+        hunts++;
+      }
       if (bi >= 0 && !picky && (!full || bs > worstScore + 4 + knob(p, 'keep')) && p.hand.length < CONFIG.handSize) {
         buy(g, p, bi);
         continue;
@@ -495,11 +509,12 @@ export function aiTakeTurn(g: GameState, p: Player) {
   }
   playHand(g, p);
   if (!blunder && !(on(p, 'arrange') && arrangeBySim(g, p))) arrange(p);
+  if (on(p, 'plans')) carryLeft(p);
   if (on(p, 'place')) placeAbandon(p);
   // keep a shop worth coming back to
   if (on(p, 'freeze') && !p.frozen && p.shop.some((u) => {
     const copies = [...p.board, ...p.hand].filter((x) => x.cardId === u.cardId && !x.golden).length;
-    return copies >= 2 || (copies === 1 && def(u.cardId).tier >= 3);
+    return copies >= 2 || (copies === 1 && def(u.cardId).tier >= 3) || (on(p, 'plans') && missingPieces(p).includes(u.cardId));
   })) toggleFreeze(p);
 }
 
@@ -730,3 +745,81 @@ function keepValue(g: GameState, p: Player, u: Unit): number {
 
 /** for tests and tools: a card's lookahead value for this player right now */
 export function engineValueForTest(g: GameState, p: Player, u: Unit): number { G = g; return engineValue(g, p, u); }
+
+// ---------------- plans: combos worth building ----------------
+/**
+ * Combos that can snowball. A bot doesn't plan from the start: once it holds 2 different pieces of one (planCommit),
+ * it commits. From then on the plan's pieces are worth a lot more (to buy and to keep), its fuel a bit more, and
+ * when the plan has a carry, the bot puts it left-most and spends its buff Gems on it.
+ */
+interface Plan {
+  id: string;
+  pieces: string[];
+  /** cards (or any card passing the test) that feed the plan */
+  fuel?: (id: string) => boolean;
+  /** units the plan's buffs should be piled on (left-most), best first */
+  carry?: string[];
+}
+const has = (id: string, hook: keyof (typeof EFFECTS)[string]) => !!EFFECTS[id]?.[hook];
+export const PLANS: Plan[] = [
+  { id: 'red_gems', pieces: ['purveyor', 'jeweler', 'gem_wizard', 'broken_land', 'invisible_hand'], fuel: (id) => id === 'red_gem' || id === 'sarinee' },
+  { id: 'potato_gems', pieces: ['andromeda_robin', 'broken_land', 'organizer', 'farmer'], fuel: (id) => id === 'ancient_name_brambor' || id === 'sarinee' || id === 'peebnup_bubber' },
+  { id: 'peebnup', pieces: ['peebnup_bubber', 'andromeda_robin', 'therapist', 'architect'], fuel: (id) => ['tourmaline', 'ancient_name_brambor', 'sarinee', 'builder'].includes(id), carry: ['peebnup_bubber'] },
+  { id: 'battlecries', pieces: ['chaos', 'aerial_drone', 'commitment', 'returner'], fuel: (id) => has(id, 'battlecry') || id === 'sarinee', carry: ['barton', 'chosen_name'] },
+  { id: 'doubler', pieces: ['barton', 'chosen_name', 'vulnerability', 'mod'], fuel: (id) => BUFF_GEMS.includes(id) || id === 'chaos', carry: ['barton', 'chosen_name'] },
+  { id: 'deathrattles', pieces: ['warmech', 'tom_judith', 'vampire', 'scientist', 'necromancer'], fuel: (id) => has(id, 'deathrattle') },
+  { id: 'owls', pieces: ['owl', 'owl_summoner', 'tom_judith', 'shadow_place'] },
+  { id: 'shields', pieces: ['ocean_sky', 'time_cannot_destroy', 'blue_dragon', 'royal_guard', 'message'], fuel: (id) => def(id).keywords.includes('divineShield') || id === 'pink_gem' },
+  { id: 'neverending', pieces: ['ashlie', 'romance', 'bramble', 'necromancer', 'abandon'], fuel: (id) => def(id).tribe === 'neverending' || id === 'sarinee' },
+  { id: 'sell_loop', pieces: ['elemental', 'hug'], fuel: (id) => def(id).tribe === 'kindred' },
+];
+/** Gems that buff one unit (worth piling on a carry) */
+const BUFF_GEMS = ['tourmaline', 'purple_gem', 'pink_gem', 'green_gem'];
+
+const planOf = (p: Player) => PLANS.find((x) => x.id === p.plan);
+
+/** commit once 2 different pieces of a plan are in the army or hand (the one with the most pieces wins) */
+function updatePlan(p: Player) {
+  if (p.plan) return;
+  const owned = new Set([...p.board, ...p.hand].map((u) => u.cardId));
+  let best: Plan | undefined;
+  let n = 0;
+  for (const pl of PLANS) {
+    const k = pl.pieces.filter((id) => owned.has(id)).length;
+    if (k > n) { n = k; best = pl; }
+  }
+  if (best && n >= knob(p, 'planCommit')) p.plan = best.id;
+}
+
+function planBonus(p: Player, u: Unit): number {
+  const pl = planOf(p);
+  if (!pl) return 0;
+  if (pl.pieces.includes(u.cardId)) return knob(p, 'planPiece') + knob(p, 'planTier') * def(u.cardId).tier;
+  if (pl.fuel?.(u.cardId)) return knob(p, 'planFuel');
+  return 0;
+}
+
+function carryOf(p: Player): Unit | undefined {
+  const pl = planOf(p);
+  if (!pl?.carry) return undefined;
+  for (const id of pl.carry) {
+    const u = p.board.find((b) => b.cardId === id);
+    if (u) return u;
+  }
+  return undefined;
+}
+
+function carryLeft(p: Player) {
+  const c = carryOf(p);
+  if (!c || p.board.some((u) => u.mem.locked)) return;
+  const i = p.board.indexOf(c);
+  if (i > 0) move(p, i, 0);
+}
+
+/** the plan's pieces not yet in the army or hand that the Tavern can offer at this tier */
+function missingPieces(p: Player): string[] {
+  const pl = planOf(p);
+  if (!pl) return [];
+  const owned = new Set([...p.board, ...p.hand].map((u) => u.cardId));
+  return pl.pieces.filter((id) => !owned.has(id) && def(id).tier <= p.tier);
+}

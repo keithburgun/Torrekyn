@@ -124,6 +124,8 @@ export interface Player {
   lastFightBoard?: Unit[];
   nextOpponent: number | null;
   favoriteTribe?: Tribe;
+  /** bots: the combo this bot has committed to (ai.ts PLANS) */
+  plan?: string;
   hero?: string;
   /** hero powers you have (normally just your hero's; Abragail swaps hers for two others) */
   powers: string[];
