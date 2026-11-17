@@ -443,7 +443,14 @@ export class App {
     </div>`;
   }
 
+  /**
+   * The player list as it stood when you pressed Begin Battle. Every battle of the round is already decided
+   * by then, but the list keeps showing the old standings until yours has played out and you're back in the shop.
+   */
+  private lbFrozen: string | null = null;
+
   leaderboardHtml() {
+    if (this.lbFrozen) return this.lbFrozen;
     const g = this.g!;
     const order = [...g.players].sort((a, b) => (b.alive ? 1 : 0) - (a.alive ? 1 : 0) || b.health - a.health || a.placement - b.placement);
     if (L.portrait) {
@@ -1461,6 +1468,7 @@ export class App {
 
   newGame() {
     this.seen = null;
+    this.lbFrozen = null;
     this.lastRating = null;
     this.g = newGame((Math.random() * 2 ** 31) | 0, 'You', undefined, { rating: getRating().rating });
     this.sel = null;
@@ -1489,6 +1497,7 @@ export class App {
     const g = loadSave();
     if (!g) return this.newGame();
     this.g = g;
+    this.lbFrozen = null;
     this.screen = g.phase === 'hero' ? 'hero' : g.phase === 'over' ? 'over' : 'shop';
     this.render();
   }
@@ -1518,6 +1527,7 @@ export class App {
     this.targeting = null;
     const g = this.g!;
     const round = g.round;
+    this.lbFrozen = this.leaderboardHtml();
     const results = endTurn(g);
     save(g);
     // end-of-turn effects play on the shop before the battle; the rest wait until you're back
@@ -1537,6 +1547,7 @@ export class App {
     const p = this.me;
     const mine = results.find((r) => r.a === 0 || r.b === 0);
     if (!mine) {
+      this.lbFrozen = null;
       this.screen = g.phase === 'over' ? 'over' : 'shop';
       if (g.phase === 'over') this.gameEnded(g);
       return this.commit();
@@ -1583,6 +1594,7 @@ export class App {
     this.combat = new CombatPlayer(this.stage, g, mine, meSide, round, () => {
       this.combat = null;
       this.battle = null;
+      this.lbFrozen = null; // back in the shop: now the list catches up with every battle of the round
       const last = mine.frames[mine.frames.length - 1];
       recordCombat(g, {
         won: mine.winner === meSide, lost: mine.winner === 1 - meSide, tie: mine.winner === -1, damage: mine.damage,

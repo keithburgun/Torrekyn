@@ -2,6 +2,9 @@
 
 Newest first. The version shows on the title screen.
 
+## 0.12.6 — 2026-11-17
+- The player list keeps showing the standings from before the battle while yours plays; other battles' results (and eliminations) appear once you're back in the shop.
+
 ## 0.12.5 — 2026-11-17
 - Pink Gem: +6/+6 and Divine Shield until next turn (twice for Kindred). Tank and Sickle: the units next to the target are hit at the same moment as the target. New triple animation: the card arrives in your hand, then the three copies spin together, turn white and become the Golden card. Bots: re-measured card values.
 
