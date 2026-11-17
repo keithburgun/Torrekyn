@@ -118,7 +118,7 @@ def main():
     style_sheet(wt, ['Tribe', 'Tier', 'Card Name', 'Attack', 'Health', 'Art', 'Card ID', 'Art source', 'Crop (x, y, size)'], [18, 6, 20, 8, 8, 17, 16, 46, 16])
     r = 2
     for c in cards:
-        if not c.get('token'):
+        if not c.get('token') or c.get('hidden'):
             continue
         spec = src['cards'].get(c['id'])
         for i, v in enumerate([TRIBE_NAME[c['tribe']], c['tier'], c['name'], c['atk'], c['hp'], None, c['id'], where(spec), crop_text(spec)], 1):

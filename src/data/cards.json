@@ -1580,6 +1580,19 @@
    "goldenText": "",
    "keywords": [],
    "token": true
+  },
+  {
+   "id": "plain",
+   "name": "Plain",
+   "tribe": "neutral",
+   "tier": 1,
+   "atk": 1,
+   "hp": 1,
+   "text": "",
+   "goldenText": "",
+   "keywords": [],
+   "token": true,
+   "hidden": true
   }
  ]
 }
