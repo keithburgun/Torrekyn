@@ -2,6 +2,9 @@
 
 Newest first. The version shows on the title screen.
 
+## 0.12.9 — 2026-11-17
+- Bots get +X/+X on their units in hand and army at every End of Turn, scaled to your rating: +4/+4 at 1000, +8/+8 at 1250, +12/+12 at 1500 and up.
+
 ## 0.12.8 — 2026-11-17
 - Golden Light: When this kills a unit, gain a random Tier 5 unit (Golden: 2). New art.
 

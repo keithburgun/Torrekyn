@@ -639,3 +639,19 @@ describe('Golden Light', () => {
     }
   });
 });
+
+describe('bot bonus', () => {
+  it('bots get +X/+X at End of Turn by your rating (+4 at 1000, +8 at 1250, +12 at 1500+); none unrated or for you', async () => {
+    const { botBonusFor, newGame, endTurnEffects } = await import('../src/engine/game');
+    expect([700, 875, 1000, 1125, 1250, 1500, 1800].map(botBonusFor)).toEqual([0, 2, 4, 6, 8, 12, 12]);
+    for (const rating of [undefined, 1250]) {
+      const g = newGame(5, 'You', undefined, rating === undefined ? {} : { rating });
+      const bot = g.players[1], me = g.players[0];
+      const mk = (id: string) => ({ uid: g.nextUid++, cardId: id, golden: false, atk: 2, hp: 2, kw: [], mem: {} });
+      bot.board = [mk('ash')]; bot.hand = [mk('ash')]; me.board = [mk('ash')];
+      endTurnEffects(g, bot); endTurnEffects(g, me);
+      const n = rating ? 8 : 0;
+      expect([bot.board[0].atk, bot.hand[0].hp, me.board[0].atk]).toEqual([2 + n, 2 + n, 2]);
+    }
+  });
+});

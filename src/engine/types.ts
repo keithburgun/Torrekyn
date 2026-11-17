@@ -214,6 +214,8 @@ export interface CombatResult {
 
 export interface GameState {
   version: number;
+  /** the human's rating when the game began (matchmaking; bots' End of Turn bonus) */
+  rating?: number;
   seed: number;
   rng: number;
   round: number;

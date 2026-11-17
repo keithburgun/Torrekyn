@@ -28,7 +28,7 @@ export function newPlayer(id: number, name: string, human: boolean, avatar: numb
 export function newGame(seed: number, humanName = 'You', tribes?: Tribe[], opts: { rating?: number } = {}): GameState {
   const g: GameState = {
     version: SAVE_VERSION, seed, rng: seed | 0, round: 0, phase: 'shop', players: [], pool: {},
-    tribes: [], nextUid: 1, lastCombats: [], deadOrder: [],
+    tribes: [], nextUid: 1, lastCombats: [], deadOrder: [], rating: opts.rating,
   };
   g.tribes = tribes ?? sample(g, ALL_TRIBES, CONFIG.tribesPerGame);
   g.players.push(newPlayer(0, humanName, true, 0));
@@ -544,6 +544,27 @@ export function endTurnEffects(g: GameState, p: Player) {
     }
   }
   heroEndTurn(g, p);
+  botBonus(g, p);
+}
+
+/**
+ * Bots cheat, scaled to your rating: every End of Turn their units in hand and army get +X/+X.
+ * Rating 1000: +4/+4, 1250: +8/+8, 1500 and up: +12/+12 (in between, in proportion; nothing at 750 or below).
+ * Only in rated games (a rating was given), so test and balance simulations play fair.
+ */
+export function botBonusFor(rating: number): number {
+  const x = rating <= 1000 ? 4 * (rating - 750) / 250 : 4 + 4 * (rating - 1000) / 250;
+  return Math.max(0, Math.min(12, Math.round(x)));
+}
+function botBonus(g: GameState, p: Player) {
+  if (p.human || g.rating === undefined) return;
+  const n = botBonusFor(g.rating);
+  if (!n) return;
+  for (const u of [...p.board, ...p.hand]) {
+    u.atk += n;
+    u.hp += n;
+    u.mem.pv = u.hp; // not a Health gain for Peebnup Bubber to copy
+  }
 }
 
 /** Human pressed End Turn: bots take their turns, combats are fought, next round starts. */
