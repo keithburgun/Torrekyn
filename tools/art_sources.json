@@ -682,12 +682,8 @@
    ]
   },
   "robot_boy": {
-   "src": "P/robotboy.png",
-   "crop": [
-    0.5,
-    0.45,
-    1.0
-   ]
+   "src": "X/minionfactory.png",
+   "px": true
   },
   "scientist": {
    "src": "C/december.png",
@@ -1008,6 +1004,10 @@
     0.45,
     1.0
    ]
+  },
+  "orbo_pet": {
+   "src": "X/robot-bomb.png",
+   "px": true
   }
  }
 }

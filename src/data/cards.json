@@ -959,7 +959,7 @@
   },
   {
    "id": "robot_boy",
-   "name": "Robot Boy",
+   "name": "Factory Bot",
    "tribe": "alcove",
    "tier": 4,
    "atk": 20,
@@ -1603,6 +1603,22 @@
    "hp": 1,
    "text": "End of Turn: Gain a random Neutral unit of any Tier.",
    "goldenText": "End of Turn: Gain 2 random Neutral units of any Tier.",
+   "keywords": [
+    "venomous"
+   ],
+   "token": true,
+   "allTribes": true,
+   "hidden": true
+  },
+  {
+   "id": "orbo_pet",
+   "name": "Orbo Pet",
+   "tribe": "alcove",
+   "tier": 1,
+   "atk": 1,
+   "hp": 1,
+   "text": "",
+   "goldenText": "",
    "keywords": [
     "venomous"
    ],

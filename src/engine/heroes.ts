@@ -235,8 +235,8 @@ export const HEROES: HeroDef[] = [
   },
   {
     id: 'robot_boy_hero', name: 'Robot Boy', title: 'A real-life robot boy', power: "I'm Robot Boy", avatar: 16, health: 25, passive: true,
-    text: 'Start the game with a 1/1 Robot Boy with Venomous and every tribe.',
-    onGain: (g, p) => { gainNew(g, p, 'robot_boy_buddy'); },
+    text: 'Start the game with a 1/1 Orbo Pet with Venomous and every tribe.',
+    onGain: (g, p) => { gainNew(g, p, 'orbo_pet'); },
   },
   {
     id: 'zara', name: 'Zara', title: 'Student of healing magic', power: 'Read the Material', avatar: 17, health: 25, passive: true,

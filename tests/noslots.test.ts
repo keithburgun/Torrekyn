@@ -684,12 +684,12 @@ describe('new heroes (v0.12.11)', () => {
     expect(p.upgradeCost).toBe(4);
   });
 
-  it('Robot Boy: starts with a 1/1 Venomous Robot Boy of every tribe', async () => {
+  it('Robot Boy: starts with a 1/1 Venomous Orbo Pet of every tribe', async () => {
     const { gainPower } = await import('../src/engine/heroes');
     const { isTribe } = await import('../src/engine/core');
     const { g, p } = setup();
     gainPower(g, p, 'robot_boy_hero');
-    const rb = [...p.hand, ...p.board].find((u) => u.cardId === 'robot_boy_buddy')!;
+    const rb = [...p.hand, ...p.board].find((u) => u.cardId === 'orbo_pet')!;
     expect([rb.atk, rb.hp, rb.kw]).toEqual([1, 1, ['venomous']]);
     expect(isTribe(rb, 'kindred') && isTribe(rb, 'demons')).toBe(true);
   });

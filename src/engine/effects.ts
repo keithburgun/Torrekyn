@@ -639,7 +639,7 @@ export const EFFECTS: Record<string, Effect> = {
       for (let i = 0; i < c.m; i++) gain(c, drawFromPool(c.g, (id) => def(id).tribe === 'neutral')); // any Tier, Tier 6 included
     },
   },
-  // Robot Boy (hero)'s own Robot Boy: the same ability, as a 1/1 with Venomous and every tribe
+  // the Robot Boy hero's first token (games saved before Orbo Pet replaced it)
   robot_boy_buddy: {
     endTurn: (c) => {
       for (let i = 0; i < c.m; i++) gain(c, drawFromPool(c.g, (id) => def(id).tribe === 'neutral'));
