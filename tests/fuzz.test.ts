@@ -6,7 +6,7 @@ const it = (name: string, fn: () => void, t?: number) => (/full games/.test(name
 import { newGame, selectHero, endTurn } from '../src/engine/game';
 import { CARDS, CONFIG, makeUnit, def } from '../src/engine/core';
 import { runCombat } from '../src/engine/combat';
-import { HEROES } from '../src/engine/heroes';
+import { HEROES, pickTrinket, trinketDef } from '../src/engine/heroes';
 import { profileForSkill } from '../src/engine/personas';
 import type { GameState, Player, Unit } from '../src/engine/types';
 
@@ -50,6 +50,7 @@ it('fuzz full games', () => {
   const N = Number(process.env.FUZZ ?? 120);
   let rounds = 0, stuck = 0, errors = 0;
   const heroCount = new Map<string, number>();
+  const trinketsSeen = new Set<string>();
   for (let s = 0; s < N; s++) {
     const g = newGame(900000 + s * 7);
     g.simulateAll = true;
@@ -58,7 +59,16 @@ it('fuzz full games', () => {
     for (const p of g.players) { p.bot = { ...expert, ...(s % 3 === 0 ? { tribe: g.tribes[s % 4] } : {}) }; heroCount.set(p.hero ?? '?', (heroCount.get(p.hero ?? '?') ?? 0) + 1); }
     let guard = 0;
     try {
-      while (g.phase !== 'over' && guard++ < 80) { endTurn(g); check(g); rounds++; }
+      while (g.phase !== 'over' && guard++ < 80) {
+        // half the time players take a random trinket from their offer (bots alone only buy the priciest)
+        for (const p of g.players) if (p.alive && p.trinketOffer && (s + g.round) % 2 === 0) {
+          const id = p.trinketOffer[(s * 7 + p.id) % p.trinketOffer.length];
+          p.gold = Math.max(p.gold, trinketDef(id).cost);
+          pickTrinket(g, p, id);
+          trinketsSeen.add(id);
+        }
+        endTurn(g); check(g); rounds++;
+      }
       if (g.phase !== 'over') stuck++;
     } catch (e) {
       errors++;
@@ -67,6 +77,7 @@ it('fuzz full games', () => {
   }
   console.log(`games ${N}, rounds ${rounds}, stuck ${stuck}, errors ${errors}`);
   console.log('heroes seen', [...heroCount].map(([h, n]) => `${h}:${n}`).join(' '), 'missing', HEROES.filter((h) => !heroCount.has(h.id)).map((h) => h.id));
+  console.log('trinkets taken at random', trinketsSeen.size);
   console.log([...problems].sort((a, b) => b[1] - a[1]).map(([k, n]) => `${n}x ${k}`).slice(0, 60).join('\n'));
 }, 3600000);
 

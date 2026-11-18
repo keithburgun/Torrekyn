@@ -28,6 +28,8 @@ const EXPERT_OFF: Feature[] = ['simbuy', 'powerFirst', 'engine', 'plans'];
 export const EXPERT: BotProfile = { noise: 0, blunder: 0, f: Object.fromEntries(FEATURES.map((k) => [k, !EXPERT_OFF.includes(k)])) };
 
 /** Hero Powers ranked by how well Expert bots did with them (800-game balance run), best first; for Abragail's picks */
+/** active hero powers whose payoff is Gold right now */
+const GOLD_POWERS = ['oren_bark'];
 const POWER_RANK = ['may_danaris', 'trevor_l', 'clover', 'andromeda_robin', 'robot_boy_hero', 'venice_gorn', 'oren_bark', 'gelf_lanz', 'eve_williams', 'bill_milton', 'zara', 'derby_pocket', 'bunny_wizard', 'omar_evans', 'lori_ann_davis', 'mazrael_bettencourt', 'croh_vosh', 'marn_torf', 'locas_clare'];
 
 const prof = (p: Player): BotProfile => p.bot ?? EXPERT;
@@ -44,7 +46,7 @@ const jitter = (g: GameState, p: Player, scale = 10) => ((prof(p).noise ?? 0) ? 
  */
 const ECON: Record<string, number> = {
   memory: 4, storyteller: 4, command: 5, remember: 10, librarian: 10, restore: 12, farmer: 3, honeysuckle_brambor: 5,
-  computer: 8, robot_boy: 10, shopkeep: 4, intern: 3, purveyor: 10, miner: 6, pickaxe: 6, scout: 4, grief: 8,
+  computer: 8, robot_boy: 10, robot_boy_buddy: 14, shopkeep: 4, intern: 3, purveyor: 10, miner: 6, pickaxe: 6, scout: 4, grief: 8,
   omni_gem: 30, exploit: 8, golden_light: 12, potato_lord: 10, jeweler: 3, distant_land: 8, larva: 12, adder: 6, invisible_hand: 0, builder: 5,
   life: 14, beast_vine: 16, hug: 6,
 };
@@ -141,11 +143,13 @@ function wantsLevel(g: GameState, p: Player): boolean {
   // a curve (round to reach each tier), level when it's cheap, and hold off when low on Health with a thin army
   const curve = [0, 1, 2, knob(p, 'lvl3'), knob(p, 'lvl4'), knob(p, 'lvl5')];
   const behind = g.round >= curve[p.tier + 1];
-  const cheap = p.upgradeCost <= knob(p, 'cheap');
+  // Zara gets 2 Gold back for every upgrade: what it really costs
+  const net = Math.max(0, p.upgradeCost - (on(p, 'hero') && powersOf(p).some((h) => h.id === 'zara') ? 2 : 0));
+  const cheap = net <= knob(p, 'cheap');
   // leave gold for at least this many buys after leveling when ahead of the curve
   if (!behind && !cheap) return false;
   if (knob(p, 'lowHp') && p.health <= knob(p, 'lowHp') && p.board.length < 6 && !cheap) return false;
-  if (!cheap && p.gold - p.upgradeCost < knob(p, 'spare') * CONFIG.buyCost && g.round > 3) return false;
+  if (!cheap && p.gold - net < knob(p, 'spare') * CONFIG.buyCost && g.round > 3) return false;
   return true;
 }
 
@@ -421,6 +425,8 @@ export function aiTakeTurn(g: GameState, p: Player) {
   if (on(p, 'smartsell') && p.lostLast) {
     for (let i = p.board.length - 1; i >= 0; i--) if (p.board[i].cardId === 'treasure' && !p.board[i].mem.locked) sell(g, p, i);
   }
+  // powers that make Gold go before anything else, so the Gold gets spent this turn
+  for (const h of powersOf(p)) if (GOLD_POWERS.includes(h.id) && canUseHeroPower(g, p, h.id)) useHeroPower(g, p, undefined, h.id);
   if (wantsLevel(g, p) && !(blunder && rand(g) < 0.5)) upgrade(g, p);
   // Hero Powers that pay off over time go first, as long as a buy is still affordable afterwards
   if (on(p, 'powerFirst') && !blunder) {
