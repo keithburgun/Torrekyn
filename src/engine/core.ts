@@ -18,7 +18,7 @@ export const CONFIG = {
   /** 7 tribes exist; 3 are banned each match, so 4 are in play (plus Neutral) */
   tribesPerGame: 4,
   maxGold: 10,
-  /** ceiling for maximum Gold including Investor / Warlord's Horn bonuses (they used to grow without limit) */
+  /** ceiling for maximum Gold including Investor / Horn of Horn bonuses (they used to grow without limit) */
   maxGoldCap: 20,
   heroChoices: 4,
 };
@@ -118,12 +118,12 @@ export function displayName(b: Body): string {
 
 /**
  * Bonuses a player gives to all their units of a kind, wherever the unit is (hand, army, or summoned during a
- * battle): tribe Attack buffs, Bronze Compass, Scientist, War Mech's growth. Not baked into the unit's stats.
+ * battle): tribe Attack buffs, Purple Bracer (bronze_compass), Scientist, War Mech's growth. Not baked into the unit's stats.
  */
 export function ownerBonus(p: Player, b: Body): { atk: number; hp: number } {
   let atk = tribeAtkFor(p, b.cardId);
   let hp = 0;
-  if (p.trinkets?.includes('bronze_compass') && isTribe(b, 'neverending')) atk += 12; // Bronze Compass
+  if (p.trinkets?.includes('bronze_compass') && isTribe(b, 'neverending')) atk += 12; // Purple Bracer
   if (isTribe(b, 'alcove')) atk += p.alcoveAtkThisTier ?? 0; // Scientist
   if (b.cardId === 'left_twinbot' || b.cardId === 'right_twinbot') { atk += p.twinBonus ?? 0; }
   if (b.cardId === 'owl') {

@@ -2,6 +2,9 @@
 
 Newest first. The version shows on the title screen.
 
+## 0.12.12 — 2026-11-18
+- New trinkets: Double Thing, Incense, It is Officially Gem Time (Lesser), I don't even KNOW (Greater). Renamed: Techin', Purple Bracer, Big Big Shield, Charm of Charms, Guys Comin Up Outta the Woodwork, Secret Guy, Fenix Down, Horn of Horn, Golden Brass, Bell o' the Grave, Double Crown: Fusion.
+
 ## 0.12.11 — 2026-11-18
 - New heroes: Lori-Ann Davis, Robot Boy, Zara, Marn Torf, Oren Bark. Croh Vosh's summoned units also get Taunt.
 

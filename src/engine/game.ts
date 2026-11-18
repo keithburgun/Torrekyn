@@ -206,7 +206,7 @@ export function rollShop(g: GameState, p: Player) {
   p.shop = [];
   const n = CONFIG.shopSize[p.tier] + shopBonus(p);
   for (let i = 0; i < n; i++) {
-    // Teched Up: no Tier 1 or 2 (a Tier 1-2 tavern still sees Tier 3)
+    // Techin' (healing_draught): no Tier 1 or 2 (a Tier 1-2 tavern still sees Tier 3)
     const teched = hasTrinket(p, 'healing_draught');
     const id = drawFromPool(g, (cid) => (teched ? def(cid).tier >= 3 && def(cid).tier <= Math.max(3, p.tier) : def(cid).tier <= p.tier));
     if (!id) continue;
@@ -458,7 +458,7 @@ export function play(g: GameState, p: Player, handIdx: number, pos: number, targ
 export function runBattlecry(g: GameState, p: Player, u: Unit, target?: Unit) {
   const e = EFFECTS[u.cardId];
   if (!e?.battlecry) return;
-  // each "triggers an extra time" adds one: Gem Wizard (+1, Golden +2 for Red Gems), Crown of Echoes (+1), Derby Pocket (+1)
+  // each "triggers an extra time" adds one: Gem Wizard (+1, Golden +2 for Red Gems), Double Crown: Fusion (+1), Derby Pocket (+1)
   const heroExtra = heroHooks.battlecryExtra(p);
   const times = battlecryTimes(p, u) + (hasTrinket(p, 'crown_of_echoes') ? 1 : 0) + heroExtra;
   const fx0 = p.fx?.length ?? 0;

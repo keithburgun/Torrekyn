@@ -732,3 +732,46 @@ describe('new heroes (v0.12.11)', () => {
     expect(canUseHeroPower(g, p, 'oren_bark')).toBe(true);
   });
 });
+
+describe('new trinkets (v0.12.12)', () => {
+  it('renamed trinkets keep working under their new names', async () => {
+    const { trinketDef } = await import('../src/engine/heroes');
+    expect(['healing_draught', 'bronze_compass', 'iron_bracer', 'aegis_charm', 'hourglass_of_plenty', 'summit_vault', 'phoenix_feather', 'warlords_horn', 'golden_lantern', 'gravebell', 'crown_of_echoes'].map((id) => trinketDef(id).name))
+      .toEqual(["Techin'", 'Purple Bracer', 'Big Big Shield', 'Charm of Charms', 'Guys Comin Up Outta the Woodwork', 'Secret Guy', 'Fenix Down', 'Horn of Horn', 'Golden Brass', "Bell o' the Grave", 'Double Crown: Fusion']);
+  });
+
+  it('Double Thing becomes another copy of your Greater Trinket (and it works twice)', async () => {
+    const { pickTrinket } = await import('../src/engine/heroes');
+    const { g, p, o } = setup();
+    p.trinketOffer = ['double_thing']; pickTrinket(g, p, 'double_thing');
+    p.trinketOffer = ['bannerlords_standard']; pickTrinket(g, p, 'bannerlords_standard');
+    expect(p.trinkets).toEqual(['bannerlords_standard', 'bannerlords_standard']);
+    const c = fight(g, p, o, [U(g, 'skel', 1, 1)], [U(g, 'skel', 0, 99)]);
+    c.run();
+    expect(c.frames[afterSoc(c)].sides[0][0].atk).toBe(7); // +3/+3 twice
+  });
+
+  it('Incense: left-most and right-most Neverending units get Reborn at Start of Combat', () => {
+    const { g, p, o } = setup();
+    p.trinkets = ['incense'];
+    const c = fight(g, p, o, [U(g, 'skel', 1, 1), U(g, 'ash', 1, 1), U(g, 'skel', 1, 1), U(g, 'doctor', 1, 1)], [U(g, 'skel', 0, 99)]);
+    c.run();
+    const f = c.frames[afterSoc(c)].sides[0];
+    expect(f.map((u) => u.kw.includes('reborn'))).toEqual([true, false, true, false]);
+  });
+
+  it('It is Officially Gem Time fills your hand with Gems; I don\'t even KNOW fills it with units', async () => {
+    const { pickTrinket } = await import('../src/engine/heroes');
+    const { GEMS } = await import('../src/engine/effects');
+    const { CONFIG } = await import('../src/engine/core');
+    const { g, p } = setup();
+    p.hand = [U(g, 'ash')];
+    p.trinketOffer = ['gem_time']; pickTrinket(g, p, 'gem_time');
+    expect(p.hand.length).toBe(CONFIG.handSize);
+    expect(p.hand.slice(1).every((u) => GEMS.includes(u.cardId))).toBe(true);
+    p.hand = [];
+    p.trinketOffer = ['dont_even_know']; pickTrinket(g, p, 'dont_even_know');
+    expect(p.hand.length).toBe(CONFIG.handSize);
+    expect(p.hand.every((u) => !GEMS.includes(u.cardId) && def(u.cardId).tier <= p.tier)).toBe(true);
+  });
+});
