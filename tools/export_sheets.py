@@ -171,7 +171,7 @@ def main():
         'Trinkets have no art yet.',
         '',
         f'Exported from game version {VERSION} on {datetime.date.today().isoformat()}. Cards are sorted by tribe, then Tier, then name.',
-        'Tier 6 units are never sold in the Tavern (it stops at Tier 5); they only come from effects such as Summit Key, Summit Vault, Golden Light and Robot Boy.',
+        'Tier 6 units are never sold in the Tavern (it stops at Tier 5); they only come from effects such as Summit Key, Summit Vault and Robot Boy.',
         'Card wording follows these forms: "Battlecry:", "Deathrattle:", "Start of Combat:", "Start of Turn:", "End of Turn:", "Rally:", "Avenge (N):",',
         '   "Summon", "Gain", "Discover", "Tavern", and capitalised Tier, Gold, Attack and Health.',
     ]
@@ -179,6 +179,12 @@ def main():
         c = wi.cell(i, 1, n)
         c.font = Font(name=FONT, bold=i == 1, size=14 if i == 1 else 11)
     wi.column_dimensions['A'].width = 130
+    # ONLY=Heroes,Trinkets (etc.): keep just those sheets (and "How to edit")
+    only = [x.strip().lower() for x in os.environ.get('ONLY', '').split(',') if x.strip()]
+    if only:
+        for name in list(wb.sheetnames):
+            if name.lower() not in only and name != 'How to edit':
+                wb.remove(wb[name])
     wb.save(out)
     print('wrote', out)
 
