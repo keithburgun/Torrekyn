@@ -8,7 +8,7 @@ import type { GameState, Player, Tribe, Unit } from './types';
 import type { CUnit, Side, Combat } from './combat';
 import { EFFECTS, GEMS, hasBattlecry } from './effects';
 import { fxHooks, withFx } from './fx';
-import { discoverOptions, drawFromPool, gainCard, gainNew, queueDiscover, queuePowerDiscover, randomCardOfTier } from './game';
+import { discoverOptions, drawFromPool, gainCard, gainNew, queueDiscover, queuePowerDiscover, randomCardOfTier, returnToPool } from './game';
 
 export interface HeroDef {
   id: string;
@@ -244,13 +244,14 @@ export const HEROES: HeroDef[] = [
     onTierUp: (g, p) => { p.gold += 2; },
   },
   {
-    id: 'marn_torf', name: 'Marn Torf', title: 'Magic chef', power: 'Into the Pot', avatar: 18, health: 25, cost: 0, target: true,
-    text: `Remove a friendly unit. After you've removed ${POT_SIZE}, Discover a unit from their tribes.`,
+    id: 'marn_torf', name: 'Marn Torf', title: 'Magic chef', power: 'Into the Pot', avatar: 18, health: 25, cost: 0, targetShop: true,
+    text: `Remove a unit from the Tavern. After you've removed ${POT_SIZE}, Discover a unit from their tribes.`,
     use: (g, p, t) => {
       if (!t) return;
-      const i = p.board.indexOf(t);
+      const i = p.shop.indexOf(t);
       if (i < 0) return;
-      p.board.splice(i, 1);
+      p.shop.splice(i, 1);
+      returnToPool(g, t); // back in the pool, like a unit rerolled away
       const tribe = def(t.cardId).tribe;
       p.heroMem[`pot_${tribe}`] = 1;
       p.heroMem.pot = (p.heroMem.pot ?? 0) + 1;
@@ -260,7 +261,7 @@ export const HEROES: HeroDef[] = [
       for (const k of Object.keys(p.heroMem)) if (k.startsWith('pot_') || k === 'pot') delete p.heroMem[k];
       queueDiscover(g, p, discoverOptions(g, (id) => tribes.includes(def(id).tribe) && def(id).tier <= p.tier), 'Into the Pot: Discover a unit');
     },
-    locked: (g, p) => (p.board.length ? null : 'You need a unit in your army'),
+    locked: (g, p) => (p.shop.length ? null : 'The Tavern is empty'),
     progress: (g, p) => `${p.heroMem.pot ?? 0}/${POT_SIZE}`,
   },
   {

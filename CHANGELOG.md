@@ -2,6 +2,9 @@
 
 Newest first. The version shows on the title screen.
 
+## 0.12.14 — 2026-11-18
+- Marn Torf's Into the Pot removes a unit from the Tavern (not your army).
+
 ## 0.12.13 — 2026-11-18
 - Robot Boy now starts with a 1/1 Orbo Pet (Venomous, every tribe, no ability). The Robot Boy unit is now Factory Bot, with new art.
 

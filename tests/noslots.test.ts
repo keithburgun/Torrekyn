@@ -704,13 +704,17 @@ describe('new heroes (v0.12.11)', () => {
     expect([p.tier, p.gold]).toEqual([2, 3]);
   });
 
-  it('Marn Torf: remove 3 friendly units, then Discover a unit from their tribes', async () => {
+  it('Marn Torf: remove 3 units from the Tavern, then Discover a unit from their tribes', async () => {
     const { gainPower, useHeroPower } = await import('../src/engine/heroes');
     const { g, p } = setup();
     gainPower(g, p, 'marn_torf');
-    p.board = [U(g, 'owl'), U(g, 'therapist'), U(g, 'owl'), U(g, 'ash')];
-    for (let i = 0; i < 3; i++) { p.usedPowers = []; useHeroPower(g, p, p.board[0], 'marn_torf'); }
+    p.board = [U(g, 'ash')];
+    p.shop = [U(g, 'owl'), U(g, 'therapist'), U(g, 'owl'), U(g, 'ash')];
+    const pool = g.pool.owl;
+    for (let i = 0; i < 3; i++) { p.usedPowers = []; expect(useHeroPower(g, p, p.shop[0], 'marn_torf')).toBe(true); }
+    expect(p.shop.map((u) => u.cardId)).toEqual(['ash']);
     expect(p.board.map((u) => u.cardId)).toEqual(['ash']);
+    expect(g.pool.owl).toBe(pool + 2); // back in the pool
     expect(p.discovers.length).toBe(1);
     for (const id of p.discovers[0].options) expect(['cloister', 'kindred']).toContain(def(id).tribe);
   });

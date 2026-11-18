@@ -77,7 +77,7 @@ export function inPlay(g: GameState, cardId: string) {
   return !d.token && (d.tribe === 'neutral' || g.tribes.includes(d.tribe));
 }
 
-function returnToPool(g: GameState, u: Unit) {
+export function returnToPool(g: GameState, u: Unit) {
   if (def(u.cardId).token || g.pool[u.cardId] === undefined) return;
   g.pool[u.cardId] += u.golden ? 3 : 1;
 }

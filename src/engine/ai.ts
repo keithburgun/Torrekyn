@@ -531,11 +531,12 @@ function useHeroPowers(g: GameState, p: Player) {
       // Locas: only when it's a real steal
       if (h.id === 'locas_clare' && (p.shop.length * CONFIG.buyCost < powerCost(g, p, h) + 3 || CONFIG.handSize - p.hand.length < p.shop.length)) continue;
     } else if (h.id === 'locas_clare' && (p.shop.length < 3 || CONFIG.handSize - p.hand.length < 2)) continue;
-    // Into the Pot: only to make room in a full army (it costs a unit)
-    if (h.id === 'marn_torf' && p.board.length < CONFIG.boardSize) continue;
     const weakest = [...p.board].filter((u) => !u.mem.locked).sort((a, b) => unitScore(p, a, 'board') - unitScore(p, b, 'board'))[0];
     // Doom Bauble: load the hardest-hitting unit in the Tavern
-    const shopPick = h.targetShop ? [...p.shop].sort((a, b) => effStats(p, b, 'shop').atk - effStats(p, a, 'shop').atk)[0] : undefined;
+    const shopPick = !h.targetShop ? undefined
+      // Into the Pot (free, after shopping): cook what's left, preferring the army's own tribe (the Discover draws from it)
+      : h.id === 'marn_torf' ? [...p.shop].sort((a, b) => (tribeOf(b) === mainTribe(p) ? 1 : 0) - (tribeOf(a) === mainTribe(p) ? 1 : 0))[0]
+      : [...p.shop].sort((a, b) => effStats(p, b, 'shop').atk - effStats(p, a, 'shop').atk)[0];
     const target = h.targetShop ? shopPick : h.target ? weakest : undefined;
     if (!(h.target || h.targetShop) || target) useHeroPower(g, p, target, h.id);
     while (p.discovers.length) chooseDiscover(g, p, aiChooseDiscover(g, p, p.discovers[0]));
