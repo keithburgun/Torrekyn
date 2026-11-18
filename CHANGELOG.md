@@ -2,6 +2,9 @@
 
 Newest first. The version shows on the title screen.
 
+## 0.12.10 — 2026-11-18
+- Bot bonus ramps up: +0/+0 on turn 1, rising linearly to the full amount by turn 10.
+
 ## 0.12.9 — 2026-11-17
 - Bots get +X/+X on their units in hand and army at every End of Turn, scaled to your rating: +4/+4 at 1000, +8/+8 at 1250, +12/+12 at 1500 and up.
 

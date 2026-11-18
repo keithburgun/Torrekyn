@@ -549,7 +549,8 @@ export function endTurnEffects(g: GameState, p: Player) {
 
 /**
  * Bots cheat, scaled to your rating: every End of Turn their units in hand and army get +X/+X.
- * Rating 1000: +4/+4, 1250: +8/+8, 1500 and up: +12/+12 (in between, in proportion; nothing at 750 or below).
+ * Rating 1000: +4/+4, 1250: +8/+8, 1500 and up: +12/+12 (in between, in proportion; nothing at 750 or below),
+ * ramping up linearly from +0/+0 on turn 1 to that full amount on turn 10.
  * Only in rated games (a rating was given), so test and balance simulations play fair.
  */
 export function botBonusFor(rating: number): number {
@@ -558,7 +559,8 @@ export function botBonusFor(rating: number): number {
 }
 function botBonus(g: GameState, p: Player) {
   if (p.human || g.rating === undefined) return;
-  const n = botBonusFor(g.rating);
+  // ramps up: nothing on turn 1, the full amount from turn 10 on
+  const n = Math.round(botBonusFor(g.rating) * Math.min(1, Math.max(0, g.round - 1) / 9));
   if (!n) return;
   for (const u of [...p.board, ...p.hand]) {
     u.atk += n;

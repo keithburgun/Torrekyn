@@ -649,9 +649,15 @@ describe('bot bonus', () => {
       const bot = g.players[1], me = g.players[0];
       const mk = (id: string) => ({ uid: g.nextUid++, cardId: id, golden: false, atk: 2, hp: 2, kw: [], mem: {} });
       bot.board = [mk('ash')]; bot.hand = [mk('ash')]; me.board = [mk('ash')];
+      g.round = 10;
       endTurnEffects(g, bot); endTurnEffects(g, me);
       const n = rating ? 8 : 0;
       expect([bot.board[0].atk, bot.hand[0].hp, me.board[0].atk]).toEqual([2 + n, 2 + n, 2]);
     }
+    // the ramp at rating 1500 (+12 in full): turn 1 nothing, turn 4 a third, turn 10 and later all of it
+    const g = newGame(6, 'You', undefined, { rating: 1500 });
+    const bot = g.players[1];
+    const got = [1, 2, 4, 7, 10, 14].map((r) => { g.round = r; bot.board = [{ uid: g.nextUid++, cardId: 'ash', golden: false, atk: 0, hp: 0, kw: [], mem: {} }]; bot.hand = []; endTurnEffects(g, bot); return bot.board[0].atk; });
+    expect(got).toEqual([0, 1, 4, 8, 12, 12]);
   });
 });
