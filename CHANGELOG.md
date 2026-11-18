@@ -2,6 +2,9 @@
 
 Newest first. The version shows on the title screen.
 
+## 0.12.11 — 2026-11-18
+- New heroes: Lori-Ann Davis, Robot Boy, Zara, Marn Torf, Oren Bark. Croh Vosh's summoned units also get Taunt.
+
 ## 0.12.10 — 2026-11-18
 - Bot bonus ramps up: +0/+0 on turn 1, rising linearly to the full amount by turn 10.
 

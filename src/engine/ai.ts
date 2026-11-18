@@ -28,7 +28,7 @@ const EXPERT_OFF: Feature[] = ['simbuy', 'powerFirst', 'engine', 'plans'];
 export const EXPERT: BotProfile = { noise: 0, blunder: 0, f: Object.fromEntries(FEATURES.map((k) => [k, !EXPERT_OFF.includes(k)])) };
 
 /** Hero Powers ranked by how well Expert bots did with them (800-game balance run), best first; for Abragail's picks */
-const POWER_RANK = ['may_danaris', 'trevor_l', 'clover', 'andromeda_robin', 'venice_gorn', 'gelf_lanz', 'eve_williams', 'bill_milton', 'derby_pocket', 'bunny_wizard', 'omar_evans', 'mazrael_bettencourt', 'croh_vosh', 'locas_clare'];
+const POWER_RANK = ['may_danaris', 'trevor_l', 'clover', 'andromeda_robin', 'robot_boy_hero', 'venice_gorn', 'oren_bark', 'gelf_lanz', 'eve_williams', 'bill_milton', 'zara', 'derby_pocket', 'bunny_wizard', 'omar_evans', 'lori_ann_davis', 'mazrael_bettencourt', 'croh_vosh', 'marn_torf', 'locas_clare'];
 
 const prof = (p: Player): BotProfile => p.bot ?? EXPERT;
 const on = (p: Player, k: Feature) => prof(p).f?.[k] ?? EXPERT.f![k] ?? false;
@@ -525,6 +525,8 @@ function useHeroPowers(g: GameState, p: Player) {
       // Locas: only when it's a real steal
       if (h.id === 'locas_clare' && (p.shop.length * CONFIG.buyCost < powerCost(g, p, h) + 3 || CONFIG.handSize - p.hand.length < p.shop.length)) continue;
     } else if (h.id === 'locas_clare' && (p.shop.length < 3 || CONFIG.handSize - p.hand.length < 2)) continue;
+    // Into the Pot: only to make room in a full army (it costs a unit)
+    if (h.id === 'marn_torf' && p.board.length < CONFIG.boardSize) continue;
     const weakest = [...p.board].filter((u) => !u.mem.locked).sort((a, b) => unitScore(p, a, 'board') - unitScore(p, b, 'board'))[0];
     // Doom Bauble: load the hardest-hitting unit in the Tavern
     const shopPick = h.targetShop ? [...p.shop].sort((a, b) => effStats(p, b, 'shop').atk - effStats(p, a, 'shop').atk)[0] : undefined;

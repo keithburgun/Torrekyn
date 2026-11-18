@@ -233,7 +233,7 @@ export function frameUnitView(u: CombatFrameUnit) {
  */
 export function preloadArt() {
   if (typeof Image === 'undefined') return;
-  const urls = [...new Set([...CARDS.map((c) => cardArt(c.id)), ...Object.keys(V2).filter((k) => k.startsWith('hero:')).map((k) => heroArt(k.slice(5)))])];
+  const urls = [...new Set([...CARDS.filter((c) => !c.hidden).map((c) => cardArt(c.id)), ...Object.keys(V2).filter((k) => k.startsWith('hero:')).map((k) => heroArt(k.slice(5)))])];
   const keep: HTMLImageElement[] = []; // held so the browser keeps them decoded and cached
   let next = 0;
   const load = (url: string, tries: number) => new Promise<void>((done) => {

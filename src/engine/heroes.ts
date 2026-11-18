@@ -3,7 +3,7 @@
  * Heroes are the Torrekin champions. Trinkets are still PLACEHOLDERS.
  * Each hook is called from game.ts / combat.ts.
  */
-import { addKw, def, effStats, isTribe, log, makeUnit, pick, sample, CONFIG } from './core';
+import { addKw, def, effStats, isTribe, log, makeUnit, pick, rand, sample, CONFIG } from './core';
 import type { GameState, Player, Tribe, Unit } from './types';
 import type { CUnit, Side, Combat } from './combat';
 import { EFFECTS, hasBattlecry } from './effects';
@@ -48,12 +48,16 @@ export interface HeroDef {
   onSummon?(c: Combat, s: Side, u: CUnit): void;
   /** combat: a friendly unit died (Avenge counters) */
   onFriendlyDeath?(c: Combat, s: Side): void;
+  /** you increased your Tavern Tier */
+  onTierUp?(g: GameState, p: Player): void;
   /** short progress note for the UI, e.g. "3/5" */
   progress?(g: GameState, p: Player): string | null;
 }
 
 const BATTLECRIES_FOR_COFFEE = 5;
 const SALES_FOR_LEAVES = 4;
+const ZUZUNI_FOR_RESEARCH = 3;
+const POT_SIZE = 3;
 const ZUZUNI: Tribe = 'cloister'; // Omar Evans' "Zuzuni" units (assumed to be Cloister, the ninja tribe)
 
 /** Avenge (n) for a hero power: count friendly deaths this combat, fire every n. */
@@ -95,8 +99,8 @@ export const HEROES: HeroDef[] = [
   },
   {
     id: 'croh_vosh', name: 'Croh Vosh', title: 'The drowned lich', power: 'Abyssal Sweep', avatar: 4, health: 26, passive: true,
-    text: 'Units you summon during combat get +1/+2.',
-    onSummon: (c, s, u) => { u.atk += 1; u.hp += 2; },
+    text: 'Units you summon during combat get Taunt and +1/+2.',
+    onSummon: (c, s, u) => { u.atk += 1; u.hp += 2; if (!u.kw.includes('taunt')) u.kw.push('taunt'); },
   },
   {
     id: 'may_danaris', name: 'May Danaris', title: 'Hacker from the neon district', power: 'Root Access', avatar: 5, health: 20, cost: 2,
@@ -214,6 +218,63 @@ export const HEROES: HeroDef[] = [
       addKw(u, 'reborn');
       c.snap('trigger', { source: u.id, note: 'Party All Night: Reborn' });
     },
+  },
+  {
+    id: 'lori_ann_davis', name: 'Lori-Ann Davis', title: 'Zuzuni researcher', power: 'Deep Research', avatar: 15, health: 25, passive: true, needsTribe: ZUZUNI,
+    text: `After you play ${ZUZUNI_FOR_RESEARCH} Cloister units, upgrading your Tavern costs 3 less. (Repeats.)`,
+    onPlay: (g, p, u) => {
+      if (!isTribe(u, ZUZUNI)) return;
+      p.heroMem.research = (p.heroMem.research ?? 0) + 1;
+      if (p.heroMem.research >= ZUZUNI_FOR_RESEARCH) {
+        p.heroMem.research = 0;
+        p.upgradeCost = Math.max(0, p.upgradeCost - 3);
+        log(p, 'Deep Research: upgrading costs 3 less');
+      }
+    },
+    progress: (g, p) => `${p.heroMem.research ?? 0}/${ZUZUNI_FOR_RESEARCH}`,
+  },
+  {
+    id: 'robot_boy_hero', name: 'Robot Boy', title: 'A real-life robot boy', power: "I'm Robot Boy", avatar: 16, health: 25, passive: true,
+    text: 'Start the game with a 1/1 Robot Boy with Venomous and every tribe.',
+    onGain: (g, p) => { gainNew(g, p, 'robot_boy_buddy'); },
+  },
+  {
+    id: 'zara', name: 'Zara', title: 'Student of healing magic', power: 'Read the Material', avatar: 17, health: 25, passive: true,
+    text: 'After you increase your Tavern Tier, gain 2 Gold.',
+    onTierUp: (g, p) => { p.gold += 2; },
+  },
+  {
+    id: 'marn_torf', name: 'Marn Torf', title: 'Magic chef', power: 'Into the Pot', avatar: 18, health: 25, cost: 0, target: true,
+    text: `Remove a friendly unit. After you've removed ${POT_SIZE}, Discover a unit from their tribes.`,
+    use: (g, p, t) => {
+      if (!t) return;
+      const i = p.board.indexOf(t);
+      if (i < 0) return;
+      p.board.splice(i, 1);
+      const tribe = def(t.cardId).tribe;
+      p.heroMem[`pot_${tribe}`] = 1;
+      p.heroMem.pot = (p.heroMem.pot ?? 0) + 1;
+      log(p, `Into the Pot: ${def(t.cardId).name}`);
+      if (p.heroMem.pot < POT_SIZE) return;
+      const tribes = Object.keys(p.heroMem).filter((k) => k.startsWith('pot_')).map((k) => k.slice(4));
+      for (const k of Object.keys(p.heroMem)) if (k.startsWith('pot_') || k === 'pot') delete p.heroMem[k];
+      queueDiscover(g, p, discoverOptions(g, (id) => tribes.includes(def(id).tribe) && def(id).tier <= p.tier), 'Into the Pot: Discover a unit');
+    },
+    locked: (g, p) => (p.board.length ? null : 'You need a unit in your army'),
+    progress: (g, p) => `${p.heroMem.pot ?? 0}/${POT_SIZE}`,
+  },
+  {
+    id: 'oren_bark', name: 'Oren Bark', title: 'Reckless chemist', power: 'D6 Potion', avatar: 19, health: 25, cost: 1,
+    text: 'Roll a D6. Gain that much Gold. You can use this again after that many turns.',
+    use: (g, p) => {
+      const roll = 1 + Math.floor(rand(g) * 6);
+      p.gold += roll;
+      p.heroMem.potionWait = roll;
+      log(p, `D6 Potion: rolled a ${roll}`);
+    },
+    locked: (g, p) => ((p.heroMem.potionWait ?? 0) > 0 ? `Ready in ${p.heroMem.potionWait} turn${p.heroMem.potionWait === 1 ? '' : 's'}` : null),
+    startTurn: (g, p) => { if ((p.heroMem.potionWait ?? 0) > 0) p.heroMem.potionWait--; },
+    progress: (g, p) => ((p.heroMem.potionWait ?? 0) > 0 ? `${p.heroMem.potionWait} turn${p.heroMem.potionWait === 1 ? '' : 's'}` : 'Ready'),
   },
 ];
 
@@ -410,6 +471,7 @@ export const heroHooks = {
     for (const h of powersOf(p)) if (h.startTurn) heroFx(g, p, h, () => h.startTurn!(g, p));
     for (const t of trinketsOf(p)) if (t.startTurn) trinketFx(g, p, t, () => t.startTurn!(g, p));
   },
+  onTierUp: (g: GameState, p: Player) => { for (const h of powersOf(p)) if (h.onTierUp) heroFx(g, p, h, () => h.onTierUp!(g, p)); },
   onSummon: (c: Combat, s: Side, u: CUnit) => { for (const h of powersOf(s.owner)) h.onSummon?.(c, s, u); },
   onFriendlyDeath: (c: Combat, s: Side) => {
     for (const h of powersOf(s.owner)) h.onFriendlyDeath?.(c, s);

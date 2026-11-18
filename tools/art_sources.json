@@ -120,6 +120,46 @@
     0.17,
     0.3
    ]
+  },
+  "lori_ann_davis": {
+   "src": "C/lori davis transparent.png",
+   "crop": [
+    0.5,
+    0.42,
+    0.95
+   ]
+  },
+  "robot_boy_hero": {
+   "src": "C/robot boy.jpg",
+   "crop": [
+    0.5,
+    0.38,
+    0.8
+   ]
+  },
+  "zara": {
+   "src": "P/questionmark_wizard.png",
+   "crop": [
+    0.5,
+    0.6,
+    0.6
+   ]
+  },
+  "marn_torf": {
+   "src": "C/bruce willis potato.jpg",
+   "crop": [
+    0.5,
+    0.38,
+    0.95
+   ]
+  },
+  "oren_bark": {
+   "src": "R/oren 1 rgb version.png",
+   "crop": [
+    0.5,
+    0.42,
+    0.6
+   ]
   }
  },
  "cards": {
@@ -960,6 +1000,14 @@
   "beast_vine": {
    "src": "S/Potato/spore1.png",
    "px": true
+  },
+  "robot_boy_buddy": {
+   "src": "P/robotboy.png",
+   "crop": [
+    0.5,
+    0.45,
+    1.0
+   ]
   }
  }
 }

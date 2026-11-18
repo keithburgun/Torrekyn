@@ -34,7 +34,8 @@ function combat(g: GameState, p: Player, mine: Unit[], theirs: Unit[], persisten
 describe('hero powers', () => {
   it('covers every hero', () => {
     const tested = ['andromeda_robin', 'gelf_lanz', 'derby_pocket', 'bunny_wizard', 'croh_vosh', 'may_danaris', 'locas_clare', 'venice_gorn',
-      'omar_evans', 'eve_williams', 'abragail', 'bill_milton', 'clover', 'trevor_l', 'mazrael_bettencourt'];
+      'omar_evans', 'eve_williams', 'abragail', 'bill_milton', 'clover', 'trevor_l', 'mazrael_bettencourt',
+      'lori_ann_davis', 'robot_boy_hero', 'zara', 'marn_torf', 'oren_bark']; // the last five: tests/noslots.test.ts
     expect(HEROES.map((h) => h.id).sort()).toEqual([...tested].sort());
   });
 

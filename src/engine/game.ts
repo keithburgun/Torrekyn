@@ -521,6 +521,7 @@ export function upgrade(g: GameState, p: Player): ActionResult {
   if (p.gold < p.upgradeCost) return fail('Not enough gold');
   p.gold -= p.upgradeCost;
   techUp(p);
+  heroHooks.onTierUp(g, p);
   return OK;
 }
 

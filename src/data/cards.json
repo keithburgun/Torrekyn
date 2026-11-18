@@ -1593,6 +1593,21 @@
    "keywords": [],
    "token": true,
    "hidden": true
+  },
+  {
+   "id": "robot_boy_buddy",
+   "name": "Robot Boy",
+   "tribe": "alcove",
+   "tier": 1,
+   "atk": 1,
+   "hp": 1,
+   "text": "End of Turn: Gain a random Neutral unit of any Tier.",
+   "goldenText": "End of Turn: Gain 2 random Neutral units of any Tier.",
+   "keywords": [
+    "venomous"
+   ],
+   "token": true,
+   "allTribes": true
   }
  ]
 }

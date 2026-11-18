@@ -17,6 +17,8 @@ export interface CardDef {
   goldenText: string;
   keywords: Keyword[];
   token?: boolean;
+  /** never shown (the bots' plain stand-in): no art */
+  hidden?: boolean;
   /** counts as every tribe (Andromeda Robin's Pumpkin) */
   allTribes?: boolean;
 }

@@ -140,6 +140,7 @@
  "card:amalgam": "art/v2/cards/amalgam.webp",
  "card:owl_summoner": "art/v2/cards/owl_summoner.webp",
  "card:beast_vine": "art/v2/cards/beast_vine.webp",
+ "card:robot_boy_buddy": "art/v2/cards/robot_boy_buddy.webp",
  "hero:andromeda_robin": "art/v2/heroes/andromeda_robin.webp",
  "hero:gelf_lanz": "art/v2/heroes/gelf_lanz.webp",
  "hero:derby_pocket": "art/v2/heroes/derby_pocket.webp",
@@ -154,5 +155,10 @@
  "hero:bill_milton": "art/v2/heroes/bill_milton.webp",
  "hero:clover": "art/v2/heroes/clover.webp",
  "hero:trevor_l": "art/v2/heroes/trevor_l.webp",
- "hero:mazrael_bettencourt": "art/v2/heroes/mazrael_bettencourt.webp"
+ "hero:mazrael_bettencourt": "art/v2/heroes/mazrael_bettencourt.webp",
+ "hero:lori_ann_davis": "art/v2/heroes/lori_ann_davis.webp",
+ "hero:robot_boy_hero": "art/v2/heroes/robot_boy_hero.webp",
+ "hero:zara": "art/v2/heroes/zara.webp",
+ "hero:marn_torf": "art/v2/heroes/marn_torf.webp",
+ "hero:oren_bark": "art/v2/heroes/oren_bark.webp"
 }

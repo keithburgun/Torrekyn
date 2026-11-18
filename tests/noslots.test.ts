@@ -661,3 +661,74 @@ describe('bot bonus', () => {
     expect(got).toEqual([0, 1, 4, 8, 12, 12]);
   });
 });
+
+describe('new heroes (v0.12.11)', () => {
+  it('Croh Vosh: summoned units get Taunt and +1/+2', async () => {
+    const { gainPower } = await import('../src/engine/heroes');
+    const { g, p, o } = setup();
+    gainPower(g, p, 'croh_vosh');
+    const c = fight(g, p, o, [U(g, 'necromancer', 1, 1)], [U(g, 'skel', 5, 99)]);
+    c.run();
+    const sk = c.frames.flatMap((f) => f.sides[0]).find((u) => u.cardId !== 'necromancer');
+    expect(sk?.kw).toContain('taunt');
+  });
+
+  it('Lori-Ann Davis: every 3 Cloister units played, upgrading costs 3 less', async () => {
+    const { gainPower } = await import('../src/engine/heroes');
+    const { g, p } = setup();
+    gainPower(g, p, 'lori_ann_davis');
+    p.tier = 2; p.upgradeCost = 7;
+    const cl = ['owl', 'owl', 'owl'];
+    p.hand = cl.map((id) => U(g, id));
+    for (let i = 0; i < 3; i++) play(g, p, 0, p.board.length);
+    expect(p.upgradeCost).toBe(4);
+  });
+
+  it('Robot Boy: starts with a 1/1 Venomous Robot Boy of every tribe', async () => {
+    const { gainPower } = await import('../src/engine/heroes');
+    const { isTribe } = await import('../src/engine/core');
+    const { g, p } = setup();
+    gainPower(g, p, 'robot_boy_hero');
+    const rb = [...p.hand, ...p.board].find((u) => u.cardId === 'robot_boy_buddy')!;
+    expect([rb.atk, rb.hp, rb.kw]).toEqual([1, 1, ['venomous']]);
+    expect(isTribe(rb, 'kindred') && isTribe(rb, 'demons')).toBe(true);
+  });
+
+  it('Zara: gain 2 Gold after upgrading the Tavern', async () => {
+    const { gainPower } = await import('../src/engine/heroes');
+    const { upgrade } = await import('../src/engine/game');
+    const { g, p } = setup();
+    gainPower(g, p, 'zara');
+    p.tier = 1; p.upgradeCost = 5; p.gold = 6;
+    upgrade(g, p);
+    expect([p.tier, p.gold]).toEqual([2, 3]);
+  });
+
+  it('Marn Torf: remove 3 friendly units, then Discover a unit from their tribes', async () => {
+    const { gainPower, useHeroPower } = await import('../src/engine/heroes');
+    const { g, p } = setup();
+    gainPower(g, p, 'marn_torf');
+    p.board = [U(g, 'owl'), U(g, 'therapist'), U(g, 'owl'), U(g, 'ash')];
+    for (let i = 0; i < 3; i++) { p.usedPowers = []; useHeroPower(g, p, p.board[0], 'marn_torf'); }
+    expect(p.board.map((u) => u.cardId)).toEqual(['ash']);
+    expect(p.discovers.length).toBe(1);
+    for (const id of p.discovers[0].options) expect(['cloister', 'kindred']).toContain(def(id).tribe);
+  });
+
+  it('Oren Bark: roll a D6, gain that much Gold, ready again after that many turns', async () => {
+    const { gainPower, useHeroPower, canUseHeroPower, heroHooks } = await import('../src/engine/heroes');
+    const { g, p } = setup();
+    gainPower(g, p, 'oren_bark');
+    p.gold = 1;
+    expect(useHeroPower(g, p, undefined, 'oren_bark')).toBe(true);
+    const roll = p.gold;
+    expect(roll).toBeGreaterThanOrEqual(1); expect(roll).toBeLessThanOrEqual(6);
+    for (let t = 1; t <= roll; t++) {
+      p.usedPowers = []; p.gold = 5;
+      expect(canUseHeroPower(g, p, 'oren_bark')).toBe(false);
+      heroHooks.startTurn(g, p);
+    }
+    p.usedPowers = [];
+    expect(canUseHeroPower(g, p, 'oren_bark')).toBe(true);
+  });
+});
