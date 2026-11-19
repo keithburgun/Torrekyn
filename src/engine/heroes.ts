@@ -541,6 +541,8 @@ export function heroSoc(c: Combat, s: Side) {
 }
 
 export const hasTrinket = (p: Player, id: string) => p.trinkets.includes(id);
+/** copies of a trinket you have (Double Thing can make a second) */
+export const trinketCount = (p: Player, id: string) => (p.trinkets ?? []).filter((t) => t === id).length;
 export { effStats };
 
 // hero progress for the effect events (e.g. "Coffee Run 2/5"); kept here so fx.ts doesn't import heroes

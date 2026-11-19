@@ -779,3 +779,28 @@ describe('new trinkets (v0.12.12)', () => {
     expect(p.hand.every((u) => !GEMS.includes(u.cardId) && def(u.cardId).tier <= p.tier)).toBe(true);
   });
 });
+
+describe('Double Thing copies stack', () => {
+  it("two Bell o' the Grave: Deathrattles trigger 2 extra times; two Another Chance: saved twice", async () => {
+    const { endTurn } = await import('../src/engine/game');
+    const { g, p, o } = setup();
+    p.trinkets = ['gravebell', 'gravebell'];
+    p.deathrattlesGame = 0;
+    // one Deathrattle, triggered 1 + 2 extra times
+    fight(g, p, o, [U(g, 'beast_vine', 1, 1)], [U(g, 'skel', 5, 99)]).run();
+    expect(p.deathrattlesGame).toBe(3);
+    const g2 = setup(12).g;
+    const me = g2.players[0];
+    me.trinkets = ['another_chance', 'another_chance'];
+    for (const q of g2.players) q.bot = { noise: 0, blunder: 0 } as never;
+    g2.simulateAll = true;
+    let saves = 0;
+    for (let r = 0; r < 40 && me.alive && g2.phase !== 'over'; r++) {
+      me.health = 1; me.board = [];
+      const before = me.heroMem.anotherChanceUsed ?? 0;
+      endTurn(g2);
+      if ((me.heroMem.anotherChanceUsed ?? 0) > before) saves++;
+    }
+    expect(saves).toBe(2);
+  });
+});

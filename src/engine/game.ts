@@ -6,7 +6,7 @@ import { runCombat } from './combat';
 import { aiTakeTurn, aiChooseDiscover } from './ai';
 import { setFxPhase, withFx, heroPing, peebSync } from './fx';
 import { PERSONAS, matchPersonas, personaProfile } from './personas';
-import { TRINKETS, HEROES, heroHealth, buyCost, gainPower, heroDef, heroEndTurn, heroHooks, hasTrinket, offerTrinkets, shopBonus, GREATER_TRINKET_TURN, LESSER_TRINKET_TURN } from './heroes';
+import { TRINKETS, HEROES, heroHealth, buyCost, gainPower, heroDef, heroEndTurn, heroHooks, hasTrinket, trinketCount, offerTrinkets, shopBonus, GREATER_TRINKET_TURN, LESSER_TRINKET_TURN } from './heroes';
 import type { Discover, GameState, Player, Tribe, Unit } from './types';
 
 export const SAVE_VERSION = 5; // 5: Tier 6 and Poisonous (Stealth removed); older games in progress are dropped
@@ -460,7 +460,7 @@ export function runBattlecry(g: GameState, p: Player, u: Unit, target?: Unit) {
   if (!e?.battlecry) return;
   // each "triggers an extra time" adds one: Gem Wizard (+1, Golden +2 for Red Gems), Double Crown: Fusion (+1), Derby Pocket (+1)
   const heroExtra = heroHooks.battlecryExtra(p);
-  const times = battlecryTimes(p, u) + (hasTrinket(p, 'crown_of_echoes') ? 1 : 0) + heroExtra;
+  const times = battlecryTimes(p, u) + trinketCount(p, 'crown_of_echoes') + heroExtra;
   const fx0 = p.fx?.length ?? 0;
   // repeats happen even if the unit is gone by then (Sword and Shield destroy themselves in their Battlecry)
   for (let i = 0; i < times; i++) {
@@ -626,8 +626,9 @@ export function endTurn(g: GameState): CombatResult[] {
   }
   // Another Chance (Greater Trinket): the first time you run out of Health, back to 10 and 10 Gold next turn
   for (const p of alivePlayers(g)) {
-    if (p.health > 0 || !p.trinkets.includes('another_chance') || p.heroMem.anotherChanceUsed) continue;
-    p.heroMem.anotherChanceUsed = 1;
+    // one save per copy (Double Thing can make a second)
+    if (p.health > 0 || (p.heroMem.anotherChanceUsed ?? 0) >= trinketCount(p, 'another_chance')) continue;
+    p.heroMem.anotherChanceUsed = (p.heroMem.anotherChanceUsed ?? 0) + 1;
     p.health = 10;
     p.goldNextTurn += 10;
     log(p, 'Another Chance! Back to 10 Health, and 10 Gold next turn.');

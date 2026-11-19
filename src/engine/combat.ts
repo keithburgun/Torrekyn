@@ -8,7 +8,7 @@
 import { addKw, cloneUnit, def, effStats, has, isTribe, mult, ownerBonus, pick, rand, removeKw, sample, tribeOf, CONFIG } from './core';
 import { EFFECTS, hasBattlecry, battlecryTimes, type CCtx } from './effects';
 import { gainNew, combatDamage, drawFromPool, DAMAGE_PER_UNIT, onBattlecryTriggered } from './game';
-import { heroHooks, heroSoc } from './heroes';
+import { heroHooks, heroSoc, trinketCount } from './heroes';
 import { withFx } from './fx';
 import type { Body, CombatFrame, CombatFrameUnit, CombatFx, CombatResult, GameState, Keyword, Player, Unit } from './types';
 
@@ -280,7 +280,7 @@ export class Combat {
   triggerBattlecry(s: Side, u: CUnit) {
     const e = EFFECTS[u.cardId];
     if (!e?.battlecry) return;
-    const times = battlecryTimes(s.owner, u) + (s.owner.trinkets?.includes('crown_of_echoes') ? 1 : 0) + heroHooks.battlecryExtra(s.owner);
+    const times = battlecryTimes(s.owner, u) + trinketCount(s.owner, 'crown_of_echoes') + heroHooks.battlecryExtra(s.owner);
     for (let i = 0; i < times; i++) {
       e.battlecry({ g: this.g, p: s.owner, self: u, m: mult(u), board: s.units.filter((x) => x.hp > 0), combat: this, side: s });
       if (s.persistent) onBattlecryTriggered(this.g, s.owner);
@@ -339,7 +339,7 @@ export class Combat {
         const pumpkinEmpty = u.cardId === 'pumpkin' && !Object.keys(u.mem).some((k) => k.startsWith('dr_'));
         let times = 1;
         for (const f of s.units) if (f.cardId === 'tom_judith' && f.hp > 0) times = Math.max(times, f.golden ? 3 : 2);
-        if (s.owner.trinkets?.includes('gravebell')) times++;
+        times += trinketCount(s.owner, 'gravebell');
         // Rattler (trinket): "Deathrattle: Summon a random Tier 1 unit", given at Start of Combat
         if (u.mem.rattle) {
           let at = Math.min(pos, s.units.length);
