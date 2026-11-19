@@ -2,6 +2,9 @@
 
 Newest first. The version shows on the title screen.
 
+## 0.12.16 — 2026-11-19
+- Alcove Prefex's faction icon is Buzz-Boink. Zara has her own portrait.
+
 ## 0.12.15 — 2026-11-19
 - Bots: choose trinkets by measured value (+100 Elo), use Oren Bark's power before shopping, level more as Zara, keep Robot Boy's pet. Fixes: Double Thing copies of Double Crown, Bell o' the Grave and Another Chance now stack; a real Divine Shield or Reborn on a unit with a Gem's temporary one no longer wears off; shop messages clear when a battle starts. Persona ratings recalibrated.
 

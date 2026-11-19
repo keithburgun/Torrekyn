@@ -138,12 +138,8 @@
    ]
   },
   "zara": {
-   "src": "P/questionmark_wizard.png",
-   "crop": [
-    0.5,
-    0.6,
-    0.6
-   ]
+   "src": "L/zara.png",
+   "px": true
   },
   "marn_torf": {
    "src": "C/bruce willis potato.jpg",

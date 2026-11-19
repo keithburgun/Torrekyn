@@ -27,6 +27,8 @@ def roots(a):
         'T': os.path.join(img, 'Tiles'), 'UI': os.path.join(img, 'UI'),
         'K': os.path.join(a, 'x_Icons/Circle and square icons/RGB PNG'),
         'X': os.path.join(a, 'x_Sprites/Sprites'),
+        # art sent directly (kept in the repo)
+        'L': os.path.join(ROOT, 'tools/art_local'),
     }
 
 # backdrop colours per tribe (centre, edge) for pixel sprites and transparent art
