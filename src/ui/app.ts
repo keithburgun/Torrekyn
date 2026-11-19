@@ -1528,6 +1528,7 @@ export class App {
     const g = this.g!;
     const round = g.round;
     this.lbFrozen = this.leaderboardHtml();
+    for (const t of this.stage.querySelectorAll('.toast')) t.remove(); // shop messages don't follow you into battle
     const results = endTurn(g);
     save(g);
     // end-of-turn effects play on the shop before the battle; the rest wait until you're back
