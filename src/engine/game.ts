@@ -550,18 +550,20 @@ export function endTurnEffects(g: GameState, p: Player) {
 
 /**
  * Bots cheat, scaled to your rating: every End of Turn their units in hand and army get +X/+X.
- * Rating 1000: +4/+4, 1250: +8/+8, 1500 and up: +12/+12 (in between, in proportion; nothing at 750 or below),
- * ramping up linearly from +0/+0 on turn 1 to that full amount on turn 10.
+ * In full (from turn 10): rating 1000: +2/+2, 1250: +5/+5, 1500 and up: +8/+8 (in between, in proportion;
+ * nothing at 750 or below). It ramps up linearly from +0/+0 on turn 1 to that full amount on turn 10, and each
+ * time a bot gets it, it gets a random 60% to 100% of it.
  * Only in rated games (a rating was given), so test and balance simulations play fair.
  */
 export function botBonusFor(rating: number): number {
-  const x = rating <= 1000 ? 4 * (rating - 750) / 250 : 4 + 4 * (rating - 1000) / 250;
-  return Math.max(0, Math.min(12, Math.round(x)));
+  const x = rating <= 1000 ? 2 * (rating - 750) / 250 : 2 + 3 * (rating - 1000) / 250;
+  return Math.max(0, Math.min(8, x));
 }
 function botBonus(g: GameState, p: Player) {
   if (p.human || g.rating === undefined) return;
-  // ramps up: nothing on turn 1, the full amount from turn 10 on
-  const n = Math.round(botBonusFor(g.rating) * Math.min(1, Math.max(0, g.round - 1) / 9));
+  const full = botBonusFor(g.rating) * Math.min(1, Math.max(0, g.round - 1) / 9);
+  if (!full) return;
+  const n = Math.round(full * (0.6 + 0.4 * rand(g)));
   if (!n) return;
   for (const u of [...p.board, ...p.hand]) {
     u.atk += n;

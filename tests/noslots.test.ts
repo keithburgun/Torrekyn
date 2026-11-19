@@ -641,9 +641,9 @@ describe('Golden Light', () => {
 });
 
 describe('bot bonus', () => {
-  it('bots get +X/+X at End of Turn by your rating (+4 at 1000, +8 at 1250, +12 at 1500+); none unrated or for you', async () => {
+  it('bots get +X/+X at End of Turn by your rating (in full +2 at 1000, +5 at 1250, +8 at 1500+), 60-100% of it each time; none unrated or for you', async () => {
     const { botBonusFor, newGame, endTurnEffects } = await import('../src/engine/game');
-    expect([700, 875, 1000, 1125, 1250, 1500, 1800].map(botBonusFor)).toEqual([0, 2, 4, 6, 8, 12, 12]);
+    expect([700, 875, 1000, 1125, 1250, 1500, 1800].map(botBonusFor)).toEqual([0, 1, 2, 3.5, 5, 8, 8]);
     for (const rating of [undefined, 1250]) {
       const g = newGame(5, 'You', undefined, rating === undefined ? {} : { rating });
       const bot = g.players[1], me = g.players[0];
@@ -651,14 +651,25 @@ describe('bot bonus', () => {
       bot.board = [mk('ash')]; bot.hand = [mk('ash')]; me.board = [mk('ash')];
       g.round = 10;
       endTurnEffects(g, bot); endTurnEffects(g, me);
-      const n = rating ? 8 : 0;
-      expect([bot.board[0].atk, bot.hand[0].hp, me.board[0].atk]).toEqual([2 + n, 2 + n, 2]);
+      const n = bot.board[0].atk - 2;
+      if (rating) { expect(n).toBeGreaterThanOrEqual(3); expect(n).toBeLessThanOrEqual(5); } else expect(n).toBe(0);
+      expect([bot.hand[0].hp, me.board[0].atk]).toEqual([2 + n, 2]); // the same roll for the whole army and hand
     }
-    // the ramp at rating 1500 (+12 in full): turn 1 nothing, turn 4 a third, turn 10 and later all of it
+    // at rating 1500 (+8 in full): many End of Turns land between 60% and 100% of the ramped amount, and use the range
     const g = newGame(6, 'You', undefined, { rating: 1500 });
     const bot = g.players[1];
-    const got = [1, 2, 4, 7, 10, 14].map((r) => { g.round = r; bot.board = [{ uid: g.nextUid++, cardId: 'ash', golden: false, atk: 0, hp: 0, kw: [], mem: {} }]; bot.hand = []; endTurnEffects(g, bot); return bot.board[0].atk; });
-    expect(got).toEqual([0, 1, 4, 8, 12, 12]);
+    for (const r of [1, 4, 10, 14]) {
+      const seen = new Set<number>();
+      for (let k = 0; k < 60; k++) {
+        g.round = r; bot.board = [{ uid: g.nextUid++, cardId: 'ash', golden: false, atk: 0, hp: 0, kw: [], mem: {} }]; bot.hand = [];
+        endTurnEffects(g, bot);
+        seen.add(bot.board[0].atk);
+      }
+      const full = 8 * Math.min(1, (r - 1) / 9);
+      for (const v of seen) { expect(v).toBeGreaterThanOrEqual(Math.round(full * 0.6)); expect(v).toBeLessThanOrEqual(Math.round(full)); }
+      if (r >= 10) expect([...seen].sort()).toEqual([5, 6, 7, 8]);
+      if (r === 1) expect([...seen]).toEqual([0]);
+    }
   });
 });
 

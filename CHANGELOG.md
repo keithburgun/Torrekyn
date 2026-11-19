@@ -2,6 +2,9 @@
 
 Newest first. The version shows on the title screen.
 
+## 0.12.17 — 2026-11-19
+- Bot bonus reduced: in full (turn 10) +2/+2 at rating 1000, +5/+5 at 1250, +8/+8 at 1500. Each End of Turn a bot gets a random 60-100% of it.
+
 ## 0.12.16 — 2026-11-19
 - Alcove Prefex's faction icon is Buzz-Boink. Zara has her own portrait.
 
