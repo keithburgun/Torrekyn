@@ -804,3 +804,23 @@ describe('Double Thing copies stack', () => {
     expect(saves).toBe(2);
   });
 });
+
+describe('temporary keywords', () => {
+  it('a Pink Gem Shield made permanent by a later Divine Shield stays next turn', async () => {
+    const { startTurn } = await import('../src/engine/game');
+    const { addKw } = await import('../src/engine/core');
+    const { g, p } = setup();
+    const u = U(g, 'ash', 2, 2); u.kw = [];
+    p.board = [u]; p.hand = [U(g, 'pink_gem')];
+    play(g, p, 0, 1, u.uid);
+    expect(u.mem.tmpShield).toBe(1);
+    addKw(u, 'divineShield'); // a permanent Shield from something else
+    startTurn(g, p);
+    expect(u.kw).toContain('divineShield');
+    const v = U(g, 'ash', 2, 2); v.kw = [];
+    p.board = [v]; p.hand = [U(g, 'pink_gem')];
+    play(g, p, 0, 1, v.uid);
+    startTurn(g, p);
+    expect(v.kw).not.toContain('divineShield');
+  });
+});

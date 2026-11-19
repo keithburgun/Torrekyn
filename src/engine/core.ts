@@ -72,8 +72,11 @@ export function sample<T>(g: GameState, arr: T[], n: number): T[] {
 export function has(b: { kw: Keyword[] }, k: Keyword): boolean {
   return b.kw.includes(k);
 }
-export function addKw(b: { kw: Keyword[] }, k: Keyword) {
+export function addKw(b: { kw: Keyword[]; mem?: Record<string, number | undefined> }, k: Keyword) {
   if (!b.kw.includes(k)) b.kw.push(k);
+  // a keyword given for good makes a temporary one (Pink Gem's Shield, Purple Gem's Reborn) permanent
+  else if (b.mem && k === 'divineShield' && b.mem.tmpShield) delete b.mem.tmpShield;
+  else if (b.mem && k === 'reborn' && b.mem.tmpReborn) delete b.mem.tmpReborn;
 }
 export function removeKw(b: { kw: Keyword[] }, k: Keyword) {
   const i = b.kw.indexOf(k);
