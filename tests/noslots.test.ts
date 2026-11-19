@@ -267,14 +267,14 @@ describe('Larva', () => {
 });
 
 describe('v0.10.4 changes', () => {
-  it('Organizer: Deathrattle summons a Potato Gem, whose Battlecry happens', () => {
-    const { g, p, o } = setup();
-    const c = fight(g, p, o, [U(g, 'organizer', 1, 1), U(g, 'skel', 1, 50)], [U(g, 'skel', 5, 999)]);
-    c.run();
-    const i = c.frames.findIndex((f) => f.sides[0].some((u) => u.cardId === 'ancient_name_brambor'));
-    expect(i).toBeGreaterThan(0);
-    // the Potato Gem's Battlecry gave the Skel +2 Health (on top of whatever damage it had taken by then)
-    expect(c.frames.some((f, k) => k > 0 && (f.sides[0].find((u) => u.cardId === 'skel')?.hp ?? 0) > (c.frames[k - 1].sides[0].find((u) => u.cardId === 'skel')?.hp ?? 99))).toBe(true);
+  it('Planter (organizer): Taunt; Deathrattle gains a Potato Gem (Golden: 2)', () => {
+    for (const golden of [false, true]) {
+      const { g, p, o } = setup();
+      p.hand = [];
+      expect(def('organizer').name).toBe('Planter');
+      fight(g, p, o, [U(g, 'organizer', 1, 1, golden)], [U(g, 'skel', 5, 999)]).run();
+      expect(p.hand.map((u) => u.cardId)).toEqual(golden ? ['ancient_name_brambor', 'ancient_name_brambor'] : ['ancient_name_brambor']);
+    }
   });
 
   it('Rattler: 4 random units get "Deathrattle: Summon a random Tier 1 unit" at Start of Combat', () => {

@@ -435,12 +435,10 @@ export const EFFECTS: Record<string, Effect> = {
     avengeFn: (c) => { for (let i = 0; i < c.m; i++) gain(c, 'ancient_name_brambor'); },
   },
   organizer: {
-    // summons a Potato Gem (Golden: a Golden one); its Battlecry happens as it arrives
+    // Planter: a Potato Gem to your hand (Golden: 2)
     deathrattle: (c) => {
-      const cu = c.c.spawn(c.side, 'ancient_name_brambor', c.m === 2, c.pos);
-      if (!cu) return;
-      c.c.snap('trigger', { note: 'Organizer: Summon Potato Gem' });
-      c.c.triggerBattlecry(c.side, cu);
+      for (let i = 0; i < c.m; i++) gain(c, 'ancient_name_brambor');
+      c.c.snap('trigger', { note: `Planter: Gain ${c.m === 2 ? '2 Potato Gems' : 'a Potato Gem'}` });
     },
   },
   honeysuckle_brambor: {

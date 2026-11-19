@@ -128,7 +128,7 @@ let NAME_RE: RegExp | null = null;
 /** cards whose text names another card without saying its name exactly */
 const ALSO: Record<string, string[]> = { left_twinbot: ['right_twinbot'], right_twinbot: ['left_twinbot'] };
 
-/** the cards this card's text refers to (at most 2), e.g. Bulldozer → Red Gem, Organizer → Potato Gem */
+/** the cards this card's text refers to (at most 2), e.g. Bulldozer → Red Gem, Planter → Potato Gem */
 export function relatedCards(cardId: string): string[] {
   if (!NAME_RE) {
     for (const c of CARDS) NAME_ID.set(c.name.toLowerCase(), c.id);

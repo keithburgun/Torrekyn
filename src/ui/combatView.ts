@@ -374,7 +374,7 @@ export class CombatPlayer {
       sfx.click();
       await sleep(ms(stars.length > 10 ? 120 : 200));
     };
-    // the winner's Tavern Tier (when it counts): a row of stars across their portrait
+    // the base damage (2): a row of stars across the winner's portrait
     const n = parts.tier;
     const gap = Math.min(40, 200 / Math.max(1, n));
     for (let i = 0; i < n; i++) await pop(hero.x + (i - (n - 1) / 2) * gap, hero.y, 'tier');

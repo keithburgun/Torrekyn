@@ -540,13 +540,13 @@
   },
   {
    "id": "organizer",
-   "name": "Organizer",
+   "name": "Planter",
    "tribe": "brambor",
    "tier": 1,
    "atk": 1,
    "hp": 6,
-   "text": "Taunt. Deathrattle: Summon a Potato Gem.",
-   "goldenText": "Taunt. Deathrattle: Summon a Golden Potato Gem.",
+   "text": "Taunt. Deathrattle: Gain a Potato Gem.",
+   "goldenText": "Taunt. Deathrattle: Gain 2 Potato Gems.",
    "keywords": [
     "taunt"
    ]
