@@ -2,6 +2,9 @@
 
 Newest first. The version shows on the title screen.
 
+## 0.12.15 — 2026-11-19
+- Bots: choose trinkets by measured value (+100 Elo), use Oren Bark's power before shopping, level more as Zara, keep Robot Boy's pet. Fixes: Double Thing copies of Double Crown, Bell o' the Grave and Another Chance now stack; a real Divine Shield or Reborn on a unit with a Gem's temporary one no longer wears off; shop messages clear when a battle starts. Persona ratings recalibrated.
+
 ## 0.12.14 — 2026-11-18
 - Marn Torf's Into the Pot removes a unit from the Tavern (not your army).
 
