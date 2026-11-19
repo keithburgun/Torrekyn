@@ -116,6 +116,8 @@ export class Combat {
         id: u.id, cardId: u.cardId, golden: u.golden, atk: u.atk, hp: Math.max(0, u.hp), kw: [...u.kw], ...(EFFECTS[u.cardId]?.avenge ? { avenge: u.avenge } : {}), ...(u.mem.rattle ? { rattle: 1 } : {}), ...(u.mem.sellBonus ? { sellBonus: u.mem.sellBonus } : {}), ...(u.hp <= 0 ? { dead: true, ...(u.hp < 0 ? { over: -u.hp } : {}) } : {}),
       }));
     const frame: CombatFrame = { kind, sides: [f(this.sides[0]), f(this.sides[1])], ...extra };
+    // a note made while a hero power / trinket of one side runs belongs at that side's hero
+    if (kind === 'trigger' && frame.note && frame.source === undefined && frame.noteSide === undefined && this.heroSide !== undefined) frame.noteSide = this.heroSide;
     const mine = !this.g.simulateAll && this.sides.find((s) => s.persistent && s.owner.human);
     if (mine) frame.hand = mine.owner.hand.map((u) => ({ uid: u.uid, cardId: u.cardId, golden: u.golden, atk: u.atk, hp: u.hp, kw: [...u.kw] }));
     if (this.fx.length) {

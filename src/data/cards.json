@@ -39,11 +39,14 @@
    "name": "Memory",
    "tribe": "neverending",
    "tier": 1,
-   "atk": 3,
-   "hp": 1,
-   "text": "When you sell this, gain a random Tier 1 unit.",
-   "goldenText": "When you sell this, gain 2 random Tier 1 units.",
-   "keywords": []
+   "atk": 1,
+   "hp": 3,
+   "text": "Taunt. Reborn.",
+   "goldenText": "Taunt. Reborn.",
+   "keywords": [
+    "taunt",
+    "reborn"
+   ]
   },
   {
    "id": "ashlie",
@@ -194,7 +197,7 @@
   },
   {
    "id": "shield_azure",
-   "name": "Shield",
+   "name": "Bulwark",
    "tribe": "azure",
    "tier": 1,
    "atk": 2,
@@ -553,7 +556,7 @@
   },
   {
    "id": "honeysuckle_brambor",
-   "name": "Honeysuckle",
+   "name": "Foxglove",
    "tribe": "brambor",
    "tier": 2,
    "atk": 1,

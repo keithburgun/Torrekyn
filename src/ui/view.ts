@@ -58,7 +58,7 @@ export function abilityTags(cardId: string): string[] {
   const tags: string[] = [];
   if (!e) return tags;
   if (e.battlecry) tags.push('Battlecry');
-  if (e.deathrattle || cardId === 'golden_light') tags.push('Deathrattle');
+  if (e.deathrattle) tags.push('Deathrattle');
   if (e.rally) tags.push('Rally');
   if (e.avenge) tags.push('Avenge');
   if (e.soc) tags.push('Start');
@@ -100,7 +100,8 @@ export function cardHtml(u: { cardId: string; golden: boolean; atk: number; hp: 
   const baseAtk = d.atk * (u.golden ? 2 : 1);
   const baseHp = d.hp * (u.golden ? 2 : 1);
   const icons = kw.filter((k) => k !== 'taunt' && k !== 'divineShield').map((k) => `<span class="kw-${k}" title="${KW_ICON[k][1]}">${KW_ICON[k][0]}</span>`).join('');
-  const tags = abilityTags(u.cardId).slice(0, 2).map((t) => `<i>${t}</i>`).join('');
+  // Golden cards say so (a gold chip beside the first ability tag)
+  const tags = (u.golden ? '<i class="gold">Golden</i>' : '') + abilityTags(u.cardId).slice(0, u.golden ? 1 : 2).map((t) => `<i>${t}</i>`).join('');
   return `<div class="${cls}" data-zone="${o.zone}" data-idx="${o.idx}" ${o.id !== undefined ? `data-id="${o.id}"` : ''} style="left:${o.x}px;top:${o.y}px">
   <div class="face"></div>
   <div class="art" style="background-image:url('${cardArt(u.cardId)}')"></div>
@@ -147,9 +148,15 @@ export function relatedCards(cardId: string): string[] {
 }
 
 /** a related card, as shown beside a zoomed one (its base stats) */
-export function relatedCardHtml(id: string, p?: Player): string {
+/**
+ * A card named by another card's text, as that card makes it: Golden when the (Golden) card's text says
+ * "Golden <name>" (Golden Owl Summoner → Golden Owl).
+ */
+export function relatedCardHtml(id: string, p?: Player, from?: { cardId: string; golden: boolean }): string {
   const d = def(id);
-  return bigCardHtml({ cardId: id, golden: false, atk: d.atk, hp: d.hp, kw: [...d.keywords] }, '', p);
+  const golden = !!from?.golden && new RegExp(`\\bGolden ${d.name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}`, 'i').test(def(from.cardId).goldenText);
+  const m = golden ? 2 : 1;
+  return bigCardHtml({ cardId: id, golden, atk: d.atk * m, hp: d.hp * m, kw: [...d.keywords] }, '', p);
 }
 
 export function bigCardHtml(u: { cardId: string; golden: boolean; atk: number; hp: number; kw: Keyword[]; mem?: Record<string, number> }, extra = '', p?: Player): string {

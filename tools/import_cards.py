@@ -37,7 +37,7 @@ KEYWORDS = {
 GOLDEN = {
     "skeleton": "Deathrattle: Spawn 4 1/1 Skels.",
     "ash": "Taunt.",
-    "memory": "When you sell this, gain 2 random Tier 1 units.",
+    "memory": "Taunt. Reborn.",
     "ashlie": "Battlecry: Your Neverending units have +2 Attack this game.",
     "bramble": "Whenever a Neverending unit dies, this gains +2 Attack.",
     "thicket": "At the end of the turn, give the left-most card in your army +2 Health.",

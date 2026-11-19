@@ -3,7 +3,7 @@ import { ALL_TRIBES, CARDS, TRIBE_NAMES, def } from '../engine/core';
 import { EFFECTS } from '../engine/effects';
 import type { CardDef, GameState, Tribe } from '../engine/types';
 import { ACHIEVEMENTS, isUnlocked, progress, statValue, unlockedCount } from './achievements';
-import { bigCardHtml, cardArt, esc } from './view';
+import { abilityTags, bigCardHtml, cardArt, esc } from './view';
 
 /** a card that represents each tribe on the announcement screen */
 const TRIBE_FACE: Record<Tribe, string> = {
@@ -42,7 +42,7 @@ export interface ViewerState {
 
 const ABILITIES: [string, (c: CardDef) => boolean][] = [
   ['Battlecry', (c) => !!EFFECTS[c.id]?.battlecry],
-  ['Deathrattle', (c) => !!EFFECTS[c.id]?.deathrattle || c.id === 'golden_light'],
+  ['Deathrattle', (c) => !!EFFECTS[c.id]?.deathrattle],
   ['Rally', (c) => !!EFFECTS[c.id]?.rally],
   ['Avenge', (c) => !!EFFECTS[c.id]?.avenge],
   ['Start of Combat', (c) => !!EFFECTS[c.id]?.soc],
@@ -54,6 +54,8 @@ const ABILITIES: [string, (c: CardDef) => boolean][] = [
   ['Reborn', (c) => c.keywords.includes('reborn') || /reborn/i.test(c.text)],
   ['Venomous', (c) => c.keywords.includes('venomous') || /venomous/i.test(c.text)],
   ['Poisonous', (c) => c.keywords.includes('poisonous') || /poisonous/i.test(c.text)],
+  // an ability with no trigger word (Has..., Whenever..., After you..., When this...)
+  ['Passive', (c) => abilityTags(c.id).includes('Passive')],
   ['Token', (c) => !!c.token],
 ];
 
@@ -61,12 +63,13 @@ export function filteredCards(v: ViewerState, g: GameState | null): CardDef[] {
   const q = v.q.trim().toLowerCase();
   const ab = ABILITIES.find(([n]) => n === v.ability)?.[1];
   return CARDS.filter((c) => {
+    if (c.hidden) return false;
     if (v.onlyMatch && g && c.tribe !== 'neutral' && !g.tribes.includes(c.tribe)) return false;
     if (v.tribe && c.tribe !== v.tribe) return false;
     if (v.tier && c.tier !== v.tier) return false;
     if (ab && !ab(c)) return false;
     if (!v.ability && c.token && !q) return false; // tokens only when asked for
-    if (q && !`${c.name} ${c.text} ${c.goldenText} ${TRIBE_NAMES[c.tribe]}`.toLowerCase().includes(q)) return false;
+    if (q && !`${c.name} ${c.text} ${c.goldenText} ${TRIBE_NAMES[c.tribe]} ${abilityTags(c.id).join(' ')}`.toLowerCase().includes(q)) return false;
     return true;
   }).sort((a, b) => a.tier - b.tier || a.tribe.localeCompare(b.tribe) || a.name.localeCompare(b.name));
 }

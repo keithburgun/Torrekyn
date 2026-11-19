@@ -2,6 +2,9 @@
 
 Newest first. The version shows on the title screen.
 
+## 0.12.19 — 2026-11-19
+- Business Demons and Kindred colours further apart; second Honeysuckle is now Foxglove (and the Azure Shield is now Bulwark); one Divine Shield shape for all; Golden tag on cards; Golden summons preview as Golden; Passive filter and searchable tags in Card Viewer; dark-mode opt-outs for the upgrade cost; tribe-bound trinkets only appear with their tribe; hero/trinket trigger notes show by their own hero; Memory is now 1/3 Taunt Reborn
+
 ## 0.12.18 — 2026-11-19
 - Damage is now 2 + 1 per surviving unit (Tavern Tier no longer counts). Organizer is renamed Planter: Taunt. Deathrattle: Gain a Potato Gem (Golden: 2).
 

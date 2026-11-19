@@ -234,7 +234,7 @@ export class CombatPlayer {
         const r = document.createElement('div');
         const toLeft = !this.L.portrait && parseFloat(this.zoomEl.style.left) > this.L.cx;
         r.className = `zoom-related ${this.L.portrait ? (parseFloat(this.zoomEl.style.top) < this.L.H / 2 ? 'below' : 'above') : toLeft ? 'left' : 'right'}`;
-        r.innerHTML = ids.map((x) => relatedCardHtml(x)).join('');
+        r.innerHTML = ids.map((x) => relatedCardHtml(x, undefined, u)).join('');
         this.zoomEl.appendChild(r);
       }, 500);
     }
@@ -732,8 +732,11 @@ export class CombatPlayer {
       const n = document.createElement('div');
       n.className = 'trigger-note';
       n.textContent = f.note;
-      n.style.left = src ? `${parseFloat(src.style.left) + this.L.cardW / 2}px` : `${this.L.cx}px`;
-      n.style.top = src ? `${parseFloat(src.style.top) - 30}px` : `${this.L.combat.banner}px`;
+      // a hero power's or trinket's note sits by that side's hero (above yours, below theirs), so it can't be
+      // mistaken for something your own hero did
+      const hs = f.noteSide !== undefined && !src ? this.heroCenter(f.noteSide) : null;
+      n.style.left = src ? `${parseFloat(src.style.left) + this.L.cardW / 2}px` : hs ? `${hs.x}px` : `${this.L.cx}px`;
+      n.style.top = src ? `${parseFloat(src.style.top) - 30}px` : hs ? `${hs.y + (f.noteSide === this.me ? -95 : 95)}px` : `${this.L.combat.banner}px`;
       n.style.animationDuration = `${this.t(1200)}ms`;
       this.layer.appendChild(n);
       setTimeout(() => n.remove(), this.t(1250));

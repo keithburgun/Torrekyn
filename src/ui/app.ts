@@ -882,7 +882,7 @@ export class App {
     }
     y = Math.max(8, Math.min(L.H - 10 - H, y));
     return `<div class="popover ${actions ? 'interactive' : ''} ${actionsTop ? 'actions-top' : ''} ${actions && this.justSelected() ? 'arming' : ''}" style="left:${x}px;top:${y}px;width:${W}px">
-      <div class="pop-card" data-card="${v.cardId}">${bigCardHtml(v, '', this.me)}</div>${actions ? `<div class="actions">${actions}</div>` : ''}</div>`;
+      <div class="pop-card" data-card="${v.cardId}" data-golden="${v.golden ? 1 : 0}">${bigCardHtml(v, '', this.me)}</div>${actions ? `<div class="actions">${actions}</div>` : ''}</div>`;
   }
 
   /** Phones: details for your hero power or a trinket, with a big Use button where it applies. */
@@ -1052,7 +1052,8 @@ export class App {
     const where = L.portrait ? (y > L.H / 2 ? 'above' : 'below') : x + w / 2 < L.W / 2 ? 'right' : 'left';
     const el = document.createElement('div');
     el.className = `pop-related ${where} ${instant ? '' : 'fresh'}`;
-    el.innerHTML = ids.map((id) => `<div class="pop-card rel">${relatedCardHtml(id, this.me)}</div>`).join('');
+    const from = { cardId: pc.dataset.card!, golden: pc.dataset.golden === '1' };
+    el.innerHTML = ids.map((id) => `<div class="pop-card rel">${relatedCardHtml(id, this.me, from)}</div>`).join('');
     pop.appendChild(el);
   }
 

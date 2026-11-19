@@ -7,7 +7,7 @@ for f in files:
     for k in ('pops', 'streaks', 'base', 'ages'): D[k] += d[k]
     D['unitsSeen'] += d['unitsSeen']
 cards = {c['id']: c for c in json.load(open(__import__('os').path.join(__import__('os').path.dirname(__import__('os').path.abspath(__file__)), '..', 'src/data/cards.json')))['cards']}
-name = lambda i: cards.get(i, {'name': i})['name'] + (' (K)' if i == 'honeysuckle_kindred' else '')
+name = lambda i: cards.get(i, {'name': i})['name']
 pops, streaks, base, ages = D['pops'], D['streaks'], D['base'], D['ages']
 print(f"pop-offs: {len(pops)}  streaks of 8+: {len(streaks)}  late-game armies (round 9+): {len(base)}")
 print(f"avg round of pop-off {sum(p['round'] for p in pops)/max(1,len(pops)):.1f}; streak reached at round {sum(p['round'] for p in streaks)/max(1,len(streaks)):.1f}")

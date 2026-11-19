@@ -188,7 +188,7 @@ export const HEROES: HeroDef[] = [
       const d = c.spawn(s, 'dragon', false, s.units.length);
       if (d) { d.atk += lvl; d.hp += lvl; }
       if (s.persistent) s.owner.heroMem.brood = lvl + 1;
-      c.snap('trigger', { note: 'Broodmother: Summon a Dragon' });
+      c.snap('trigger', { note: 'Broodmother: Summon a Dragon', noteSide: s.idx });
     },
     progress: (g, p) => `Dragons ${1 + (p.heroMem.brood ?? 0)}/${1 + (p.heroMem.brood ?? 0)}`,
   },
@@ -285,6 +285,8 @@ export interface TrinketDef {
   text: string;
   cost: number;
   greater?: boolean;
+  /** only offered when this tribe is in the match (like heroes' needsTribe) */
+  needsTribe?: Tribe;
   onGain?(g: GameState, p: Player): void;
   endTurn?(g: GameState, p: Player): void;
   soc?(c: Combat, s: Side): void;
@@ -300,7 +302,7 @@ export interface TrinketDef {
 export const TRINKETS: TrinketDef[] = [
   // lesser (offered at the start of turn 6)
   { id: 'healing_draught', name: "Techin'", cost: 0, text: 'Gain 3 Gold. Your Tavern no longer offers Tier 1 or 2 units.', onGain: (g, p) => { p.gold += 3; } },
-  { id: 'whetstone', name: 'Crop Circle', cost: 1, text: 'End of Turn: Gain a random Brambor unit.', endTurn: (g, p) => {
+  { id: 'whetstone', name: 'Crop Circle', cost: 1, needsTribe: 'brambor', text: 'End of Turn: Gain a random Brambor unit.', endTurn: (g, p) => {
     const id = drawFromPool(g, (cid) => def(cid).tribe === 'brambor' && def(cid).tier <= p.tier);
     if (id) gainNew(g, p, id);
   } },
@@ -315,7 +317,7 @@ export const TRINKETS: TrinketDef[] = [
       queueDiscover(g, p, discoverOptions(g, (id) => def(id).tier === 5), 'Old Map: Discover a Tier 5 unit');
     },
     progress: (p) => `${p.heroMem.t_old_map ?? 0}/2` },
-  { id: 'bronze_compass', name: 'Purple Bracer', cost: 2, text: 'Your Neverending units have +12 Attack.' }, // see effStats
+  { id: 'bronze_compass', name: 'Purple Bracer', cost: 2, needsTribe: 'neverending', text: 'Your Neverending units have +12 Attack.' }, // see effStats
   { id: 'iron_bracer', name: 'Big Big Shield', cost: 2, text: 'Start of Combat: Give 2 random friendly units Divine Shield.', soc: (c, s) => { for (const u of sample(c.g, s.units.filter((x) => x.hp > 0 && !x.kw.includes('divineShield')), 2)) addKw(u, 'divineShield'); } },
   { id: 'rattler', name: 'Rattler', cost: 2, text: 'Start of Combat: Give 4 random friendly units "Deathrattle: Summon a random Tier 1 unit."',
     soc: (c, s) => { for (const u of sample(c.g, s.units.filter((x) => x.hp > 0), 4)) u.mem.rattle = (u.mem.rattle ?? 0) + 1; } },
@@ -330,7 +332,7 @@ export const TRINKETS: TrinketDef[] = [
       queueDiscover(g, p, discoverOptions(g, (id) => def(id).tier === 6), 'Summit Key: Discover a Tier 6 unit');
     } },
   { id: 'double_thing', name: 'Double Thing', cost: 1, text: 'When you get your Greater Trinket, this becomes another copy of it.' }, // see pickTrinket
-  { id: 'incense', name: 'Incense', cost: 3, text: 'Start of Combat: Give your left-most and right-most Neverending units Reborn.',
+  { id: 'incense', name: 'Incense', cost: 3, needsTribe: 'neverending', text: 'Start of Combat: Give your left-most and right-most Neverending units Reborn.',
     soc: (c, s) => {
       const nv = s.units.filter((u) => u.hp > 0 && isTribe(u, 'neverending'));
       for (const u of new Set([nv[0], nv[nv.length - 1]])) if (u) addKw(u, 'reborn');
@@ -356,7 +358,7 @@ export const TRINKETS: TrinketDef[] = [
       if (!heroAvenge(s, 'hourglass_of_plenty', 6)) return;
       const ids = Object.keys(c.g.pool).filter((id) => EFFECTS[id]?.deathrattle && !def(id).token && def(id).tier <= s.owner.tier);
       const id = pick(c.g, ids);
-      if (id && c.spawn(s, id, false, s.units.length)) c.snap('trigger', { note: `${trinketDef('hourglass_of_plenty').name}: Summon ${def(id).name}` });
+      if (id && c.spawn(s, id, false, s.units.length)) c.snap('trigger', { note: `${trinketDef('hourglass_of_plenty').name}: Summon ${def(id).name}`, noteSide: s.idx });
     } },
   { id: 'new_power', name: 'New Power', cost: 4, greater: true, text: 'Discover a new Hero Power to replace your current one.',
     onGain: (g, p) => {
@@ -370,7 +372,7 @@ export const TRINKETS: TrinketDef[] = [
     onFriendlyDeath: (c, s) => {
       if (!heroAvenge(s, 'warlords_horn', 8)) return;
       if (s.persistent) s.owner.maxGoldBonus += 1;
-      c.snap('trigger', { note: `${trinketDef('warlords_horn').name}: +1 maximum Gold` });
+      c.snap('trigger', { note: `${trinketDef('warlords_horn').name}: +1 maximum Gold`, noteSide: s.idx });
     } },
   { id: 'gravebell', name: "Bell o' the Grave", cost: 6, greater: true, text: 'Your Deathrattles trigger an extra time.' },
   { id: 'golden_lantern', name: 'Golden Brass', cost: 6, greater: true, text: 'Every other End of Turn: Make a random non-Golden unit in your army Golden.',
@@ -425,7 +427,7 @@ export function shopBonus(p: Player): number {
 }
 
 export function offerTrinkets(g: GameState, p: Player, greater: boolean) {
-  const pool = TRINKETS.filter((t) => !!t.greater === greater && !p.trinkets.includes(t.id));
+  const pool = TRINKETS.filter((t) => !!t.greater === greater && !p.trinkets.includes(t.id) && (!t.needsTribe || g.tribes.includes(t.needsTribe)));
   p.trinketOffer = sample(g, pool, 4).map((t) => t.id);
 }
 

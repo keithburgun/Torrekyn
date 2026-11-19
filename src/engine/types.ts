@@ -197,6 +197,8 @@ export interface CombatFrame {
   splash?: number[];
   source?: number;
   note?: string;
+  /** a note from a hero power or trinket: shown at that side's hero, not in the middle */
+  noteSide?: 0 | 1;
   /** your hand at this moment (only for your own battles), so cards gained or summoned from it show up */
   hand?: { uid: number; cardId: string; golden: boolean; atk: number; hp: number; kw: Keyword[] }[];
 }

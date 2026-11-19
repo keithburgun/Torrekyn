@@ -29,15 +29,15 @@
   --card-edge: #9c9087;
   --t-neverending: #8a4fd6;
   --t-azure: #2c4fb8;
-  --t-kindred: #e8648f;
+  --t-kindred: #f07cc4;
   --t-brambor: #8b5a2b;
   --t-cloister: #2f7d4a;
   --t-alcove: #f2c419;
-  --t-demons: #d63a3a;
+  --t-demons: #e0441c;
   --t-neutral: #2f2c2c;
   --display: 'Grenze', Georgia, serif;
   --text: 'Amaranth', 'Trebuchet MS', sans-serif;
-  color-scheme: dark;
+  color-scheme: only dark;
 }
 
 * { box-sizing: border-box; }
@@ -141,6 +141,7 @@ b { font-weight: 800; }
 }
 .card .abil { position: absolute; bottom: 28px; left: 0; right: 0; display: flex; justify-content: center; gap: 3px; }
 .card .abil i { font-style: normal; font-size: 11px; font-weight: 700; background: rgba(255, 255, 255, 0.55); color: #6b5f57; border-radius: 999px; padding: 0 6px; }
+.card .abil i.gold { background: linear-gradient(180deg, #ffe68a, #f0b72e); color: #6a4300; box-shadow: 0 0 0 1px #c98a10; }
 /* tribe nameplate at the bottom of every card */
 .card .tribe-plate { position: absolute; bottom: 6px; left: 20px; right: 20px; height: 18px; border-radius: 6px; display: flex; align-items: center; justify-content: center;
   font-size: 10px; font-weight: 800; letter-spacing: 0.03em; text-transform: uppercase; color: #fff; white-space: nowrap; overflow: hidden;
@@ -181,14 +182,14 @@ b { font-weight: 800; }
 .card.kw-taunt .tribe-plate { bottom: 6px; }
 .card.kw-taunt .stat { bottom: -8px; }
 .card.kw-divineShield::after {
-  content: ''; position: absolute; inset: -14px -12px; border-radius: 50% / 46%; pointer-events: none; z-index: 4;
+  /* one shape for every Shield, sized so Taunt's longer shield-shaped card fits inside it too */
+  content: ''; position: absolute; inset: -22px -16px -34px; border-radius: 50% / 46%; pointer-events: none; z-index: 4;
   background:
     radial-gradient(ellipse at 34% 20%, rgba(255, 255, 255, 0.55) 0 5%, rgba(255, 255, 255, 0) 13%),
     radial-gradient(ellipse at center, rgba(255, 236, 150, 0.06) 0 52%, rgba(255, 230, 140, 0.14) 62%, rgba(255, 226, 120, 0.6) 69%, rgba(255, 248, 210, 1) 74%, rgba(255, 244, 190, 1) 78%, rgba(255, 205, 90, 0.95) 81%, rgba(255, 255, 255, 0) 85%);
   box-shadow: 0 0 22px rgba(255, 220, 120, 0.55);
   animation: shimmer 2.4s ease-in-out infinite;
 }
-.card.kw-taunt.kw-divineShield::after { inset: -30px -22px -58px; }
 .card.kw-poisonous .art { box-shadow: inset 0 0 18px rgba(120, 230, 90, 0.95), inset 0 0 0 2px #b8ff9a; }
 .card.kw-reborn .art { box-shadow: inset 0 0 20px rgba(150, 230, 255, 0.95), inset 0 0 0 2px #fff; }
 @keyframes shimmer { 50% { opacity: 0.8; } }
@@ -402,8 +403,8 @@ b { font-weight: 800; }
 .tavern-btn.freeze.on .tb-icon { color: #fff; }
 .tavern-btn.off { opacity: 0.45; filter: saturate(0.3); }
 .tb-cost { position: absolute; top: -6px; right: -6px; width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center;
-  background: radial-gradient(circle at 35% 30%, #fff8cf, var(--coin) 55%, #e59a12); color: #5a3a00; font-family: var(--display); font-weight: 700; font-size: 17px;
-  box-shadow: 0 0 0 3px var(--slate); }
+  background: radial-gradient(circle at 35% 30%, #ffeeb0, var(--coin) 55%, #d98d10); color: #5a3a00; font-family: var(--display); font-weight: 700; font-size: 17px;
+  box-shadow: 0 0 0 3px var(--slate); forced-color-adjust: none; }
 .tb-label { position: absolute; bottom: -28px; left: 50%; transform: translateX(-50%); white-space: nowrap; font-size: 17px; font-weight: 800; color: var(--ink); text-shadow: 0 2px 4px #000; }
 .tk-num { position: absolute; top: 0; left: 50%; transform: translateX(-50%); width: 116px; height: 116px; display: flex; flex-direction: column; align-items: center; justify-content: center;
   text-align: center; font-family: var(--display); font-weight: 700; font-size: 76px; line-height: 0.8; color: #fff;

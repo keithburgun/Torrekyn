@@ -1,7 +1,7 @@
 /** v0.10: slots no longer have bonuses; the cards and trinkets that used them were rewritten. Each one, checked. */
 import { describe, it, expect } from 'vitest';
 import { newGame, play, endTurnEffects, buy, sell } from '../src/engine/game';
-import { makeUnit, def } from '../src/engine/core';
+import { makeUnit, def, CARDS } from '../src/engine/core';
 import { Combat } from '../src/engine/combat';
 import { gemLevel } from '../src/engine/effects';
 import { peebSync } from '../src/engine/fx';
@@ -833,5 +833,26 @@ describe('temporary keywords', () => {
     play(g, p, 0, 1, v.uid);
     startTurn(g, p);
     expect(v.kw).not.toContain('divineShield');
+  });
+});
+
+describe('card names', () => {
+  it('no two cards share a name', () => {
+    const n = new Map<string, string[]>();
+    for (const c of CARDS.filter((x) => !x.hidden)) n.set(c.name, [...(n.get(c.name) ?? []), c.id]);
+    expect([...n].filter(([, ids]) => ids.length > 1)).toEqual([]);
+  });
+});
+
+describe('tribe-bound trinkets', () => {
+  it("Purple Bracer and Incense need Neverending, Crop Circle needs Brambor", async () => {
+    const { offerTrinkets } = await import('../src/engine/heroes');
+    const { g, p } = setup();
+    for (const [tribes, banned] of [[['azure', 'kindred', 'alcove', 'demons', 'cloister'], ['bronze_compass', 'incense', 'whetstone']], [['neverending', 'brambor', 'alcove', 'demons', 'cloister'], []]] as const) {
+      g.tribes = [...tribes];
+      const seen = new Set<string>();
+      for (let k = 0; k < 200; k++) { p.trinkets = []; offerTrinkets(g, p, false); for (const t of p.trinketOffer!) seen.add(t); }
+      for (const t of ['bronze_compass', 'incense', 'whetstone']) expect(seen.has(t)).toBe(!(banned as readonly string[]).includes(t));
+    }
   });
 });

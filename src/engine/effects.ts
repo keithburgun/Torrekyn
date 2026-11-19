@@ -165,9 +165,6 @@ export const EFFECTS: Record<string, Effect> = {
   buzz_boink: {
     deathrattle: (c) => c.c.spawnMany(c.side, 'robo', false, c.m, c.pos),
   },
-  memory: {
-    onSell: (c) => { for (let i = 0; i < c.m; i++) gain(c, randomTier(c, 1)); },
-  },
   ashlie: {
     battlecry: (c) => {
       c.p.tribeAtk.neverending = (c.p.tribeAtk.neverending ?? 0) + c.m;
