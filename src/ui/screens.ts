@@ -41,7 +41,7 @@ export interface ViewerState {
 }
 
 const ABILITIES: [string, (c: CardDef) => boolean][] = [
-  ['Battlecry', (c) => !!EFFECTS[c.id]?.battlecry],
+  ['Arrive', (c) => !!EFFECTS[c.id]?.battlecry],
   ['Deathrattle', (c) => !!EFFECTS[c.id]?.deathrattle],
   ['Rally', (c) => !!EFFECTS[c.id]?.rally],
   ['Avenge', (c) => !!EFFECTS[c.id]?.avenge],
@@ -50,9 +50,9 @@ const ABILITIES: [string, (c: CardDef) => boolean][] = [
   ['Sell', (c) => !!EFFECTS[c.id]?.onSell],
   ['Discover', (c) => /discover/i.test(c.text)],
   ['Taunt', (c) => c.keywords.includes('taunt') || /taunt/i.test(c.text)],
-  ['Divine Shield', (c) => c.keywords.includes('divineShield') || /divine shield/i.test(c.text)],
+  ['Bubble', (c) => c.keywords.includes('divineShield') || /bubble/i.test(c.text)],
   ['Reborn', (c) => c.keywords.includes('reborn') || /reborn/i.test(c.text)],
-  ['Venomous', (c) => c.keywords.includes('venomous') || /venomous/i.test(c.text)],
+  ['Doomstrike', (c) => c.keywords.includes('venomous') || /doomstrike/i.test(c.text)],
   ['Poisonous', (c) => c.keywords.includes('poisonous') || /poisonous/i.test(c.text)],
   // an ability with no trigger word (Has..., Whenever..., After you..., When this...)
   ['Passive', (c) => abilityTags(c.id).includes('Passive')],

@@ -28,7 +28,7 @@ const at = (c: Combat, frame: number, id: string) => c.frames[frame].sides[0].fi
 const afterSoc = (c: Combat) => c.frames.findIndex((f) => f.kind === 'attack') - 1;
 
 describe('cards rewritten without slots', () => {
-  it('Message: Battlecry gives units with Taunt or Divine Shield +2/+2', () => {
+  it('Message: Arrive gives units with Taunt or Bubble +2/+2', () => {
     const { g, p } = setup();
     const t = U(g, 'ash', 2, 2); t.kw = ['taunt'];
     const d = U(g, 'doctor', 2, 2); d.kw = ['divineShield'];
@@ -38,7 +38,7 @@ describe('cards rewritten without slots', () => {
     expect([t.atk, t.hp, d.atk, d.hp, n.atk, n.hp]).toEqual([4, 4, 4, 4, 2, 2]);
   });
 
-  it('Front and Center: Start of Combat gives two Azure units Divine Shield', () => {
+  it('Front and Center: Start of Combat gives two Azure units Bubble', () => {
     const { g, p, o } = setup();
     const az = [U(g, 'knight', 1, 50), U(g, 'longbow', 1, 50), U(g, 'front_and_center', 1, 50)];
     az.forEach((x) => (x.kw = []));
@@ -55,7 +55,7 @@ describe('cards rewritten without slots', () => {
       const left = U(g, 'longbow', 3, 40); left.kw = [];
       const right = U(g, 'longbow', 3, 40); right.kw = [];
       const far = U(g, 'longbow', 3, 40); far.kw = [];
-      // War Drum (+2 Attack) and Aegis Charm (Divine Shield on the 2 left-most) give them something to keep
+      // War Drum (+2 Attack) and Aegis Charm (Bubble on the 2 left-most) give them something to keep
       p.trinkets = ['war_drum', 'aegis_charm'];
       p.board = [left, U(g, 'remember', 1, 40, golden), right, far];
       fight(g, p, o, p.board, [U(g, 'skel', 1, 3)]).run();
@@ -76,12 +76,12 @@ describe('cards rewritten without slots', () => {
     expect([az.atk, az.hp]).toEqual([4, 33]);
   });
 
-  it('Commitment: Start of Combat +1/+1 to your units, improving with each Battlecry unit played', () => {
+  it('Commitment: Start of Combat +1/+1 to your units, improving with each Arrive unit played', () => {
     const { g, p, o } = setup();
     const com = U(g, 'commitment', 8, 20);
     p.board = [com, U(g, 'skel', 1, 30)];
     p.hand = [U(g, 'red_gem'), U(g, 'hug')];
-    play(g, p, 0, 2); // a Battlecry unit
+    play(g, p, 0, 2); // an Arrive unit
     play(g, p, 0, 3); // another
     expect(com.mem.imp).toBe(2);
     const c = fight(g, p, o, p.board.slice(0, 2), [U(g, 'skel', 1, 99)]);
@@ -212,7 +212,7 @@ describe('trinkets rewritten without slots', () => {
 });
 
 describe('v0.10.2 changes', () => {
-  it('Shield: has Taunt, and its Battlecry gives the chosen unit Taunt (Golden: one more)', () => {
+  it('Shield: has Taunt, and its Arrive gives the chosen unit Taunt (Golden: one more)', () => {
     const { g, p } = setup();
     const a = U(g, 'doctor', 2, 2), b = U(g, 'doctor', 2, 2), c = U(g, 'doctor', 2, 2);
     [a, b, c].forEach((x) => (x.kw = []));
@@ -289,14 +289,14 @@ describe('v0.10.4 changes', () => {
     expect(summons).toBeGreaterThanOrEqual(4);
   });
 
-  it('stats: Omar Evans has no Venomous; Green Ninja is 5/2; every Gem is 1/1', () => {
+  it('stats: Omar Evans has no Doomstrike; Green Ninja is 5/2; every Gem is 1/1', () => {
     expect(def('omar_evans').keywords).not.toContain('venomous');
     expect([def('orange_ninja').atk, def('orange_ninja').hp]).toEqual([5, 2]);
     for (const id of ['tourmaline', 'red_gem', 'ancient_name_brambor', 'purple_gem', 'pink_gem', 'green_gem']) expect([def(id).atk, def(id).hp]).toEqual([1, 1]);
   });
 });
 
-it('Iron Bracer: 2 random friendly units get Divine Shield at Start of Combat', () => {
+it('Iron Bracer: 2 random friendly units get Bubble at Start of Combat', () => {
   const { g, p, o } = setup();
   p.trinkets = ['iron_bracer'];
   const mine = [U(g, 'doctor', 1, 50), U(g, 'doctor', 1, 50), U(g, 'doctor', 1, 50), U(g, 'doctor', 1, 50)];
@@ -306,7 +306,7 @@ it('Iron Bracer: 2 random friendly units get Divine Shield at Start of Combat', 
   expect(c.frames[afterSoc(c)].sides[0].filter((u) => u.kw.includes('divineShield')).length).toBe(2);
 });
 
-it('Therapist: Battlecry gives a unit Taunt and +12 Health (Golden: +24)', () => {
+it('Therapist: Arrive gives a unit Taunt and +12 Health (Golden: +24)', () => {
   const { g, p } = setup();
   const t = U(g, 'doctor', 2, 2); t.kw = ['taunt'];
   p.board = [t];
@@ -411,7 +411,7 @@ describe('v0.12 card changes', () => {
 });
 
 describe('Buzz-Boink', () => {
-  it('a Tier 1 Alcove 1/1 with Divine Shield; Deathrattle summons a 1/1 Robo (Golden: 2)', () => {
+  it('a Tier 1 Alcove 1/1 with Bubble; Deathrattle summons a 1/1 Robo (Golden: 2)', () => {
     expect([def('buzz_boink').tier, def('buzz_boink').tribe, def('buzz_boink').atk, def('buzz_boink').hp]).toEqual([1, 'alcove', 1, 1]);
     expect(def('buzz_boink').keywords).toContain('divineShield');
     expect(def('robo').token).toBe(true);
@@ -467,7 +467,7 @@ it('Life: Start of Combat gains a Pink Gem to your hand (Golden: 2); Grief: Upgr
 });
 
 describe('v0.12.3 Kindred', () => {
-  it('Pink Gem: +6/+6 and Divine Shield until next turn, twice over for a Kindred unit (Golden doubles)', async () => {
+  it('Pink Gem: +6/+6 and Bubble until next turn, twice over for a Kindred unit (Golden doubles)', async () => {
     const { startTurn } = await import('../src/engine/game');
     for (const golden of [false, true]) {
       const { g, p } = setup();
@@ -541,7 +541,7 @@ describe('v0.12.4 cards', () => {
     expect(def('larva').name).toBe('Slime');
   });
 
-  it('Beast Vine: Battlecry and Deathrattle gain 2 random Gems (Golden: 4)', async () => {
+  it('Beast Vine: Arrive and Deathrattle gain 2 random Gems (Golden: 4)', async () => {
     const { GEMS } = await import('../src/engine/effects');
     for (const golden of [false, true]) {
       const { g, p, o } = setup();
@@ -695,7 +695,7 @@ describe('new heroes (v0.12.11)', () => {
     expect(p.upgradeCost).toBe(4);
   });
 
-  it('Robot Boy: starts with a 1/1 Venomous Orbo Pet of every tribe', async () => {
+  it('Robot Boy: starts with a 1/1 Doomstrike Orbo Pet of every tribe', async () => {
     const { gainPower } = await import('../src/engine/heroes');
     const { isTribe } = await import('../src/engine/core');
     const { g, p } = setup();
@@ -817,7 +817,7 @@ describe('Double Thing copies stack', () => {
 });
 
 describe('temporary keywords', () => {
-  it('a Pink Gem Shield made permanent by a later Divine Shield stays next turn', async () => {
+  it('a Pink Gem Shield made permanent by a later Bubble stays next turn', async () => {
     const { startTurn } = await import('../src/engine/game');
     const { addKw } = await import('../src/engine/core');
     const { g, p } = setup();

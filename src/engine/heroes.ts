@@ -39,7 +39,7 @@ export interface HeroDef {
   onBuy?(g: GameState, p: Player, u: Unit): void;
   onPlay?(g: GameState, p: Player, u: Unit): void;
   onSell?(g: GameState, p: Player, u: Unit): void;
-  /** Battlecries trigger this many times (multiplies with other effects) */
+  /** Arrive effects trigger this many times (multiplies with other effects) */
   battlecryTimes?(p: Player): number;
   startTurn?(g: GameState, p: Player): void;
   endTurn?(g: GameState, p: Player): void;
@@ -83,7 +83,7 @@ export const HEROES: HeroDef[] = [
   },
   {
     id: 'derby_pocket', name: 'Derby Pocket', title: 'Ex-Business Demon intern', power: 'Coffee Run', avatar: 2, health: 26, passive: true,
-    text: `After you play ${BATTLECRIES_FOR_COFFEE} Battlecry units, your Battlecries trigger an extra time.`,
+    text: `After you play ${BATTLECRIES_FOR_COFFEE} Arrive units, your Arrive effects trigger an extra time.`,
     onPlay: (g, p, u) => {
       if (!hasBattlecry(u.cardId)) return;
       p.heroMem.coffee = (p.heroMem.coffee ?? 0) + 1;
@@ -235,7 +235,7 @@ export const HEROES: HeroDef[] = [
   },
   {
     id: 'robot_boy_hero', name: 'Robot Boy', title: 'A real-life robot boy', power: "I'm Robot Boy", avatar: 16, health: 25, passive: true,
-    text: 'Start the game with a 1/1 Orbo Pet with Venomous and every tribe.',
+    text: 'Start the game with a 1/1 Orbo Pet with Doomstrike and every tribe.',
     onGain: (g, p) => { gainNew(g, p, 'orbo_pet'); },
   },
   {
@@ -318,7 +318,7 @@ export const TRINKETS: TrinketDef[] = [
     },
     progress: (p) => `${p.heroMem.t_old_map ?? 0}/2` },
   { id: 'bronze_compass', name: 'Purple Bracer', cost: 2, needsTribe: 'neverending', text: 'Your Neverending units have +12 Attack.' }, // see effStats
-  { id: 'iron_bracer', name: 'Big Big Shield', cost: 2, text: 'Start of Combat: Give 2 random friendly units Divine Shield.', soc: (c, s) => { for (const u of sample(c.g, s.units.filter((x) => x.hp > 0 && !x.kw.includes('divineShield')), 2)) addKw(u, 'divineShield'); } },
+  { id: 'iron_bracer', name: 'Big Big Shield', cost: 2, text: 'Start of Combat: Give 2 random friendly units Bubble.', soc: (c, s) => { for (const u of sample(c.g, s.units.filter((x) => x.hp > 0 && !x.kw.includes('divineShield')), 2)) addKw(u, 'divineShield'); } },
   { id: 'rattler', name: 'Rattler', cost: 2, text: 'Start of Combat: Give 4 random friendly units "Deathrattle: Summon a random Tier 1 unit."',
     soc: (c, s) => { for (const u of sample(c.g, s.units.filter((x) => x.hp > 0), 4)) u.mem.rattle = (u.mem.rattle ?? 0) + 1; } },
   { id: 'spare_parts', name: 'Spare Parts', cost: 3, text: 'Every time you play a unit, give a random unit in your hand +2/+2.', onPlay: (g, p) => { const u = pick(g, p.hand); if (u) { u.atk += 2; u.hp += 2; } } },
@@ -352,7 +352,7 @@ export const TRINKETS: TrinketDef[] = [
       }
     } },
   { id: 'bannerlords_standard', name: "Bannerlord's Standard", cost: 3, greater: true, text: 'Start of Combat: Give your units +3/+3.', soc: (c, s) => { for (const u of s.units) { u.atk += 3; u.hp += 3; } } },
-  { id: 'aegis_charm', name: 'Charm of Charms', cost: 4, greater: true, text: 'Start of Combat: Give your 2 left-most units Divine Shield.', soc: (c, s) => { for (const u of s.units.slice(0, 2)) addKw(u, 'divineShield'); } },
+  { id: 'aegis_charm', name: 'Charm of Charms', cost: 4, greater: true, text: 'Start of Combat: Give your 2 left-most units Bubble.', soc: (c, s) => { for (const u of s.units.slice(0, 2)) addKw(u, 'divineShield'); } },
   { id: 'hourglass_of_plenty', name: 'Guys Comin Up Outta the Woodwork', cost: 4, greater: true, text: 'Avenge (6): Summon a random Deathrattle unit.',
     onFriendlyDeath: (c, s) => {
       if (!heroAvenge(s, 'hourglass_of_plenty', 6)) return;
@@ -378,7 +378,7 @@ export const TRINKETS: TrinketDef[] = [
   { id: 'golden_lantern', name: 'Golden Brass', cost: 6, greater: true, text: 'Every other End of Turn: Make a random non-Golden unit in your army Golden.',
     endTurn: (g, p) => { if (everyOther(p, 'golden_lantern')) makeGolden(g, p); },
     progress: (p) => `${p.heroMem.t_golden_lantern ?? 0}/2` },
-  { id: 'crown_of_echoes', name: 'Double Crown: Fusion', cost: 7, greater: true, text: 'Your Battlecries trigger an extra time.' },
+  { id: 'crown_of_echoes', name: 'Double Crown: Fusion', cost: 7, greater: true, text: 'Your Arrive effects trigger an extra time.' },
   { id: 'summit_vault', name: 'Secret Guy', cost: 4, greater: true, text: 'Discover two Tier 6 units.',
     onGain: (g, p) => {
       for (let i = 0; i < 2; i++) queueDiscover(g, p, discoverOptions(g, (id) => def(id).tier === 6), `${trinketDef('summit_vault').name}: Discover a Tier 6 unit`);
@@ -486,7 +486,7 @@ export const heroHooks = {
     for (const t of trinketsOf(p)) if (t.onPlay) trinketFx(g, p, t, () => t.onPlay!(g, p));
   },
   onSell: (g: GameState, p: Player, u: Unit) => { for (const h of powersOf(p)) if (h.onSell) heroFx(g, p, h, () => h.onSell!(g, p, u)); },
-  /** extra Battlecry triggers from hero powers (each power's battlecryTimes - 1, added up) */
+  /** extra Arrive triggers from hero powers (each power's battlecryTimes - 1, added up) */
   battlecryExtra: (p: Player) => powersOf(p).reduce((s, h) => s + ((h.battlecryTimes?.(p) ?? 1) - 1), 0),
   battlecryExtraName: (p: Player) => powersOf(p).find((h) => (h.battlecryTimes?.(p) ?? 1) > 1)?.power ?? '',
   startTurn: (g: GameState, p: Player) => {

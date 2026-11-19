@@ -103,13 +103,13 @@ feat('gold7', 'Solid Gold', 'Have 7 Golden units in your army at once.', 'Feats'
 feat('atk100', 'Overkill', 'Have a unit with 100 or more Attack.', 'Feats', (c) => board(c).some((_, i) => stat(c, i).atk >= 100));
 feat('hp200', 'Mountain', 'Have a unit with 200 or more Health.', 'Feats', (c) => board(c).some((_, i) => stat(c, i).hp >= 200));
 feat('alltaunt', 'Shield Wall', 'Have 7 units with Taunt in your army.', 'Feats', (c) => board(c).length === 7 && board(c).every((_, i) => stat(c, i).kw.includes('taunt')));
-feat('allshield', 'Holy Order', 'Have 5 units with Divine Shield in your army.', 'Feats', (c) => board(c).filter((_, i) => stat(c, i).kw.includes('divineShield')).length >= 5);
+feat('allshield', 'Holy Order', 'Have 5 units with Bubble in your army.', 'Feats', (c) => board(c).filter((_, i) => stat(c, i).kw.includes('divineShield')).length >= 5);
 feat('rich', 'Deep Pockets', 'Have 20 or more gold at once.', 'Feats', (c) => !!c.p && c.p.gold >= 20);
 feat('handfull', 'Full Hands', 'Have 10 cards in your hand.', 'Feats', (c) => !!c.p && c.p.hand.length >= 10);
 feat('big50', 'Built to Last', 'Have a unit with at least 50 Attack and 50 Health.', 'Feats', (c) => board(c).some((_, i) => stat(c, i).atk >= 50 && stat(c, i).hp >= 50));
 feat('trinkets3', 'Collector', 'Own 3 Trinkets in one game.', 'Feats', (c) => !!c.p && c.p.trinkets.length >= 3);
-feat('bc5', 'Rapid Fire', 'Trigger 5 Battlecries in one turn.', 'Feats', (c) => !!c.p && c.p.battlecriesThisTurn >= 5);
-feat('bc50', 'Battle Cry', 'Trigger 50 Battlecries in one game.', 'Feats', (c) => !!c.p && c.p.battlecriesGame >= 50);
+feat('bc5', 'Rapid Fire', 'Trigger 5 Arrive effects in one turn.', 'Feats', (c) => !!c.p && c.p.battlecriesThisTurn >= 5);
+feat('bc50', 'Grand Entrance', 'Trigger 50 Arrive effects in one game.', 'Feats', (c) => !!c.p && c.p.battlecriesGame >= 50);
 feat('disc5', 'Curious Mind', 'Discover 5 units in one game.', 'Feats', (c) => c.game.discovers >= 5);
 feat('hpgame10', 'Power Trip', 'Use your Hero Power 10 times in one game.', 'Feats', (c) => c.game.heroPowers >= 10);
 feat('earlytri', 'Early Gold', 'Make a Golden unit before turn 5.', 'Feats', (c) => c.game.firstTripleRound !== null && c.game.firstTripleRound < 5);

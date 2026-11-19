@@ -73,7 +73,7 @@ describe('hero powers', () => {
     expect(isTribe(p.hand[0], 'azure')).toBe(true);
   });
 
-  it('Derby Pocket: after 5 Battlecry units, Battlecries trigger twice', () => {
+  it('Derby Pocket: after 5 Arrive units, Arrive effects trigger twice', () => {
     const { g, p } = setup('derby_pocket');
     const dummy = unit(g, firstOf((id) => !EFFECTS[id]), 1, 1);
     p.board = [dummy];
@@ -86,7 +86,7 @@ describe('hero powers', () => {
     expect(dummy.atk).toBe(1 + 15 + 6);
     expect(p.board.length).toBe(7);
     p.board = [dummy];
-    // a normal Battlecry unit also fires twice
+    // a normal Arrive unit also fires twice
     const bc = firstOf((id) => !!EFFECTS[id]?.battlecry && !EFFECTS[id]?.target && id !== 'red_gem');
     const before = p.battlecriesGame;
     p.hand = [unit(g, bc)];
@@ -277,7 +277,7 @@ describe('hero powers', () => {
     expect(play(g2, m, 0, 1).ok).toBe(false); // the Tier 4 one still waits
   });
 
-  it('Derby Pocket + Crown of Echoes: a Battlecry triggers 3 times (each adds one extra), not 4', () => {
+  it('Derby Pocket + Crown of Echoes: an Arrive triggers 3 times (each adds one extra), not 4', () => {
     const { g, p } = setup('derby_pocket');
     p.heroMem.coffee = 99;
     p.trinkets = ['crown_of_echoes'];

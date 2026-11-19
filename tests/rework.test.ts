@@ -31,7 +31,7 @@ describe('rework', () => {
     expect(c.sides[1].units[0].hp).toBe(1);
   });
 
-  it('Tinker: each Refresh gives a shop unit Venomous, Divine Shield or Reborn', () => {
+  it('Tinker: each Refresh gives a shop unit Doomstrike, Bubble or Reborn', () => {
     const { g, p } = setup();
     p.board = [u(g, 'tinker')];
     p.gold = 10;
@@ -79,7 +79,7 @@ describe('rework', () => {
     c.spawn = (...a: Parameters<typeof c.spawn>) => { const r = orig(...a); if (r?.cardId === 'phoenix') ph = r; return r; };
     c.run();
     expect(ph).toBeTruthy();
-    // the Gem changed it somehow (stats, Reborn, Divine Shield or Windfury), or a Red/Potato Gem buffed a slot/neighbours
+    // the Gem changed it somehow (stats, Reborn, Bubble or Double Attack), or a Red/Potato Gem buffed a slot/neighbours
     expect(def('phoenix').atk).toBe(20);
   });
 
@@ -137,7 +137,7 @@ describe('rework 2', () => {
   });
 
   // ===== Workbook 3: Tier 6, Poisonous, reworks =====
-  it('Poisonous kills every unit it damages (Venomous only the first)', () => {
+  it('Poisonous kills every unit it damages (Doomstrike only the first)', () => {
     const { g, p, o } = setup();
     const c = fight(g, p, o, [u(g, 'adder', 1, 1000)], [u(g, 'skel', 0, 500), u(g, 'skel', 0, 500), u(g, 'skel', 0, 500)]);
     expect(c.run()).toBe(0);
@@ -169,11 +169,11 @@ describe('rework 2', () => {
     expect(f.sides[0][1]).toMatchObject({ atk: 9, hp: 10 });
   });
 
-  it('Chaos: End of Turn buffs the left-most unit once plus once per Battlecry unit played this turn', () => {
+  it('Chaos: End of Turn buffs the left-most unit once plus once per Arrive unit played this turn', () => {
     const { g, p } = setup();
     const left = u(g, 'skel', 1, 1);
     p.board = [left, u(g, 'chaos')];
-    p.battlecriesThisTurn = 5; // extra Battlecry triggers (Derby, Crown) don't count, units played do
+    p.battlecriesThisTurn = 5; // extra Arrive triggers (Derby, Crown) don't count, units played do
     p.battlecryUnitsThisTurn = 2;
     endTurnEffects(g, p);
     expect([left.atk, left.hp]).toEqual([10, 10]);
@@ -229,7 +229,7 @@ describe('rework 2', () => {
     expect(c.frames.some((f) => /Left Twinbot/.test(f.note ?? ''))).toBe(true);
   });
 
-  it('Gambler: Battlecry gives a free Refresh, used before Gold', () => {
+  it('Gambler: Arrive gives a free Refresh, used before Gold', () => {
     const { g, p } = setup();
     p.board = [];
     p.hand = [u(g, 'pickaxe')];

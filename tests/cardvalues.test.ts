@@ -1,6 +1,6 @@
 /**
  * Measures what each card's ability is worth, for the bots (writes src/data/cardValues.json).
- * For every card (and its Golden version) at its tier: play it onto a typical army (Battlecries and
+ * For every card (and its Golden version) at its tier: play it onto a typical army (Arrive effects and
  * on-play effects happen, one end of turn passes), fight many random armies of that tier, and compare
  * with the same army where the card is replaced by a plain unit with identical stats and keywords.
  * The win-rate difference is converted into "+1/+1 equivalents" (what the bots' unit score uses).

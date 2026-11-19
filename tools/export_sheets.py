@@ -172,7 +172,7 @@ def main():
         '',
         f'Exported from game version {VERSION} on {datetime.date.today().isoformat()}. Cards are sorted by tribe, then Tier, then name.',
         'Tier 6 units are never sold in the Tavern (it stops at Tier 5); they only come from effects such as Summit Key, Secret Guy and Factory Bot.',
-        'Card wording follows these forms: "Battlecry:", "Deathrattle:", "Start of Combat:", "Start of Turn:", "End of Turn:", "Rally:", "Avenge (N):",',
+        'Card wording follows these forms: "Arrive:", "Deathrattle:", "Start of Combat:", "Start of Turn:", "End of Turn:", "Rally:", "Avenge (N):",',
         '   "Summon", "Gain", "Discover", "Tavern", and capitalised Tier, Gold, Attack and Health.',
     ]
     for i, n in enumerate(notes, 1):

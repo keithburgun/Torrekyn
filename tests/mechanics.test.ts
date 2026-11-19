@@ -78,7 +78,7 @@ describe('mechanics', () => {
     expect(p.discovers.length).toBe(1); // triple reward
   });
 
-  it('divine shield blocks one hit', () => {
+  it('bubble blocks one hit', () => {
     const g = newGame(2);
     const { c, winner } = fight(g, [makeUnit(g, 'shield_azure')], [makeUnit(g, 'skel')]);
     expect(winner).toBe(0);
@@ -167,7 +167,7 @@ describe('heroes', () => {
     expect(powerCost(g, p, heroDef('gelf_lanz')!)).toBe(1);
   });
 
-  it('Derby Pocket: after 5 Battlecry units, Battlecries trigger twice', async () => {
+  it('Derby Pocket: after 5 Arrive units, Arrive effects trigger twice', async () => {
     const { heroHooks } = await import('../src/engine/heroes');
     const { g, p } = withPower('derby_pocket');
     for (let i = 0; i < 5; i++) {

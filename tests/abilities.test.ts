@@ -117,7 +117,7 @@ describe('every ability changes something', () => {
     if (cb) expect(cb.atk).toBeGreaterThan(0);
   });
 
-  it('Warlock grows when a Rally happens; Ocean Sky when a Divine Shield breaks; Biker when hit', () => {
+  it('Warlock grows when a Rally happens; Ocean Sky when a Bubble breaks; Biker when hit', () => {
     const { g, p, o } = setup(6);
     const warlock = U(g, 'warlock', 0, 100), ocean = U(g, 'ocean_sky', 0, 100);
     p.board = [U(g, 'cursed_vines', 1, 100), U(g, 'shield_azure', 1, 100), warlock, ocean];
@@ -140,7 +140,7 @@ describe('every ability changes something', () => {
     play(g, p, 0, 4); // a Cloister unit: Shadow Place buffs two others
     expect(sum()).toBeGreaterThan(before + def('hunter').atk + def('hunter').hp);
     before = drone.atk;
-    play(g, p, 0, 5); // a Battlecry: Aerial Drone grows
+    play(g, p, 0, 5); // an Arrive: Aerial Drone grows
     expect(drone.atk).toBeGreaterThan(before);
     p.discovers = [];
     // Shopkeep: 4 buys gain a Tier 1 unit; Patchwork: a Kindred unit gained grows its slot

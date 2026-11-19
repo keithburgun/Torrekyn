@@ -55,8 +55,8 @@
    "tier": 2,
    "atk": 3,
    "hp": 3,
-   "text": "Battlecry: Your Neverending units have +1 Attack this game.",
-   "goldenText": "Battlecry: Your Neverending units have +2 Attack this game.",
+   "text": "Arrive: Your Neverending units have +1 Attack this game.",
+   "goldenText": "Arrive: Your Neverending units have +2 Attack this game.",
    "keywords": []
   },
   {
@@ -156,8 +156,8 @@
    "tier": 5,
    "atk": 15,
    "hp": 12,
-   "text": "Battlecry: Give your units in hand and in your army +3/+3.",
-   "goldenText": "Battlecry: Give your units in hand and in your army +6/+6.",
+   "text": "Arrive: Give your units in hand and in your army +3/+3.",
+   "goldenText": "Arrive: Give your units in hand and in your army +6/+6.",
    "keywords": []
   },
   {
@@ -167,8 +167,8 @@
    "tier": 5,
    "atk": 9,
    "hp": 10,
-   "text": "Reborn. Deathrattle: Trigger an adjacent unit's Battlecry.",
-   "goldenText": "Reborn. Deathrattle: Trigger an adjacent unit's Battlecry twice.",
+   "text": "Reborn. Deathrattle: Trigger an adjacent unit's Arrive.",
+   "goldenText": "Reborn. Deathrattle: Trigger an adjacent unit's Arrive twice.",
    "keywords": [
     "reborn"
    ]
@@ -202,8 +202,8 @@
    "tier": 1,
    "atk": 2,
    "hp": 1,
-   "text": "Taunt. Divine Shield.",
-   "goldenText": "Taunt. Divine Shield.",
+   "text": "Taunt. Bubble.",
+   "goldenText": "Taunt. Bubble.",
    "keywords": [
     "divineShield",
     "taunt"
@@ -216,8 +216,8 @@
    "tier": 1,
    "atk": 1,
    "hp": 1,
-   "text": "Battlecry: Give a unit +10 Health.",
-   "goldenText": "Battlecry: Give a unit +20 Health.",
+   "text": "Arrive: Give a unit +10 Health.",
+   "goldenText": "Arrive: Give a unit +20 Health.",
    "keywords": []
   },
   {
@@ -227,8 +227,8 @@
    "tier": 2,
    "atk": 3,
    "hp": 3,
-   "text": "Battlecry: Discover a Tier 1 unit.",
-   "goldenText": "Battlecry: Discover a Tier 1 unit, twice.",
+   "text": "Arrive: Discover a Tier 1 unit.",
+   "goldenText": "Arrive: Discover a Tier 1 unit, twice.",
    "keywords": []
   },
   {
@@ -238,8 +238,8 @@
    "tier": 2,
    "atk": 3,
    "hp": 5,
-   "text": "Start of Combat: Give the unit to the right of this Divine Shield.",
-   "goldenText": "Start of Combat: Give the units adjacent to this Divine Shield.",
+   "text": "Start of Combat: Give the unit to the right of this Bubble.",
+   "goldenText": "Start of Combat: Give the units adjacent to this Bubble.",
    "keywords": []
   },
   {
@@ -249,8 +249,8 @@
    "tier": 2,
    "atk": 6,
    "hp": 3,
-   "text": "Battlecry: Give your units with Taunt or Divine Shield +2/+2.",
-   "goldenText": "Battlecry: Give your units with Taunt or Divine Shield +4/+4.",
+   "text": "Arrive: Give your units with Taunt or Bubble +2/+2.",
+   "goldenText": "Arrive: Give your units with Taunt or Bubble +4/+4.",
    "keywords": []
   },
   {
@@ -260,8 +260,8 @@
    "tier": 3,
    "atk": 7,
    "hp": 7,
-   "text": "Start of Combat: Give two Azure units Divine Shield.",
-   "goldenText": "Start of Combat: Give two Azure units Divine Shield.",
+   "text": "Start of Combat: Give two Azure units Bubble.",
+   "goldenText": "Start of Combat: Give two Azure units Bubble.",
    "keywords": []
   },
   {
@@ -293,8 +293,8 @@
    "tier": 4,
    "atk": 16,
    "hp": 16,
-   "text": "Divine Shield. Avenge (5): Gain Divine Shield and Taunt.",
-   "goldenText": "Divine Shield. Avenge (5): Gain Divine Shield and Taunt.",
+   "text": "Bubble. Avenge (5): Gain Bubble and Taunt.",
+   "goldenText": "Bubble. Avenge (5): Gain Bubble and Taunt.",
    "keywords": [
     "divineShield"
    ]
@@ -339,8 +339,8 @@
    "tier": 5,
    "atk": 10,
    "hp": 25,
-   "text": "Whenever another unit loses Divine Shield, it gains +3/+3 permanently.",
-   "goldenText": "Whenever another unit loses Divine Shield, it gains +6/+6 permanently.",
+   "text": "Whenever another unit loses Bubble, it gains +3/+3 permanently.",
+   "goldenText": "Whenever another unit loses Bubble, it gains +6/+6 permanently.",
    "keywords": []
   },
   {
@@ -350,8 +350,8 @@
    "tier": 5,
    "atk": 8,
    "hp": 20,
-   "text": "Start of Combat: Give your units +1/+1. Whenever you play a Battlecry, improve this.",
-   "goldenText": "Start of Combat: Give your units +2/+2. Whenever you play a Battlecry, improve this.",
+   "text": "Start of Combat: Give your units +1/+1. Whenever you play an Arrive unit, improve this.",
+   "goldenText": "Start of Combat: Give your units +2/+2. Whenever you play an Arrive unit, improve this.",
    "keywords": []
   },
   {
@@ -372,8 +372,8 @@
    "tier": 1,
    "atk": 2,
    "hp": 1,
-   "text": "Battlecry: Discover a unit from one Tier higher.",
-   "goldenText": "Battlecry: Discover a unit from one Tier higher, twice.",
+   "text": "Arrive: Discover a unit from one Tier higher.",
+   "goldenText": "Arrive: Discover a unit from one Tier higher, twice.",
    "keywords": []
   },
   {
@@ -405,8 +405,8 @@
    "tier": 2,
    "atk": 4,
    "hp": 4,
-   "text": "Battlecry: Kindred units in the Tavern have +2/+2 for the rest of the game.",
-   "goldenText": "Battlecry: Kindred units in the Tavern have +4/+4 for the rest of the game.",
+   "text": "Arrive: Kindred units in the Tavern have +2/+2 for the rest of the game.",
+   "goldenText": "Arrive: Kindred units in the Tavern have +4/+4 for the rest of the game.",
    "keywords": []
   },
   {
@@ -416,8 +416,8 @@
    "tier": 2,
    "atk": 1,
    "hp": 1,
-   "text": "Battlecry: Give a unit +6/+6 and Divine Shield until next turn. If it's Kindred, do it again.",
-   "goldenText": "Battlecry: Give a unit +12/+12 and Divine Shield until next turn. If it's Kindred, do it again.",
+   "text": "Arrive: Give a unit +6/+6 and Bubble until next turn. If it's Kindred, do it again.",
+   "goldenText": "Arrive: Give a unit +12/+12 and Bubble until next turn. If it's Kindred, do it again.",
    "keywords": []
   },
   {
@@ -427,8 +427,8 @@
    "tier": 3,
    "atk": 2,
    "hp": 3,
-   "text": "Battlecry: Give a unit Taunt and +12 Health.",
-   "goldenText": "Battlecry: Give a unit Taunt and +24 Health.",
+   "text": "Arrive: Give a unit Taunt and +12 Health.",
+   "goldenText": "Arrive: Give a unit Taunt and +24 Health.",
    "keywords": []
   },
   {
@@ -572,8 +572,8 @@
    "tier": 2,
    "atk": 3,
    "hp": 6,
-   "text": "Taunt. Divine Shield.",
-   "goldenText": "Taunt. Divine Shield.",
+   "text": "Taunt. Bubble.",
+   "goldenText": "Taunt. Bubble.",
    "keywords": [
     "divineShield",
     "taunt"
@@ -598,7 +598,7 @@
    "atk": 13,
    "hp": 13,
    "text": "Rally: Remove Taunt and Reborn from the target.",
-   "goldenText": "Rally: Remove Taunt, Reborn and Divine Shield from the target.",
+   "goldenText": "Rally: Remove Taunt, Reborn and Bubble from the target.",
    "keywords": []
   },
   {
@@ -663,8 +663,8 @@
    "tier": 2,
    "atk": 1,
    "hp": 1,
-   "text": "Battlecry: Give your units in hand and army +2 Health.",
-   "goldenText": "Battlecry: Give your units in hand and army +4 Health.",
+   "text": "Arrive: Give your units in hand and army +2 Health.",
+   "goldenText": "Arrive: Give your units in hand and army +4 Health.",
    "keywords": []
   },
   {
@@ -696,8 +696,8 @@
    "tier": 2,
    "atk": 1,
    "hp": 1,
-   "text": "Battlecry: Give a unit +2 Attack and Windfury.",
-   "goldenText": "Battlecry: Give a unit +2 Attack and Windfury.",
+   "text": "Arrive: Give a unit +2 Attack and Double Attack.",
+   "goldenText": "Arrive: Give a unit +2 Attack and Double Attack.",
    "keywords": []
   },
   {
@@ -773,8 +773,8 @@
    "tier": 3,
    "atk": 1,
    "hp": 1,
-   "text": "Divine Shield. Venomous.",
-   "goldenText": "Divine Shield. Venomous.",
+   "text": "Bubble. Doomstrike.",
+   "goldenText": "Bubble. Doomstrike.",
    "keywords": [
     "divineShield",
     "venomous"
@@ -798,8 +798,8 @@
    "tier": 4,
    "atk": 7,
    "hp": 9,
-   "text": "Venomous. Rally: Give another Cloister unit Venomous.",
-   "goldenText": "Venomous. Rally: Give 2 other Cloister units Venomous.",
+   "text": "Doomstrike. Rally: Give another Cloister unit Doomstrike.",
+   "goldenText": "Doomstrike. Rally: Give 2 other Cloister units Doomstrike.",
    "keywords": [
     "venomous"
    ]
@@ -844,8 +844,8 @@
    "tier": 5,
    "atk": 20,
    "hp": 20,
-   "text": "Avenge (3): This gains Venomous and attacks immediately.",
-   "goldenText": "Avenge (3): This gains Venomous and Divine Shield and attacks immediately.",
+   "text": "Avenge (3): This gains Doomstrike and attacks immediately.",
+   "goldenText": "Avenge (3): This gains Doomstrike and Bubble and attacks immediately.",
    "keywords": []
   },
   {
@@ -888,8 +888,8 @@
    "tier": 1,
    "atk": 1,
    "hp": 1,
-   "text": "When you Refresh the Tavern, give Venomous, Divine Shield or Reborn to a random unit in it.",
-   "goldenText": "When you Refresh the Tavern, give Venomous, Divine Shield or Reborn to 2 random units in it.",
+   "text": "When you Refresh the Tavern, give Doomstrike, Bubble or Reborn to a random unit in it.",
+   "goldenText": "When you Refresh the Tavern, give Doomstrike, Bubble or Reborn to 2 random units in it.",
    "keywords": []
   },
   {
@@ -921,8 +921,8 @@
    "tier": 2,
    "atk": 1,
    "hp": 1,
-   "text": "End of Turn: Give your left-most unit +3/+3. Repeat for each Battlecry unit you played this turn.",
-   "goldenText": "End of Turn: Give your left-most unit +6/+6. Repeat for each Battlecry unit you played this turn.",
+   "text": "End of Turn: Give your left-most unit +3/+3. Repeat for each Arrive unit you played this turn.",
+   "goldenText": "End of Turn: Give your left-most unit +6/+6. Repeat for each Arrive unit you played this turn.",
    "keywords": []
   },
   {
@@ -932,8 +932,8 @@
    "tier": 3,
    "atk": 1,
    "hp": 1,
-   "text": "Whenever you trigger a Battlecry, gain +2/+4.",
-   "goldenText": "Whenever you trigger a Battlecry, gain +4/+8.",
+   "text": "Whenever you trigger an Arrive, gain +2/+4.",
+   "goldenText": "Whenever you trigger an Arrive, gain +4/+8.",
    "keywords": []
   },
   {
@@ -1000,8 +1000,8 @@
    "tier": 5,
    "atk": 4,
    "hp": 2,
-   "text": "Divine Shield. Reborn. This unit has +4/+2 for each Deathrattle you've triggered this game.",
-   "goldenText": "Divine Shield. Reborn. This unit has +8/+4 for each Deathrattle you've triggered this game.",
+   "text": "Bubble. Reborn. This unit has +4/+2 for each Deathrattle you've triggered this game.",
+   "goldenText": "Bubble. Reborn. This unit has +8/+4 for each Deathrattle you've triggered this game.",
    "keywords": [
     "divineShield",
     "reborn"
@@ -1124,8 +1124,8 @@
    "tier": 3,
    "atk": 1,
    "hp": 1,
-   "text": "Battlecry: Give your 3 left-most units +3 Attack.",
-   "goldenText": "Battlecry: Give your 3 left-most units +6 Attack.",
+   "text": "Arrive: Give your 3 left-most units +3 Attack.",
+   "goldenText": "Arrive: Give your 3 left-most units +6 Attack.",
    "keywords": []
   },
   {
@@ -1135,8 +1135,8 @@
    "tier": 4,
    "atk": 6,
    "hp": 6,
-   "text": "Battlecry and End of Turn: Gain a Red Gem.",
-   "goldenText": "Battlecry and End of Turn: Gain 2 Red Gems.",
+   "text": "Arrive and End of Turn: Gain a Red Gem.",
+   "goldenText": "Arrive and End of Turn: Gain 2 Red Gems.",
    "keywords": []
   },
   {
@@ -1201,8 +1201,8 @@
    "tier": 1,
    "atk": 2,
    "hp": 1,
-   "text": "Battlecry: Give your left-most unit +4 Attack.",
-   "goldenText": "Battlecry: Give your left-most unit +8 Attack.",
+   "text": "Arrive: Give your left-most unit +4 Attack.",
+   "goldenText": "Arrive: Give your left-most unit +8 Attack.",
    "keywords": []
   },
   {
@@ -1212,8 +1212,8 @@
    "tier": 1,
    "atk": 1,
    "hp": 3,
-   "text": "Taunt. Battlecry: Give a friendly unit Taunt.",
-   "goldenText": "Taunt. Battlecry: Give two friendly units Taunt.",
+   "text": "Taunt. Arrive: Give a friendly unit Taunt.",
+   "goldenText": "Taunt. Arrive: Give two friendly units Taunt.",
    "keywords": [
     "taunt"
    ]
@@ -1225,8 +1225,8 @@
    "tier": 1,
    "atk": 2,
    "hp": 2,
-   "text": "Battlecry: Gain 1 free Refresh.",
-   "goldenText": "Battlecry: Gain 2 free Refreshes.",
+   "text": "Arrive: Gain 1 free Refresh.",
+   "goldenText": "Arrive: Gain 2 free Refreshes.",
    "keywords": []
   },
   {
@@ -1247,8 +1247,8 @@
    "tier": 2,
    "atk": 5,
    "hp": 1,
-   "text": "Battlecry: Give adjacent units +3 Attack. Improve your future Banners.",
-   "goldenText": "Battlecry: Give adjacent units +6 Attack. Improve your future Banners twice.",
+   "text": "Arrive: Give adjacent units +3 Attack. Improve your future Banners.",
+   "goldenText": "Arrive: Give adjacent units +6 Attack. Improve your future Banners twice.",
    "keywords": []
   },
   {
@@ -1258,8 +1258,8 @@
    "tier": 2,
    "atk": 1,
    "hp": 5,
-   "text": "Battlecry: Give adjacent units +3 Health. Improve your future Banners.",
-   "goldenText": "Battlecry: Give adjacent units +6 Health. Improve your future Banners twice.",
+   "text": "Arrive: Give adjacent units +3 Health. Improve your future Banners.",
+   "goldenText": "Arrive: Give adjacent units +6 Health. Improve your future Banners twice.",
    "keywords": []
   },
   {
@@ -1302,8 +1302,8 @@
    "tier": 4,
    "atk": 1,
    "hp": 2,
-   "text": "Deathrattle: Trigger a friendly Battlecry.",
-   "goldenText": "Deathrattle: Trigger a friendly Battlecry twice.",
+   "text": "Deathrattle: Trigger a friendly Arrive.",
+   "goldenText": "Deathrattle: Trigger a friendly Arrive twice.",
    "keywords": []
   },
   {
@@ -1335,8 +1335,8 @@
    "tier": 5,
    "atk": 19,
    "hp": 82,
-   "text": "Battlecry: Improve ALL your Gems this game twice.",
-   "goldenText": "Battlecry: Improve ALL your Gems this game four times.",
+   "text": "Arrive: Improve ALL your Gems this game twice.",
+   "goldenText": "Arrive: Improve ALL your Gems this game four times.",
    "keywords": []
   },
   {
@@ -1368,8 +1368,8 @@
    "tier": 1,
    "atk": 1,
    "hp": 1,
-   "text": "Divine Shield. Deathrattle: Summon a 1/1 Robo.",
-   "goldenText": "Divine Shield. Deathrattle: Summon 2 1/1 Robos.",
+   "text": "Bubble. Deathrattle: Summon a 1/1 Robo.",
+   "goldenText": "Bubble. Deathrattle: Summon 2 1/1 Robos.",
    "keywords": [
     "divineShield"
    ]
@@ -1417,8 +1417,8 @@
    "tier": 2,
    "atk": 1,
    "hp": 1,
-   "text": "Battlecry: Give a unit +1/+1. Also give it Reborn for 1 turn.",
-   "goldenText": "Battlecry: Give a unit +2/+2. Also give it Reborn for 1 turn.",
+   "text": "Arrive: Give a unit +1/+1. Also give it Reborn for 1 turn.",
+   "goldenText": "Arrive: Give a unit +2/+2. Also give it Reborn for 1 turn.",
    "keywords": []
   },
   {
@@ -1556,8 +1556,8 @@
    "tier": 5,
    "atk": 10,
    "hp": 10,
-   "text": "Battlecry and Deathrattle: Gain 2 random Gems.",
-   "goldenText": "Battlecry and Deathrattle: Gain 4 random Gems.",
+   "text": "Arrive and Deathrattle: Gain 2 random Gems.",
+   "goldenText": "Arrive and Deathrattle: Gain 4 random Gems.",
    "keywords": [],
    "allTribes": true
   },
@@ -1568,8 +1568,8 @@
    "tier": 6,
    "atk": 30,
    "hp": 30,
-   "text": "Avenge (3): Give a random friendly unit Divine Shield.",
-   "goldenText": "Avenge (3): Give 2 random friendly units Divine Shield.",
+   "text": "Avenge (3): Give a random friendly unit Bubble.",
+   "goldenText": "Avenge (3): Give 2 random friendly units Bubble.",
    "keywords": []
   },
   {

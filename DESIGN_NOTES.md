@@ -22,12 +22,12 @@ When the card text was ambiguous, Hearthstone: Battlegrounds conventions were us
 ## Keywords
 - **Rally** = "whenever this attacks" (resolves before the hit, like HS Rally).
 - **Avenge (N)** = triggers every N friendly deaths.
-- **Venomous** works like HS Venomous (one use).
+- **Doomstrike** works like HS Doomstrike (one use).
 - **Stealth**: can't be attacked until it attacks; if every enemy is stealthed, stealth is removed.
 - **Start of Battle** = Start of Combat.
 - "Gains X" with no "permanently" = this combat only. "Permanently" changes the unit in your army.
-- **Bonus Keywords** (Omni-Gem) = Taunt, Divine Shield, Reborn, Venomous, Stealth, Windfury.
-- Battlecries that are triggered during combat (Returner, Spoonful) give temporary stats. Discovers triggered in combat add a random option to your hand instead.
+- **Bonus Keywords** (Omni-Gem) = Taunt, Bubble, Reborn, Doomstrike, Stealth, Double Attack.
+- Arrive effects that are triggered during combat (Returner, Spoonful) give temporary stats. Discovers triggered in combat add a random option to your hand instead.
 
 ## Card-specific calls
 | Card | Interpretation |
@@ -41,7 +41,7 @@ When the card text was ambiguous, Hearthstone: Battlegrounds conventions were us
 | Ocean Sky | Only your own units benefit. |
 | Commitment | Counts Azure units in your army, itself included. |
 | Pink Gem / Doctor | Summon a fresh copy (start-of-combat stats) of a friendly unit that died this combat. Pink Gem can't summon another Pink Gem. |
-| Therapist / Organizer / Exploit | Targeted Battlecries (you pick the unit). |
+| Therapist / Organizer / Exploit | Targeted Arrive effects (you pick the unit). |
 | Honeysuckle (Kindred) / Ambush | The card summoned from hand is a temporary combat copy; it stays in your hand. |
 | Devotion | The quest starts when you play it (counts Kindred bought afterwards). |
 | Sapling | Becomes a Rootling for the rest of that combat. |
@@ -50,7 +50,7 @@ When the card text was ambiguous, Hearthstone: Battlegrounds conventions were us
 | Green Gem | +3/+3 (the "+3" was read as +3/+3), permanent, to your army and hand; then Green Gem is removed from your army. |
 | Larva | Counts turns at the start of each of your turns while in hand; then it turns into a random Golden Tier 5 Cloister unit. |
 | Tinker / Scientist | Last until you upgrade your Tavern. Tinker's bonus sticks to Alcove units you buy. |
-| Chaos | "Each Battlecry you played this turn" = last turn's count, since it fires at the start of the turn. |
+| Chaos | "Each Arrive you played this turn" = last turn's count, since it fires at the start of the turn. |
 | Computer | Tech up = free Tavern upgrade after combat. |
 | Virus | Bots discard Viruses they receive. |
 | Golden Light | "Deathrattle. You take 1 damage." = when it dies, you lose 1 Health. |
@@ -75,7 +75,7 @@ Fourteen Torrekin champions; you choose 1 of 4 at the start. Heroes tied to a tr
 |---|---|---|---|
 | Andromeda Robin | Pumpkin Buddy | Passive | Start with a 1/1 **Pumpkin** in hand. It counts as every tribe. Whenever any other unit with a Deathrattle dies in combat (either side), the Pumpkin gains that Deathrattle for the rest of that battle (each once; Golden gives the Golden version). |
 | Gelf Lanz | Inspire | Passive | Once you've bought an Azure unit, your next Azure unit costs 1 less, and that re-arms with every Azure buy (so Azure units cost 2 from then on). |
-| Derby Pocket | Coffee Run | Passive | After you play 5 Battlecry units, your Battlecries trigger an extra time for the rest of the game. |
+| Derby Pocket | Coffee Run | Passive | After you play 5 Arrive units, your Arrive effects trigger an extra time for the rest of the game. |
 | Bunny Wizard | New Friends | 1 gold | Discover a Kindred unit (your Tier or lower). Unlocks at Tavern Tier 4. |
 | Croh Vosh | Abyssal Sweep | Passive | Units summoned for you during combat get +1/+2 (Reborn isn't a summon). |
 | May Danaris | Root Access | 2 gold | Discover a unit (base stats) from the army of the last player you fought. |

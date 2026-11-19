@@ -84,7 +84,7 @@ export function unitScore(p: Player, u: Unit, zone: 'board' | 'hand' | 'shop' = 
   if (on(p, 'econ')) {
     let e = (u.mem.done ? 0 : ECON[u.cardId] ?? 0) * knob(p, 'econK') * (u.golden ? 1.8 : 1);
     if (u.cardId === 'grief' && p.tier >= CONFIG.maxTier) e = 0;
-    // Battlecries and Discovers pay off when played; once on the board only recurring effects still matter
+    // Arrive effects and Discovers pay off when played; once on the board only recurring effects still matter
     if (zone === 'board' && ['command', 'remember', 'librarian'].includes(u.cardId)) e = 0;
     s += e;
   }
@@ -173,7 +173,7 @@ function bestTarget(g: GameState, p: Player, u: Unit): number | undefined {
   }
   if (on(p, 'place')) {
     const kw = (b: Unit) => effStats(p, b, 'board').kw;
-    // Green Gem: Windfury is worth most on the hardest hitter that doesn't have it yet
+    // Green Gem: Double Attack is worth most on the hardest hitter that doesn't have it yet
     if (u.cardId === 'green_gem') {
       const pool = cands.filter((b) => !kw(b).includes('windfury'));
       return best(pool.length ? pool : cands, (b) => effStats(p, b, 'board').atk).uid;
@@ -204,7 +204,7 @@ function sellNow(p: Player, u: Unit): boolean {
   return false;
 }
 
-/** cards that are all Battlecry: once it has happened, the body is worth a Gold more than a slot (late on) */
+/** cards that are all Arrive: once it has happened, the body is worth a Gold more than a slot (late on) */
 const isSpell = (id: string) => GEMS.includes(id) || id === 'sword' || id === 'pickaxe'; // (a function: GEMS isn't loaded yet when this module starts)
 
 /** play one card from hand and deal with what follows (Discovers, cards sold on arrival, spent Gem bodies) */
@@ -378,7 +378,7 @@ function placeAbandon(p: Player) {
 }
 
 function arrange(p: Player) {
-  // Taunts and Divine Shields toward the left, damage dealers that like to attack early, big stats in the middle
+  // Taunts and Bubbles toward the left, damage dealers that like to attack early, big stats in the middle
   const order = [...p.board].filter((u) => !u.mem.locked);
   const rank = (u: Unit) => {
     const kw = effStats(p, u, 'hand').kw;
@@ -846,7 +846,7 @@ function trinketGain(p: Player, id: string): number {
   let v = TRINKET_GAIN[id] ?? 0.1;
   const t = TRINKET_TRIBE[id];
   if (t) v += 0.15 * Math.max(0, p.board.filter((u) => isTribe(u, t)).length - 2);
-  // Deathrattle / Battlecry doublers with an army full of them
+  // Deathrattle / Arrive doublers with an army full of them
   if (id === 'gravebell') v += 0.08 * p.board.filter((u) => EFFECTS[u.cardId]?.deathrattle).length;
   if (id === 'crown_of_echoes') v += 0.06 * [...p.board, ...p.hand].filter((u) => EFFECTS[u.cardId]?.battlecry).length;
   return v;

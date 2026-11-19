@@ -16,7 +16,7 @@ export interface FxEvent {
   hero?: boolean;
   /** name to show, e.g. "Shopkeep" or "Coffee Run" */
   name: string;
-  /** what kind of trigger, e.g. "Battlecry", "End of turn" */
+  /** what kind of trigger, e.g. "Arrive", "End of turn" */
   label: string;
   buffs: { uid: number; atk: number; hp: number; kw: string[] }[];
   /** new cards in your hand / new units in your army */
@@ -26,11 +26,11 @@ export interface FxEvent {
   goldNext: number;
   /** counters that changed: key "hero", "quest" or "u<uid>", with the new text */
   counters: { key: string; text: string }[];
-  /** part of a run of repeated Battlecries: played at double speed */
+  /** part of a run of repeated Arrive effects: played at double speed */
   fast?: boolean;
 }
 
-/** a hero power that kicks in without changing anything by itself (e.g. Derby Pocket's extra Battlecry): just show it */
+/** a hero power that kicks in without changing anything by itself (e.g. Derby Pocket's extra Arrive): just show it */
 export function heroPing(g: GameState, p: Player, name: string, label: string) {
   if (!tracking(g, p)) return;
   (p.fx ??= []).push({ phase, hero: true, name, label, buffs: [], gains: [], summons: [], gold: 0, goldNext: 0, counters: [] });

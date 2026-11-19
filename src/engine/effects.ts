@@ -1,7 +1,7 @@
 /**
  * Card abilities. Each card id maps to a set of hooks.
  *  - Shop hooks receive a Ctx whose `board` is the player's persistent board.
- *  - Battlecries may also be triggered during combat (Returner, Spoonful); then `combat` is set and
+ *  - Arrive effects may also be triggered during combat (Returner, Spoonful); then `combat` is set and
  *    `board` holds combat units, so effects there are temporary unless they touch hand/player.
  *  - Combat hooks receive a CCtx.
  * m = 1 for normal, 2 for golden.
@@ -85,7 +85,7 @@ function gemTarget(c: Ctx): Body | undefined {
   return c.target ?? pick(c.g, others(c.board, c.self));
 }
 
-/** "Play a Gem on a unit": its Battlecry, aimed at that unit, without the Gem itself */
+/** "Play a Gem on a unit": its Arrive, aimed at that unit, without the Gem itself */
 function playGemOn(c: Ctx, gemId: string, target: Body | undefined) {
   if (!target) return;
   // Gem Wizard: Red Gems trigger twice (three times if Golden), however they're played
@@ -106,7 +106,7 @@ function playGemOn(c: Ctx, gemId: string, target: Body | undefined) {
   }
 }
 
-/** a shop-style context for a combat hook (so Gem Battlecries can run in battle) */
+/** a shop-style context for a combat hook (so Gem Arrive effects can run in battle) */
 function cctx(c: CCtx): Ctx {
   return { g: c.g, p: c.p, self: c.self, m: c.m, board: c.side.units.filter((u) => u.hp > 0), combat: c.c, side: c.side };
 }
@@ -266,11 +266,11 @@ export const EFFECTS: Record<string, Effect> = {
     },
   },
   message: {
-    // +2/+2 (Golden +4/+4) to your units with Taunt or Divine Shield
+    // +2/+2 (Golden +4/+4) to your units with Taunt or Bubble
     battlecry: (c) => { for (const u of c.board) if (u !== c.self && (has(u, 'taunt') || has(u, 'divineShield'))) buff(u, 2 * c.m, 2 * c.m); },
   },
   front_and_center: {
-    // Divine Shield to two Azure units (ones without it; this one counts)
+    // Bubble to two Azure units (ones without it; this one counts)
     soc: (c) => {
       const pool = c.side.units.filter((u) => u.hp > 0 && isTribe(u, 'azure') && !has(u, 'divineShield'));
       for (const u of sample(c.g, pool, 2)) addKw(u, 'divineShield');
@@ -309,7 +309,7 @@ export const EFFECTS: Record<string, Effect> = {
     },
   },
   commitment: {
-    // +1/+1 to your units at Start of Combat, +1/+1 more for every Battlecry unit you've played since (Golden doubles)
+    // +1/+1 to your units at Start of Combat, +1/+1 more for every Arrive unit you've played since (Golden doubles)
     soc: (c) => {
       const n = (1 + (c.self.mem.imp ?? 0)) * c.m;
       for (const u of c.side.units) if (u.hp > 0) buff(u, n, n);
@@ -349,7 +349,7 @@ export const EFFECTS: Record<string, Effect> = {
     },
   },
   pink_gem: {
-    // +6/+6 and Divine Shield until next turn (+2/+2 more per improvement; Golden doubles); a Kindred unit gets it twice
+    // +6/+6 and Bubble until next turn (+2/+2 more per improvement; Golden doubles); a Kindred unit gets it twice
     target: 'friendly',
     battlecry: (c) => {
       const t = gemTarget(c);
@@ -554,7 +554,7 @@ export const EFFECTS: Record<string, Effect> = {
     },
   },
   omar_evans: {
-    // Avenge (3): Venomous again (Golden: and Divine Shield), then it attacks at once
+    // Avenge (3): Doomstrike again (Golden: and Bubble), then it attacks at once
     avenge: [3, 3],
     avengeFn: (c) => {
       addKw(c.self, 'venomous');
@@ -584,7 +584,7 @@ export const EFFECTS: Record<string, Effect> = {
     },
   },
   tinker: {
-    // while in play: each Refresh gives a random shop unit Venomous, Divine Shield or Reborn (game.ts reroll)
+    // while in play: each Refresh gives a random shop unit Doomstrike, Bubble or Reborn (game.ts reroll)
     onRefresh: (c) => {
       for (const u of sample(c.g, c.p.shop, c.m)) {
         const opts = (['venomous', 'divineShield', 'reborn'] as Keyword[]).filter((k) => !has(u, k));
@@ -608,7 +608,7 @@ export const EFFECTS: Record<string, Effect> = {
     },
   },
   chaos: {
-    // once, plus once more for every Battlecry unit played this turn
+    // once, plus once more for every Arrive unit played this turn
     endTurn: (c) => {
       const times = 1 + (c.p.battlecryUnitsThisTurn ?? 0);
       buff(c.board[0], 3 * c.m * times, 3 * c.m * times);
@@ -747,7 +747,7 @@ export const EFFECTS: Record<string, Effect> = {
     },
   },
   pickaxe: {
-    // Gambler (id kept as 'pickaxe' so saves still load): Battlecry: 1 free Refresh (Golden 2)
+    // Gambler (id kept as 'pickaxe' so saves still load): Arrive: 1 free Refresh (Golden 2)
     battlecry: (c) => { c.p.freeRerolls = (c.p.freeRerolls ?? 0) + c.m; },
   },
   scout: {
@@ -873,7 +873,7 @@ export const EFFECTS: Record<string, Effect> = {
     rally: (c) => { for (let i = 0; i < c.m; i++) gain(c, randomTier(c, 5)); },
   },
   blue_dragon: {
-    // Avenge (3): Divine Shield to a random friendly unit without one (Golden: 2)
+    // Avenge (3): Bubble to a random friendly unit without one (Golden: 2)
     avenge: [3, 3],
     avengeFn: (c) => {
       for (const u of sample(c.g, c.side.units.filter((x) => x.hp > 0 && !has(x, 'divineShield')), c.m)) addKw(u, 'divineShield');

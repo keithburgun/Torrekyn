@@ -2,8 +2,8 @@
  * Battle simulation, following Hearthstone: Battlegrounds conventions:
  *  - the side with more units attacks first (coin flip if equal), sides alternate;
  *  - each side's units attack left-to-right; targets are random, Taunt first;
- *  - Divine Shield absorbs one hit; Venomous kills on damage (one use), Poisonous always does; Reborn returns at 1 Health;
- *  - Windfury attacks twice; deaths resolve left-to-right, attacking side first.
+ *  - Bubble absorbs one hit; Doomstrike kills on damage (one use), Poisonous always does; Reborn returns at 1 Health;
+ *  - Double Attack attacks twice; deaths resolve left-to-right, attacking side first.
  */
 import { addKw, cloneUnit, def, effStats, has, isTribe, mult, ownerBonus, pick, rand, removeKw, sample, tribeOf, CONFIG } from './core';
 import { EFFECTS, hasBattlecry, battlecryTimes, type CCtx } from './effects';
@@ -161,7 +161,7 @@ export class Combat {
     const h = Math.max(0, cu.hp + (cu.taken ?? 0) - cu.startHp);
     u.atk += a * m;
     u.hp += h * m;
-    // any keyword it gained at some point in the battle (a Divine Shield gained and then broken still counts)
+    // any keyword it gained at some point in the battle (a Bubble gained and then broken still counts)
     const seen = new Set<Keyword>(cu.kw);
     for (const f of this.frames) for (const x of f.sides[cu.side]) if (x.id === cu.id) x.kw.forEach((k) => seen.add(k));
     for (const k of seen) if (!cu.startKw.includes(k) && !u.kw.includes(k)) u.kw.push(k);
@@ -287,7 +287,7 @@ export class Combat {
       e.battlecry({ g: this.g, p: s.owner, self: u, m: mult(u), board: s.units.filter((x) => x.hp > 0), combat: this, side: s });
       if (s.persistent) onBattlecryTriggered(this.g, s.owner);
     }
-    this.snap('trigger', { source: u.id, note: `${def(u.cardId).name}: Battlecry` });
+    this.snap('trigger', { source: u.id, note: `${def(u.cardId).name}: Arrive` });
   }
 
   // ---------- deaths ----------

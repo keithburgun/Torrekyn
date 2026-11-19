@@ -1,7 +1,7 @@
 export type Tribe =
   | 'neverending' | 'azure' | 'kindred' | 'brambor' | 'cloister' | 'alcove' | 'demons' | 'neutral';
 
-/** Venomous is used up by its first kill; Poisonous never is */
+/** Doomstrike is used up by its first kill; Poisonous never is */
 export type Keyword = 'taunt' | 'divineShield' | 'reborn' | 'venomous' | 'poisonous' | 'windfury';
 
 export const BONUS_KEYWORDS: Keyword[] = ['taunt', 'divineShield', 'reborn', 'venomous', 'windfury'];
@@ -110,7 +110,7 @@ export interface Player {
   owlsSummoned?: number;
   redGemBonus: number;
   battlecriesThisTurn: number;
-  /** Battlecry units played this turn (Chaos) */
+  /** Arrive units played this turn (Chaos) */
   battlecryUnitsThisTurn?: number;
   battlecriesLastTurn: number;
   battlecriesGame: number;

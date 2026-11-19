@@ -516,7 +516,7 @@ export class App {
     }
     // cards gained while the hand was full wait here until there's room
     if (p.overflow?.length) h += `<div class="overflow-pill abs" style="left:${L.cx - 160}px;top:${L.handY - 34}px;width:320px">Hand full · ${p.overflow.length} more card${p.overflow.length > 1 ? 's' : ''} waiting for room</div>`;
-    // a unit being played with a targeted Battlecry stays in the slot it was dropped on while you aim
+    // a unit being played with a targeted Arrive stays in the slot it was dropped on while you aim
     const placing = tgt?.kind === 'play' && p.hand[tgt.handIdx] ? tgt : null;
     p.board.forEach((u, i) => {
       const sel = this.sel?.zone === 'board' && this.sel.idx === i ? 'selected' : '';
@@ -1202,7 +1202,7 @@ export class App {
     // a Refresh deals its cards out first; effects on them (Tinker) start once they've landed
     const dealLeft = this.dealUntil - performance.now();
     if (dealLeft > 0) await new Promise((r) => setTimeout(r, dealLeft));
-    let speed = 1; // 0.5 for a run of repeated Battlecries
+    let speed = 1; // 0.5 for a run of repeated Arrive effects
     const wait = (ms: number) => new Promise<void>((r) => setTimeout(r, this.fxHurry ? ms * 0.2 : ms * speed));
     const card = (uid: number) => this.stage.querySelector(`.card[data-id="${uid}"]:not(.ghost)`) as HTMLElement | null;
     // new cards stay hidden until they arrive
@@ -1215,7 +1215,7 @@ export class App {
         if (a && b.atk) a.textContent = String(Number(a.textContent) - b.atk);
         if (h && b.hp) h.textContent = String(Number(h.textContent) - b.hp);
         restat(a); restat(h);
-        // new keywords too (Tinker's Divine Shield etc.) appear when the effect lands
+        // new keywords too (Tinker's Bubble etc.) appear when the effect lands
         for (const k of b.kw) { el?.classList.remove(`kw-${k}`); const sp = el?.querySelector(`.kws .kw-${k}`) as HTMLElement | null; if (sp) sp.style.visibility = 'hidden'; }
       }
     }

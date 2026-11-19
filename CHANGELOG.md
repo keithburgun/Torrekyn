@@ -2,6 +2,9 @@
 
 Newest first. The version shows on the title screen.
 
+## 0.12.20 — 2026-11-19
+- Keywords renamed: Battlecry is now Arrive, Venomous is now Doomstrike, Windfury is now Double Attack, Divine Shield is now Bubble (and it's aqua now)
+
 ## 0.12.19 — 2026-11-19
 - Business Demons and Kindred colours further apart; second Honeysuckle is now Foxglove (and the Azure Shield is now Bulwark); one Divine Shield shape for all; Golden tag on cards; Golden summons preview as Golden; Passive filter and searchable tags in Card Viewer; dark-mode opt-outs for the upgrade cost; tribe-bound trinkets only appear with their tribe; hero/trinket trigger notes show by their own hero; Memory is now 1/3 Taunt Reborn
 

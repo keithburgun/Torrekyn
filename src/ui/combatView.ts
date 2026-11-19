@@ -462,7 +462,7 @@ export class CombatPlayer {
     setTimeout(() => d.remove(), life + 50);
   }
 
-  /** Divine Shield breaking: flash, ring and golden shards flying outward. */
+  /** Bubble popping: flash, ring and aqua droplets flying outward. */
   private shatter(x: number, y: number) {
     sfx.shieldBreak();
     const life = this.t(750);

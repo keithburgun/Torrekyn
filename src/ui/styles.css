@@ -182,12 +182,12 @@ b { font-weight: 800; }
 .card.kw-taunt .tribe-plate { bottom: 6px; }
 .card.kw-taunt .stat { bottom: -8px; }
 .card.kw-divineShield::after {
-  /* one shape for every Shield, sized so Taunt's longer shield-shaped card fits inside it too */
+  /* Bubble: one aqua shape for every unit, sized so Taunt's longer shield-shaped card fits inside it too */
   content: ''; position: absolute; inset: -22px -16px -34px; border-radius: 50% / 46%; pointer-events: none; z-index: 4;
   background:
     radial-gradient(ellipse at 34% 20%, rgba(255, 255, 255, 0.55) 0 5%, rgba(255, 255, 255, 0) 13%),
-    radial-gradient(ellipse at center, rgba(255, 236, 150, 0.06) 0 52%, rgba(255, 230, 140, 0.14) 62%, rgba(255, 226, 120, 0.6) 69%, rgba(255, 248, 210, 1) 74%, rgba(255, 244, 190, 1) 78%, rgba(255, 205, 90, 0.95) 81%, rgba(255, 255, 255, 0) 85%);
-  box-shadow: 0 0 22px rgba(255, 220, 120, 0.55);
+    radial-gradient(ellipse at center, rgba(120, 240, 245, 0.07) 0 52%, rgba(100, 230, 240, 0.16) 62%, rgba(70, 215, 230, 0.6) 69%, rgba(215, 255, 255, 1) 74%, rgba(175, 248, 252, 1) 78%, rgba(40, 195, 215, 0.95) 81%, rgba(255, 255, 255, 0) 85%);
+  box-shadow: 0 0 22px rgba(80, 225, 240, 0.55);
   animation: shimmer 2.4s ease-in-out infinite;
 }
 .card.kw-poisonous .art { box-shadow: inset 0 0 18px rgba(120, 230, 90, 0.95), inset 0 0 0 2px #b8ff9a; }
@@ -509,18 +509,18 @@ b { font-weight: 800; }
 @keyframes ring-out { from { transform: translate(-50%, -50%) scale(0.2); opacity: 1; } to { transform: translate(-50%, -50%) scale(1.25); opacity: 0; } }
 .fx.buff-glow { width: 190px; height: 230px; border-radius: 40%; background: radial-gradient(ellipse, rgba(157, 255, 192, 0.55), rgba(157, 255, 192, 0) 65%); animation-name: glow-out; }
 @keyframes glow-out { 0% { opacity: 0; transform: translate(-50%, -50%) scale(0.7); } 30% { opacity: 1; } 100% { opacity: 0; transform: translate(-50%, -50%) scale(1.15); } }
-.fx.shield-pop { width: 190px; height: 230px; border-radius: 50%; border: 6px solid #ffe9a0; box-shadow: 0 0 30px #ffd36a, inset 0 0 26px rgba(255, 233, 160, 0.8); animation-name: shield-pop; }
-/* Divine Shield shattering: a bright flash, a burst ring, and golden glass shards flying outward */
-.fx.shatter-flash { width: 220px; height: 260px; border-radius: 50%; background: radial-gradient(ellipse, rgba(255, 255, 240, 0.95), rgba(255, 228, 140, 0.55) 40%, rgba(255, 210, 90, 0) 70%); animation-name: flash-out; }
+.fx.shield-pop { width: 190px; height: 230px; border-radius: 50%; border: 6px solid #a8f6fb; box-shadow: 0 0 30px #3fd8e8, inset 0 0 26px rgba(168, 246, 251, 0.8); animation-name: shield-pop; }
+/* Bubble popping: a bright flash, a burst ring, and aqua droplets flying outward */
+.fx.shatter-flash { width: 220px; height: 260px; border-radius: 50%; background: radial-gradient(ellipse, rgba(240, 255, 255, 0.95), rgba(140, 235, 245, 0.55) 40%, rgba(70, 210, 230, 0) 70%); animation-name: flash-out; }
 @keyframes flash-out { 0% { opacity: 1; transform: translate(-50%, -50%) scale(0.85); } 100% { opacity: 0; transform: translate(-50%, -50%) scale(1.35); } }
 .fx.shard { width: 18px; height: 30px; clip-path: polygon(50% 0, 100% 40%, 70% 100%, 10% 75%, 0 25%);
-  background: linear-gradient(135deg, #fffbe6, #ffd36a 55%, #ffb6dc); filter: drop-shadow(0 0 6px #ffd36a); animation-name: shard-fly; animation-timing-function: cubic-bezier(.2, .7, .4, 1); }
+  background: linear-gradient(135deg, #f0ffff, #5fe3ef 55%, #2bb8d6); filter: drop-shadow(0 0 6px #5fe3ef); animation-name: shard-fly; animation-timing-function: cubic-bezier(.2, .7, .4, 1); }
 @keyframes shard-fly {
   0% { opacity: 1; transform: translate(-50%, -50%) rotate(var(--r0)) scale(1); }
   100% { opacity: 0; transform: translate(calc(-50% + var(--dx)), calc(-50% + var(--dy))) rotate(var(--r1)) scale(0.5); }
 }
 @keyframes shield-pop { 0% { opacity: 1; transform: translate(-50%, -50%) scale(0.9); } 40% { opacity: 1; border-style: dashed; } 100% { opacity: 0; transform: translate(-50%, -50%) scale(1.5); border-width: 1px; } }
-.fx.shield-gain { width: 190px; height: 230px; border-radius: 50%; border: 6px solid #ffe9a0; box-shadow: 0 0 30px #ffd36a; animation-name: shield-gain; }
+.fx.shield-gain { width: 190px; height: 230px; border-radius: 50%; border: 6px solid #a8f6fb; box-shadow: 0 0 30px #3fd8e8; animation-name: shield-gain; }
 @keyframes shield-gain { 0% { opacity: 0; transform: translate(-50%, -50%) scale(1.6); } 60% { opacity: 1; } 100% { opacity: 0; transform: translate(-50%, -50%) scale(1); } }
 .fx.venom-pop { width: 170px; height: 170px; border-radius: 50%; background: radial-gradient(circle, rgba(140, 255, 120, 0.85), rgba(60, 200, 90, 0.3) 50%, rgba(60, 200, 90, 0) 70%); animation-name: glow-out; }
 .fx.kill-pop { font-family: var(--display); font-size: 90px; font-weight: 700; color: #c9a8ff; text-shadow: 0 0 20px #7d5bd0; animation-name: pop-fade; }
@@ -1476,8 +1476,8 @@ svg.aim-arrow.locked .aim-ring { opacity: 0.9; animation: aim-ring 0.9s ease-in-
 .panel.leader:hover { z-index: 60; }
 .leader .row .lb-hist { z-index: 61; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.55); }
 
-/* keyword badges (Reborn, Venomous, Poisonous, Windfury): a row of chunky coloured coins along the bottom edge,
-   just under the tribe banner and between the Attack and Health orbs (Taunt and Divine Shield show as frames instead) */
+/* keyword badges (Reborn, Doomstrike, Poisonous, Double Attack): a row of chunky coloured coins along the bottom edge,
+   just under the tribe banner and between the Attack and Health orbs (Taunt and Bubble show as frames instead) */
 .card .kws { top: auto; right: auto; left: 50%; bottom: -24px; transform: translateX(-50%); flex-direction: row; gap: 3px; z-index: 3; }
 .card .kws span {
   width: 28px; height: 28px; border-radius: 50%; font-size: 16px; font-weight: 900; line-height: 1; color: #fff; font-variant-emoji: text;

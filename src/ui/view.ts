@@ -30,21 +30,21 @@ export const esc = (s: string) => s.replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '
 
 export const KW_ICON: Record<Keyword, [string, string]> = {
   taunt: ['🛡', 'Taunt'],
-  divineShield: ['✦', 'Divine Shield'],
+  divineShield: ['✦', 'Bubble'],
   reborn: ['☥', 'Reborn'],
-  venomous: ['☠', 'Venomous'],
+  venomous: ['☠', 'Doomstrike'],
   poisonous: ['☣', 'Poisonous'],
-  windfury: ['〰', 'Windfury'],
+  windfury: ['〰', 'Double Attack'],
 };
 
 export const KEYWORD_HELP: Record<string, string> = {
   Taunt: 'Enemies must attack this first.',
-  'Divine Shield': 'The first damage this takes is ignored.',
+  'Bubble': 'The first damage this takes is ignored.',
   Reborn: 'Comes back with 1 Health the first time it dies.',
-  Venomous: 'Destroys any unit it damages (once).',
+  Doomstrike: 'Destroys any unit it damages (once).',
   Poisonous: 'Destroys any unit it damages (every time).',
-  Windfury: 'Attacks twice.',
-  Battlecry: 'Happens when you play it from your hand.',
+  'Double Attack': 'Attacks twice.',
+  Arrive: 'Happens when you play it from your hand.',
   Deathrattle: 'Happens when it dies.',
   Rally: 'Happens whenever this attacks.',
   Avenge: 'Happens after the given number of friendly units die.',
@@ -57,7 +57,7 @@ export function abilityTags(cardId: string): string[] {
   const d = def(cardId);
   const tags: string[] = [];
   if (!e) return tags;
-  if (e.battlecry) tags.push('Battlecry');
+  if (e.battlecry) tags.push('Arrive');
   if (e.deathrattle) tags.push('Deathrattle');
   if (e.rally) tags.push('Rally');
   if (e.avenge) tags.push('Avenge');
@@ -66,7 +66,7 @@ export function abilityTags(cardId: string): string[] {
   if (e.startTurn) tags.push('Turn');
   if (e.onSell) tags.push('Sell');
   if (e.target === undefined && e.onPlay) tags.push('Play');
-  if (!tags.length && d.text && !/^((Taunt|Divine Shield|Reborn|Venomous|Poisonous)[.,]?\s*)+$/i.test(d.text)) tags.push('Passive');
+  if (!tags.length && d.text && !/^((Taunt|Bubble|Reborn|Doomstrike|Poisonous)[.,]?\s*)+$/i.test(d.text)) tags.push('Passive');
   return tags;
 }
 
@@ -119,7 +119,7 @@ export function cardHtml(u: { cardId: string; golden: boolean; atk: number; hp: 
 
 export function formatText(text: string): string {
   let t = esc(text);
-  t = t.replace(/(Battlecry|Deathrattle|Rally|Avenge ?\(\d+\)|Start of (Combat|Turn)|End of Turn|Divine Shield|Taunt|Reborn|Venomous|Poisonous|Discover|Quest|Windfury)/g, '<b>$1</b>');
+  t = t.replace(/(Arrive|Deathrattle|Rally|Avenge ?\(\d+\)|Start of (Combat|Turn)|End of Turn|Bubble|Taunt|Reborn|Doomstrike|Poisonous|Discover|Quest|Double Attack)/g, '<b>$1</b>');
   return t;
 }
 
@@ -137,8 +137,8 @@ export function relatedCards(cardId: string): string[] {
     NAME_RE = new RegExp(`\\b(${names.join('|')})(s|es)?\\b`, 'gi');
   }
   const d = def(cardId);
-  // keyword phrases first ("Divine Shield" is not the Shield card)
-  const text = `${d.text} ${d.goldenText}`.replace(/Divine Shield/gi, '');
+  // keyword phrases first ("Bubble" is not the Shield card)
+  const text = `${d.text} ${d.goldenText}`.replace(/Bubble/gi, '');
   const out: string[] = [...(ALSO[cardId] ?? [])];
   for (const m of text.matchAll(NAME_RE)) {
     const id = NAME_ID.get(m[1].toLowerCase());

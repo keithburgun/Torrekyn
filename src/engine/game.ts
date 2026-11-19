@@ -410,7 +410,7 @@ export function sellUnit(g: GameState, p: Player, u: Unit) {
 /** Remove a unit from the board without selling it (destroyed / consumed). */
 export function destroyUnit(g: GameState, p: Player, u: Unit) {
   const i = p.board.indexOf(u);
-  if (i < 0) return; // already gone (a repeated Battlecry destroying itself again): don't return it to the pool twice
+  if (i < 0) return; // already gone (a repeated Arrive destroying itself again): don't return it to the pool twice
   p.board.splice(i, 1);
   returnToPool(g, u);
 }
@@ -462,14 +462,14 @@ export function runBattlecry(g: GameState, p: Player, u: Unit, target?: Unit) {
   const heroExtra = heroHooks.battlecryExtra(p);
   const times = battlecryTimes(p, u) + trinketCount(p, 'crown_of_echoes') + heroExtra;
   const fx0 = p.fx?.length ?? 0;
-  // repeats happen even if the unit is gone by then (Sword and Shield destroy themselves in their Battlecry)
+  // repeats happen even if the unit is gone by then (Sword and Shield destroy themselves in their Arrive)
   for (let i = 0; i < times; i++) {
-    // the hero power announces itself just before the extra Battlecry it causes
-    if (i === times - heroExtra && heroExtra) heroPing(g, p, heroHooks.battlecryExtraName(p), 'Extra Battlecry!');
-    withFx(g, p, { unit: u }, i === 0 ? 'Battlecry' : 'Battlecry again!', () => e.battlecry!({ g, p, self: u, m: mult(u), board: p.board, target }));
+    // the hero power announces itself just before the extra Arrive it causes
+    if (i === times - heroExtra && heroExtra) heroPing(g, p, heroHooks.battlecryExtraName(p), 'Extra Arrive!');
+    withFx(g, p, { unit: u }, i === 0 ? 'Arrive' : 'Arrive again!', () => e.battlecry!({ g, p, self: u, m: mult(u), board: p.board, target }));
     onBattlecryTriggered(g, p);
   }
-  // several Battlecries in a row play at double speed
+  // several Arrive effects in a row play at double speed
   if (times > 1) for (const ev of p.fx?.slice(fx0) ?? []) ev.fast = true;
 }
 
