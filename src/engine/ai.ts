@@ -19,7 +19,7 @@ import cardValues from '../data/cardValues.json';
 const ABILITY = cardValues as unknown as Record<string, [number, number]>;
 
 /** every feature switch the bot knows */
-export const FEATURES = ['level', 'triples', 'tribe', 'discover', 'hero', 'freeze', 'value', 'econ', 'arrange', 'reroll', 'simbuy', 'spend', 'powerFirst', 'growth', 'hold', 'smartsell', 'place', 'hand', 'engine', 'plans'] as const;
+export const FEATURES = ['level', 'triples', 'tribe', 'discover', 'hero', 'freeze', 'value', 'econ', 'arrange', 'reroll', 'simbuy', 'spend', 'powerFirst', 'growth', 'hold', 'smartsell', 'place', 'hand', 'engine', 'plans', 'trinkets'] as const;
 export type Feature = (typeof FEATURES)[number];
 
 export const BASELINE: BotProfile = { noise: 0, blunder: 0, f: Object.fromEntries(FEATURES.map((k) => [k, false])) };
@@ -417,7 +417,9 @@ export function aiTakeTurn(g: GameState, p: Player) {
   while (p.discovers.length) chooseDiscover(g, p, aiChooseDiscover(g, p, p.discovers[0]));
   if (p.trinketOffer) {
     const affordable = p.trinketOffer.filter((t) => trinketDef(t).cost <= p.gold);
-    const best = affordable.sort((a, b) => trinketDef(b).cost - trinketDef(a).cost)[0];
+    const best = on(p, 'trinkets')
+      ? affordable.filter((t) => trinketGain(p, t) > 0).sort((a, b) => trinketGain(p, b) - trinketGain(p, a))[0]
+      : affordable.sort((a, b) => trinketDef(b).cost - trinketDef(a).cost)[0];
     pickTrinket(g, p, best ?? null);
   }
   const blunder = rand(g) < (prof(p).blunder ?? 0);
@@ -827,4 +829,25 @@ function missingPieces(p: Player): string[] {
   if (!pl) return [];
   const owned = new Set([...p.board, ...p.hand].map((u) => u.cardId));
   return pl.pieces.filter((id) => !owned.has(id) && def(id).tier <= p.tier);
+}
+
+/**
+ * What a trinket is worth: places gained (average finish) against skipping the offer, measured by giving it to one
+ * Expert bot in many games (tests/zz_trink probe, Nov 2026). Faction trinkets are worth more with an army of that faction.
+ */
+const TRINKET_GAIN: Record<string, number> = {
+  gem_time: 1.5, healing_draught: 1.07, lucky_coin: 0.76, old_map: 0.66, rattler: 0.54, iron_bracer: 0.26, bronze_compass: 0.15,
+  summit_key: 0.13, double_thing: 0.13, war_drum: 0, whetstone: -0.06, incense: -0.14, spare_parts: -0.26,
+  another_chance: 0.66, summit_vault: 0.32, hourglass_of_plenty: 0.28, aegis_charm: 0.22, bannerlords_standard: 0.2, gravebell: 0.14,
+  golden_lantern: 0.13, dont_even_know: 0.11, phoenix_feather: 0.11, crown_of_echoes: 0.06, warlords_horn: 0.03, new_power: -0.03,
+};
+const TRINKET_TRIBE: Record<string, Tribe> = { bronze_compass: 'neverending', incense: 'neverending', whetstone: 'brambor' };
+function trinketGain(p: Player, id: string): number {
+  let v = TRINKET_GAIN[id] ?? 0.1;
+  const t = TRINKET_TRIBE[id];
+  if (t) v += 0.15 * Math.max(0, p.board.filter((u) => isTribe(u, t)).length - 2);
+  // Deathrattle / Battlecry doublers with an army full of them
+  if (id === 'gravebell') v += 0.08 * p.board.filter((u) => EFFECTS[u.cardId]?.deathrattle).length;
+  if (id === 'crown_of_echoes') v += 0.06 * [...p.board, ...p.hand].filter((u) => EFFECTS[u.cardId]?.battlecry).length;
+  return v;
 }
