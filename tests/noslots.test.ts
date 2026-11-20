@@ -528,6 +528,17 @@ describe('v0.12.3 Kindred', () => {
     }
   });
 
+  it('Golden Green Ninja joins from hand with double stats; the normal one with its own', () => {
+    for (const golden of [false, true]) {
+      const { g, p, o } = setup();
+      p.hand = [U(g, 'orange_ninja', golden ? 10 : 5, golden ? 4 : 2, golden)];
+      const c = fight(g, p, o, [U(g, 'doctor', 1, 50)], [U(g, 'skel', 0, 99)]);
+      c.run();
+      const n = at(c, afterSoc(c), 'orange_ninja')!;
+      expect([n.atk, n.hp]).toEqual(golden ? [20, 8] : [5, 2]);
+    }
+  });
+
   it('Golden Brass keeps what the unit remembers (a locked unit stays locked)', () => {
     const { g, p } = setup();
     const u = U(g, 'doctor', 5, 5); u.mem.locked = 1;

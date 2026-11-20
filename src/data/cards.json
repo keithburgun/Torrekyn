@@ -741,7 +741,7 @@
    "atk": 5,
    "hp": 2,
    "text": "Start of Combat: If this is in your hand, summon a copy of it to the battlefield if there's room.",
-   "goldenText": "Start of Combat: If this is in your hand, summon a copy of it to the battlefield if there's room.",
+   "goldenText": "Start of Combat: If this is in your hand, summon a copy of it with double stats to the battlefield if there's room.",
    "keywords": []
   },
   {

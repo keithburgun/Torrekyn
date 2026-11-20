@@ -222,10 +222,11 @@ export class Combat {
   }
 
   /** Bring a card from hand into battle as a temporary copy. */
-  spawnUnit(s: Side, u: Unit, pos: number): CUnit | null {
+  /** summon a copy of a unit from hand (scale: its stats are multiplied, e.g. Golden Green Ninja doubles them) */
+  spawnUnit(s: Side, u: Unit, pos: number, scale = 1): CUnit | null {
     if (s.units.filter((x) => x.hp > 0).length >= CONFIG.boardSize) return null;
     const st = effStats(s.owner, u, 'hand');
-    const cu = this.makeCU(s.idx, u.cardId, u.golden, st.atk, st.hp, st.kw, null, { ...u.mem });
+    const cu = this.makeCU(s.idx, u.cardId, u.golden, st.atk * scale, st.hp * scale, st.kw, null, { ...u.mem });
     s.units.splice(Math.max(0, Math.min(pos, s.units.length)), 0, cu);
     this.addFx({ k: 'summon', to: cu.id });
     this.onSummoned(s, cu);
@@ -511,7 +512,7 @@ export class Combat {
       if (!s.persistent) continue;
       for (const u of s.owner.hand) {
         if (u.cardId !== 'orange_ninja') continue;
-        if (!this.spawnUnit(s, u, s.units.length)) break;
+        if (!this.spawnUnit(s, u, s.units.length, u.golden ? 2 : 1)) break; // Golden: the copy has double stats
       }
     }
     for (const s of [this.sides[this.attacking], this.sides[1 - this.attacking]]) {

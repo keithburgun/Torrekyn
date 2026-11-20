@@ -2,6 +2,9 @@
 
 Newest first. The version shows on the title screen.
 
+## 0.12.27 — 2026-11-20
+- Golden Green Ninja's copy joins the battle with double stats
+
 ## 0.12.26 — 2026-11-20
 - Barton's starting stats are now 12/2
 
