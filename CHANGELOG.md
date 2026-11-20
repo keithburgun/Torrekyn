@@ -2,6 +2,9 @@
 
 Newest first. The version shows on the title screen.
 
+## 0.12.24 — 2026-11-20
+- Fixed: during a battle you go on to win, the opponent's portrait showed too much Health (the battle's damage was added twice); it now matches the sidebar
+
 ## 0.12.23 — 2026-11-20
 - Golden Sickle deals 8 damage to adjacent units
 

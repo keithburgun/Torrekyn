@@ -564,12 +564,13 @@ export class App {
     const saved = g.players.map((x) => x.health);
     g.players.forEach((x) => { x.health = b.before(x.id); });
     try {
+      // (from here on, every player's .health already IS their Health before the battle: don't add the damage again)
       const opp = g.players[b.oppId];
       const t = L.phone?.tavern;
       const kp = t ? t.kp : 116;
       let h = this.leaderboardHtml();
       h += `<div class="tavern-keeper enemy-keeper" style="left:${L.cx - (t ? t.kp : 132) / 2}px;top:${L.tavernY}px;${t ? `width:${t.kp}px` : ''}">
-        <div class="tk-portrait battle-av" id="avatar-enemy" style="background-image:url('${heroArt(opp.hero)}');${t ? `width:${kp}px;height:${kp}px` : ''}"><div class="hp hpb">${b.ghost ? '💀' : Math.max(0, b.before(opp.id))}</div></div>
+        <div class="tk-portrait battle-av" id="avatar-enemy" style="background-image:url('${heroArt(opp.hero)}');${t ? `width:${kp}px;height:${kp}px` : ''}"><div class="hp hpb">${b.ghost ? '💀' : Math.max(0, opp.health)}</div></div>
         <div class="tk-name">${b.ghost ? 'Ghost of ' : ''}${esc(opp.name)}</div>
       </div>`;
       for (let i = 0; i < CONFIG.boardSize; i++) h += `<div class="slot-plate" data-slot="${i}" style="left:${L.slotX(i)}px;top:${L.slotTop}px;width:${L.slotW}px;height:${L.slotH}px"></div>`;
