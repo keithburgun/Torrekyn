@@ -2,6 +2,9 @@
 
 Newest first. The version shows on the title screen.
 
+## 0.12.26 — 2026-11-20
+- Barton's starting stats are now 12/2
+
 ## 0.12.25 — 2026-11-20
 - Peebnup Bubber is now Turtlepult, and two of them copy each other's Health gains (once per event). Fixed: Golden Devotion's text said 8 Kindred (it needs 4); Orbo Pet's card didn't say Doomstrike; Golden Brass unlocked locked units and wiped their counters; 'random <faction> unit' effects never gave units of every faction (Amalgam, Beast Vine)
 
