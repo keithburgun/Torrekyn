@@ -7,6 +7,7 @@ import { newGame, buy, play, sell, validTargets } from '../src/engine/game';
 import { CARDS, makeUnit, def } from '../src/engine/core';
 import { EFFECTS } from '../src/engine/effects';
 import { Combat } from '../src/engine/combat';
+import { arrange } from '../src/engine/ai';
 import type { GameState, Player, Unit } from '../src/engine/types';
 
 const FILL = ['ash', 'command', 'knight', 'doctor', 'hug', 'sapling', 'hunter', 'mod', 'pyro'];
@@ -116,6 +117,16 @@ describe('every ability changes something', () => {
     p.board = [makeUnit(g, 'ash')]; p.hand = [makeUnit(g, 'red_gem')];
     play(g, p, 0, 0);
     expect(p.board[0].atk).toBeGreaterThan(def('red_gem').atk);
+  });
+
+  it('bots line up big, Rally and Double Attack units on the left, Avenge units on the right', () => {
+    const { g, p } = setup(32);
+    const green = makeUnit(g, 'ash'); green.kw.push('windfury');
+    p.board = [makeUnit(g, 'sapling'), makeUnit(g, 'ash'), makeUnit(g, 'doctor'), green, makeUnit(g, 'splashmaster')];
+    arrange(p);
+    const ids = p.board.map((u) => (u === green ? 'double' : u.cardId));
+    expect(ids[ids.length - 1]).toBe('sapling'); // Avenge waits on the right
+    expect(ids.slice(0, 3).sort()).toEqual(['doctor', 'double', 'splashmaster'].sort()); // the big one, Rally and Double Attack lead
   });
 
   // ---- abilities that wait for something to happen: make it happen for real ----

@@ -377,15 +377,22 @@ function placeAbandon(p: Player) {
   move(p, ai, to);
 }
 
-function arrange(p: Player) {
-  // Taunts and Bubbles toward the left, damage dealers that like to attack early, big stats in the middle
+export function arrange(p: Player) {
+  // left (attacks first): the biggest units, Rally and Double Attack units; right: Avenge and Deathrattle units,
+  // which want to wait for things to die. Taunt and Bubble lean a little to the left.
   const order = [...p.board].filter((u) => !u.mem.locked);
+  const size = (u: Unit) => { const st = effStats(p, u, 'hand'); return st.atk + st.hp; };
+  const biggest = Math.max(1, ...order.map(size));
   const rank = (u: Unit) => {
     const kw = effStats(p, u, 'hand').kw;
-    let r = 0;
-    if (kw.includes('taunt')) r -= 3;
-    if (kw.includes('divineShield')) r -= 2;
-    if (EFFECTS[u.cardId]?.deathrattle) r += 2;
+    const e = EFFECTS[u.cardId];
+    let r = -4 * (size(u) / biggest); // the biggest unit gets -4
+    if (e?.rally) r -= 3;
+    if (kw.includes('windfury')) r -= 3;
+    if (kw.includes('taunt')) r -= 1;
+    if (kw.includes('divineShield')) r -= 1;
+    if (e?.avenge) r += 4;
+    if (e?.deathrattle) r += 2;
     if (u.cardId === 'mod' || u.cardId === 'abandon') r += 5;
     return r;
   };
