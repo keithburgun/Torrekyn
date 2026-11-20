@@ -80,9 +80,9 @@ export function improveGem(p: Player, id: string, n: number) {
   (p.gemBonus ??= {})[id] = (p.gemBonus[id] ?? 0) + n;
 }
 
-/** a Gem's target: the chosen unit, or a random other friendly unit */
+/** a targeted Arrive's target: the chosen unit (it can be the card itself), or a random friendly unit */
 function gemTarget(c: Ctx): Body | undefined {
-  return c.target ?? pick(c.g, others(c.board, c.self));
+  return c.target ?? pick(c.g, c.board);
 }
 
 /** "Play a Gem on a unit": its Arrive, aimed at that unit, without the Gem itself */
@@ -139,10 +139,6 @@ function discoverFrom(c: Ctx, ids: string[], reason: string, times: number) {
     if (c.combat) gain(c, pick(c.g, opts));
     else queueDiscover(c.g, c.p, opts, reason);
   }
-}
-
-function others(board: Body[], self: Body) {
-  return board.filter((b) => b !== self);
 }
 
 function hpOf(p: Player, u: Unit) {
@@ -202,7 +198,7 @@ export const EFFECTS: Record<string, Effect> = {
   },
   ancient_name_neverending: {
     battlecry: (c) => {
-      for (const u of others(c.board, c.self)) buff(u, 3 * c.m, 3 * c.m);
+      for (const u of c.board) buff(u, 3 * c.m, 3 * c.m);
       for (const u of c.p.hand) buff(u, 3 * c.m, 3 * c.m);
     },
   },
@@ -267,7 +263,7 @@ export const EFFECTS: Record<string, Effect> = {
   },
   message: {
     // +2/+2 (Golden +4/+4) to your units with Taunt or Bubble
-    battlecry: (c) => { for (const u of c.board) if (u !== c.self && (has(u, 'taunt') || has(u, 'divineShield'))) buff(u, 2 * c.m, 2 * c.m); },
+    battlecry: (c) => { for (const u of c.board) if (has(u, 'taunt') || has(u, 'divineShield')) buff(u, 2 * c.m, 2 * c.m); },
   },
   front_and_center: {
     // Bubble to two Azure units (ones without it; this one counts)
@@ -471,7 +467,7 @@ export const EFFECTS: Record<string, Effect> = {
     // Potato Gem: +2 Health (Golden +4; +1 per improvement) to every unit in your hand and army
     battlecry: (c) => {
       const n = potatoHp(c.p) * c.m;
-      for (const u of c.board) if (u !== c.self) u.hp += n;
+      for (const u of c.board) u.hp += n;
       if (!c.combat || c.side?.persistent) for (const u of c.p.hand) u.hp += n;
     },
   },
@@ -703,8 +699,8 @@ export const EFFECTS: Record<string, Effect> = {
   red_gem: {
     battlecry: (c) => {
       const amt = (3 + gemLevel(c.p, 'red_gem')) * c.m;
-      // (not counting the Gem itself)
-      for (const u of others(c.board, c.self).slice(0, 3)) buff(u, amt, 0);
+      // the Gem itself counts if it's one of the 3
+      for (const u of c.board.slice(0, 3)) buff(u, amt, 0);
     },
   },
   purveyor: {
@@ -732,7 +728,7 @@ export const EFFECTS: Record<string, Effect> = {
   // ===== Neutral =====
   sword: {
     battlecry: (c) => {
-      const t = others(c.board, c.self)[0];
+      const t = c.board[0]; // itself, if it's the left-most
       if (t) t.atk += 4 * c.m;
     },
   },
@@ -743,7 +739,7 @@ export const EFFECTS: Record<string, Effect> = {
       const t = gemTarget(c);
       if (!t) return;
       addKw(t, 'taunt');
-      if (c.m > 1) { const more = pick(c.g, others(c.board, c.self).filter((u) => u !== t && !has(u, 'taunt'))); if (more) addKw(more, 'taunt'); }
+      if (c.m > 1) { const more = pick(c.g, c.board.filter((u) => u !== t && !has(u, 'taunt'))); if (more) addKw(more, 'taunt'); }
     },
   },
   pickaxe: {

@@ -3,7 +3,7 @@
  * (Catches abilities that silently do nothing.) Passive auras handled elsewhere are listed in PASSIVE.
  */
 import { describe, it, expect } from 'vitest';
-import { newGame, buy, play, sell } from '../src/engine/game';
+import { newGame, buy, play, sell, validTargets } from '../src/engine/game';
 import { CARDS, makeUnit, def } from '../src/engine/core';
 import { EFFECTS } from '../src/engine/effects';
 import { Combat } from '../src/engine/combat';
@@ -96,6 +96,26 @@ describe('every ability changes something', () => {
     const missing = CARDS.filter((c) => !c.token && c.text && !PASSIVE.has(c.id) && !Object.keys(EFFECTS[c.id] ?? {}).length).map((c) => c.id);
     expect(missing).toEqual([]);
     expect(def('skel').text).toBe('');
+  });
+
+  it('Arrive effects can affect the card itself (unless the text says "another")', () => {
+    const { g, p } = setup(31);
+    // Sword played as the left-most unit buffs itself
+    p.board = []; p.hand = [makeUnit(g, 'sword')];
+    play(g, p, 0, 0);
+    expect(p.board[0].atk).toBe(def('sword').atk + 4);
+    // a Gem can aim at itself, and so can Therapist
+    for (const id of ['tourmaline', 'therapist']) {
+      p.board = [makeUnit(g, 'ash')]; const self = makeUnit(g, id); p.hand = [self];
+      expect(validTargets(p, id, self)).toContain(self);
+      play(g, p, 0, 1, self.uid);
+      expect(self.hp).toBeGreaterThan(def(id).hp);
+      expect(p.board[0].hp).toBe(def('ash').hp);
+    }
+    // Red Gem counts itself among the 3 left-most units
+    p.board = [makeUnit(g, 'ash')]; p.hand = [makeUnit(g, 'red_gem')];
+    play(g, p, 0, 0);
+    expect(p.board[0].atk).toBeGreaterThan(def('red_gem').atk);
   });
 
   // ---- abilities that wait for something to happen: make it happen for real ----

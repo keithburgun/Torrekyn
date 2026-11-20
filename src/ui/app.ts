@@ -29,7 +29,7 @@ import { ALL_TRIBES } from '../engine/core';
 
 declare const __NO_UPDATES__: boolean;
 
-type Zone = 'shop' | 'hand' | 'board';
+type Zone = 'shop' | 'hand' | 'board' | 'placing'; // placing: the card being played, while you aim its Arrive
 interface Sel { zone: Zone; idx: number }
 interface Press { zone: Zone; idx: number; x: number; y: number; el: HTMLElement; pointerId: number }
 interface Targeting { kind: 'play'; handIdx: number; pos: number } // play a card that needs a target
@@ -493,7 +493,7 @@ export class App {
     const p = this.me;
     const tgt = this.targeting;
     const targetUids = tgt?.kind === 'play'
-      ? new Set(validTargets(p, p.hand[tgt.handIdx]?.cardId ?? '').map((u) => u.uid))
+      ? new Set(validTargets(p, p.hand[tgt.handIdx]?.cardId ?? '', p.hand[tgt.handIdx]).map((u) => u.uid))
       : tgt?.kind === 'hero' ? new Set((tgt.shop ? p.shop : p.board).map((u) => u.uid)) : null;
     let h = this.leaderboardHtml();
     h += this.tavernBarHtml();
@@ -526,7 +526,7 @@ export class App {
     });
     if (placing) {
       const u = p.hand[placing.handIdx];
-      h += cardHtml(unitView(p, u, 'hand', placing.handIdx), { zone: 'placing', idx: placing.handIdx, x: boardCardX(Math.min(placing.pos, p.board.length)), y: L.boardY, small: L.small, extraClass: 'placing' });
+      h += cardHtml(unitView(p, u, 'hand', placing.handIdx), { zone: 'placing', idx: placing.handIdx, x: boardCardX(Math.min(placing.pos, p.board.length)), y: L.boardY, small: L.small, extraClass: `placing ${targetUids?.has(u.uid) ? 'targetable' : ''}` });
     }
     h += this.heroAreaHtml();
     // hand: along the bottom edge, cards rise when hovered
@@ -834,7 +834,7 @@ export class App {
     const p = this.me;
     const s = this.sel ?? (this.targeting && L.popover !== "stack" ? null : this.hover);
     // while aiming, the enlarged card would sit on top of the targets
-    if (!s) return '';
+    if (!s || s.zone === 'placing') return '';
     const list = s.zone === 'shop' ? p.shop : s.zone === 'hand' ? p.hand : p.board;
     const u = list[s.idx];
     if (!u) return '';
@@ -1775,7 +1775,7 @@ export class App {
     const el = (e.target as HTMLElement).closest('.card[data-zone]') as HTMLElement | null;
     if (!el) return;
     const zone = el.dataset.zone as Zone;
-    if (!['shop', 'hand', 'board'].includes(zone)) return;
+    if (!['shop', 'hand', 'board'].includes(zone) && !(zone === 'placing' && this.targeting)) return;
     const { x, y } = this.toStage(e);
     this.press = { zone, idx: Number(el.dataset.idx), x, y, el, pointerId: e.pointerId };
   }
@@ -1899,6 +1899,16 @@ export class App {
         const t = this.targeting;
         this.targeting = null;
         if (useHeroPower(g, p, p.shop[press.idx], t.id)) { sfx.power(); bump('heroPowers'); noteGame('heroPower'); }
+        this.commit();
+        return;
+      }
+      // the card being played aims its Arrive at itself
+      if (this.targeting?.kind === 'play' && press.zone === 'placing') {
+        const t = this.targeting;
+        const self = p.hand[t.handIdx];
+        if (!self || !validTargets(p, self.cardId, self).includes(self)) return;
+        this.targeting = null;
+        this.result(play(g, p, t.handIdx, t.pos, self.uid), sfx.deploy, 'played');
         this.commit();
         return;
       }

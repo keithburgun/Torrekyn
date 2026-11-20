@@ -419,10 +419,11 @@ export function needsTarget(cardId: string): boolean {
   return !!EFFECTS[cardId]?.target;
 }
 
-export function validTargets(p: Player, cardId: string): Unit[] {
+/** units a targeted Arrive can aim at: your army, plus the card being played (it can target itself) */
+export function validTargets(p: Player, cardId: string, self?: Unit): Unit[] {
   const t = EFFECTS[cardId]?.target;
   if (!t) return [];
-  return p.board.filter((u) => !(t === 'unlocked' && u.mem.locked));
+  return [...p.board, ...(self ? [self] : [])].filter((u) => !(t === 'unlocked' && u.mem.locked));
 }
 
 export function play(g: GameState, p: Player, handIdx: number, pos: number, targetUid?: number): ActionResult {

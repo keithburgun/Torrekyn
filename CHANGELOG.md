@@ -2,6 +2,9 @@
 
 Newest first. The version shows on the title screen.
 
+## 0.12.21 — 2026-11-20
+- Arrive effects can now include the card itself unless the text says 'another': Sword buffs itself when it's left-most, Gems, Therapist and Shield can target themselves (click the card you're playing), Red Gem counts itself, Message and Potato Gem include themselves
+
 ## 0.12.20 — 2026-11-19
 - Keywords renamed: Battlecry is now Arrive, Venomous is now Doomstrike, Windfury is now Double Attack, Divine Shield is now Bubble (and it's aqua now)
 

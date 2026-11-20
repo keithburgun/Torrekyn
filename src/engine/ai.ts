@@ -154,7 +154,7 @@ function wantsLevel(g: GameState, p: Player): boolean {
 }
 
 function bestTarget(g: GameState, p: Player, u: Unit): number | undefined {
-  const cands = validTargets(p, u.cardId).filter((b) => b !== u);
+  const cands = validTargets(p, u.cardId, u); // the card itself is a target too
   if (!cands.length) return undefined;
   // a plan with a carry: every buff goes on it
   if (on(p, 'plans') && BUFF_GEMS.includes(u.cardId)) {
