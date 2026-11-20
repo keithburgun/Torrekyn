@@ -178,7 +178,7 @@ export const EFFECTS: Record<string, Effect> = {
   },
   sickle: {
     splash: true,
-    rally: (c, t) => { for (const u of c.c.adjacent(t)) c.c.damage(u, 4, c.self); }, // Golden: same 4 (just bigger stats)
+    rally: (c, t) => { for (const u of c.c.adjacent(t)) c.c.damage(u, 4 * c.m, c.self); }, // Golden: 8
   },
   funeral: {
     onRebornAny: (c) => c.c.perm(c.self, (u) => { u.hp += 2 * c.m; }, 0, 2 * c.m),

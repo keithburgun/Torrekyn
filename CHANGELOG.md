@@ -2,6 +2,9 @@
 
 Newest first. The version shows on the title screen.
 
+## 0.12.23 — 2026-11-20
+- Golden Sickle deals 8 damage to adjacent units
+
 ## 0.12.22 — 2026-11-20
 - Bots line up their army better at the end of each turn: biggest units, Rally and Double Attack units on the left, Avenge (and Deathrattle) units on the right
 

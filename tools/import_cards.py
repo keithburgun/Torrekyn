@@ -41,7 +41,7 @@ GOLDEN = {
     "ashlie": "Arrive: Your Neverending units have +2 Attack this game.",
     "bramble": "Whenever a Neverending unit dies, this gains +2 Attack.",
     "thicket": "At the end of the turn, give the left-most card in your army +2 Health.",
-    "sickle": "Rally: Deal 2 damage to adjacent units.",
+    "sickle": "Rally: Deal 8 damage to adjacent units.",
     "horseman": "If is alive at the end of the battle, deal 2 more damage to the opponent.",
     "funeral": "Every time a unit is Reborn, this gains 4 health permanently.",
     "lich": "At the start of the battle, deal 8 damage to a random enemy unit twice.",

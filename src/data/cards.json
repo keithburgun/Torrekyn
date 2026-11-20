@@ -89,7 +89,7 @@
    "atk": 7,
    "hp": 7,
    "text": "Rally: Deal 4 damage to adjacent units.",
-   "goldenText": "Rally: Deal 4 damage to adjacent units.",
+   "goldenText": "Rally: Deal 8 damage to adjacent units.",
    "keywords": []
   },
   {
