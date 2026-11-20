@@ -516,7 +516,7 @@
    "atk": 12,
    "hp": 18,
    "text": "Quest: After you buy 8 Kindred units, gain a Lesser Trinket.",
-   "goldenText": "Quest: After you buy 8 Kindred units, gain a Lesser Trinket.",
+   "goldenText": "Quest: After you buy 4 Kindred units, gain a Lesser Trinket.",
    "keywords": []
   },
   {
@@ -1469,7 +1469,7 @@
   },
   {
    "id": "peebnup_bubber",
-   "name": "Peebnup Bubber",
+   "name": "Turtlepult",
    "tribe": "kindred",
    "tier": 5,
    "atk": 8,
@@ -1620,8 +1620,8 @@
    "tier": 1,
    "atk": 1,
    "hp": 1,
-   "text": "",
-   "goldenText": "",
+   "text": "Doomstrike.",
+   "goldenText": "Doomstrike.",
    "keywords": [
     "venomous"
    ],

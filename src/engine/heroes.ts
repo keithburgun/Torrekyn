@@ -303,7 +303,7 @@ export const TRINKETS: TrinketDef[] = [
   // lesser (offered at the start of turn 6)
   { id: 'healing_draught', name: "Techin'", cost: 0, text: 'Gain 3 Gold. Your Tavern no longer offers Tier 1 or 2 units.', onGain: (g, p) => { p.gold += 3; } },
   { id: 'whetstone', name: 'Crop Circle', cost: 1, needsTribe: 'brambor', text: 'End of Turn: Gain a random Brambor unit.', endTurn: (g, p) => {
-    const id = drawFromPool(g, (cid) => def(cid).tribe === 'brambor' && def(cid).tier <= p.tier);
+    const id = drawFromPool(g, (cid) => isTribe(cid, 'brambor') && def(cid).tier <= p.tier);
     if (id) gainNew(g, p, id);
   } },
   { id: 'old_map', name: 'Old Map', cost: 1, text: 'Every other End of Turn: Discover a Tier 5 unit.',
@@ -418,6 +418,8 @@ function makeGolden(g: GameState, p: Player) {
   gold.hp += u.hp - d.hp;
   gold.kw = [...new Set([...gold.kw, ...u.kw])];
   gold.uid = u.uid;
+  gold.mem = { ...u.mem }; // keeps being locked (Commitment), counters and so on
+  delete gold.mem.pv; // (Turtlepult starts watching it fresh)
   p.board[p.board.indexOf(u)] = gold;
   log(p, `${trinketDef('golden_lantern').name} made ${d.name} Golden!`);
 }

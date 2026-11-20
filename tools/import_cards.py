@@ -27,8 +27,10 @@ KEYWORDS = {
     "taunt": "taunt",
     "bubble": "divineShield",
     "reborn": "reborn",
+    "doomstrike": "venomous",
     "venomous": "venomous",
     "poisonous": "poisonous",
+    "double attack": "windfury",
     "windfury": "windfury",
 }
 

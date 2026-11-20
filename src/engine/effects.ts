@@ -6,7 +6,7 @@
  *  - Combat hooks receive a CCtx.
  * m = 1 for normal, 2 for golden.
  */
-import type { Body, Keyword, Player, Unit, GameState } from './types';
+import type { Body, Keyword, Player, Tribe, Unit, GameState } from './types';
 import { addKw, CARDS, def, effStats, has, isTribe, log, makeUnit, pick, rand, removeKw, sample, tribeOf, CONFIG } from './core';
 import type { CUnit, Combat, Side } from './combat';
 import {
@@ -150,7 +150,7 @@ function atkOf(p: Player, u: Unit) {
 
 const randomTier = (c: { g: GameState }, tier: number) => randomCardOfTier(c.g, tier);
 const randomTribeUpTo = (c: { g: GameState; p: Player }, tribe: string) =>
-  drawFromPool(c.g, (id) => def(id).tribe === tribe && def(id).tier <= c.p.tier);
+  drawFromPool(c.g, (id) => isTribe(id, tribe as Tribe) && def(id).tier <= c.p.tier); // units of every faction count
 
 // ---------------- the cards ----------------
 export const EFFECTS: Record<string, Effect> = {
@@ -357,7 +357,7 @@ export const EFFECTS: Record<string, Effect> = {
       if (!t.kw.includes('divineShield')) { addKw(t, 'divineShield'); t.mem.tmpShield = 1; }
     },
   },
-  // Peebnup Bubber is handled by peebSync (fx.ts) in the shop and Combat.peebSync in battle
+  // Turtlepult is handled by peebSync (fx.ts) in the shop and Combat.peebSync in battle
   peebnup_bubber: {},
   elemental: {
     onSellOther: (c, sold) => { if (isTribe(sold, 'kindred')) buff(c.self, sold.atk * c.m, sold.hp * c.m); },

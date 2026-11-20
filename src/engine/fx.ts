@@ -122,19 +122,28 @@ export function withFx<T>(g: GameState, p: Player, who: { unit?: Unit; hero?: bo
 }
 
 /**
- * Peebnup Bubber: whenever another friendly unit gains Health, it gains that much too (Golden: twice).
+ * Turtlepult: whenever another friendly unit gains Health, it gains that much too (Golden: twice).
  * Each army unit remembers the Health it was last seen with (mem.pv); any rise since is a gain. Runs after every
  * shop effect and action, so nothing has to report its Health gains. A unit just played starts fresh (see play).
+ * A Turtlepult's own gain counts for the other Turtlepults, but only gains from the event itself: what they copy
+ * doesn't get copied again (once per event, no loops).
  */
+let peebBusy = false;
 export function peebSync(g: GameState, p: Player) {
-  let gained = 0;
+  if (peebBusy) return;
+  const delta = new Map<Unit, number>();
+  let total = 0;
   for (const u of p.board) {
-    if (u.cardId !== 'peebnup_bubber' && u.mem.pv !== undefined && u.hp > u.mem.pv) gained += u.hp - u.mem.pv;
+    if (u.mem.pv !== undefined && u.hp > u.mem.pv) { delta.set(u, u.hp - u.mem.pv); total += u.hp - u.mem.pv; }
     u.mem.pv = u.hp;
   }
-  if (gained <= 0) return;
-  for (const pb of p.board.filter((u) => u.cardId === 'peebnup_bubber')) {
-    withFx(g, p, { unit: pb }, 'Ability', () => { pb.hp += gained * (pb.golden ? 2 : 1); });
-    pb.mem.pv = pb.hp;
-  }
+  if (total <= 0) return;
+  peebBusy = true;
+  try {
+    for (const pb of p.board.filter((u) => u.cardId === 'peebnup_bubber')) {
+      const gained = total - (delta.get(pb) ?? 0);
+      if (gained > 0) withFx(g, p, { unit: pb }, 'Ability', () => { pb.hp += gained * (pb.golden ? 2 : 1); });
+      pb.mem.pv = pb.hp;
+    }
+  } finally { peebBusy = false; }
 }

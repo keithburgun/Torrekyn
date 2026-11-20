@@ -1,7 +1,7 @@
 /** v0.10: slots no longer have bonuses; the cards and trinkets that used them were rewritten. Each one, checked. */
 import { describe, it, expect } from 'vitest';
 import { newGame, play, endTurnEffects, buy, sell } from '../src/engine/game';
-import { makeUnit, def, CARDS } from '../src/engine/core';
+import { makeUnit, def, CARDS, isTribe } from '../src/engine/core';
 import { Combat } from '../src/engine/combat';
 import { gemLevel } from '../src/engine/effects';
 import { peebSync } from '../src/engine/fx';
@@ -235,7 +235,7 @@ describe('v0.10.2 changes', () => {
       p.board = [U(g, 'storyteller')];
       sell(g, p, 0);
       expect(p.hand.length).toBe(1);
-      expect(def(p.hand[0].cardId).tribe).toBe('cloister');
+      expect(isTribe(p.hand[0].cardId, 'cloister')).toBe(true); // Amalgam (every faction) counts too
       expect(def(p.hand[0].cardId).tier).toBeLessThanOrEqual(2);
     }
   });
@@ -502,7 +502,7 @@ describe('v0.12.3 Kindred', () => {
     }
   });
 
-  it('Peebnup Bubber: gains the Health other friendly units gain, in the shop and in battle (Golden: double)', () => {
+  it('Turtlepult: gains the Health other friendly units gain, in the shop and in battle (Golden: double)', () => {
     for (const golden of [false, true]) {
       const { g, p, o } = setup();
       const pb = U(g, 'peebnup_bubber', 8, 8, golden);
@@ -526,6 +526,34 @@ describe('v0.12.3 Kindred', () => {
       // each of the 2 others gained 3 Health (Bannerlord's), so Peebnup gains 6 (Golden 12) on top of its own 3
       expect(at(c, f, 'peebnup_bubber')!.hp).toBe(8 + 3 + 6 * (golden ? 2 : 1));
     }
+  });
+
+  it('Golden Brass keeps what the unit remembers (a locked unit stays locked)', () => {
+    const { g, p } = setup();
+    const u = U(g, 'doctor', 5, 5); u.mem.locked = 1;
+    p.board = [u]; p.trinkets = ['golden_lantern'];
+    endTurnEffects(g, p); endTurnEffects(g, p); // every other End of Turn
+    expect(p.board[0].golden).toBe(true);
+    expect(p.board[0].mem.locked).toBe(1);
+  });
+
+  it('two Turtlepults copy each other, once per event (no loops)', () => {
+    const { g, p, o } = setup();
+    const A = U(g, 'peebnup_bubber', 8, 8), B = U(g, 'peebnup_bubber', 8, 8);
+    const k = U(g, 'therapist', 2, 2); k.kw = [];
+    p.board = [A, B, k]; peebSync(g, p);
+    // Pink Gem on another unit: both copy the +12, nothing more
+    p.hand = [U(g, 'pink_gem')]; play(g, p, 0, 3, k.uid);
+    expect([A.hp, B.hp]).toEqual([20, 20]);
+    // Pink Gem on Turtlepult A: B copies A's +12 once, A gets nothing back
+    p.hand = [U(g, 'pink_gem')]; play(g, p, 0, 3, A.uid);
+    expect([A.hp, B.hp]).toEqual([32, 32]);
+    // in battle: Bannerlord's +3 Health to all 3 units; each Turtlepult copies the other 2 (6) on top of its own 3
+    p.trinkets = ['bannerlords_standard'];
+    const c = fight(g, p, o, [U(g, 'doctor', 1, 50), U(g, 'peebnup_bubber', 1, 8), U(g, 'peebnup_bubber', 1, 8)], [U(g, 'skel', 0, 99)]);
+    c.run();
+    const f = afterSoc(c);
+    expect(c.frames[f].sides[0].filter((u) => u.cardId === 'peebnup_bubber').map((u) => u.hp)).toEqual([17, 17]);
   });
 });
 

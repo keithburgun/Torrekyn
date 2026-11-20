@@ -10,7 +10,7 @@ import { EFFECTS, hasBattlecry, battlecryTimes, type CCtx } from './effects';
 import { gainNew, combatDamage, drawFromPool, BASE_DAMAGE, DAMAGE_PER_UNIT, onBattlecryTriggered } from './game';
 import { heroHooks, heroSoc, trinketCount } from './heroes';
 import { withFx } from './fx';
-import type { Body, CombatFrame, CombatFrameUnit, CombatFx, CombatResult, GameState, Keyword, Player, Unit } from './types';
+import type { Body, CombatFrame, CombatFrameUnit, CombatFx, CombatResult, GameState, Keyword, Player, Tribe, Unit } from './types';
 
 export interface CUnit extends Body {
   id: number;
@@ -93,19 +93,26 @@ export class Combat {
   /** a hero power / trinket of this side is acting */
   heroSide: 0 | 1 | undefined;
 
-  /** Health each unit has gained so far (its Health plus damage taken), for Peebnup Bubber */
+  /** Health each unit has gained so far (its Health plus damage taken), for Turtlepult */
   private seenHp = new Map<number, number>();
   private peebSync() {
     for (const s of this.sides) {
       const peebs = s.units.filter((u) => u.cardId === 'peebnup_bubber' && u.hp > 0 && !u.processed);
-      let gained = 0;
+      const delta = new Map<number, number>();
+      let total = 0;
       for (const u of s.units) {
         const v = u.hp + (u.taken ?? 0);
         const was = this.seenHp.get(u.id);
-        if (was !== undefined && v > was && u.hp > 0 && u.cardId !== 'peebnup_bubber') gained += v - was;
+        if (was !== undefined && v > was && u.hp > 0) { delta.set(u.id, v - was); total += v - was; }
         this.seenHp.set(u.id, v);
       }
-      if (gained > 0) for (const pb of peebs) { pb.hp += gained * mult(pb); this.seenHp.set(pb.id, pb.hp + (pb.taken ?? 0)); }
+      if (total <= 0) continue;
+      // each copies the others' gains from this event (its own excluded), and what it copies isn't copied again
+      for (const pb of peebs) {
+        const gained = total - (delta.get(pb.id) ?? 0);
+        if (gained > 0) pb.hp += gained * mult(pb);
+        this.seenHp.set(pb.id, pb.hp + (pb.taken ?? 0));
+      }
     }
   }
 
@@ -621,7 +628,7 @@ export function runCombat(g: GameState, a: Player, b: Player, bIsGhost: boolean)
 }
 
 function pickTribe(g: GameState, p: Player, tribe: string) {
-  const ids = Object.keys(g.pool).filter((id) => g.pool[id] > 0 && def(id).tribe === tribe && def(id).tier <= p.tier);
+  const ids = Object.keys(g.pool).filter((id) => g.pool[id] > 0 && isTribe(id, tribe as Tribe) && def(id).tier <= p.tier);
   const id = pick(g, ids);
   if (id) g.pool[id]--;
   return id;
