@@ -1,6 +1,6 @@
 [package]
 name = "torrekin"
-version = "0.12.27"
+version = "0.12.28"
 description = "Torrekin - a single-player autobattler"
 edition = "2021"
 

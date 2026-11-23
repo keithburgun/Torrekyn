@@ -68,6 +68,13 @@ function heroAvenge(s: Side, id: string, n: number): boolean {
   return true;
 }
 
+/** Hero Powers nobody alive has (as their hero or a power they've gained), whose faction is in play: what Abragail and New Power choose from */
+function freshPowers(g: GameState): HeroDef[] {
+  const taken = new Set<string>();
+  for (const q of g.players) if (q.alive) { if (q.hero) taken.add(q.hero); q.powers.forEach((x) => taken.add(x)); }
+  return HEROES.filter((h) => h.id !== 'abragail' && !taken.has(h.id) && (!h.needsTribe || g.tribes.includes(h.needsTribe)));
+}
+
 export const HEROES: HeroDef[] = [
   {
     id: 'andromeda_robin', name: 'Andromeda Robin', title: 'Potato witch', power: 'Pumpkin Buddy', avatar: 0, health: 24, passive: true,
@@ -167,7 +174,7 @@ export const HEROES: HeroDef[] = [
     startTurn: (g, p) => {
       if (g.round < 4 || p.heroMem.studied) return;
       p.heroMem.studied = 1;
-      const pool = HEROES.filter((h) => h.id !== 'abragail' && !p.powers.includes(h.id) && (!h.needsTribe || g.tribes.includes(h.needsTribe)));
+      const pool = freshPowers(g);
       const six = sample(g, pool, 6).map((h) => h.id);
       queuePowerDiscover(g, p, six.slice(0, 3), 'Well-Studied: Choose your first new Hero Power');
       queuePowerDiscover(g, p, six.slice(3, 6), 'Well-Studied: Choose your second new Hero Power');
@@ -363,7 +370,7 @@ export const TRINKETS: TrinketDef[] = [
   { id: 'new_power', name: 'New Power', cost: 4, greater: true, text: 'Discover a new Hero Power to replace your current one.',
     onGain: (g, p) => {
       const current = p.powers[0] ?? p.hero!;
-      const pool = HEROES.filter((h) => h.id !== 'abragail' && !p.powers.includes(h.id) && h.id !== p.hero && (!h.needsTribe || g.tribes.includes(h.needsTribe)));
+      const pool = freshPowers(g);
       queuePowerDiscover(g, p, sample(g, pool, 3).map((h) => h.id), 'New Power: Choose a Hero Power to replace yours', current);
     } },
   { id: 'another_chance', name: 'Another Chance', cost: 4, greater: true, text: 'The first time you run out of Health, restore your Health to 10 and gain 10 Gold.' }, // see endCombat (game.ts)

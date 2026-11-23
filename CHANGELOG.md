@@ -2,6 +2,9 @@
 
 Newest first. The version shows on the title screen.
 
+## 0.12.28 — 2026-11-23
+- Abragail and the New Power trinket no longer offer Hero Powers another living player has
+
 ## 0.12.27 — 2026-11-20
 - Golden Green Ninja's copy joins the battle with double stats
 

@@ -5,7 +5,7 @@ import { describe, it, expect } from 'vitest';
 import { newGame, selectHero, human, buy, play, sell, chooseDiscover } from '../src/engine/game';
 import { ALL_TRIBES, CARDS, def, isTribe, makeUnit } from '../src/engine/core';
 import { EFFECTS } from '../src/engine/effects';
-import { HEROES, heroHooks, buyCost, canUseHeroPower, useHeroPower, powerCost, heroDef } from '../src/engine/heroes';
+import { HEROES, heroHooks, buyCost, canUseHeroPower, useHeroPower, powerCost, heroDef, trinketDef } from '../src/engine/heroes';
 import { Combat } from '../src/engine/combat';
 import type { GameState, Player, Unit } from '../src/engine/types';
 
@@ -216,6 +216,22 @@ describe('hero powers', () => {
     expect(p.powers).not.toContain('abragail');
     expect(p.powers.length).toBe(2);
     for (const id of p.powers) expect(heroDef(id)).toBeTruthy();
+  });
+
+  it("Abragail and New Power never offer a Hero Power another living player has", () => {
+    for (let seed = 1; seed <= 40; seed++) {
+      const { g, p } = setup('abragail', seed);
+      g.players[2].powers = ['clover']; // a power someone gained, not just their hero
+      const taken = new Set(g.players.filter((q) => q.alive && q !== p).flatMap((q) => [q.hero!, ...q.powers]));
+      g.round = 4;
+      heroHooks.startTurn(g, p);
+      const offered = p.discovers.flatMap((d) => d.options);
+      expect(offered.length).toBe(6);
+      for (const id of offered) expect(taken.has(id)).toBe(false);
+      p.discovers = [];
+      trinketDef('new_power').onGain!(g, p);
+      for (const id of p.discovers.flatMap((d) => d.options)) expect(taken.has(id) || id === p.hero).toBe(false);
+    }
   });
 
   it('Bill Milton: buying a Business Demon gives 1 gold back (playing one gives nothing)', () => {
