@@ -1006,9 +1006,12 @@
    "px": true
   },
   "tribe_alcove": {
-   "src": "L/alcove_emblem.png",
-   "px": true,
-   "center": true,
+   "src": "C/may danaris.jpg",
+   "crop": [
+    0.529,
+    0.4395,
+    0.36
+   ],
    "tribe": "alcove"
   }
  }

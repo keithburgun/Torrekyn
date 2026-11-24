@@ -2,6 +2,9 @@
 
 Newest first. The version shows on the title screen.
 
+## 0.12.33 — 2026-11-24
+- Alcove Prefex's icon is now the power core from May Danaris's illustration, centred
+
 ## 0.12.32 — 2026-11-24
 - New Alcove Prefex icon: its emblem from the faction banner, centred
 
