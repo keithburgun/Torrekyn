@@ -110,7 +110,7 @@
    "name": "Funeral",
    "tribe": "neverending",
    "tier": 3,
-   "atk": 5,
+   "atk": 12,
    "hp": 1,
    "text": "Every time a unit is Reborn, this gains 2 Health permanently.",
    "goldenText": "Every time a unit is Reborn, this gains 4 Health permanently.",
@@ -481,7 +481,7 @@
    "tribe": "kindred",
    "tier": 3,
    "atk": 3,
-   "hp": 9,
+   "hp": 5,
    "text": "Start of Combat: Gain a Pink Gem to your hand.",
    "goldenText": "Start of Combat: Gain 2 Pink Gems to your hand.",
    "keywords": []
@@ -1000,8 +1000,8 @@
    "tier": 5,
    "atk": 4,
    "hp": 2,
-   "text": "Bubble. Reborn. This unit has +4/+2 for each Deathrattle you've triggered this game.",
-   "goldenText": "Bubble. Reborn. This unit has +8/+4 for each Deathrattle you've triggered this game.",
+   "text": "Bubble. Reborn. This unit has +3/+1 for each Deathrattle you've triggered this game.",
+   "goldenText": "Bubble. Reborn. This unit has +6/+2 for each Deathrattle you've triggered this game.",
    "keywords": [
     "divineShield",
     "reborn"
@@ -1302,8 +1302,8 @@
    "tier": 4,
    "atk": 1,
    "hp": 2,
-   "text": "Deathrattle: Trigger a friendly Arrive.",
-   "goldenText": "Deathrattle: Trigger a friendly Arrive twice.",
+   "text": "Deathrattle: Trigger an adjacent unit's Arrive.",
+   "goldenText": "Deathrattle: Trigger an adjacent unit's Arrive twice.",
    "keywords": []
   },
   {

@@ -787,11 +787,11 @@ export const EFFECTS: Record<string, Effect> = {
     },
   },
   spoonful: {
+    // Deathrattle: trigger the Arrive of a unit that was next to it (a random one of the two; Golden: twice)
     deathrattle: (c) => {
-      for (let i = 0; i < c.m; i++) {
-        const t = pick(c.g, c.side.units.filter((u) => u.hp > 0 && hasBattlecry(u.cardId)));
-        if (t) c.c.triggerBattlecry(c.side, t);
-      }
+      const adj = [c.side.units[c.pos - 1], c.side.units[c.pos]].filter((u) => u && u.hp > 0 && hasBattlecry(u.cardId));
+      const t = pick(c.g, adj as CUnit[]);
+      if (t) for (let i = 0; i < c.m; i++) c.c.triggerBattlecry(c.side, t);
     },
   },
   grief: {

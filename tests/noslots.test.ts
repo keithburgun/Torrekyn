@@ -405,7 +405,7 @@ describe('v0.12 card changes', () => {
   it('stats: Scientist Tier 3 4/1, Funeral 5/1, Omni-Gem 10/10; Restore is Avenge (2)', async () => {
     const { EFFECTS } = await import('../src/engine/effects');
     expect([def('scientist').tier, def('scientist').atk, def('scientist').hp]).toEqual([3, 4, 1]);
-    expect([def('funeral').atk, def('funeral').hp]).toEqual([5, 1]);
+    expect([def('funeral').atk, def('funeral').hp]).toEqual([12, 1]);
     expect([def('omni_gem').atk, def('omni_gem').hp]).toEqual([10, 10]);
     expect(EFFECTS.restore.avenge).toEqual([2, 2]);
     expect(def('restore').text).toContain('Avenge (2)');
@@ -545,8 +545,23 @@ describe('v0.12.3 Kindred', () => {
     const { offeredUnit } = await import('../src/ui/view');
     const { p } = setup();
     p.deathrattlesGame = 3;
-    expect(offeredUnit('warmech', false, p)).toMatchObject({ atk: 4 + 12, hp: 2 + 6 });
-    expect(offeredUnit('warmech', true, p)).toMatchObject({ atk: 8 + 24, hp: 4 + 12 });
+    expect(offeredUnit('warmech', false, p)).toMatchObject({ atk: 4 + 9, hp: 2 + 3 }); // +3/+1 per Deathrattle
+    expect(offeredUnit('warmech', true, p)).toMatchObject({ atk: 8 + 18, hp: 4 + 6 });
+  });
+
+  it("Spoonful's Deathrattle triggers the Arrive of a unit that was next to it, never one further away", () => {
+    const hit = new Set<string>();
+    for (let seed = 1; seed <= 12; seed++) {
+      const { g, p, o } = setup();
+      g.seed = seed;
+      // Therapist (far left) and Message (far right) have Arrives but aren't next to it; Red Gem and Sword are
+      const c = fight(g, p, o, [U(g, 'therapist', 1, 50), U(g, 'red_gem', 1, 50), U(g, 'spoonful', 0, 1), U(g, 'sword', 1, 50), U(g, 'message', 1, 50)], [U(g, 'skel', 5, 99)]);
+      const orig = c.triggerBattlecry.bind(c);
+      c.triggerBattlecry = (side, u) => { hit.add(u.cardId); return orig(side, u); };
+      c.run();
+    }
+    expect(hit.has('therapist') || hit.has('message')).toBe(false);
+    expect(hit.size).toBeGreaterThan(0);
   });
 
   it('Golden Brass keeps what the unit remembers (a locked unit stays locked)', () => {

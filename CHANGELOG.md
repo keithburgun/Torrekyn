@@ -2,6 +2,9 @@
 
 Newest first. The version shows on the title screen.
 
+## 0.12.37 — 2026-11-24
+- War Mech: +3/+1 per Deathrattle (was +4/+2). Life is 3/5, Funeral is 12/1. Spoonful's Deathrattle triggers an adjacent unit's Arrive
+
 ## 0.12.36 — 2026-11-24
 - Sniper deals 2 damage per shot (was 3)
 

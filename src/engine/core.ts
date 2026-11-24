@@ -135,9 +135,9 @@ export function ownerBonus(p: Player, b: Body): { atk: number; hp: number } {
     hp += 2 * mult(b) * (p.owlsSummoned ?? 0);
   }
   if (b.cardId === 'warmech') {
-    // +4/+2 per Deathrattle triggered this game (Golden: double)
-    atk += 4 * mult(b) * (p.deathrattlesGame ?? 0);
-    hp += 2 * mult(b) * (p.deathrattlesGame ?? 0);
+    // +3/+1 per Deathrattle triggered this game (Golden: double)
+    atk += 3 * mult(b) * (p.deathrattlesGame ?? 0);
+    hp += 1 * mult(b) * (p.deathrattlesGame ?? 0);
   }
   return { atk, hp };
 }
