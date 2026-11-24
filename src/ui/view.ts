@@ -112,10 +112,33 @@ export function cardHtml(u: { cardId: string; golden: boolean; atk: number; hp: 
   <div class="tribe-plate ${(TRIBE_SHORT[d.tribe] ?? d.tribe).length > 8 && !d.allTribes ? 'long' : ''}">${d.allTribes ? 'ALL' : TRIBE_SHORT[d.tribe] ?? d.tribe}</div>${o.badge ?? ''}
   ${(u as { avenge?: string }).avenge ? `<div class="avenge-count" title="Avenge: friendly units died / needed"><i>⚔</i>${(u as { avenge?: string }).avenge}</div>` : ''}
   ${(() => { const c = (u as { note?: string }).note ?? (u.mem && (o.zone === "board" || o.zone === "combat" || o.zone === "hand") ? unitCounter(u as Unit) : null); return c ? `<div class="counter">${c}</div>` : ''; })()}
-  <div class="stat atk ${atk !== baseAtk ? 'buffed' : ''}" data-base="${baseAtk}">${atk}</div>
-  <div class="stat hp ${hp > baseHp ? 'buffed' : hp < baseHp ? 'hurt' : ''}" data-base="${baseHp}">${hp}</div>
+  <div class="stat atk ${atk !== baseAtk ? 'buffed' : ''}" data-base="${baseAtk}" data-v="${atk}" ${statInner(atk)}</div>
+  <div class="stat hp ${hp > baseHp ? 'buffed' : hp < baseHp ? 'hurt' : ''}" data-base="${baseHp}" data-v="${hp}" ${statInner(hp)}</div>
 </div>`;
 }
+
+/** a stat as shown on a card: up to 999 as is, then 1.2k / 12.9k (rounded down, so it never overstates), 123k, 1.2M */
+export function fmtStat(n: number): string {
+  const a = Math.abs(n), sign = n < 0 ? '-' : '';
+  if (a < 1000) return String(n);
+  const short = (v: number, unit: string) => sign + (v < 100 ? String(Math.floor(v * 10) / 10) : String(Math.floor(v))) + unit;
+  return a < 1e6 ? short(a / 1000, 'k') : short(a / 1e6, 'M');
+}
+
+/** the end of a stat badge's opening tag and its number; longer numbers (data-n) are drawn smaller to fit the badge */
+function statInner(v: number) {
+  const t = fmtStat(v);
+  return `data-n="${t.length}"><span>${t}</span>`;
+}
+
+/** change a card's shown stat (keeps the exact number in data-v for later arithmetic) */
+export function setStat(el: Element, v: number) {
+  const t = fmtStat(v);
+  (el as HTMLElement).dataset.v = String(v);
+  (el as HTMLElement).dataset.n = String(t.length);
+  el.innerHTML = `<span>${t}</span>`;
+}
+export const statOf = (el: Element) => Number((el as HTMLElement).dataset.v ?? el.textContent);
 
 export function formatText(text: string): string {
   let t = esc(text);
@@ -189,8 +212,8 @@ export function bigCardHtml(u: { cardId: string; golden: boolean; atk: number; h
   <div class="name">${u.golden ? 'Golden ' : ''}${esc(d.name)}</div>
   <div class="tribe"><span>${d.allTribes ? 'All Factions' : esc(TRIBE_NAMES[d.tribe] ?? d.tribe)}${d.token ? ' · Token' : ''}</span></div>
   <div class="text"><div>${text ? formatText(text) : kwExtra.length ? '' : '<i>No ability.</i>'}${kwExtra.length ? `${text ? '<br>' : ''}<i class="kw-extra">${kwExtra.join(', ')}</i>` : ''}</div></div>
-  <div class="stat atk ${u.atk !== bA ? 'buffed' : ''}">${u.atk}</div>
-  <div class="stat hp ${u.hp > bH ? 'buffed' : u.hp < bH ? 'hurt' : ''}">${u.hp}</div>
+  <div class="stat atk ${u.atk !== bA ? 'buffed' : ''}" ${statInner(u.atk)}</div>
+  <div class="stat hp ${u.hp > bH ? 'buffed' : u.hp < bH ? 'hurt' : ''}" ${statInner(u.hp)}</div>
 </div>`;
 }
 

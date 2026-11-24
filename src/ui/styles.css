@@ -1266,6 +1266,12 @@ svg.aim-arrow.locked .aim-ring { opacity: 0.9; animation: aim-ring 0.9s ease-in-
 #stage.portrait .card.large .stat { width: 66px; height: 66px; font-size: 40px; }
 #stage.portrait .card.small .stat { width: 52px; height: 52px; font-size: 32px; }
 .card .stat.buffed, .bigcard .stat.buffed { color: #3dff5a; }
+/* longer numbers shrink to fit the badge (999, 12.9k, 1.2M) */
+.card .stat > span, .bigcard .stat > span { display: inline-block; }
+.stat[data-n="3"] > span { transform: scale(0.8); }
+.stat[data-n="4"] > span { transform: scale(0.64); }
+.stat[data-n="5"] > span { transform: scale(0.56); }
+.stat[data-n="6"] > span { transform: scale(0.48); }
 .card .stat.hurt { color: #ffd2d2; text-decoration: none; }
 
 /* =====================================================================

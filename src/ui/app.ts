@@ -10,7 +10,7 @@ import {
 import { HEROES, buyCost, canUseHeroPower, heroDef, heroHealth, mainActive, pickTrinket, powerCost, powersOf, trinketDef, useHeroPower, type HeroDef } from '../engine/heroes';
 import type { CombatResult, GameState, Player } from '../engine/types';
 import { CombatPlayer, SPEEDS, speedSetting } from './combatView';
-import { art, bigCardHtml, cardHtml, offeredUnit, esc, getArtStyle, heroArt, relatedCards, relatedCardHtml, setArtStyle, unitView, KEYWORD_HELP, KW_ICON, type ArtStyle } from './view';
+import { art, bigCardHtml, cardHtml, offeredUnit, setStat, statOf, esc, getArtStyle, heroArt, relatedCards, relatedCardHtml, setArtStyle, unitView, KEYWORD_HELP, KW_ICON, type ArtStyle } from './view';
 import { clearSave, loadSave, save } from './save';
 import { debugOn, setDebug } from './debug';
 import { checkForUpdates, versionLabel } from './update';
@@ -1212,8 +1212,8 @@ export class App {
       for (const e of events) for (const b of e.buffs) {
         const el = card(b.uid);
         const a = el?.querySelector('.stat.atk'); const h = el?.querySelector('.stat.hp');
-        if (a && b.atk) a.textContent = String(Number(a.textContent) - b.atk);
-        if (h && b.hp) h.textContent = String(Number(h.textContent) - b.hp);
+        if (a && b.atk) setStat(a, statOf(a) - b.atk);
+        if (h && b.hp) setStat(h, statOf(h) - b.hp);
         restat(a); restat(h);
         // new keywords too (Tinker's Bubble etc.) appear when the effect lands
         for (const k of b.kw) { el?.classList.remove(`kw-${k}`); const sp = el?.querySelector(`.kws .kw-${k}`) as HTMLElement | null; if (sp) sp.style.visibility = 'hidden'; }
@@ -1295,8 +1295,8 @@ export class App {
             this.floatText(to.x, to.y - to.h / 2 + 30, parts.join(' '), b.atk < 0 || b.hp < 0 ? 'down' : 'buff');
             {
               const a = el.querySelector('.stat.atk'); const h = el.querySelector('.stat.hp');
-              if (a && b.atk) { a.textContent = String(Number(a.textContent) + b.atk); a.classList.remove('stat-bump'); void (a as HTMLElement).offsetWidth; a.classList.add('stat-bump'); }
-              if (h && b.hp) { h.textContent = String(Number(h.textContent) + b.hp); h.classList.remove('stat-bump'); void (h as HTMLElement).offsetWidth; h.classList.add('stat-bump'); }
+              if (a && b.atk) { setStat(a, statOf(a) + b.atk); a.classList.remove('stat-bump'); void (a as HTMLElement).offsetWidth; a.classList.add('stat-bump'); }
+              if (h && b.hp) { setStat(h, statOf(h) + b.hp); h.classList.remove('stat-bump'); void (h as HTMLElement).offsetWidth; h.classList.add('stat-bump'); }
               restat(a); restat(h);
             }
             sfx.zap();
@@ -1964,7 +1964,7 @@ function restat(el: Element | null | undefined) {
   if (!el) return;
   const base = Number((el as HTMLElement).dataset.base);
   if (Number.isNaN(base)) return;
-  const v = Number(el.textContent);
+  const v = statOf(el);
   const hp = el.classList.contains('hp');
   el.classList.toggle('buffed', hp ? v > base : v !== base);
   el.classList.toggle('hurt', hp && v < base);

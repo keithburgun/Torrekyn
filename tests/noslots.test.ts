@@ -886,6 +886,14 @@ describe('temporary keywords', () => {
   });
 });
 
+describe('big stats', () => {
+  it('show as 1.2k / 12.9k / 123k / 1.2M past 999', async () => {
+    const { fmtStat } = await import('../src/ui/view');
+    expect([0, 7, 999, 1000, 1234, 12999, 99999, 123456, 1250000, -1500].map(fmtStat))
+      .toEqual(['0', '7', '999', '1k', '1.2k', '12.9k', '99.9k', '123k', '1.2M', '-1.5k']);
+  });
+});
+
 describe('card names', () => {
   it('no two cards share a name', () => {
     const n = new Map<string, string[]>();

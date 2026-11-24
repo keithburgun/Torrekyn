@@ -2,6 +2,9 @@
 
 Newest first. The version shows on the title screen.
 
+## 0.12.31 — 2026-11-24
+- Big stats fit their badges: over 999 they show as 1.2k / 12.9k / 123k / 1.2M, and 3-digit and longer numbers are drawn a little smaller
+
 ## 0.12.30 — 2026-11-24
 - Pink Gem's stats are now permanent (only its Bubble lasts until next turn); Gem texts say which part is temporary. Remember no longer keeps its own combat gains (only its neighbours', as before)
 
