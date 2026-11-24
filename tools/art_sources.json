@@ -1004,6 +1004,12 @@
   "orbo_pet": {
    "src": "X/robot-bomb.png",
    "px": true
+  },
+  "tribe_alcove": {
+   "src": "L/alcove_emblem.png",
+   "px": true,
+   "center": true,
+   "tribe": "alcove"
   }
  }
 }

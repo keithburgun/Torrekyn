@@ -2,6 +2,9 @@
 
 Newest first. The version shows on the title screen.
 
+## 0.12.32 — 2026-11-24
+- New Alcove Prefex icon: its emblem from the faction banner, centred
+
 ## 0.12.31 — 2026-11-24
 - Big stats fit their badges: over 999 they show as 1.2k / 12.9k / 123k / 1.2M, and 3-digit and longer numbers are drawn a little smaller
 

@@ -7,7 +7,8 @@ Builds the illustrated card and hero art (public/art/v2/) from Keith's art archi
 Which image each card/hero uses, and how it is cropped, lives in tools/art_sources.json.
 Crops are [centre x, centre y, side] as fractions of the image (side = fraction of the shorter edge).
 Pixel sprites (px: true) use their first animation frame, scaled up sharp on a tribe-coloured backdrop.
-flip: true mirrors the result left-to-right.
+flip: true mirrors the result left-to-right. center: true puts a pixel sprite dead centre with no shadow (emblems).
+tribe: '<tribe>' sets the backdrop for art that isn't a card (e.g. a faction's emblem).
 """
 import json, os, sys
 from PIL import Image, ImageDraw, ImageFilter
@@ -99,7 +100,7 @@ def upscale_sprite(im, k):
     # premultiplied alpha so see-through edges don't pick up dark fringes
     return big.convert('RGBa').resize((round(w * k), round(h * k)), Image.BOX).convert('RGBA')
 
-def pixel_art(path, tribe, box=None):
+def pixel_art(path, tribe, box=None, center=False):
     im = trim(first_frame(Image.open(path).convert('RGBA'), box))
     w, h = im.size
     k = min(SIZE * 0.74 / w, SIZE * 0.74 / h)
@@ -107,6 +108,10 @@ def pixel_art(path, tribe, box=None):
         k = max(1, int(k))
     big = upscale_sprite(im, k)
     out = backdrop(tribe)
+    if center:
+        # an emblem, not a figure standing on the ground: dead centre, no shadow
+        out.alpha_composite(big, ((SIZE - big.width) // 2, (SIZE - big.height) // 2))
+        return out.convert('RGB')
     # soft shadow under the sprite
     sh = Image.new('RGBA', out.size, (0, 0, 0, 0))
     ImageDraw.Draw(sh).ellipse((SIZE * 0.24, SIZE * 0.8, SIZE * 0.76, SIZE * 0.9), fill=(0, 0, 0, 70))
@@ -149,8 +154,8 @@ def main():
                 continue
             key, _, file = spec['src'].partition('/')
             path = os.path.join(R[key], file)
-            tribe = cards[id_]['tribe'] if kind == 'cards' and id_ in cards else 'neutral' if kind == 'cards' else 'hero'
-            im = pixel_art(path, tribe, spec.get('box')) if spec.get('px') else cropped(path, spec['crop'], tribe)
+            tribe = spec.get('tribe') or (cards[id_]['tribe'] if kind == 'cards' and id_ in cards else 'neutral' if kind == 'cards' else 'hero')
+            im = pixel_art(path, tribe, spec.get('box'), spec.get('center', False)) if spec.get('px') else cropped(path, spec['crop'], tribe)
             if spec.get('flip'):
                 im = im.transpose(Image.FLIP_LEFT_RIGHT)
             im.save(os.path.join(ROOT, 'public', rel), 'WEBP', quality=82, method=6)
