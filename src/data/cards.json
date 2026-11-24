@@ -317,8 +317,8 @@
    "tier": 4,
    "atk": 20,
    "hp": 20,
-   "text": "This and adjacent Azure units keep keywords and stats gained during combat.",
-   "goldenText": "This and adjacent Azure units keep the keywords and double the stats gained during combat.",
+   "text": "Adjacent Azure units keep keywords and stats gained during combat.",
+   "goldenText": "Adjacent Azure units keep the keywords and double the stats gained during combat.",
    "keywords": []
   },
   {
@@ -416,8 +416,8 @@
    "tier": 2,
    "atk": 1,
    "hp": 1,
-   "text": "Arrive: Give a unit +6/+6 and Bubble until next turn. If it's Kindred, do it again.",
-   "goldenText": "Arrive: Give a unit +12/+12 and Bubble until next turn. If it's Kindred, do it again.",
+   "text": "Arrive: Give a unit +6/+6. Also give it Bubble until next turn. If it's Kindred, do it all again.",
+   "goldenText": "Arrive: Give a unit +12/+12. Also give it Bubble until next turn. If it's Kindred, do it all again.",
    "keywords": []
   },
   {
@@ -1417,8 +1417,8 @@
    "tier": 2,
    "atk": 1,
    "hp": 1,
-   "text": "Arrive: Give a unit +1/+1. Also give it Reborn for 1 turn.",
-   "goldenText": "Arrive: Give a unit +2/+2. Also give it Reborn for 1 turn.",
+   "text": "Arrive: Give a unit +1/+1. Also give it Reborn until next turn.",
+   "goldenText": "Arrive: Give a unit +2/+2. Also give it Reborn until next turn.",
    "keywords": []
   },
   {

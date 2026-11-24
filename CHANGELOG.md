@@ -2,6 +2,9 @@
 
 Newest first. The version shows on the title screen.
 
+## 0.12.30 — 2026-11-24
+- Pink Gem's stats are now permanent (only its Bubble lasts until next turn); Gem texts say which part is temporary. Remember no longer keeps its own combat gains (only its neighbours', as before)
+
 ## 0.12.29 — 2026-11-24
 - Cards you're offered (Discovers, and previews of units a card gives you) show the stats they'll have once they're yours: War Mech's Deathrattle growth, Owl's growth, faction Attack buffs. Remember now also keeps its own keywords and stats gained in combat
 

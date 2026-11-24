@@ -486,13 +486,13 @@ export class Combat {
   // ---------- main loop ----------
   run(): 0 | 1 | -1 {
     const [A, B] = this.sides;
-    // Remember: it and the Azure units next to it when the battle starts keep what they gain in it
+    // Remember: the Azure units next to it when the battle starts keep what they gain in it
     const remembered: { cu: CUnit; m: number }[] = [];
     for (const s of this.sides) {
       if (!s.persistent) continue;
       s.units.forEach((u, i) => {
         if (u.cardId !== 'remember') return;
-        for (const n of [u, s.units[i - 1], s.units[i + 1]]) if (n && isTribe(n, 'azure') && !remembered.some((r) => r.cu === n)) remembered.push({ cu: n, m: u.golden ? 2 : 1 });
+        for (const n of [s.units[i - 1], s.units[i + 1]]) if (n && isTribe(n, 'azure') && !remembered.some((r) => r.cu === n)) remembered.push({ cu: n, m: u.golden ? 2 : 1 });
       });
     }
     this.snap('start');

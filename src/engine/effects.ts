@@ -345,15 +345,13 @@ export const EFFECTS: Record<string, Effect> = {
     },
   },
   pink_gem: {
-    // +6/+6 and Bubble until next turn (+2/+2 more per improvement; Golden doubles); a Kindred unit gets it twice
+    // +6/+6 for good (+2/+2 more per improvement; Golden doubles; a Kindred unit gets it twice), and Bubble until next turn
     target: 'friendly',
     battlecry: (c) => {
       const t = gemTarget(c);
       if (!t) return;
       const n = (6 + 2 * gemLevel(c.p, 'pink_gem')) * c.m * (isTribe(t, 'kindred') ? 2 : 1);
       buff(t, n, n);
-      t.mem.tmpAtk = (t.mem.tmpAtk ?? 0) + n;
-      t.mem.tmpHp = (t.mem.tmpHp ?? 0) + n;
       if (!t.kw.includes('divineShield')) { addKw(t, 'divineShield'); t.mem.tmpShield = 1; }
     },
   },

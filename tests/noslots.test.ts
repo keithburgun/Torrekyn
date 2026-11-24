@@ -49,7 +49,7 @@ describe('cards rewritten without slots', () => {
     expect(f.sides[0][0].kw).not.toContain('divineShield'); // the Skel isn't Azure
   });
 
-  it('Remember: it and adjacent Azure units keep stats and keywords gained in battle (Golden doubles)', () => {
+  it('Remember: adjacent Azure units keep stats and keywords gained in battle (Golden doubles)', () => {
     for (const golden of [false, true]) {
       const { g, p, o } = setup();
       const left = U(g, 'longbow', 3, 40); left.kw = [];
@@ -61,8 +61,7 @@ describe('cards rewritten without slots', () => {
       p.board = [left, rem, right, far];
       fight(g, p, o, p.board, [U(g, 'skel', 1, 3)]).run();
       const m = golden ? 2 : 1;
-      expect(rem.atk).toBe(1 + 2 * m); // Remember keeps its own gains too
-      expect(rem.kw).toContain('divineShield');
+      expect(rem.atk).toBe(1); // not itself
       expect(left.atk).toBe(3 + 2 * m);
       expect(right.atk).toBe(3 + 2 * m);
       expect(left.kw).toContain("divineShield"); // gained at Start of Combat (kept even if it broke later)
@@ -470,7 +469,7 @@ it('Life: Start of Combat gains a Pink Gem to your hand (Golden: 2); Grief: Upgr
 });
 
 describe('v0.12.3 Kindred', () => {
-  it('Pink Gem: +6/+6 and Bubble until next turn, twice over for a Kindred unit (Golden doubles)', async () => {
+  it('Pink Gem: +6/+6 for good and Bubble until next turn, twice over for a Kindred unit (Golden doubles)', async () => {
     const { startTurn } = await import('../src/engine/game');
     for (const golden of [false, true]) {
       const { g, p } = setup();
@@ -484,7 +483,7 @@ describe('v0.12.3 Kindred', () => {
       expect([k.atk, k.hp, n.atk, n.hp]).toEqual([2 + 12 * m, 2 + 12 * m, 2 + 6 * m, 2 + 6 * m]);
       expect(k.kw).toContain('divineShield'); expect(n.kw).toContain('divineShield');
       startTurn(g, p);
-      expect([k.atk, k.hp, n.atk, n.hp]).toEqual([2, 2, 2, 2]);
+      expect([k.atk, k.hp, n.atk, n.hp]).toEqual([2 + 12 * m, 2 + 12 * m, 2 + 6 * m, 2 + 6 * m]); // stats are for good
       expect(k.kw).not.toContain('divineShield'); expect(n.kw).not.toContain('divineShield');
     }
     expect(def('honeysuckle_kindred').tier).toBe(4);
@@ -883,6 +882,7 @@ describe('temporary keywords', () => {
     play(g, p, 0, 1, v.uid);
     startTurn(g, p);
     expect(v.kw).not.toContain('divineShield');
+    expect([v.atk, v.hp]).toEqual([8, 8]); // the +6/+6 stays: only the Bubble was for one turn
   });
 });
 
