@@ -899,8 +899,8 @@
    "tier": 2,
    "atk": 1,
    "hp": 1,
-   "text": "Start of Combat: Deal 3 damage to a random enemy unit. Repeat for every other Alcove unit you have.",
-   "goldenText": "Start of Combat: Deal 3 damage to a random enemy unit. Repeat for every other Alcove unit you have, twice.",
+   "text": "Start of Combat: Deal 2 damage to a random enemy unit. Repeat for every other Alcove unit you have.",
+   "goldenText": "Start of Combat: Deal 2 damage to a random enemy unit. Repeat for every other Alcove unit you have, twice.",
    "keywords": []
   },
   {

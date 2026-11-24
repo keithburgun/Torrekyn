@@ -588,10 +588,10 @@ export const EFFECTS: Record<string, Effect> = {
     },
   },
   sniper: {
-    // 3 damage to a random enemy, once more for each other Alcove unit you have (Golden: all of it twice)
+    // 2 damage to a random enemy, once more for each other Alcove unit you have (Golden: all of it twice)
     soc: (c) => {
       const shots = 1 + c.side.units.filter((u) => u.hp > 0 && u !== c.self && isTribe(u, 'alcove')).length;
-      for (let i = 0; i < shots * c.m; i++) c.c.damage(c.c.randomEnemy(c.side), 3, c.self);
+      for (let i = 0; i < shots * c.m; i++) c.c.damage(c.c.randomEnemy(c.side), 2, c.self);
     },
   },
   mod: {

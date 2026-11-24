@@ -97,7 +97,7 @@ describe('Sniper', () => {
     const c = fight(g, p, o, [u(g, 'sniper'), u(g, 'tinker'), u(g, 'tinker')], [u(g, 'skel', 1, 100)]);
     const s = c.sides[0];
     EFFECTS.sniper.soc!({ g, c, side: s, self: s.units[0], m: 1, p, pos: 0 });
-    expect(c.sides[1].units[0].hp).toBe(100 - 9);
+    expect(c.sides[1].units[0].hp).toBe(100 - 6); // 2 damage x 3 shots
   });
 });
 

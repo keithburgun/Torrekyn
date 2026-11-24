@@ -2,6 +2,9 @@
 
 Newest first. The version shows on the title screen.
 
+## 0.12.36 — 2026-11-24
+- Sniper deals 2 damage per shot (was 3)
+
 ## 0.12.35 — 2026-11-24
 - New art for Storyteller: a wandering storyteller
 
