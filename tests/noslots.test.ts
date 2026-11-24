@@ -49,7 +49,7 @@ describe('cards rewritten without slots', () => {
     expect(f.sides[0][0].kw).not.toContain('divineShield'); // the Skel isn't Azure
   });
 
-  it('Remember: adjacent Azure units keep stats and keywords gained in battle (Golden doubles)', () => {
+  it('Remember: it and adjacent Azure units keep stats and keywords gained in battle (Golden doubles)', () => {
     for (const golden of [false, true]) {
       const { g, p, o } = setup();
       const left = U(g, 'longbow', 3, 40); left.kw = [];
@@ -57,9 +57,12 @@ describe('cards rewritten without slots', () => {
       const far = U(g, 'longbow', 3, 40); far.kw = [];
       // War Drum (+2 Attack) and Aegis Charm (Bubble on the 2 left-most) give them something to keep
       p.trinkets = ['war_drum', 'aegis_charm'];
-      p.board = [left, U(g, 'remember', 1, 40, golden), right, far];
+      const rem = U(g, 'remember', 1, 40, golden);
+      p.board = [left, rem, right, far];
       fight(g, p, o, p.board, [U(g, 'skel', 1, 3)]).run();
       const m = golden ? 2 : 1;
+      expect(rem.atk).toBe(1 + 2 * m); // Remember keeps its own gains too
+      expect(rem.kw).toContain('divineShield');
       expect(left.atk).toBe(3 + 2 * m);
       expect(right.atk).toBe(3 + 2 * m);
       expect(left.kw).toContain("divineShield"); // gained at Start of Combat (kept even if it broke later)
@@ -537,6 +540,14 @@ describe('v0.12.3 Kindred', () => {
       const n = at(c, afterSoc(c), 'orange_ninja')!;
       expect([n.atk, n.hp]).toEqual(golden ? [20, 8] : [5, 2]);
     }
+  });
+
+  it('offered cards show the stats they will have (War Mech counts Deathrattles so far)', async () => {
+    const { offeredUnit } = await import('../src/ui/view');
+    const { p } = setup();
+    p.deathrattlesGame = 3;
+    expect(offeredUnit('warmech', false, p)).toMatchObject({ atk: 4 + 12, hp: 2 + 6 });
+    expect(offeredUnit('warmech', true, p)).toMatchObject({ atk: 8 + 24, hp: 4 + 12 });
   });
 
   it('Golden Brass keeps what the unit remembers (a locked unit stays locked)', () => {

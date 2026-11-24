@@ -152,11 +152,23 @@ export function relatedCards(cardId: string): string[] {
  * A card named by another card's text, as that card makes it: Golden when the (Golden) card's text says
  * "Golden <name>" (Golden Owl Summoner → Golden Owl).
  */
+/**
+ * A card you're being offered (a Discover, a unit a card would give you), with the stats it will have once it's yours:
+ * its base stats plus what your game so far adds (War Mech's Deathrattles, Owls summoned, faction Attack buffs, ...).
+ */
+export function offeredUnit(id: string, golden: boolean, p?: Player) {
+  const d = def(id);
+  const m = golden ? 2 : 1;
+  const u = { uid: -1, cardId: id, golden, atk: d.atk * m, hp: d.hp * m, kw: [...d.keywords], mem: {} };
+  if (!p) return u;
+  const st = effStats(p, u, 'hand');
+  return { ...u, atk: st.atk, hp: st.hp, kw: st.kw };
+}
+
 export function relatedCardHtml(id: string, p?: Player, from?: { cardId: string; golden: boolean }): string {
   const d = def(id);
   const golden = !!from?.golden && new RegExp(`\\bGolden ${d.name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}`, 'i').test(def(from.cardId).goldenText);
-  const m = golden ? 2 : 1;
-  return bigCardHtml({ cardId: id, golden, atk: d.atk * m, hp: d.hp * m, kw: [...d.keywords] }, '', p);
+  return bigCardHtml(offeredUnit(id, golden, p), '', p);
 }
 
 export function bigCardHtml(u: { cardId: string; golden: boolean; atk: number; hp: number; kw: Keyword[]; mem?: Record<string, number> }, extra = '', p?: Player): string {

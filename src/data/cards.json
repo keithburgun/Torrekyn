@@ -317,8 +317,8 @@
    "tier": 4,
    "atk": 20,
    "hp": 20,
-   "text": "Adjacent Azure units keep keywords and stats gained during combat.",
-   "goldenText": "Adjacent Azure units keep the keywords and double the stats gained during combat.",
+   "text": "This and adjacent Azure units keep keywords and stats gained during combat.",
+   "goldenText": "This and adjacent Azure units keep the keywords and double the stats gained during combat.",
    "keywords": []
   },
   {

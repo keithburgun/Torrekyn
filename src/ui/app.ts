@@ -10,7 +10,7 @@ import {
 import { HEROES, buyCost, canUseHeroPower, heroDef, heroHealth, mainActive, pickTrinket, powerCost, powersOf, trinketDef, useHeroPower, type HeroDef } from '../engine/heroes';
 import type { CombatResult, GameState, Player } from '../engine/types';
 import { CombatPlayer, SPEEDS, speedSetting } from './combatView';
-import { art, bigCardHtml, cardHtml, esc, getArtStyle, heroArt, relatedCards, relatedCardHtml, setArtStyle, unitView, KEYWORD_HELP, KW_ICON, type ArtStyle } from './view';
+import { art, bigCardHtml, cardHtml, offeredUnit, esc, getArtStyle, heroArt, relatedCards, relatedCardHtml, setArtStyle, unitView, KEYWORD_HELP, KW_ICON, type ArtStyle } from './view';
 import { clearSave, loadSave, save } from './save';
 import { debugOn, setDebug } from './debug';
 import { checkForUpdates, versionLabel } from './update';
@@ -933,9 +933,8 @@ export class App {
       }).join('')}</div></div>`;
     }
     return `<div class="modal"><button class="btn modal-hide" data-act="modal-hide" title="Look at your army, then come back">Look at army ▼</button><h2>${esc(d.reason)}</h2><div class="choices">${d.options.map((id, i) => {
-      const dd = def(id);
-      const m = d.golden ? 2 : 1;
-      return `<div class="choice" data-act="discover" data-idx="${i}">${bigCardHtml({ cardId: id, golden: !!d.golden, atk: dd.atk * m, hp: dd.hp * m, kw: [...dd.keywords] }, '', this.me)}</div>`;
+      // with the stats it will have once it's yours (War Mech's Deathrattles and so on), not its base stats
+      return `<div class="choice" data-act="discover" data-idx="${i}">${bigCardHtml(offeredUnit(id, !!d.golden, this.me), '', this.me)}</div>`;
     }).join('')}</div></div>`;
   }
 

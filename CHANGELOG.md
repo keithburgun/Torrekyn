@@ -2,6 +2,9 @@
 
 Newest first. The version shows on the title screen.
 
+## 0.12.29 — 2026-11-24
+- Cards you're offered (Discovers, and previews of units a card gives you) show the stats they'll have once they're yours: War Mech's Deathrattle growth, Owl's growth, faction Attack buffs. Remember now also keeps its own keywords and stats gained in combat
+
 ## 0.12.28 — 2026-11-23
 - Abragail and the New Power trinket no longer offer Hero Powers another living player has
 
