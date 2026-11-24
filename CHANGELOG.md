@@ -2,6 +2,9 @@
 
 Newest first. The version shows on the title screen.
 
+## 0.12.35 — 2026-11-24
+- New art for Storyteller: a wandering storyteller
+
 ## 0.12.34 — 2026-11-24
 - Alcove Prefex's icon is now the Twinbot
 

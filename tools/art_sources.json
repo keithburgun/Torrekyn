@@ -549,12 +549,8 @@
    ]
   },
   "storyteller": {
-   "src": "C/lori davis2.jpg",
-   "crop": [
-    0.5,
-    0.42,
-    0.8
-   ]
+   "src": "M/PatC/placeholder-toussant.png",
+   "px": true
   },
   "disciple": {
    "src": "X/ghost2 keithedit.png",
