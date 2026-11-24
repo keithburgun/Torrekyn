@@ -218,6 +218,17 @@ describe('hero powers', () => {
     for (const id of p.powers) expect(heroDef(id)).toBeTruthy();
   });
 
+  it("Gelf Lanz: Inspire gets cheaper with each Azure unit bought, and goes back to 3 once used", () => {
+    const { g, p } = setup('gelf_lanz', 3);
+    const h = heroDef('gelf_lanz')!;
+    p.heroMem.azureBought = 2;
+    expect(powerCost(g, p, h)).toBe(1);
+    p.gold = 10;
+    expect(useHeroPower(g, p)).toBe(true);
+    expect(p.gold).toBe(9);
+    expect(powerCost(g, p, h)).toBe(3);
+  });
+
   it("Abragail and New Power never offer a Hero Power another living player has", () => {
     for (let seed = 1; seed <= 40; seed++) {
       const { g, p } = setup('abragail', seed);

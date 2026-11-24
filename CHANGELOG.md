@@ -2,6 +2,9 @@
 
 Newest first. The version shows on the title screen.
 
+## 0.12.38 — 2026-11-24
+- Gelf Lanz's Inspire goes back to costing 3 after you use it
+
 ## 0.12.37 — 2026-11-24
 - War Mech: +3/+1 per Deathrattle (was +4/+2). Life is 3/5, Funeral is 12/1. Spoonful's Deathrattle triggers an adjacent unit's Arrive
 
