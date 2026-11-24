@@ -7,7 +7,7 @@ import { abilityTags, bigCardHtml, cardArt, esc } from './view';
 
 /** a card that represents each tribe on the announcement screen */
 const TRIBE_FACE: Record<Tribe, string> = {
-  neverending: 'lich', azure: 'knight', kindred: 'hug', brambor: 'elder', cloister: 'orange_ninja', alcove: 'tribe_alcove', demons: 'treasure', neutral: 'sword',
+  neverending: 'lich', azure: 'knight', kindred: 'hug', brambor: 'elder', cloister: 'orange_ninja', alcove: 'left_twinbot', demons: 'treasure', neutral: 'sword',
 };
 
 export function tribesAnnounceHtml(g: GameState) {

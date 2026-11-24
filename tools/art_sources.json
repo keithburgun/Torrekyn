@@ -1004,15 +1004,6 @@
   "orbo_pet": {
    "src": "X/robot-bomb.png",
    "px": true
-  },
-  "tribe_alcove": {
-   "src": "C/may danaris.jpg",
-   "crop": [
-    0.529,
-    0.4395,
-    0.36
-   ],
-   "tribe": "alcove"
   }
  }
 }
