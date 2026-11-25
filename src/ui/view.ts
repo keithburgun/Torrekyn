@@ -50,8 +50,33 @@ export const KEYWORD_HELP: Record<string, string> = {
   Avenge: 'Happens after the given number of friendly units die.',
   'Start of Combat': 'Happens before the first attack.',
   Discover: 'Choose one of three cards.',
-  Merge: 'When you play this, you can drop it onto a unit it can Merge with: that unit gets its stats and keywords.',
+  Merge: 'Drop it into the gap on the left of an Alcove unit (even with a full army): that unit gets its stats and keywords.',
+  'End of Turn': 'Happens when you end your turn in the Tavern.',
+  'Start of Turn': 'Happens when your turn in the Tavern begins.',
+  Quest: 'Do what it asks, and get the reward when you finish.',
 };
+
+/**
+ * The keywords on a card, in the order they first appear: from its text (Arrive, Avenge, Bubble...) and from the
+ * keywords the unit actually has right now (a Gem's Reborn, a gained Taunt...). For the panels beside a zoomed card.
+ */
+export function cardKeywords(u: { cardId: string; golden: boolean; kw?: Keyword[] }): string[] {
+  const d = def(u.cardId);
+  const text = (u.golden ? d.goldenText : d.text) || '';
+  const found: [number, string][] = [];
+  for (const k of Object.keys(KEYWORD_HELP)) {
+    const m = new RegExp(`\\b${k}\\b`).exec(text);
+    if (m) found.push([m.index, k]);
+  }
+  const out = found.sort((a, b) => a[0] - b[0]).map(([, k]) => k);
+  for (const k of u.kw ?? []) { const n = KW_ICON[k]?.[1]; if (n && !out.includes(n)) out.push(n); }
+  return out;
+}
+
+/** one panel per keyword on the card, explaining it */
+export function keywordPanelsHtml(u: { cardId: string; golden: boolean; kw?: Keyword[] }): string {
+  return cardKeywords(u).map((k) => `<div class="kw-panel"><b>${esc(k)}</b><span>${esc(KEYWORD_HELP[k])}</span></div>`).join('');
+}
 
 export function abilityTags(cardId: string): string[] {
   const e = EFFECTS[cardId];

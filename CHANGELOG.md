@@ -2,6 +2,9 @@
 
 Newest first. The version shows on the title screen.
 
+## 0.13.7 — 2026-11-25
+- Merge works like Magnetic: drag Merge-o into the glowing gap on the left of an Alcove unit (even with a full army) and it slides in, giving that unit its stats and keywords. Zoomed cards now show a panel explaining each keyword on them
+
 ## 0.13.6 — 2026-11-25
 - Zoomed cards now frame their art exactly like cards on the board (no more extra zoom); Googa's sprite sits lower
 

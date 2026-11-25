@@ -239,6 +239,12 @@ function playHand(g: GameState, p: Player) {
   for (let guard = 0; guard < 25; guard++) {
     const ok = p.hand.map((u, i) => [u, i] as const).filter(([u]) => !handLocked(p, u) && !holdInHand(p, u));
     if (!ok.length) return;
+    // Merge-o goes into an Alcove unit even when the army is full (it takes no slot)
+    const mi = p.hand.findIndex((u) => u.cardId === 'merge_o' && !handLocked(p, u));
+    if (mi >= 0 && p.board.length >= CONFIG.boardSize && p.board.some((b) => isTribe(b, 'alcove'))) {
+      if (!playOne(g, p, mi)) return;
+      continue;
+    }
     if (!on(p, 'hand')) {
       // the old way: only ever looks at the first playable card
       const idx = ok[0][1];

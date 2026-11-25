@@ -1,7 +1,7 @@
 import { heroDef } from '../engine/heroes';
 import { store } from '../save/store';
 import type { CombatFrame, CombatFrameUnit, CombatFx, CombatResult, GameState } from '../engine/types';
-import { bigCardHtml, cardHtml, esc, frameUnitView, heroArt, relatedCards, relatedCardHtml } from './view';
+import { bigCardHtml, cardHtml, esc, frameUnitView, heroArt, keywordPanelsHtml, relatedCards, relatedCardHtml } from './view';
 import { sfx } from './sfx';
 import { currentLayout, type Layout } from './layout';
 import { placeBoardBg, placeHud } from './hud';
@@ -223,7 +223,10 @@ export class CombatPlayer {
     }
     this.zoomId = id;
     const rel = this.zoomEl.querySelector('.zoom-related');
-    this.zoomEl.innerHTML = bigCardHtml(frameUnitView(u));
+    const fv = frameUnitView(u);
+    const kws = keywordPanelsHtml(fv);
+    this.zoomEl.classList.toggle('has-kw', !!kws);
+    this.zoomEl.innerHTML = bigCardHtml(fv) + (kws ? `<div class="zoom-kw">${kws}</div>` : '');
     // the cards its text names appear beside it after half a second (kept while the same unit stays zoomed)
     if (same && rel) this.zoomEl.appendChild(rel);
     else {
@@ -250,6 +253,10 @@ export class CombatPlayer {
       this.zoomEl.style.left = `${cx < this.L.cx ? this.L.W - w - 60 : 60}px`;
       this.zoomEl.style.top = `${(this.L.H - h) / 2}px`;
     }
+    // keyword panels: toward the middle of the screen (the related cards go beyond them); on a tall screen,
+    // across from the related cards
+    const kw = this.zoomEl.querySelector('.zoom-kw');
+    if (kw) kw.className = `zoom-kw ${this.L.portrait ? (parseFloat(this.zoomEl.style.top) < this.L.H / 2 ? 'above' : 'below') : parseFloat(this.zoomEl.style.left) > this.L.cx ? 'left' : 'right'}`;
   }
 
   private t(ms: number) {

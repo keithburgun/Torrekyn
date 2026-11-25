@@ -1,4 +1,4 @@
-import { CONFIG, def, TRIBE_NAMES } from '../engine/core';
+import { CONFIG, def, isTribe, TRIBE_NAMES } from '../engine/core';
 import { store } from '../save/store';
 import { provider as cloudProvider, state as cloudState, statusText as cloudStatus, sync, syncNow, takeCombined } from '../save/sync';
 import { friendly, supabase } from '../save/providers/supabase';
@@ -10,7 +10,7 @@ import {
 import { HEROES, buyCost, canUseHeroPower, heroDef, heroHealth, mainActive, pickTrinket, powerCost, powersOf, trinketDef, useHeroPower, type HeroDef } from '../engine/heroes';
 import type { CombatResult, GameState, Player } from '../engine/types';
 import { CombatPlayer, SPEEDS, speedSetting } from './combatView';
-import { art, bigCardHtml, cardHtml, offeredUnit, setStat, statOf, esc, getArtStyle, heroArt, relatedCards, relatedCardHtml, setArtStyle, unitView, KEYWORD_HELP, KW_ICON, type ArtStyle } from './view';
+import { art, bigCardHtml, cardHtml, offeredUnit, setStat, statOf, esc, getArtStyle, heroArt, relatedCards, relatedCardHtml, setArtStyle, unitView, KEYWORD_HELP, KW_ICON, keywordPanelsHtml, type ArtStyle } from './view';
 import { clearSave, loadSave, save } from './save';
 import { debugOn, setDebug } from './debug';
 import { checkForUpdates, versionLabel } from './update';
@@ -883,8 +883,16 @@ export class App {
       x = Math.max(220, Math.min(L.W - 210 - W, x));
     }
     y = Math.max(8, Math.min(L.H - 10 - H, y));
-    return `<div class="popover ${actions ? 'interactive' : ''} ${actionsTop ? 'actions-top' : ''} ${actions && this.justSelected() ? 'arming' : ''}" style="left:${x}px;top:${y}px;width:${W}px">
-      <div class="pop-card" data-card="${v.cardId}" data-golden="${v.golden ? 1 : 0}">${bigCardHtml(v, '', this.me)}</div>${actions ? `<div class="actions">${actions}</div>` : ''}</div>`;
+    // what each keyword on it means, in panels on the roomier side (on a tall screen: across from the related cards)
+    // (related cards go on the roomier side: put the panels across from them when they fit there, else beside them)
+    const kws = keywordPanelsHtml(v);
+    const relSide = x + W / 2 < L.W / 2 ? 'right' : 'left';
+    const across = relSide === 'right' ? 'left' : 'right';
+    const roomAcross = across === 'left' ? x : L.W - (x + W);
+    const kwSide = L.portrait ? (y > L.H / 2 ? 'below' : 'above')
+      : !relatedCards(v.cardId).length ? relSide : roomAcross >= 290 ? across : relSide;
+    return `<div class="popover ${kws && kwSide === relSide ? 'has-kw' : ''} ${actions ? 'interactive' : ''} ${actionsTop ? 'actions-top' : ''} ${actions && this.justSelected() ? 'arming' : ''}" style="left:${x}px;top:${y}px;width:${W}px">
+      <div class="pop-card" data-card="${v.cardId}" data-golden="${v.golden ? 1 : 0}">${bigCardHtml(v, '', this.me)}</div>${actions ? `<div class="actions">${actions}</div>` : ''}${kws ? `<div class="pop-kw ${kwSide}">${kws}</div>` : ''}</div>`;
   }
 
   /** Phones: details for your hero power or a trinket, with a big Use button where it applies. */
@@ -1504,11 +1512,47 @@ export class App {
     this.render();
   }
 
+  /** Merge a card into the unit at board index `idx`: it slides into that card and disappears, then the unit grows */
+  doMerge(handIdx: number, idx: number, from: { x: number; y: number }) {
+    const p = this.me;
+    const u = p.hand[handIdx];
+    const t = p.board[idx];
+    if (!u || !t) return;
+    const src = this.stage.querySelector<HTMLElement>(`.card[data-zone="hand"][data-idx="${handIdx}"]`);
+    const dst = this.stage.querySelector<HTMLElement>(`.card[data-zone="board"][data-idx="${idx}"]`);
+    const finish = () => { this.result(play(this.g!, p, handIdx, idx, t.uid), sfx.deploy, 'played'); this.sel = null; this.commit(); };
+    if (!src || !dst) return finish();
+    const fly = src.cloneNode(true) as HTMLElement;
+    fly.classList.add('ghost', 'merging');
+    fly.classList.remove('selected', 'dragging');
+    const w = src.offsetWidth, h = src.offsetHeight;
+    fly.style.left = `${from.x - w / 2}px`;
+    fly.style.top = `${from.y - h / 2}px`;
+    fly.style.transform = '';
+    this.stage.appendChild(fly);
+    src.style.visibility = 'hidden';
+    const tx = parseFloat(dst.style.left) + dst.offsetWidth / 2 - from.x;
+    const ty = parseFloat(dst.style.top) + dst.offsetHeight / 2 - from.y;
+    sfx.whoosh();
+    const a = fly.animate(
+      [
+        { transform: 'translate(0, 0) scale(1)', opacity: 1, filter: 'brightness(1)' },
+        { transform: `translate(${tx * 0.75}px, ${ty * 0.75}px) scale(.8)`, opacity: 1, filter: 'brightness(1.6)', offset: 0.7 },
+        { transform: `translate(${tx}px, ${ty}px) scale(.35)`, opacity: 0, filter: 'brightness(2.2)' },
+      ],
+      { duration: 420, easing: 'cubic-bezier(.4, 0, .6, 1)', fill: 'forwards' },
+    );
+    dst.classList.add('merge-pulse');
+    a.finished.catch(() => undefined).then(() => { fly.remove(); finish(); });
+  }
+
   doPlay(handIdx: number, pos: number) {
     const p = this.me;
     const u = p.hand[handIdx];
     if (!u) return;
-    if (p.board.length >= CONFIG.boardSize) return this.toast('Your army is full');
+    // Merge-o with a full army: it can only Merge, so go straight to choosing the Alcove unit
+    const mergeOnly = u.cardId === 'merge_o' && p.board.length >= CONFIG.boardSize && p.board.some((b) => isTribe(b, 'alcove'));
+    if (p.board.length >= CONFIG.boardSize && !mergeOnly) return this.toast('Your army is full');
     if (needsTarget(u.cardId) && validTargets(p, u.cardId).length) {
       this.targeting = { kind: 'play', handIdx, pos };
       this.aimPt = null;
@@ -1822,16 +1866,60 @@ export class App {
    */
   dropIndex(x: number): number {
     const p = this.me;
+    if (this.mergeAt(x) >= 0) return -1; // (Merge-o over a Merge slot: it won't take a slot)
     const k = this.slotAt(x);
     if (this.press!.zone === 'board') return Math.min(k, p.board.length - 1);
     if (p.board.length >= CONFIG.boardSize) return -1;
     return Math.min(k, p.board.length);
   }
 
+  /** dragging a card that can Merge (Merge-o) out of the hand? */
+  private draggingMerge() {
+    return this.press?.zone === 'hand' && this.me.hand[this.press.idx]?.cardId === 'merge_o';
+  }
+
+  /** the gap on the left of a unit (where a Merge card can be dropped into that unit) */
+  private gapX(i: number) {
+    const step = L.slotX(1) - L.slotX(0);
+    return L.slotX(i) - (step - L.slotW) / 2;
+  }
+
+  /** The army index of the Alcove unit whose Merge slot (the gap on its left) is under x, or -1. */
+  mergeAt(x: number): number {
+    if (!this.draggingMerge()) return -1;
+    let best = -1, bestD = 46;
+    this.me.board.forEach((u, i) => {
+      if (!isTribe(u, 'alcove')) return;
+      const d = Math.abs(x - this.gapX(i));
+      if (d < bestD) { best = i; bestD = d; }
+    });
+    return best;
+  }
+
+  /** Merge slots: a glowing bar in the gap left of each Alcove unit, shown while a Merge card is dragged */
+  private showMergeGaps(on: number) {
+    if (!this.draggingMerge()) return;
+    if (!this.stage.querySelector('.merge-gap')) {
+      this.me.board.forEach((u, i) => {
+        if (!isTribe(u, 'alcove')) return;
+        const d = document.createElement('div');
+        d.className = 'merge-gap';
+        d.dataset.i = String(i);
+        d.style.left = `${this.gapX(i)}px`;
+        d.style.top = `${L.slotTop + 12}px`;
+        d.style.height = `${L.slotH - 24}px`;
+        this.stage.appendChild(d);
+      });
+    }
+    this.stage.querySelectorAll<HTMLElement>('.merge-gap').forEach((d) => d.classList.toggle('on', Number(d.dataset.i) === on));
+  }
+
   /** While dragging over the army: light up the slot it will take and slide the other units to show the result. */
   updateMarker(pt: { x: number; y: number }) {
     const zone = this.press!.zone;
     const over = pt.y > L.boardTop && pt.y < L.boardBottom && (zone === 'hand' || zone === 'board');
+    const merge = over ? this.mergeAt(pt.x) : -1;
+    this.showMergeGaps(merge);
     const target = over ? this.dropIndex(pt.x) : -1;
     // the units' new order (as board indexes) if dropped here
     const n = this.me.board.length;
@@ -1848,10 +1936,11 @@ export class App {
     }
     this.stage.querySelectorAll('.slot-plate.drop-target').forEach((e) => e.classList.remove('drop-target'));
     if (target >= 0) this.stage.querySelector(`.slot-plate[data-slot="${target}"]`)?.classList.add('drop-target');
-    this.stage.classList.toggle('board-full-drag', over && target < 0);
+    this.stage.classList.toggle('board-full-drag', over && target < 0 && merge < 0);
   }
 
   cancelDrag() {
+    this.stage.querySelectorAll('.merge-gap').forEach((e) => e.remove());
     this.ghost?.remove();
     this.ghost = null;
     for (const el of this.stage.querySelectorAll<HTMLElement>('.card[data-zone="board"]:not(.ghost)')) { el.style.transform = ''; el.classList.remove('sliding'); }
@@ -1941,8 +2030,18 @@ export class App {
     } else if (press.zone === 'hand') {
       if (pt.y > L.boardTop && pt.y < L.boardBottom) {
         this.press = press; // dropIndex reads the zone being dragged
+        const merge = this.mergeAt(pt.x);
         const to = this.dropIndex(pt.x);
+        const merging = this.draggingMerge();
         this.press = null;
+        if (merge >= 0) { this.doMerge(press.idx, merge, pt); return; }
+        // Merge-o dropped on a slot (not a Merge slot): it just joins the army
+        if (merging) {
+          if (to < 0) { this.toast('Your army is full'); this.render(); return; }
+          this.result(play(g, p, press.idx, to), sfx.deploy, 'played');
+          this.commit();
+          return;
+        }
         this.doPlay(press.idx, to < 0 ? p.board.length : to);
         return;
       }

@@ -1080,3 +1080,14 @@ describe('Gems (v0.13.2)', () => {
     expect(def('omni_gem').text).toContain('2 random Tier 5');
   });
 });
+
+describe('keyword panels', () => {
+  it('list every keyword on a card (text first, then gained ones), each with an explanation', async () => {
+    const { cardKeywords, keywordPanelsHtml } = await import('../src/ui/view');
+    expect(cardKeywords({ cardId: 'warmech', golden: false })).toEqual(['Bubble', 'Reborn', 'Deathrattle']);
+    expect(cardKeywords({ cardId: 'tourmaline', golden: false })).toEqual(['Arrive', 'Taunt']);
+    expect(cardKeywords({ cardId: 'merge_o', golden: false, kw: ['divineShield'] })).toEqual(['Merge', 'Bubble']);
+    expect(cardKeywords({ cardId: 'avenger', golden: false })).toEqual(['Avenge']);
+    expect(keywordPanelsHtml({ cardId: 'corrivath_harp', golden: false })).toContain('End of Turn');
+  });
+});

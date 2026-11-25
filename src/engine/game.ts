@@ -438,7 +438,9 @@ export function play(g: GameState, p: Player, handIdx: number, pos: number, targ
   if (busy(p)) return fail('Choose a card first');
   const u = p.hand[handIdx];
   if (!u) return fail('Nothing there');
-  if (p.board.length >= CONFIG.boardSize) return fail('Your army is full');
+  // Merge (like Magnetic): Merge-o can still go into an Alcove unit when the army is full
+  const mergeTarget = u.cardId === 'merge_o' && targetUid !== undefined ? p.board.find((b) => b.uid === targetUid && isTribe(b, 'alcove')) : undefined;
+  if (p.board.length >= CONFIG.boardSize && !mergeTarget) return fail('Your army is full');
   if (handLocked(p, u)) return fail(`Unlocks at Tavern Tier ${u.mem.unlockTier}`);
   delete u.mem.unlockTier;
   p.hand.splice(handIdx, 1);
