@@ -867,7 +867,7 @@ export const EFFECTS: Record<string, Effect> = {
       for (const t of ALL_TRIBES) {
         const of = c.board.filter((u) => isTribe(u, t));
         const fresh = of.filter((u) => !done.has(u));
-        const u = pick(c.g, fresh.length ? fresh : of); // a unit of every faction (Amalgam) can be picked again
+        const u = pick(c.g, fresh.length ? fresh : of); // a unit of every faction (Googa) can be picked again
         if (!u) continue;
         buff(u, n, n);
         done.add(u);

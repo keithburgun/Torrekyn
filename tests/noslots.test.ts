@@ -237,7 +237,7 @@ describe('v0.10.2 changes', () => {
       p.board = [U(g, 'storyteller')];
       sell(g, p, 0);
       expect(p.hand.length).toBe(1);
-      expect(isTribe(p.hand[0].cardId, 'cloister')).toBe(true); // Amalgam (every faction) counts too
+      expect(isTribe(p.hand[0].cardId, 'cloister')).toBe(true); // Googa (every faction) counts too
       expect(def(p.hand[0].cardId).tier).toBeLessThanOrEqual(2);
     }
   });
@@ -610,7 +610,7 @@ describe('v0.12.3 Kindred', () => {
 });
 
 describe('v0.12.4 cards', () => {
-  it('Amalgam is a Tier 2 Neutral 3/2 of every faction; Beast Vine (Tier 5 Brambor 50/50) too', async () => {
+  it('Googa (was Amalgam) is a Tier 2 Neutral 3/2 of every faction; Beast Vine (Tier 5 Brambor 50/50) too', async () => {
     const { isTribe } = await import('../src/engine/core');
     const { g } = setup();
     expect([def('amalgam').tier, def('amalgam').tribe, def('amalgam').atk, def('amalgam').hp]).toEqual([2, 'neutral', 3, 2]);
