@@ -502,7 +502,7 @@ export class CombatPlayer {
     const shots = fx.filter((e) => (e.k === 'hit' || e.k === 'kill') && (e.from !== undefined || e.fromSide !== undefined));
     if (!shots.length) return;
     if (shots.some((e) => !['longbow', 'sniper'].includes(this.units.get(e.from ?? -1)?.cardId ?? ''))) sfx.zap();
-    const flight = this.t(380);
+    const flight = this.t(560);
     const anims: Promise<unknown>[] = [];
     shots.slice(0, 12).forEach((e, i) => {
       const from = e.from !== undefined ? this.center(e.from) : this.heroCenter(e.fromSide!);
@@ -535,27 +535,31 @@ export class CombatPlayer {
         }).catch(() => b.remove()));
         return;
       }
-      const p = document.createElement('div');
-      p.className = `projectile ${e.k === 'kill' ? 'kill' : e.from === undefined ? 'hero' : ''}`;
-      p.style.left = `${from.x}px`;
-      p.style.top = `${from.y}px`;
-      this.fxLayer.appendChild(p);
+      // a white ball (gold from a hero, purple for an instant kill) arcing to the target, two fading echoes behind it
       const dx = to.x - from.x;
       const dy = to.y - from.y;
       const lift = -Math.min(120, Math.hypot(dx, dy) * 0.25);
-      const a = p.animate(
-        [
-          { transform: 'translate(-50%, -50%) scale(.6)', opacity: 0.6 },
-          { transform: `translate(calc(-50% + ${dx / 2}px), calc(-50% + ${dy / 2 + lift}px)) scale(1.15)`, opacity: 1, offset: 0.5 },
-          { transform: `translate(calc(-50% + ${dx}px), calc(-50% + ${dy}px)) scale(.9)`, opacity: 1 },
-        ],
-        { duration: flight, delay: i * this.t(70), easing: 'ease-in', fill: 'forwards' },
-      );
-      anims.push(a.finished.then(() => {
-        p.remove();
-        sfx.hit();
-        this.spot('impact', to.x, to.y, this.t(420));
-      }).catch(() => p.remove()));
+      const path = [
+        { transform: 'translate(-50%, -50%) scale(.9)', opacity: 0.9 },
+        { transform: `translate(calc(-50% + ${dx / 2}px), calc(-50% + ${dy / 2 + lift}px)) scale(1.15)`, opacity: 1, offset: 0.5 },
+        { transform: `translate(calc(-50% + ${dx}px), calc(-50% + ${dy}px)) scale(1)`, opacity: 1 },
+      ];
+      const kind = e.k === 'kill' ? 'kill' : e.from === undefined ? 'hero' : '';
+      [0, 1, 2].forEach((j) => {
+        const p = document.createElement('div');
+        p.className = `projectile ${kind} ${j ? 'trail' : ''}`;
+        p.style.left = `${from.x}px`;
+        p.style.top = `${from.y}px`;
+        this.fxLayer.appendChild(p);
+        const a = p.animate(path, { duration: flight, delay: i * this.t(90) + j * this.t(45), easing: 'ease-in-out', fill: 'forwards' });
+        const done = a.finished.then(() => {
+          p.remove();
+          if (j) return;
+          sfx.hit();
+          this.spot('impact', to.x, to.y, this.t(420));
+        }).catch(() => p.remove());
+        if (!j) anims.push(done);
+      });
     });
     await Promise.all(anims);
   }

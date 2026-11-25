@@ -2,6 +2,9 @@
 
 Newest first. The version shows on the title screen.
 
+## 0.13.4 — 2026-11-25
+- Leafbug has new art (a leafy sprout). Ability damage in battle (Witch, Disciple...) now shows a clear white ball flying from the source, or from where it stood if it's gone, to the target
+
 ## 0.13.3 — 2026-11-25
 - Amalgam is now Googa, with new art
 
