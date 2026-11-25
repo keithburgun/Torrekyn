@@ -1000,6 +1000,34 @@
   "orbo_pet": {
    "src": "X/robot-bomb.png",
    "px": true
+  },
+  "golbana": {
+   "src": "S/Demons/demonarcher.png",
+   "px": true
+  },
+  "isha": {
+   "src": "S/Demons/infantry.png",
+   "px": true
+  },
+  "gunner": {
+   "src": "S/Potato/shotgun.png",
+   "px": true
+  },
+  "avenger": {
+   "src": "X/demonbear.png",
+   "px": true
+  },
+  "merge_o": {
+   "src": "X/turret.png",
+   "px": true
+  },
+  "corrivath_harp": {
+   "src": "X/king.png",
+   "px": true
+  },
+  "tree_man": {
+   "src": "X/tree.png",
+   "px": true
   }
  }
 }

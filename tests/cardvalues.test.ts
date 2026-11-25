@@ -83,8 +83,11 @@ describe.skipIf(!process.env.CARDVALUES)('card values', () => {
     const worth: Record<number, number> = {};
     for (let t = 1; t <= 6; t++) worth[t] = statWorth(t);
     console.log('win-rate per +1/+1 by tier', worth);
-    const out: Record<string, [number, number]> = {};
+    // CV_ONLY=id,id,...: measure just these cards (new or changed) and keep everyone else's value as it is
+    const only = process.env.CV_ONLY ? new Set(process.env.CV_ONLY.split(',')) : null;
+    const out: Record<string, [number, number]> = only ? JSON.parse(fs.readFileSync('src/data/cardValues.json', 'utf8')) : {};
     for (const c of CARDS) {
+      if (only && !only.has(c.id)) continue;
       if (c.token && c.id !== 'pumpkin' && c.id !== 'purple_gem') continue;
       const v = [false, true].map((golden) => {
         let d = 0;

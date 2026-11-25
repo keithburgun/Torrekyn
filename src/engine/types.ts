@@ -108,6 +108,8 @@ export interface Player {
   stuffieBonus?: number;
   /** Owls summoned (played or summoned in battle) this game */
   owlsSummoned?: number;
+  /** the last Gem this player played from hand (Corrivath Harp) */
+  lastGem?: string;
   redGemBonus: number;
   battlecriesThisTurn: number;
   /** Arrive units played this turn (Chaos) */

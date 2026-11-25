@@ -986,7 +986,7 @@
    "id": "paradox",
    "name": "Paradox",
    "tribe": "alcove",
-   "tier": 4,
+   "tier": 5,
    "atk": 1,
    "hp": 1,
    "text": "Start of Combat: Gain the Health of your highest-Health other unit.",
@@ -1474,8 +1474,8 @@
    "tier": 5,
    "atk": 8,
    "hp": 8,
-   "text": "Whenever another friendly unit gains Health, this gains that much too.",
-   "goldenText": "Whenever another friendly unit gains Health, this gains twice that much.",
+   "text": "Whenever another friendly unit gains Health, this gains +2 Health.",
+   "goldenText": "Whenever another friendly unit gains Health, this gains +4 Health.",
    "keywords": []
   },
   {
@@ -1627,6 +1627,83 @@
    ],
    "token": true,
    "allTribes": true
+  },
+  {
+   "id": "golbana",
+   "name": "Golbana",
+   "tribe": "demons",
+   "tier": 3,
+   "atk": 6,
+   "hp": 6,
+   "text": "Arrive: Give your other units +3/+3. Repeat for every Golden unit you have.",
+   "goldenText": "Arrive: Give your other units +6/+6. Repeat for every Golden unit you have.",
+   "keywords": []
+  },
+  {
+   "id": "isha",
+   "name": "Isha",
+   "tribe": "demons",
+   "tier": 2,
+   "atk": 2,
+   "hp": 4,
+   "text": "After you sell a Business Demon, gain +3/+3.",
+   "goldenText": "After you sell a Business Demon, gain +6/+6.",
+   "keywords": []
+  },
+  {
+   "id": "gunner",
+   "name": "Gunner",
+   "tribe": "cloister",
+   "tier": 1,
+   "atk": 1,
+   "hp": 3,
+   "text": "Arrive: Gain Bubble, Doomstrike or Reborn at random.",
+   "goldenText": "Arrive: Gain two of Bubble, Doomstrike or Reborn at random.",
+   "keywords": []
+  },
+  {
+   "id": "avenger",
+   "name": "Avenger",
+   "tribe": "brambor",
+   "tier": 4,
+   "atk": 4,
+   "hp": 4,
+   "text": "Avenge (3): Summon a random Brambor unit and get one.",
+   "goldenText": "Avenge (3): Summon 2 random Brambor units and get 2.",
+   "keywords": []
+  },
+  {
+   "id": "merge_o",
+   "name": "Merge-o",
+   "tribe": "alcove",
+   "tier": 4,
+   "atk": 12,
+   "hp": 12,
+   "text": "Merge with an Alcove unit.",
+   "goldenText": "Merge with an Alcove unit.",
+   "keywords": []
+  },
+  {
+   "id": "corrivath_harp",
+   "name": "Corrivath Harp",
+   "tribe": "azure",
+   "tier": 4,
+   "atk": 6,
+   "hp": 10,
+   "text": "End of Turn: Get a copy of the last Gem you played.",
+   "goldenText": "End of Turn: Get 2 copies of the last Gem you played.",
+   "keywords": []
+  },
+  {
+   "id": "tree_man",
+   "name": "The Tree Man",
+   "tribe": "neverending",
+   "tier": 4,
+   "atk": 7,
+   "hp": 1,
+   "text": "Whenever you summon units that don't fit in your army, give all your units +2/+4.",
+   "goldenText": "Whenever you summon units that don't fit in your army, give all your units +4/+8.",
+   "keywords": []
   }
  ]
 }

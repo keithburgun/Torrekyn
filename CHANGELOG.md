@@ -2,6 +2,9 @@
 
 Newest first. The version shows on the title screen.
 
+## 0.13.0 — 2026-11-25
+- New units: Golbana, Isha (Business Demons), Gunner (Cloister), Avenger (Brambor), Merge-o (Alcove, Merges like Magnetic), Corrivath Harp (Azure), The Tree Man (Neverending). Derby Pocket: 21 Health, Coffee Run needs 7 Arrives. Turtlepult: +2 Health whenever another unit gains Health. Paradox is Tier 5. Fixed: Purple Gem's Reborn could become permanent on a Golden triple
+
 ## 0.12.38 — 2026-11-24
 - Gelf Lanz's Inspire goes back to costing 3 after you use it
 

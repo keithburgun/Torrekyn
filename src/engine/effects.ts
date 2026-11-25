@@ -35,7 +35,8 @@ export interface CCtx {
 }
 
 export interface Effect {
-  target?: 'friendly' | 'unlocked';
+  /** a targeted play: any friendly unit, an unlocked one, or (Merge-o) an Alcove unit to Merge with */
+  target?: 'friendly' | 'unlocked' | 'alcove';
   battlecry?(c: Ctx): void;
   onPlay?(c: Ctx): void;
   onSell?(c: Ctx): void;
@@ -807,6 +808,48 @@ export const EFFECTS: Record<string, Effect> = {
     battlecry: (c) => { for (const id of GEMS) improveGem(c.p, id, 2 * c.m); },
   },
   tom_judith: {}, // see combat deathrattle multiplier
+  // ===== new units (v0.12.39) =====
+  golbana: {
+    // +3/+3 to your other units (Golden +6/+6), once, then once more for each Golden unit in your army (itself included)
+    battlecry: (c) => {
+      const times = 1 + c.board.filter((u) => u.golden).length;
+      for (let i = 0; i < times; i++) for (const u of c.board) if (u !== c.self) buff(u, 3 * c.m, 3 * c.m);
+    },
+  },
+  isha: {
+    onSellOther: (c, sold) => { if (isTribe(sold, 'demons')) buff(c.self, 3 * c.m, 3 * c.m); },
+  },
+  gunner: {
+    // one of Bubble / Doomstrike / Reborn it doesn't have yet (Golden: two)
+    battlecry: (c) => {
+      for (let i = 0; i < c.m; i++) {
+        const k = pick(c.g, (['divineShield', 'venomous', 'reborn'] as Keyword[]).filter((x) => !has(c.self, x)));
+        if (k) addKw(c.self, k);
+      }
+    },
+  },
+  avenger: {
+    avenge: [3, 3],
+    // summon a random Brambor unit next to it, and get one in your hand (Golden: 2 of each)
+    avengeFn: (c) => {
+      const ids = CARDS.filter((d) => !d.token && !d.hidden && d.tier <= c.p.tier && isTribe(d.id, 'brambor')).map((d) => d.id);
+      for (let i = 0; i < c.m; i++) {
+        const id = pick(c.g, ids);
+        if (id) c.c.spawn(c.side, id, false, c.side.units.indexOf(c.self) + 1);
+        gain(c, randomTribeUpTo(c, 'brambor'));
+      }
+      c.c.snap('trigger', { note: 'Avenger: Summon and get a Brambor unit' });
+    },
+  },
+  merge_o: {
+    // not an Arrive: play() Merges it into the chosen Alcove unit (or it just joins the army if you pick itself)
+    target: 'alcove',
+  },
+  corrivath_harp: {
+    endTurn: (c) => { if (c.p.lastGem) for (let i = 0; i < c.m; i++) gain(c, c.p.lastGem); },
+  },
+  tree_man: {}, // its ability lives in Combat.noRoom (a summon that doesn't fit)
+
   omni_gem: {
     onSell: (c) => { for (let i = 0; i < 3 * c.m; i++) gain(c, randomTier(c, 5)); },
   },

@@ -93,7 +93,7 @@ export class Combat {
   /** a hero power / trinket of this side is acting */
   heroSide: 0 | 1 | undefined;
 
-  /** Health each unit has gained so far (its Health plus damage taken), for Turtlepult */
+  /** Health each unit has gained so far (its Health plus damage taken), for Turtlepult (+2 Health whenever another unit gains some) */
   private seenHp = new Map<number, number>();
   private peebSync() {
     for (const s of this.sides) {
@@ -107,10 +107,10 @@ export class Combat {
         this.seenHp.set(u.id, v);
       }
       if (total <= 0) continue;
-      // each copies the others' gains from this event (its own excluded), and what it copies isn't copied again
+      // +2 (Golden +4) for each other unit that gained Health in this event; what it gets from this doesn't count again
       for (const pb of peebs) {
-        const gained = total - (delta.get(pb.id) ?? 0);
-        if (gained > 0) pb.hp += gained * mult(pb);
+        const others = [...delta.keys()].filter((id) => id !== pb.id).length;
+        if (others > 0) pb.hp += 2 * others * mult(pb);
         this.seenHp.set(pb.id, pb.hp + (pb.taken ?? 0));
       }
     }
@@ -185,8 +185,22 @@ export class Combat {
     if (u) fn(u);
   }
 
+  /**
+   * A summon that doesn't fit in the army: The Tree Man gives all your units +2/+4 (Golden +4/+8).
+   * Once per event: a summon effect that runs out of room for several units counts once.
+   */
+  private noRoomAt = [-1, -1];
+  noRoom(s: Side): null {
+    const trees = s.units.filter((u) => u.cardId === 'tree_man' && u.hp > 0);
+    if (!trees.length || this.noRoomAt[s.idx] === this.frames.length) return null;
+    this.noRoomAt[s.idx] = this.frames.length;
+    for (const t of trees) for (const u of s.units) if (u.hp > 0) { u.atk += 2 * mult(t); u.hp += 4 * mult(t); }
+    this.snap('trigger', { note: `The Tree Man: No room! All units +${2 * mult(trees[0])}/+${4 * mult(trees[0])}` });
+    return null;
+  }
+
   spawn(s: Side, cardId: string, golden: boolean, pos: number): CUnit | null {
-    if (s.units.filter((u) => u.hp > 0).length >= CONFIG.boardSize) return null;
+    if (s.units.filter((u) => u.hp > 0).length >= CONFIG.boardSize) return this.noRoom(s);
     const d = def(cardId);
     const m = golden ? 2 : 1;
     if (cardId === 'owl') {
@@ -212,7 +226,7 @@ export class Combat {
   }
 
   spawnCopy(s: Side, d: CUnit, pos: number): CUnit | null {
-    if (s.units.filter((u) => u.hp > 0).length >= CONFIG.boardSize) return null;
+    if (s.units.filter((u) => u.hp > 0).length >= CONFIG.boardSize) return this.noRoom(s);
     const cu = this.makeCU(s.idx, d.cardId, d.golden, d.startAtk, d.startHp, d.startKw, null, { ...d.mem });
     s.units.splice(Math.max(0, Math.min(pos, s.units.length)), 0, cu);
     this.addFx({ k: 'summon', to: cu.id });
@@ -224,7 +238,7 @@ export class Combat {
   /** Bring a card from hand into battle as a temporary copy. */
   /** summon a copy of a unit from hand (scale: its stats are multiplied, e.g. Golden Green Ninja doubles them) */
   spawnUnit(s: Side, u: Unit, pos: number, scale = 1): CUnit | null {
-    if (s.units.filter((x) => x.hp > 0).length >= CONFIG.boardSize) return null;
+    if (s.units.filter((x) => x.hp > 0).length >= CONFIG.boardSize) return this.noRoom(s);
     const st = effStats(s.owner, u, 'hand');
     const cu = this.makeCU(s.idx, u.cardId, u.golden, st.atk * scale, st.hp * scale, st.kw, null, { ...u.mem });
     s.units.splice(Math.max(0, Math.min(pos, s.units.length)), 0, cu);
@@ -512,6 +526,7 @@ export class Combat {
       if (!s.persistent) continue;
       for (const u of s.owner.hand) {
         if (u.cardId !== 'orange_ninja') continue;
+        if (s.units.filter((x) => x.hp > 0).length >= CONFIG.boardSize) break; // no room: it just stays home (not a summon)
         if (!this.spawnUnit(s, u, s.units.length, u.golden ? 2 : 1)) break; // Golden: the copy has double stats
       }
     }

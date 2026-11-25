@@ -19,6 +19,7 @@ function setup(seed: number) {
   p.tier = 4;
   p.gold = 20;
   p.lastOpponentBoard = ['ash', 'knight', 'mod'].map((id) => makeUnit(g, id));
+  p.lastGem = 'tourmaline'; // (Corrivath Harp copies it)
   return { g, p, o: g.players[1] };
 }
 
@@ -93,7 +94,7 @@ describe('every ability changes something', () => {
   }
 
   it('every card with ability text has an ability', () => {
-    const PASSIVE = new Set(['remember', 'vulnerability', 'root', 'larva', 'orange_ninja', 'pyro', 'treasure', 'warmech', 'gem_wizard', 'sarinee', 'tom_judith', 'horseman', 'shield_azure', 'roll_guard', 'ash', 'white_ninja', 'peebnup_bubber', 'owl', 'memory']);
+    const PASSIVE = new Set(['remember', 'vulnerability', 'root', 'larva', 'orange_ninja', 'pyro', 'treasure', 'warmech', 'gem_wizard', 'sarinee', 'tom_judith', 'horseman', 'shield_azure', 'roll_guard', 'ash', 'white_ninja', 'peebnup_bubber', 'owl', 'memory', 'tree_man']);
     const missing = CARDS.filter((c) => !c.token && c.text && !PASSIVE.has(c.id) && !Object.keys(EFFECTS[c.id] ?? {}).length).map((c) => c.id);
     expect(missing).toEqual([]);
     expect(def('skel').text).toBe('');

@@ -50,6 +50,7 @@ export const KEYWORD_HELP: Record<string, string> = {
   Avenge: 'Happens after the given number of friendly units die.',
   'Start of Combat': 'Happens before the first attack.',
   Discover: 'Choose one of three cards.',
+  Merge: 'When you play this, you can drop it onto a unit it can Merge with: that unit gets its stats and keywords.',
 };
 
 export function abilityTags(cardId: string): string[] {
@@ -66,6 +67,7 @@ export function abilityTags(cardId: string): string[] {
   if (e.startTurn) tags.push('Turn');
   if (e.onSell) tags.push('Sell');
   if (e.target === undefined && e.onPlay) tags.push('Play');
+  if (e.target === 'alcove') tags.push('Merge');
   if (!tags.length && d.text && !/^((Taunt|Bubble|Reborn|Doomstrike|Poisonous)[.,]?\s*)+$/i.test(d.text)) tags.push('Passive');
   return tags;
 }
@@ -142,7 +144,7 @@ export const statOf = (el: Element) => Number((el as HTMLElement).dataset.v ?? e
 
 export function formatText(text: string): string {
   let t = esc(text);
-  t = t.replace(/(Arrive|Deathrattle|Rally|Avenge ?\(\d+\)|Start of (Combat|Turn)|End of Turn|Bubble|Taunt|Reborn|Doomstrike|Poisonous|Discover|Quest|Double Attack)/g, '<b>$1</b>');
+  t = t.replace(/(Arrive|Deathrattle|Rally|Avenge ?\(\d+\)|Start of (Combat|Turn)|End of Turn|Bubble|Taunt|Reborn|Doomstrike|Poisonous|Discover|Quest|Double Attack|Merge)/g, '<b>$1</b>');
   return t;
 }
 

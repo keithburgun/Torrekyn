@@ -539,9 +539,10 @@ export class App {
     h += this.rightSideHtml();
     h += `<div id="popover">${this.popoverHtml()}</div>`;
     if (tgt) {
+      const merging = tgt.kind === 'play' && p.hand[tgt.handIdx]?.cardId === 'merge_o';
       h += `<div class="abs panel target-bar" style="left:${L.targetBar.x}px;top:${L.targetBar.y}px;width:${L.targetBar.w}px">
-        <span>${tgt.kind === 'hero' ? (tgt.shop ? 'Choose a unit in the Tavern to load' : 'Choose a unit for your Hero Power') : `Choose a target for ${esc(def(p.hand[tgt.handIdx]?.cardId ?? 'skel').name)}`}</span>
-        ${tgt.kind === 'play' ? '<button class="btn" data-act="no-target">No target</button>' : ''}
+        <span>${tgt.kind === 'hero' ? (tgt.shop ? 'Choose a unit in the Tavern to load' : 'Choose a unit for your Hero Power') : merging ? `Choose an Alcove unit to Merge ${esc(def('merge_o').name)} into` : `Choose a target for ${esc(def(p.hand[tgt.handIdx]?.cardId ?? 'skel').name)}`}</span>
+        ${tgt.kind === 'play' ? `<button class="btn" data-act="no-target">${merging ? "Don't Merge" : 'No target'}</button>` : ''}
         <button class="btn" data-act="cancel-target">Cancel</button></div>`;
     }
     if ((p.discovers.length || p.trinketOffer) && this.modalHidden) {

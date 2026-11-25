@@ -73,18 +73,18 @@ describe('hero powers', () => {
     expect(isTribe(p.hand[0], 'azure')).toBe(true);
   });
 
-  it('Derby Pocket: after 5 Arrive units, Arrive effects trigger twice', () => {
+  it('Derby Pocket: after 7 Arrive units, Arrive effects trigger twice', () => {
     const { g, p } = setup('derby_pocket');
+    expect(heroDef('derby_pocket')!.health).toBe(21);
     const dummy = unit(g, firstOf((id) => !EFFECTS[id]), 1, 1);
     p.board = [dummy];
     // Red Gem (played on the right) gives the 3 left-most units +3 Attack each trigger; the dummy stays left-most
-    const playGem = () => { p.hand = [unit(g, 'red_gem')]; expect(play(g, p, 0, p.board.length).ok).toBe(true); };
-    for (let i = 0; i < 5; i++) playGem();
-    expect(dummy.atk).toBe(1 + 15);
-    expect(p.heroMem.coffee).toBe(5);
+    const playGem = () => { p.board = [dummy]; p.hand = [unit(g, 'red_gem')]; expect(play(g, p, 0, 1).ok).toBe(true); };
+    for (let i = 0; i < 7; i++) playGem();
+    expect(dummy.atk).toBe(1 + 21);
+    expect(p.heroMem.coffee).toBe(7);
     playGem();
-    expect(dummy.atk).toBe(1 + 15 + 6);
-    expect(p.board.length).toBe(7);
+    expect(dummy.atk).toBe(1 + 21 + 6);
     p.board = [dummy];
     // a normal Arrive unit also fires twice
     const bc = firstOf((id) => !!EFFECTS[id]?.battlecry && !EFFECTS[id]?.target && id !== 'red_gem');

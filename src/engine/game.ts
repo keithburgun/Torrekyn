@@ -1,7 +1,7 @@
 import {
-  ALL_TRIBES, CARDS, CONFIG, cloneUnit, def, displayName, effStats, isTribe, log, makeUnit, mult, pick, rand, randInt, sample, shuffle,
+  ALL_TRIBES, CARDS, CONFIG, addKw, cloneUnit, def, displayName, effStats, isTribe, log, makeUnit, mult, pick, rand, randInt, sample, shuffle,
 } from './core';
-import { EFFECTS, battlecryTimes, hasBattlecry } from './effects';
+import { EFFECTS, GEMS, battlecryTimes, hasBattlecry } from './effects';
 import { runCombat } from './combat';
 import { aiTakeTurn, aiChooseDiscover } from './ai';
 import { setFxPhase, withFx, heroPing, peebSync } from './fx';
@@ -283,13 +283,21 @@ export function checkTriples(g: GameState, p: Player) {
     const three = trip.slice(0, 3);
     const d = def(three[0].cardId);
     const gold = makeUnit(g, d.id, true);
+    // keywords that are only until next turn (Purple Gem's Reborn, Pink Gem's Bubble) stay temporary on the Golden one
+    const temp = (u: Unit, k: string) => (k === 'reborn' && !!u.mem.tmpReborn) || (k === 'divineShield' && !!u.mem.tmpShield);
+    const permanent = new Set<string>(gold.kw);
     for (const u of three) {
       gold.atk += u.atk - d.atk;
       gold.hp += u.hp - d.hp;
-      for (const k of u.kw) if (!gold.kw.includes(k)) gold.kw.push(k);
+      for (const k of u.kw) {
+        if (!temp(u, k)) permanent.add(k);
+        if (!gold.kw.includes(k)) gold.kw.push(k);
+      }
       p.hand = p.hand.filter((x) => x !== u);
       p.board = p.board.filter((x) => x !== u);
     }
+    if (gold.kw.includes('reborn') && !permanent.has('reborn')) gold.mem.tmpReborn = 1;
+    if (gold.kw.includes('divineShield') && !permanent.has('divineShield')) gold.mem.tmpShield = 1;
     gold.mem.tripleReward = 1;
     p.hand.push(gold);
     if (p.human) (p.tripleEvents ??= []).push({ cardId: d.id, uids: three.map((u) => u.uid), goldenUid: gold.uid });
@@ -423,7 +431,7 @@ export function needsTarget(cardId: string): boolean {
 export function validTargets(p: Player, cardId: string, self?: Unit): Unit[] {
   const t = EFFECTS[cardId]?.target;
   if (!t) return [];
-  return [...p.board, ...(self ? [self] : [])].filter((u) => !(t === 'unlocked' && u.mem.locked));
+  return [...p.board, ...(self ? [self] : [])].filter((u) => !(t === 'unlocked' && u.mem.locked) && !(t === 'alcove' && !isTribe(u, 'alcove')));
 }
 
 export function play(g: GameState, p: Player, handIdx: number, pos: number, targetUid?: number): ActionResult {
@@ -439,6 +447,7 @@ export function play(g: GameState, p: Player, handIdx: number, pos: number, targ
   if (u.cardId === 'owl') p.owlsSummoned = (p.owlsSummoned ?? 0) + 1;
   u.mem.pv = u.hp; // Health it had in hand doesn't count as gained (Turtlepult)
   const target = targetUid !== undefined ? p.board.find((b) => b.uid === targetUid) : undefined;
+  if (GEMS.includes(u.cardId)) p.lastGem = u.cardId; // (Corrivath Harp)
   if (hasBattlecry(u.cardId)) { p.battlecryUnitsThisTurn = (p.battlecryUnitsThisTurn ?? 0) + 1; runBattlecry(g, p, u, target); }
   const onPlay = EFFECTS[u.cardId]?.onPlay;
   if (onPlay) withFx(g, p, { unit: u }, 'Played', () => onPlay({ g, p, self: u, m: mult(u), board: p.board }));
@@ -452,8 +461,23 @@ export function play(g: GameState, p: Player, handIdx: number, pos: number, targ
     if (b !== u && e) withFx(g, p, { unit: b }, 'Ability', () => e({ g, p, self: b, m: mult(b), board: p.board }, u));
   }
   heroHooks.onPlay(g, p, u);
+  if (u.cardId === 'merge_o' && target && target !== u && isTribe(target, 'alcove')) mergeInto(g, p, u, target);
   drainOverflow(g, p); // a card waiting for room takes the freed hand slot
   return OK;
+}
+
+/**
+ * Merge (like Magnetic in Hearthstone Battlegrounds): the played unit leaves the army and the chosen unit gains
+ * its stats and keywords. Merge-o is the only card that does this so far.
+ */
+function mergeInto(g: GameState, p: Player, u: Unit, target: Unit) {
+  withFx(g, p, { unit: target }, 'Merged!', () => {
+    p.board = p.board.filter((b) => b !== u);
+    target.atk += u.atk;
+    target.hp += u.hp;
+    for (const k of u.kw) addKw(target, k);
+  });
+  log(p, `Merged ${def(u.cardId).name} into ${def(target.cardId).name}.`);
 }
 
 export function runBattlecry(g: GameState, p: Player, u: Unit, target?: Unit) {

@@ -244,7 +244,7 @@ describe('v0.10.2 changes', () => {
 
   it('every hero starts with 4 more Health than in v0.10.1', async () => {
     const { HEROES, heroHealth } = await import('../src/engine/heroes');
-    expect(heroHealth('derby_pocket')).toBe(26);
+    expect(heroHealth('derby_pocket')).toBe(21); // lowered since
     expect(Math.min(...HEROES.map((h) => heroHealth(h.id)))).toBe(20);
   });
 });
@@ -504,7 +504,7 @@ describe('v0.12.3 Kindred', () => {
     }
   });
 
-  it('Turtlepult: gains the Health other friendly units gain, in the shop and in battle (Golden: double)', () => {
+  it('Turtlepult: +2 Health whenever another friendly unit gains Health, in the shop and in battle (Golden: +4)', () => {
     for (const golden of [false, true]) {
       const { g, p, o } = setup();
       const pb = U(g, 'peebnup_bubber', 8, 8, golden);
@@ -513,7 +513,7 @@ describe('v0.12.3 Kindred', () => {
       p.board = [pb, k]; p.hand = [U(g, 'pink_gem')];
       peebSync(g, p); // (in a real game, units on the board have always been seen)
       play(g, p, 0, 2, k.uid); // Therapist (Kindred) gets +12 Health
-      expect(pb.hp).toBe(8 + 12 * (golden ? 2 : 1));
+      expect(pb.hp).toBe(8 + 2 * (golden ? 2 : 1)); // one unit gained Health
       // played with Health it had in hand: no gain
       const hp0 = pb.hp;
       p.hand = [U(g, 'doctor', 1, 30)];
@@ -525,8 +525,8 @@ describe('v0.12.3 Kindred', () => {
       const c = fight(g, p, o, [a, b, bub], [U(g, 'skel', 0, 99)]);
       c.run();
       const f = afterSoc(c);
-      // each of the 2 others gained 3 Health (Bannerlord's), so Peebnup gains 6 (Golden 12) on top of its own 3
-      expect(at(c, f, 'peebnup_bubber')!.hp).toBe(8 + 3 + 6 * (golden ? 2 : 1));
+      // the 2 others each gained Health (Bannerlord's), so +2 each (Golden +4) on top of its own 3
+      expect(at(c, f, 'peebnup_bubber')!.hp).toBe(8 + 3 + 4 * (golden ? 2 : 1));
     }
   });
 
@@ -564,6 +564,22 @@ describe('v0.12.3 Kindred', () => {
     expect(hit.size).toBeGreaterThan(0);
   });
 
+  it("Purple Gem's Reborn only lasts until next turn, even if that unit is tripled into a Golden one", async () => {
+    const { startTurn, checkTriples } = await import('../src/engine/game');
+    const { g, p } = setup();
+    const a = U(g, 'doctor', 1, 1), b = U(g, 'doctor', 1, 1), c = U(g, 'doctor', 1, 1);
+    p.board = [a]; p.hand = [U(g, 'purple_gem')];
+    play(g, p, 0, 1, a.uid);
+    expect(a.kw).toContain('reborn');
+    p.board = [a]; p.hand = [b, c];
+    checkTriples(g, p);
+    const gold = p.hand.find((u) => u.golden)!;
+    expect(gold.kw).toContain('reborn'); // still has it for this combat
+    startTurn(g, p);
+    expect(gold.kw).not.toContain('reborn'); // ...and not after
+    expect(gold.atk).toBe(def('doctor').atk * 2 + 1); // but the +1/+1 stays
+  });
+
   it('Golden Brass keeps what the unit remembers (a locked unit stays locked)', () => {
     const { g, p } = setup();
     const u = U(g, 'doctor', 5, 5); u.mem.locked = 1;
@@ -573,23 +589,23 @@ describe('v0.12.3 Kindred', () => {
     expect(p.board[0].mem.locked).toBe(1);
   });
 
-  it('two Turtlepults copy each other, once per event (no loops)', () => {
+  it('two Turtlepults trigger each other, once per event (no loops)', () => {
     const { g, p, o } = setup();
     const A = U(g, 'peebnup_bubber', 8, 8), B = U(g, 'peebnup_bubber', 8, 8);
     const k = U(g, 'therapist', 2, 2); k.kw = [];
     p.board = [A, B, k]; peebSync(g, p);
-    // Pink Gem on another unit: both copy the +12, nothing more
+    // Pink Gem on another unit: both gain +2, nothing more
     p.hand = [U(g, 'pink_gem')]; play(g, p, 0, 3, k.uid);
-    expect([A.hp, B.hp]).toEqual([20, 20]);
-    // Pink Gem on Turtlepult A: B copies A's +12 once, A gets nothing back
+    expect([A.hp, B.hp]).toEqual([10, 10]);
+    // Pink Gem on Turtlepult A (+12): B gains +2 once, A gets nothing back
     p.hand = [U(g, 'pink_gem')]; play(g, p, 0, 3, A.uid);
-    expect([A.hp, B.hp]).toEqual([32, 32]);
-    // in battle: Bannerlord's +3 Health to all 3 units; each Turtlepult copies the other 2 (6) on top of its own 3
+    expect([A.hp, B.hp]).toEqual([22, 12]);
+    // in battle: Bannerlord's +3 Health to all 3 units; each Turtlepult gets +2 for each of the other 2 on top of its own 3
     p.trinkets = ['bannerlords_standard'];
     const c = fight(g, p, o, [U(g, 'doctor', 1, 50), U(g, 'peebnup_bubber', 1, 8), U(g, 'peebnup_bubber', 1, 8)], [U(g, 'skel', 0, 99)]);
     c.run();
     const f = afterSoc(c);
-    expect(c.frames[f].sides[0].filter((u) => u.cardId === 'peebnup_bubber').map((u) => u.hp)).toEqual([17, 17]);
+    expect(c.frames[f].sides[0].filter((u) => u.cardId === 'peebnup_bubber').map((u) => u.hp)).toEqual([15, 15]);
   });
 });
 
@@ -927,5 +943,93 @@ describe('tribe-bound trinkets', () => {
       for (let k = 0; k < 200; k++) { p.trinkets = []; offerTrinkets(g, p, false); for (const t of p.trinketOffer!) seen.add(t); }
       for (const t of ['bronze_compass', 'incense', 'whetstone']) expect(seen.has(t)).toBe(!(banned as readonly string[]).includes(t));
     }
+  });
+});
+
+describe('new units (v0.12.39)', () => {
+  it('Golbana: +3/+3 to your other units, once more for each Golden unit you have', () => {
+    const { g, p } = setup();
+    const a = U(g, 'ash', 1, 1), b = U(g, 'ash', 1, 1, true);
+    p.board = [a, b]; p.hand = [U(g, 'golbana')];
+    play(g, p, 0, 2);
+    expect([a.atk, a.hp]).toEqual([1 + 6, 1 + 6]); // 1 Golden unit: twice
+    const gb = p.board[2];
+    expect([gb.atk, gb.hp]).toEqual([6, 6]); // not itself
+  });
+
+  it('Isha: +3/+3 after you sell a Business Demon (not other units)', () => {
+    const { g, p } = setup();
+    const isha = U(g, 'isha');
+    p.board = [isha, U(g, 'intern'), U(g, 'ash')];
+    sell(g, p, 2);
+    expect([isha.atk, isha.hp]).toEqual([2, 4]);
+    sell(g, p, 1);
+    expect([isha.atk, isha.hp]).toEqual([5, 7]);
+  });
+
+  it('Gunner: gains one of Bubble, Doomstrike or Reborn (Golden: two different ones)', () => {
+    for (const golden of [false, true]) {
+      const { g, p } = setup();
+      p.hand = [U(g, 'gunner', undefined, undefined, golden)];
+      play(g, p, 0, 0);
+      const got = p.board[0].kw.filter((k) => ['divineShield', 'venomous', 'reborn'].includes(k));
+      expect(got.length).toBe(golden ? 2 : 1);
+    }
+  });
+
+  it('Avenger: after 3 friendly units die, summons a Brambor unit and gets one in hand', async () => {
+    const { ALL_TRIBES } = await import('../src/engine/core');
+    const g = newGame(21, 'You', ALL_TRIBES);
+    const p = g.players[0], o = g.players[1];
+    p.tier = 5; p.hand = []; p.board = [];
+    const c = fight(g, p, o, [U(g, 'ash', 0, 1), U(g, 'ash', 0, 1), U(g, 'ash', 0, 1), U(g, 'avenger', 0, 200)], [U(g, 'skel', 5, 999)]);
+    c.run();
+    const summoned = c.frames.some((f) => f.sides[0].some((u) => u.cardId !== 'ash' && u.cardId !== 'avenger' && isTribe(u.cardId, 'brambor')));
+    expect(summoned).toBe(true);
+    // (one per Avenge: the summoned units can die and Avenge again, and a summoned Beast Vine dying gives Gems too)
+    expect(p.hand.some((u) => isTribe(u.cardId, 'brambor'))).toBe(true);
+  });
+
+  it('Merge-o: Merges into an Alcove unit (it leaves; the unit gets its stats), or just joins if you pick itself', async () => {
+    const { validTargets } = await import('../src/engine/game');
+    const { g, p } = setup();
+    const bot = U(g, 'buzz_boink', 2, 2), other = U(g, 'ash', 1, 1);
+    p.board = [bot, other];
+    const m = U(g, 'merge_o'); p.hand = [m];
+    expect(validTargets(p, 'merge_o', m)).toEqual([bot, m]); // Alcove units (and itself), not the others
+    play(g, p, 0, 2, bot.uid);
+    expect(p.board).toEqual([bot, other]);
+    expect([bot.atk, bot.hp]).toEqual([14, 14]);
+    const m2 = U(g, 'merge_o'); p.hand = [m2];
+    play(g, p, 0, 2, m2.uid);
+    expect(p.board).toContain(m2);
+  });
+
+  it('Corrivath Harp: End of Turn, get a copy of the last Gem you played (Golden: 2)', () => {
+    for (const golden of [false, true]) {
+      const { g, p } = setup();
+      const t = U(g, 'ash', 1, 1);
+      p.board = [U(g, 'corrivath_harp', undefined, undefined, golden), t];
+      endTurnEffects(g, p);
+      expect(p.hand.length).toBe(0); // no Gem played yet
+      p.hand = [U(g, 'green_gem')]; play(g, p, 0, 2, t.uid);
+      p.hand = [U(g, 'tourmaline')]; play(g, p, 0, 3, t.uid);
+      p.board = p.board.slice(0, 2); // (the played Gems leave, so the copies can't make a triple with them)
+      endTurnEffects(g, p);
+      expect(p.hand.map((u) => u.cardId)).toEqual(golden ? ['tourmaline', 'tourmaline'] : ['tourmaline']);
+    }
+  });
+
+  it("The Tree Man: a summon that doesn't fit gives all your units +2/+4, once per summon effect", () => {
+    const { g, p, o } = setup();
+    // a full army; the Skeleton's Deathrattle (summon 2) has no room
+    const mine = [U(g, 'tree_man', 0, 50), U(g, 'skeleton', 0, 1), ...[1, 2, 3, 4, 5].map(() => U(g, 'ash', 0, 50))];
+    mine[1].kw = ['taunt']; // the enemy hits the Skeleton first
+    const c = fight(g, p, o, mine, [U(g, 'skel', 1, 999, false)]);
+    c.run();
+    const f = c.frames.findIndex((x) => (x.note ?? '').startsWith('The Tree Man'));
+    expect(f).toBeGreaterThan(0);
+    expect(at(c, f, 'tree_man')!.hp).toBe(50 + 4);
+    expect(c.frames.filter((x) => (x.note ?? '').startsWith('The Tree Man')).length).toBe(1);
   });
 });

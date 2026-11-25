@@ -167,10 +167,10 @@ describe('heroes', () => {
     expect(powerCost(g, p, heroDef('gelf_lanz')!)).toBe(1);
   });
 
-  it('Derby Pocket: after 5 Arrive units, Arrive effects trigger twice', async () => {
+  it('Derby Pocket: after 7 Arrive units, Arrive effects trigger twice', async () => {
     const { heroHooks } = await import('../src/engine/heroes');
     const { g, p } = withPower('derby_pocket');
-    for (let i = 0; i < 5; i++) {
+    for (let i = 0; i < 7; i++) {
       expect(heroHooks.battlecryExtra(p)).toBe(0);
       p.hand = [makeUnit(g, 'ashlie')];
       play(g, p, 0, 0);

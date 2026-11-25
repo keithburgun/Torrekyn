@@ -122,11 +122,11 @@ export function withFx<T>(g: GameState, p: Player, who: { unit?: Unit; hero?: bo
 }
 
 /**
- * Turtlepult: whenever another friendly unit gains Health, it gains that much too (Golden: twice).
+ * Turtlepult: whenever another friendly unit gains Health, it gains +2 Health (Golden: +4), once per unit that gained.
  * Each army unit remembers the Health it was last seen with (mem.pv); any rise since is a gain. Runs after every
  * shop effect and action, so nothing has to report its Health gains. A unit just played starts fresh (see play).
- * A Turtlepult's own gain counts for the other Turtlepults, but only gains from the event itself: what they copy
- * doesn't get copied again (once per event, no loops).
+ * A Turtlepult's own gain counts for the other Turtlepults, but only gains from the event itself: what they get
+ * from this doesn't count again (once per event, no loops).
  */
 let peebBusy = false;
 export function peebSync(g: GameState, p: Player) {
@@ -141,8 +141,8 @@ export function peebSync(g: GameState, p: Player) {
   peebBusy = true;
   try {
     for (const pb of p.board.filter((u) => u.cardId === 'peebnup_bubber')) {
-      const gained = total - (delta.get(pb) ?? 0);
-      if (gained > 0) withFx(g, p, { unit: pb }, 'Ability', () => { pb.hp += gained * (pb.golden ? 2 : 1); });
+      const others = [...delta.keys()].filter((u) => u !== pb).length;
+      if (others > 0) withFx(g, p, { unit: pb }, 'Ability', () => { pb.hp += 2 * others * (pb.golden ? 2 : 1); });
       pb.mem.pv = pb.hp;
     }
   } finally { peebBusy = false; }

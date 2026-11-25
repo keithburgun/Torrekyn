@@ -54,7 +54,7 @@ export interface HeroDef {
   progress?(g: GameState, p: Player): string | null;
 }
 
-const BATTLECRIES_FOR_COFFEE = 5;
+const BATTLECRIES_FOR_COFFEE = 7;
 const SALES_FOR_LEAVES = 4;
 const ZUZUNI_FOR_RESEARCH = 3;
 const POT_SIZE = 3;
@@ -92,7 +92,7 @@ export const HEROES: HeroDef[] = [
     },
   },
   {
-    id: 'derby_pocket', name: 'Derby Pocket', title: 'Ex-Business Demon intern', power: 'Coffee Run', avatar: 2, health: 26, passive: true,
+    id: 'derby_pocket', name: 'Derby Pocket', title: 'Ex-Business Demon intern', power: 'Coffee Run', avatar: 2, health: 21, passive: true,
     text: `After you play ${BATTLECRIES_FOR_COFFEE} Arrive units, your Arrive effects trigger an extra time.`,
     onPlay: (g, p, u) => {
       if (!hasBattlecry(u.cardId)) return;
