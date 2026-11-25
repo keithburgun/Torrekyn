@@ -167,16 +167,21 @@ describe('heroes', () => {
     expect(powerCost(g, p, heroDef('gelf_lanz')!)).toBe(1);
   });
 
-  it('Derby Pocket: after 7 Arrive units, Arrive effects trigger twice', async () => {
+  it('Derby Pocket: after 5 Arrive units, the first Arrive each turn (in the Tavern) happens twice', async () => {
     const { heroHooks } = await import('../src/engine/heroes');
     const { g, p } = withPower('derby_pocket');
-    for (let i = 0; i < 7; i++) {
-      expect(heroHooks.battlecryExtra(p)).toBe(0);
+    for (let i = 0; i < 5; i++) {
+      p.battlecryUnitsThisTurn = 0;
+      expect(heroHooks.battlecryExtra(p, true)).toBe(0);
       p.hand = [makeUnit(g, 'ashlie')];
       play(g, p, 0, 0);
       p.board = [];
     }
-    expect(heroHooks.battlecryExtra(p)).toBe(1);
+    p.battlecryUnitsThisTurn = 1;
+    expect(heroHooks.battlecryExtra(p, true)).toBe(1);
+    expect(heroHooks.battlecryExtra(p)).toBe(0); // not Arrives in battle
+    p.battlecryUnitsThisTurn = 2;
+    expect(heroHooks.battlecryExtra(p, true)).toBe(0);
   });
 
   it('Bill Milton: buying a Business Demon gives 1 gold', () => {

@@ -486,13 +486,13 @@ export function runBattlecry(g: GameState, p: Player, u: Unit, target?: Unit) {
   const e = EFFECTS[u.cardId];
   if (!e?.battlecry) return;
   // each "triggers an extra time" adds one: Gem Wizard (+1, Golden +2 for Red Gems), Double Crown: Fusion (+1), Derby Pocket (+1)
-  const heroExtra = heroHooks.battlecryExtra(p);
+  const heroExtra = heroHooks.battlecryExtra(p, true);
   const times = battlecryTimes(p, u) + trinketCount(p, 'crown_of_echoes') + heroExtra;
   const fx0 = p.fx?.length ?? 0;
   // repeats happen even if the unit is gone by then (Sword and Shield destroy themselves in their Arrive)
   for (let i = 0; i < times; i++) {
     // the hero power announces itself just before the extra Arrive it causes
-    if (i === times - heroExtra && heroExtra) heroPing(g, p, heroHooks.battlecryExtraName(p), 'Extra Arrive!');
+    if (i === times - heroExtra && heroExtra) heroPing(g, p, heroHooks.battlecryExtraName(p, true), 'Extra Arrive!');
     withFx(g, p, { unit: u }, i === 0 ? 'Arrive' : 'Arrive again!', () => e.battlecry!({ g, p, self: u, m: mult(u), board: p.board, target }));
     onBattlecryTriggered(g, p);
   }

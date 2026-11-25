@@ -73,25 +73,23 @@ describe('hero powers', () => {
     expect(isTribe(p.hand[0], 'azure')).toBe(true);
   });
 
-  it('Derby Pocket: after 7 Arrive units, Arrive effects trigger twice', () => {
+  it('Derby Pocket: after 5 Arrive units, the first Arrive each turn happens an extra time', () => {
     const { g, p } = setup('derby_pocket');
-    expect(heroDef('derby_pocket')!.health).toBe(21);
+    expect(heroDef('derby_pocket')!.health).toBe(25);
     const dummy = unit(g, firstOf((id) => !EFFECTS[id]), 1, 1);
-    p.board = [dummy];
     // Red Gem (played on the right) gives the 3 left-most units +3 Attack each trigger; the dummy stays left-most
     const playGem = () => { p.board = [dummy]; p.hand = [unit(g, 'red_gem')]; expect(play(g, p, 0, 1).ok).toBe(true); };
-    for (let i = 0; i < 7; i++) playGem();
-    expect(dummy.atk).toBe(1 + 21);
-    expect(p.heroMem.coffee).toBe(7);
-    playGem();
-    expect(dummy.atk).toBe(1 + 21 + 6);
-    p.board = [dummy];
-    // a normal Arrive unit also fires twice
-    const bc = firstOf((id) => !!EFFECTS[id]?.battlecry && !EFFECTS[id]?.target && id !== 'red_gem');
-    const before = p.battlecriesGame;
-    p.hand = [unit(g, bc)];
-    play(g, p, 0, p.board.length);
-    expect(p.battlecriesGame - before).toBe(2);
+    p.battlecryUnitsThisTurn = 0;
+    for (let i = 0; i < 5; i++) playGem();
+    expect(dummy.atk).toBe(1 + 15);
+    expect(p.heroMem.coffee).toBe(5);
+    playGem(); // the 6th, but not the first this turn: once
+    expect(dummy.atk).toBe(1 + 18);
+    p.battlecryUnitsThisTurn = 0; // a new turn
+    playGem(); // the first Arrive this turn: twice
+    expect(dummy.atk).toBe(1 + 18 + 6);
+    playGem(); // the second: once
+    expect(dummy.atk).toBe(1 + 18 + 6 + 3);
   });
 
   it('Bunny Wizard: locked until Tier 4, then Discovers a Kindred unit', () => {
@@ -307,6 +305,7 @@ describe('hero powers', () => {
   it('Derby Pocket + Crown of Echoes: an Arrive triggers 3 times (each adds one extra), not 4', () => {
     const { g, p } = setup('derby_pocket');
     p.heroMem.coffee = 99;
+    p.battlecryUnitsThisTurn = 0; // (its first Arrive this turn)
     p.trinkets = ['crown_of_echoes'];
     p.board = [];
     p.hand = [unit(g, 'red_gem')];

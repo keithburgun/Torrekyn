@@ -40,7 +40,8 @@ export interface HeroDef {
   onPlay?(g: GameState, p: Player, u: Unit): void;
   onSell?(g: GameState, p: Player, u: Unit): void;
   /** Arrive effects trigger this many times (multiplies with other effects) */
-  battlecryTimes?(p: Player): number;
+  /** how many times an Arrive happens because of this power (inShop: a unit played from hand, not one in battle) */
+  battlecryTimes?(p: Player, inShop?: boolean): number;
   startTurn?(g: GameState, p: Player): void;
   endTurn?(g: GameState, p: Player): void;
   soc?(c: Combat, s: Side): void;
@@ -54,7 +55,7 @@ export interface HeroDef {
   progress?(g: GameState, p: Player): string | null;
 }
 
-const BATTLECRIES_FOR_COFFEE = 7;
+const BATTLECRIES_FOR_COFFEE = 5;
 const SALES_FOR_LEAVES = 4;
 const ZUZUNI_FOR_RESEARCH = 3;
 const POT_SIZE = 3;
@@ -92,13 +93,14 @@ export const HEROES: HeroDef[] = [
     },
   },
   {
-    id: 'derby_pocket', name: 'Derby Pocket', title: 'Ex-Business Demon intern', power: 'Coffee Run', avatar: 2, health: 21, passive: true,
-    text: `After you play ${BATTLECRIES_FOR_COFFEE} Arrive units, your Arrive effects trigger an extra time.`,
+    id: 'derby_pocket', name: 'Derby Pocket', title: 'Ex-Business Demon intern', power: 'Coffee Run', avatar: 2, health: 25, passive: true,
+    text: `After you play ${BATTLECRIES_FOR_COFFEE} Arrive units, your first Arrive each turn happens an extra time.`,
     onPlay: (g, p, u) => {
       if (!hasBattlecry(u.cardId)) return;
       p.heroMem.coffee = (p.heroMem.coffee ?? 0) + 1;
     },
-    battlecryTimes: (p) => ((p.heroMem.coffee ?? 0) >= BATTLECRIES_FOR_COFFEE ? 2 : 1),
+    // once it's going: the first Arrive unit you play each turn (in the Tavern) Arrives twice
+    battlecryTimes: (p, inShop) => (inShop && (p.heroMem.coffee ?? 0) >= BATTLECRIES_FOR_COFFEE && p.battlecryUnitsThisTurn === 1 ? 2 : 1),
     progress: (g, p) => ((p.heroMem.coffee ?? 0) >= BATTLECRIES_FOR_COFFEE ? 'Active' : `${p.heroMem.coffee ?? 0}/${BATTLECRIES_FOR_COFFEE}`),
   },
   {
@@ -499,8 +501,8 @@ export const heroHooks = {
   },
   onSell: (g: GameState, p: Player, u: Unit) => { for (const h of powersOf(p)) if (h.onSell) heroFx(g, p, h, () => h.onSell!(g, p, u)); },
   /** extra Arrive triggers from hero powers (each power's battlecryTimes - 1, added up) */
-  battlecryExtra: (p: Player) => powersOf(p).reduce((s, h) => s + ((h.battlecryTimes?.(p) ?? 1) - 1), 0),
-  battlecryExtraName: (p: Player) => powersOf(p).find((h) => (h.battlecryTimes?.(p) ?? 1) > 1)?.power ?? '',
+  battlecryExtra: (p: Player, inShop = false) => powersOf(p).reduce((s, h) => s + ((h.battlecryTimes?.(p, inShop) ?? 1) - 1), 0),
+  battlecryExtraName: (p: Player, inShop = false) => powersOf(p).find((h) => (h.battlecryTimes?.(p, inShop) ?? 1) > 1)?.power ?? '',
   startTurn: (g: GameState, p: Player) => {
     for (const h of powersOf(p)) if (h.startTurn) heroFx(g, p, h, () => h.startTurn!(g, p));
     for (const t of trinketsOf(p)) if (t.startTurn) trinketFx(g, p, t, () => t.startTurn!(g, p));

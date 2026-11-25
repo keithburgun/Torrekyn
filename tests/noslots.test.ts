@@ -244,7 +244,7 @@ describe('v0.10.2 changes', () => {
 
   it('every hero starts with 4 more Health than in v0.10.1', async () => {
     const { HEROES, heroHealth } = await import('../src/engine/heroes');
-    expect(heroHealth('derby_pocket')).toBe(21); // lowered since
+    expect(heroHealth('derby_pocket')).toBe(25);
     expect(Math.min(...HEROES.map((h) => heroHealth(h.id)))).toBe(20);
   });
 });

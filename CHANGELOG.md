@@ -2,6 +2,9 @@
 
 Newest first. The version shows on the title screen.
 
+## 0.13.8 — 2026-11-25
+- Derby Pocket: 25 Health; Coffee Run is now 'After you play 5 Arrive units, your first Arrive each turn happens an extra time'
+
 ## 0.13.7 — 2026-11-25
 - Merge works like Magnetic: drag Merge-o into the glowing gap on the left of an Alcove unit (even with a full army) and it slides in, giving that unit its stats and keywords. Zoomed cards now show a panel explaining each keyword on them
 
