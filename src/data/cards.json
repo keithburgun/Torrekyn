@@ -216,8 +216,8 @@
    "tier": 1,
    "atk": 1,
    "hp": 1,
-   "text": "Arrive: Give a unit +10 Health.",
-   "goldenText": "Arrive: Give a unit +20 Health.",
+   "text": "Arrive: Give a unit +8 Health and Taunt. If it's Azure, do it again.",
+   "goldenText": "Arrive: Give a unit +16 Health and Taunt. If it's Azure, do it again.",
    "keywords": []
   },
   {
@@ -416,8 +416,8 @@
    "tier": 2,
    "atk": 1,
    "hp": 1,
-   "text": "Arrive: Give a unit +6/+6. Also give it Bubble until next turn. If it's Kindred, do it all again.",
-   "goldenText": "Arrive: Give a unit +12/+12. Also give it Bubble until next turn. If it's Kindred, do it all again.",
+   "text": "Arrive: Give a unit +1/+1. Also give it Bubble until next turn. If it's Kindred, do it all again.",
+   "goldenText": "Arrive: Give a unit +2/+2. Also give it Bubble until next turn. If it's Kindred, do it all again.",
    "keywords": []
   },
   {
@@ -696,8 +696,8 @@
    "tier": 2,
    "atk": 1,
    "hp": 1,
-   "text": "Arrive: Give a unit +2 Attack and Double Attack.",
-   "goldenText": "Arrive: Give a unit +2 Attack and Double Attack.",
+   "text": "Arrive: Give a unit +3 Attack and Twinstrike. If it's Cloister, do it again.",
+   "goldenText": "Arrive: Give a unit +6 Attack and Twinstrike. If it's Cloister, do it again.",
    "keywords": []
   },
   {
@@ -1334,7 +1334,7 @@
    "tribe": "neutral",
    "tier": 5,
    "atk": 19,
-   "hp": 82,
+   "hp": 29,
    "text": "Arrive: Improve ALL your Gems this game twice.",
    "goldenText": "Arrive: Improve ALL your Gems this game four times.",
    "keywords": []
@@ -1357,8 +1357,8 @@
    "tier": 5,
    "atk": 10,
    "hp": 10,
-   "text": "When you sell this, gain 3 random Tier 5 units.",
-   "goldenText": "When you sell this, gain 6 random Tier 5 units.",
+   "text": "When you sell this, gain 2 random Tier 5 units.",
+   "goldenText": "When you sell this, gain 4 random Tier 5 units.",
    "keywords": []
   },
   {
@@ -1652,7 +1652,7 @@
   },
   {
    "id": "gunner",
-   "name": "Gunner",
+   "name": "Leafbug",
    "tribe": "cloister",
    "tier": 1,
    "atk": 1,
@@ -1703,6 +1703,17 @@
    "hp": 1,
    "text": "Whenever you summon units that don't fit in your army, give all your units +2/+4.",
    "goldenText": "Whenever you summon units that don't fit in your army, give all your units +4/+8.",
+   "keywords": []
+  },
+  {
+   "id": "white_gem",
+   "name": "White Gem",
+   "tribe": "neutral",
+   "tier": 3,
+   "atk": 1,
+   "hp": 1,
+   "text": "Arrive: Give one unit of each faction +4/+4.",
+   "goldenText": "Arrive: Give one unit of each faction +8/+8.",
    "keywords": []
   }
  ]

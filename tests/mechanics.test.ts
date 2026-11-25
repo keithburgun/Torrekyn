@@ -282,14 +282,15 @@ describe('Gems', () => {
     p.discovers = []; p.trinketOffer = null;
     const t = makeUnit(g, 'skel');
     p.board = [t];
-    p.hand = [makeUnit(g, 'tourmaline')]; // Blue Gem: +10 Health
+    p.hand = [makeUnit(g, 'tourmaline')]; // Blue Gem: +8 Health and Taunt
     play(g, p, 0, 1, t.uid);
-    expect(t.hp).toBe(def('skel').hp + 10);
+    expect(t.hp).toBe(def('skel').hp + 8);
+    expect(t.kw).toContain('taunt');
     improveGem(p, 'tourmaline', 2);
     expect(gemLevel(p, 'tourmaline')).toBe(2);
     p.hand = [makeUnit(g, 'tourmaline')];
     play(g, p, 0, 2, t.uid);
-    expect(t.hp).toBe(def('skel').hp + 10 + 14);
+    expect(t.hp).toBe(def('skel').hp + 8 + 12);
     // Broken Land improves every Gem twice, Red included
     p.hand = [makeUnit(g, 'broken_land')];
     play(g, p, 0, 0);

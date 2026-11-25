@@ -26,7 +26,7 @@ When the card text was ambiguous, Hearthstone: Battlegrounds conventions were us
 - **Stealth**: can't be attacked until it attacks; if every enemy is stealthed, stealth is removed.
 - **Start of Battle** = Start of Combat.
 - "Gains X" with no "permanently" = this combat only. "Permanently" changes the unit in your army.
-- **Bonus Keywords** (Omni-Gem) = Taunt, Bubble, Reborn, Doomstrike, Stealth, Double Attack.
+- **Bonus Keywords** (Omni-Gem) = Taunt, Bubble, Reborn, Doomstrike, Stealth, Twinstrike.
 - Arrive effects that are triggered during combat (Returner, Spoonful) give temporary stats. Discovers triggered in combat add a random option to your hand instead.
 
 ## Card-specific calls

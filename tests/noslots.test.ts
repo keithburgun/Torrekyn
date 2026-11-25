@@ -469,7 +469,7 @@ it('Life: Start of Combat gains a Pink Gem to your hand (Golden: 2); Grief: Upgr
 });
 
 describe('v0.12.3 Kindred', () => {
-  it('Pink Gem: +6/+6 for good and Bubble until next turn, twice over for a Kindred unit (Golden doubles)', async () => {
+  it('Pink Gem: +1/+1 for good and Bubble until next turn, twice over for a Kindred unit (Golden doubles)', async () => {
     const { startTurn } = await import('../src/engine/game');
     for (const golden of [false, true]) {
       const { g, p } = setup();
@@ -480,10 +480,10 @@ describe('v0.12.3 Kindred', () => {
       play(g, p, 0, 2, k.uid);
       play(g, p, 0, 3, n.uid);
       const m = golden ? 2 : 1;
-      expect([k.atk, k.hp, n.atk, n.hp]).toEqual([2 + 12 * m, 2 + 12 * m, 2 + 6 * m, 2 + 6 * m]);
+      expect([k.atk, k.hp, n.atk, n.hp]).toEqual([2 + 2 * m, 2 + 2 * m, 2 + m, 2 + m]);
       expect(k.kw).toContain('divineShield'); expect(n.kw).toContain('divineShield');
       startTurn(g, p);
-      expect([k.atk, k.hp, n.atk, n.hp]).toEqual([2 + 12 * m, 2 + 12 * m, 2 + 6 * m, 2 + 6 * m]); // stats are for good
+      expect([k.atk, k.hp, n.atk, n.hp]).toEqual([2 + 2 * m, 2 + 2 * m, 2 + m, 2 + m]); // stats are for good
       expect(k.kw).not.toContain('divineShield'); expect(n.kw).not.toContain('divineShield');
     }
     expect(def('honeysuckle_kindred').tier).toBe(4);
@@ -597,9 +597,9 @@ describe('v0.12.3 Kindred', () => {
     // Pink Gem on another unit: both gain +2, nothing more
     p.hand = [U(g, 'pink_gem')]; play(g, p, 0, 3, k.uid);
     expect([A.hp, B.hp]).toEqual([10, 10]);
-    // Pink Gem on Turtlepult A (+12): B gains +2 once, A gets nothing back
+    // Pink Gem on Turtlepult A (Kindred: +2 Health): B gains +2 once, A gets nothing back
     p.hand = [U(g, 'pink_gem')]; play(g, p, 0, 3, A.uid);
-    expect([A.hp, B.hp]).toEqual([22, 12]);
+    expect([A.hp, B.hp]).toEqual([12, 12]);
     // in battle: Bannerlord's +3 Health to all 3 units; each Turtlepult gets +2 for each of the other 2 on top of its own 3
     p.trinkets = ['bannerlords_standard'];
     const c = fight(g, p, o, [U(g, 'doctor', 1, 50), U(g, 'peebnup_bubber', 1, 8), U(g, 'peebnup_bubber', 1, 8)], [U(g, 'skel', 0, 99)]);
@@ -913,7 +913,7 @@ describe('temporary keywords', () => {
     play(g, p, 0, 1, v.uid);
     startTurn(g, p);
     expect(v.kw).not.toContain('divineShield');
-    expect([v.atk, v.hp]).toEqual([8, 8]); // the +6/+6 stays: only the Bubble was for one turn
+    expect([v.atk, v.hp]).toEqual([3, 3]); // the +1/+1 stays: only the Bubble was for one turn
   });
 });
 
@@ -970,7 +970,7 @@ describe('new units (v0.12.39)', () => {
     expect([isha.atk, isha.hp]).toEqual([5, 7]);
   });
 
-  it('Gunner: gains one of Taunt, Bubble, Doomstrike or Reborn (Golden: two different ones)', () => {
+  it('Leafbug: gains one of Taunt, Bubble, Doomstrike or Reborn (Golden: two different ones)', () => {
     for (const golden of [false, true]) {
       const { g, p } = setup();
       p.hand = [U(g, 'gunner', undefined, undefined, golden)];
@@ -1034,5 +1034,49 @@ describe('new units (v0.12.39)', () => {
     expect(f).toBeGreaterThan(0);
     expect(at(c, f, 'tree_man')!.hp).toBe(50 + 4);
     expect(c.frames.filter((x) => (x.note ?? '').startsWith('The Tree Man')).length).toBe(1);
+  });
+});
+
+describe('Gems (v0.13.2)', () => {
+  it('Green Gem: +3 Attack and Twinstrike, twice for a Cloister unit (Golden +6)', () => {
+    for (const golden of [false, true]) {
+      const { g, p } = setup();
+      const cl = U(g, 'disciple', 1, 1), nb = U(g, 'ash', 1, 1);
+      p.board = [cl, nb];
+      p.hand = [U(g, 'green_gem', undefined, undefined, golden), U(g, 'green_gem', undefined, undefined, golden)];
+      play(g, p, 0, 2, cl.uid); play(g, p, 0, 3, nb.uid);
+      const m = golden ? 2 : 1;
+      expect([cl.atk, nb.atk]).toEqual([1 + 6 * m, 1 + 3 * m]);
+      expect(cl.kw).toContain('windfury'); expect(nb.kw).toContain('windfury');
+    }
+  });
+
+  it('Blue Gem: +8 Health and Taunt, twice for an Azure unit (Golden +16)', () => {
+    for (const golden of [false, true]) {
+      const { g, p } = setup();
+      const az = U(g, 'knight', 1, 1), nb = U(g, 'ash', 1, 1); az.kw = []; nb.kw = [];
+      p.board = [az, nb];
+      p.hand = [U(g, 'tourmaline', undefined, undefined, golden), U(g, 'tourmaline', undefined, undefined, golden)];
+      play(g, p, 0, 2, az.uid); play(g, p, 0, 3, nb.uid);
+      const m = golden ? 2 : 1;
+      expect([az.hp, nb.hp]).toEqual([1 + 16 * m, 1 + 8 * m]);
+      expect(az.kw).toContain('taunt'); expect(nb.kw).toContain('taunt');
+    }
+  });
+
+  it('White Gem: +4/+4 to one unit of each faction (a different one each where it can)', () => {
+    const { g, p } = setup();
+    const k1 = U(g, 'knight', 1, 1), k2 = U(g, 'knight', 1, 1), d = U(g, 'disciple', 1, 1), n = U(g, 'sword', 1, 1);
+    p.board = [k1, k2, d, n]; p.hand = [U(g, 'white_gem')];
+    play(g, p, 0, 4);
+    expect(k1.atk + k2.atk).toBe(2 + 4); // one Azure unit
+    expect(d.atk).toBe(5); // the Cloister unit
+    expect(n.atk).toBe(1); // Neutral isn't a faction
+    expect(def('white_gem').tier).toBe(3);
+  });
+
+  it('Broken Land is 19/29; Omni-Gem gives 2 Tier 5 units', () => {
+    expect([def('broken_land').atk, def('broken_land').hp]).toEqual([19, 29]);
+    expect(def('omni_gem').text).toContain('2 random Tier 5');
   });
 });

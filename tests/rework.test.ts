@@ -79,7 +79,7 @@ describe('rework', () => {
     c.spawn = (...a: Parameters<typeof c.spawn>) => { const r = orig(...a); if (r?.cardId === 'phoenix') ph = r; return r; };
     c.run();
     expect(ph).toBeTruthy();
-    // the Gem changed it somehow (stats, Reborn, Bubble or Double Attack), or a Red/Potato Gem buffed a slot/neighbours
+    // the Gem changed it somehow (stats, Reborn, Bubble or Twinstrike), or a Red/Potato Gem buffed a slot/neighbours
     expect(def('phoenix').atk).toBe(20);
   });
 
@@ -179,12 +179,12 @@ describe('rework 2', () => {
     expect([left.atk, left.hp]).toEqual([10, 10]);
   });
 
-  it('Omni-Gem: selling it gains 3 Tier 5 units', () => {
+  it('Omni-Gem: selling it gains 2 Tier 5 units', () => {
     const { g, p } = setup();
     p.hand = [];
     p.board = [u(g, 'omni_gem')];
     sell(g, p, 0);
-    expect(p.hand.map((x) => def(x.cardId).tier)).toEqual([5, 5, 5]);
+    expect(p.hand.map((x) => def(x.cardId).tier)).toEqual([5, 5]);
   });
 
   it('Scientist and Grief are Deathrattles now', () => {

@@ -2,6 +2,9 @@
 
 Newest first. The version shows on the title screen.
 
+## 0.13.2 — 2026-11-25
+- Double Attack is now Twinstrike. Pink Gem +1/+1; Green Gem +3 Attack and Twinstrike (twice for Cloister); Blue Gem +8 Health and Taunt (twice for Azure); new Tier 3 White Gem (+4/+4 to one unit of each faction); Broken Land 19/29; Omni-Gem gives 2 Tier 5 units; Gunner is now Leafbug with new art
+
 ## 0.13.1 — 2026-11-25
 - Golbana: +2/+2 (Golden +4/+4), repeats only for other Golden units; new art for Golbana, Isha and Gunner (they shared sprites with other cards); Gunner can also get Taunt; Avenger is now Demon Bear, drawn a little smaller. New tools/art_dupes.py finds cards that show the same sprite
 

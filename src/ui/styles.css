@@ -1483,7 +1483,7 @@ svg.aim-arrow.locked .aim-ring { opacity: 0.9; animation: aim-ring 0.9s ease-in-
 .panel.leader:hover { z-index: 60; }
 .leader .row .lb-hist { z-index: 61; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.55); }
 
-/* keyword badges (Reborn, Doomstrike, Poisonous, Double Attack): a row of chunky coloured coins along the bottom edge,
+/* keyword badges (Reborn, Doomstrike, Poisonous, Twinstrike): a row of chunky coloured coins along the bottom edge,
    just under the tribe banner and between the Attack and Health orbs (Taunt and Bubble show as frames instead) */
 .card .kws { top: auto; right: auto; left: 50%; bottom: -24px; transform: translateX(-50%); flex-direction: row; gap: 3px; z-index: 3; }
 .card .kws span {

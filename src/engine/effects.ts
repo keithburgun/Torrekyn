@@ -7,7 +7,7 @@
  * m = 1 for normal, 2 for golden.
  */
 import type { Body, Keyword, Player, Tribe, Unit, GameState } from './types';
-import { addKw, CARDS, def, effStats, has, isTribe, log, makeUnit, pick, rand, removeKw, sample, tribeOf, CONFIG } from './core';
+import { ALL_TRIBES, addKw, CARDS, def, effStats, has, isTribe, log, makeUnit, pick, rand, removeKw, sample, tribeOf, CONFIG } from './core';
 import type { CUnit, Combat, Side } from './combat';
 import {
   destroyUnit, discoverOptions, gainNew, inPlay, maxGoldFor, queueDiscover, randomCardOfTier, sellUnit, drawFromPool,
@@ -70,7 +70,7 @@ export interface Effect {
 
 // ---------------- helpers ----------------
 /** the Gems: improvable, and what "a random Gem" picks from (Omni-Gem isn't one of them) */
-export const GEMS = ['purple_gem', 'tourmaline', 'pink_gem', 'green_gem', 'red_gem', 'ancient_name_brambor'];
+export const GEMS = ['purple_gem', 'tourmaline', 'pink_gem', 'green_gem', 'red_gem', 'ancient_name_brambor', 'white_gem'];
 
 /** how many times this player has improved a Gem (Red Gem keeps its old counter) */
 export function gemLevel(p: Player, id: string): number {
@@ -248,9 +248,14 @@ export const EFFECTS: Record<string, Effect> = {
     },
   },
   tourmaline: {
-    // Blue Gem
+    // Blue Gem: +8 Health (+2 per improvement; Golden doubles) and Taunt; an Azure unit gets it twice
     target: 'friendly',
-    battlecry: (c) => { const t = gemTarget(c); if (t) buff(t, 0, (10 + gemLevel(c.p, 'tourmaline') * 2) * c.m); },
+    battlecry: (c) => {
+      const t = gemTarget(c);
+      if (!t) return;
+      buff(t, 0, (8 + gemLevel(c.p, 'tourmaline') * 2) * c.m * (isTribe(t, 'azure') ? 2 : 1));
+      addKw(t, 'taunt');
+    },
   },
   command: {
     battlecry: (c) => discover(c, (id) => def(id).tier === 1, 'Discover a Tier 1 unit', c.m),
@@ -346,12 +351,12 @@ export const EFFECTS: Record<string, Effect> = {
     },
   },
   pink_gem: {
-    // +6/+6 for good (+2/+2 more per improvement; Golden doubles; a Kindred unit gets it twice), and Bubble until next turn
+    // +1/+1 for good (+1/+1 more per improvement; Golden doubles; a Kindred unit gets it twice), and Bubble until next turn
     target: 'friendly',
     battlecry: (c) => {
       const t = gemTarget(c);
       if (!t) return;
-      const n = (6 + 2 * gemLevel(c.p, 'pink_gem')) * c.m * (isTribe(t, 'kindred') ? 2 : 1);
+      const n = (1 + gemLevel(c.p, 'pink_gem')) * c.m * (isTribe(t, 'kindred') ? 2 : 1);
       buff(t, n, n);
       if (!t.kw.includes('divineShield')) { addKw(t, 'divineShield'); t.mem.tmpShield = 1; }
     },
@@ -487,7 +492,8 @@ export const EFFECTS: Record<string, Effect> = {
     battlecry: (c) => {
       const t = gemTarget(c);
       if (!t) return;
-      buff(t, 2 + gemLevel(c.p, 'green_gem'), 0);
+      // +3 Attack (+1 per improvement; Golden doubles) and Twinstrike; a Cloister unit gets it twice
+      buff(t, (3 + gemLevel(c.p, 'green_gem')) * c.m * (isTribe(t, 'cloister') ? 2 : 1), 0);
       addKw(t, 'windfury');
     },
   },
@@ -851,7 +857,22 @@ export const EFFECTS: Record<string, Effect> = {
   tree_man: {}, // its ability lives in Combat.noRoom (a summon that doesn't fit)
 
   omni_gem: {
-    onSell: (c) => { for (let i = 0; i < 3 * c.m; i++) gain(c, randomTier(c, 5)); },
+    onSell: (c) => { for (let i = 0; i < 2 * c.m; i++) gain(c, randomTier(c, 5)); },
+  },
+  white_gem: {
+    // +4/+4 (+1/+1 per improvement; Golden doubles) to one unit of each faction: a different unit for each where it can
+    battlecry: (c) => {
+      const n = (4 + gemLevel(c.p, 'white_gem')) * c.m;
+      const done = new Set<Body>();
+      for (const t of ALL_TRIBES) {
+        const of = c.board.filter((u) => isTribe(u, t));
+        const fresh = of.filter((u) => !done.has(u));
+        const u = pick(c.g, fresh.length ? fresh : of); // a unit of every faction (Amalgam) can be picked again
+        if (!u) continue;
+        buff(u, n, n);
+        done.add(u);
+      }
+    },
   },
 
   // ===== Tier 6 =====

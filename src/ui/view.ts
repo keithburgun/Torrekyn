@@ -34,7 +34,7 @@ export const KW_ICON: Record<Keyword, [string, string]> = {
   reborn: ['☥', 'Reborn'],
   venomous: ['☠', 'Doomstrike'],
   poisonous: ['☣', 'Poisonous'],
-  windfury: ['〰', 'Double Attack'],
+  windfury: ['〰', 'Twinstrike'],
 };
 
 export const KEYWORD_HELP: Record<string, string> = {
@@ -43,7 +43,7 @@ export const KEYWORD_HELP: Record<string, string> = {
   Reborn: 'Comes back with 1 Health the first time it dies.',
   Doomstrike: 'Destroys any unit it damages (once).',
   Poisonous: 'Destroys any unit it damages (every time).',
-  'Double Attack': 'Attacks twice.',
+  Twinstrike: 'Attacks twice.',
   Arrive: 'Happens when you play it from your hand.',
   Deathrattle: 'Happens when it dies.',
   Rally: 'Happens whenever this attacks.',
@@ -144,7 +144,7 @@ export const statOf = (el: Element) => Number((el as HTMLElement).dataset.v ?? e
 
 export function formatText(text: string): string {
   let t = esc(text);
-  t = t.replace(/(Arrive|Deathrattle|Rally|Avenge ?\(\d+\)|Start of (Combat|Turn)|End of Turn|Bubble|Taunt|Reborn|Doomstrike|Poisonous|Discover|Quest|Double Attack|Merge)/g, '<b>$1</b>');
+  t = t.replace(/(Arrive|Deathrattle|Rally|Avenge ?\(\d+\)|Start of (Combat|Turn)|End of Turn|Bubble|Taunt|Reborn|Doomstrike|Poisonous|Discover|Quest|Twinstrike|Merge)/g, '<b>$1</b>');
   return t;
 }
 
@@ -239,9 +239,10 @@ export function gemText(p: Player, cardId: string, golden: boolean, text: string
   let t = text;
   switch (cardId) {
     case 'purple_gem': t = t.replace(/\+\d+\/\+\d+/, `+${(1 + l) * m}/+${(1 + l) * m}`); break;
-    case 'tourmaline': t = t.replace(/\+\d+ Health/, `+${(10 + 2 * l) * m} Health`); break;
-    case 'pink_gem': t = t.replace(/\+\d+\/\+\d+/g, `+${(6 + 2 * l) * m}/+${(6 + 2 * l) * m}`); break;
-    case 'green_gem': t = t.replace(/\+\d+ Attack/, `+${2 + l} Attack`); break;
+    case 'tourmaline': t = t.replace(/\+\d+ Health/, `+${(8 + 2 * l) * m} Health`); break;
+    case 'pink_gem': t = t.replace(/\+\d+\/\+\d+/g, `+${(1 + l) * m}/+${(1 + l) * m}`); break;
+    case 'green_gem': t = t.replace(/\+\d+ Attack/, `+${(3 + l) * m} Attack`); break;
+    case 'white_gem': t = t.replace(/\+\d+\/\+\d+/, `+${(4 + l) * m}/+${(4 + l) * m}`); break;
     case 'red_gem': t = t.replace(/\+\d+ Attack/, `+${(3 + l) * m} Attack`); break;
     case 'ancient_name_brambor': t = t.replace(/\+\d+ Health/, `+${(2 + l) * m} Health`); break;
   }
@@ -256,9 +257,10 @@ function gemNote(p: Player, u: Unit): string | undefined {
   const m = u.golden ? 2 : 1;
   switch (u.cardId) {
     case 'purple_gem': return `+${(1 + l) * m}/+${(1 + l) * m}`;
-    case 'tourmaline': return `+${(10 + 2 * l) * m} Health`;
-    case 'pink_gem': return `+${(6 + 2 * l) * m}/+${(6 + 2 * l) * m}`;
-    case 'green_gem': return `+${2 + l} Attack`;
+    case 'tourmaline': return `+${(8 + 2 * l) * m} Health`;
+    case 'pink_gem': return `+${(1 + l) * m}/+${(1 + l) * m}`;
+    case 'green_gem': return `+${(3 + l) * m} Attack`;
+    case 'white_gem': return `+${(4 + l) * m}/+${(4 + l) * m}`;
     case 'red_gem': return `+${(3 + l) * m} Atk`;
     case 'ancient_name_brambor': return `+${(2 + l) * m} Health`;
   }

@@ -30,6 +30,7 @@ KEYWORDS = {
     "doomstrike": "venomous",
     "venomous": "venomous",
     "poisonous": "poisonous",
+    "twinstrike": "windfury",
     "double attack": "windfury",
     "windfury": "windfury",
 }
@@ -97,7 +98,7 @@ GOLDEN = {
     "ancient_name_brambor": "Arrive: Give this slot Bubble and +10/+10.",
     "chosen_name": "Arrive: Give this slot +22/+22",
     "andromeda_robin": "Start of Combat: Deal 6 damage to 4 random enemies and improve this twice.",
-    "green_gem": "Arrive: Give a unit +2 Attack and Double Attack.",
+    "green_gem": "Arrive: Give a unit +2 Attack and Twinstrike.",
     "storyteller": "When you sell this, gain 2 random Tier 1 units.",
     "disciple": "Deathrattle: Deal 1 damage to a random enemy unit twice.",
     "hunter": "Start of Combat: Give 2 random enemy units Taunt and deal 1 damage to them.",

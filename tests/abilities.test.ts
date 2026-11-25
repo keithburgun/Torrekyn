@@ -120,14 +120,14 @@ describe('every ability changes something', () => {
     expect(p.board[0].atk).toBeGreaterThan(def('red_gem').atk);
   });
 
-  it('bots line up big, Rally and Double Attack units on the left, Avenge units on the right', () => {
+  it('bots line up big, Rally and Twinstrike units on the left, Avenge units on the right', () => {
     const { g, p } = setup(32);
     const green = makeUnit(g, 'ash'); green.kw.push('windfury');
     p.board = [makeUnit(g, 'sapling'), makeUnit(g, 'ash'), makeUnit(g, 'doctor'), green, makeUnit(g, 'splashmaster')];
     arrange(p);
     const ids = p.board.map((u) => (u === green ? 'double' : u.cardId));
     expect(ids[ids.length - 1]).toBe('sapling'); // Avenge waits on the right
-    expect(ids.slice(0, 3).sort()).toEqual(['doctor', 'double', 'splashmaster'].sort()); // the big one, Rally and Double Attack lead
+    expect(ids.slice(0, 3).sort()).toEqual(['doctor', 'double', 'splashmaster'].sort()); // the big one, Rally and Twinstrike lead
   });
 
   // ---- abilities that wait for something to happen: make it happen for real ----

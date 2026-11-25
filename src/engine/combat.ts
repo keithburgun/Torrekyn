@@ -3,7 +3,7 @@
  *  - the side with more units attacks first (coin flip if equal), sides alternate;
  *  - each side's units attack left-to-right; targets are random, Taunt first;
  *  - Bubble absorbs one hit; Doomstrike kills on damage (one use), Poisonous always does; Reborn returns at 1 Health;
- *  - Double Attack attacks twice; deaths resolve left-to-right, attacking side first.
+ *  - Twinstrike attacks twice; deaths resolve left-to-right, attacking side first.
  */
 import { addKw, cloneUnit, def, effStats, has, isTribe, mult, ownerBonus, pick, rand, removeKw, sample, tribeOf, CONFIG } from './core';
 import { EFFECTS, hasBattlecry, battlecryTimes, type CCtx } from './effects';

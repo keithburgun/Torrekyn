@@ -167,7 +167,7 @@ function bestTarget(g: GameState, p: Player, u: Unit): number | undefined {
     return unitScore(p, worst) < 25 ? worst.uid : undefined;
   }
   if (u.cardId === 'merge_o') {
-    // Merge into the best Alcove unit that makes good use of big stats (Bubble, Reborn, Double Attack), else the
+    // Merge into the best Alcove unit that makes good use of big stats (Bubble, Reborn, Twinstrike), else the
     // biggest one; it's always worth it (one unit with +12/+12 and a free army slot). Itself = just play it.
     const others = cands.filter((b) => b !== u);
     if (!others.length) return u.uid;
@@ -181,7 +181,7 @@ function bestTarget(g: GameState, p: Player, u: Unit): number | undefined {
   }
   if (on(p, 'place')) {
     const kw = (b: Unit) => effStats(p, b, 'board').kw;
-    // Green Gem: Double Attack is worth most on the hardest hitter that doesn't have it yet
+    // Green Gem: Twinstrike is worth most on the hardest hitter that doesn't have it yet
     if (u.cardId === 'green_gem') {
       const pool = cands.filter((b) => !kw(b).includes('windfury'));
       return best(pool.length ? pool : cands, (b) => effStats(p, b, 'board').atk).uid;
@@ -386,7 +386,7 @@ function placeAbandon(p: Player) {
 }
 
 export function arrange(p: Player) {
-  // left (attacks first): the biggest units, Rally and Double Attack units; right: Avenge and Deathrattle units,
+  // left (attacks first): the biggest units, Rally and Twinstrike units; right: Avenge and Deathrattle units,
   // which want to wait for things to die. Taunt and Bubble lean a little to the left.
   const order = [...p.board].filter((u) => !u.mem.locked);
   const size = (u: Unit) => { const st = effStats(p, u, 'hand'); return st.atk + st.hp; };

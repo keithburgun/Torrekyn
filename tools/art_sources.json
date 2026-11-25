@@ -1010,7 +1010,7 @@
    "px": true
   },
   "gunner": {
-   "src": "X/iglootank.png",
+   "src": "M/UI/gems/gem-bug.png",
    "px": true
   },
   "avenger": {
@@ -1029,6 +1029,14 @@
   "tree_man": {
    "src": "X/tree.png",
    "px": true
+  },
+  "white_gem": {
+   "src": "N/gemWhitegem.png",
+   "crop": [
+    0.5,
+    0.5,
+    1.0
+   ]
   }
  }
 }
