@@ -2,6 +2,9 @@
 
 Newest first. The version shows on the title screen.
 
+## 0.13.6 — 2026-11-25
+- Zoomed cards now frame their art exactly like cards on the board (no more extra zoom); Googa's sprite sits lower
+
 ## 0.13.5 — 2026-11-25
 - Marn Torf has a new portrait. Bots get their bonus stats at the very end of their turn and then line up their army one last time: highest Attack and Bubble units on the left, Avenge units on the right
 

@@ -979,7 +979,8 @@
   },
   "amalgam": {
    "src": "X/googa.png",
-   "px": true
+   "px": true,
+   "dy": 0.08
   },
   "owl_summoner": {
    "src": "S/Skelly/fanatic.png",

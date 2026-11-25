@@ -220,7 +220,13 @@ b { font-weight: 800; }
   border: 5px solid var(--card-edge); box-shadow: 0 0 0 4px #f4eee8, 0 12px 30px rgba(0, 0, 0, 0.35);
 }
 .bigcard.golden { border-color: #ffc93d; background: linear-gradient(160deg, #fffbe6, #ffe28a 50%, #ffc2e2); box-shadow: 0 0 0 4px #fff, 0 0 30px rgba(255, 200, 80, 0.8); }
-.bigcard .art { position: absolute; left: 7px; right: 7px; top: 7px; height: 148px; border-radius: 22px; background-size: cover; background-position: center; }
+.bigcard .art { position: absolute; left: 7px; right: 7px; top: 7px; height: 148px; border-radius: 22px; background-position: center; background-repeat: no-repeat;
+  /* frame the art exactly like a card on the board (whose art window is ~1.13:1): this window is wider, so instead of
+     cropping more off the top and bottom, the sides are filled with a soft blur of the art's own background */
+  background-size: 0 0; overflow: hidden; isolation: isolate; }
+.bigcard .art::before, .bigcard .art::after { content: ''; position: absolute; background-image: inherit; background-position: center; background-repeat: no-repeat; pointer-events: none; }
+.bigcard .art::before { inset: -20px; background-size: cover; filter: blur(16px) saturate(1.1); }
+.bigcard .art::after { inset: 0; background-size: auto 112.6%; image-rendering: auto; }
 .bigcard .name { position: absolute; top: 160px; left: 8px; right: 8px; text-align: center; font-family: var(--display); font-weight: 700; font-size: 22px; color: var(--plum); }
 .bigcard .tribe { position: absolute; top: 187px; left: 0; right: 0; text-align: center; }
 .bigcard .tribe span { display: inline-block; font-size: 11px; font-weight: 800; letter-spacing: 0.1em; text-transform: uppercase; color: #fff; padding: 1px 12px; border-radius: 6px;
