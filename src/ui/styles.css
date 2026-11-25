@@ -279,7 +279,9 @@ b { font-weight: 800; }
   position: relative; display: flex; gap: 10px; align-items: center; padding: 8px; border-radius: 20px;
   background: rgba(255, 255, 255, 0.045); border: 2px solid transparent; height: 104px; cursor: pointer;
 }
-.leader .row.me { border-color: var(--lilac); background: rgba(183, 156, 242, 0.14); }
+.leader .row.me { border-color: var(--lilac); background: linear-gradient(160deg, rgba(232, 220, 255, 0.34), rgba(196, 172, 250, 0.24)); box-shadow: 0 0 14px rgba(183, 156, 242, 0.3); }
+/* the side list: the rows share the full height (however many players there are) */
+.leader:not(.horizontal) .row { flex: 1 1 0; height: auto; min-height: 0; max-height: 150px; }
 .leader .row.next { border-color: var(--pink); box-shadow: 0 0 16px rgba(255, 127, 191, 0.55); }
 .leader .row.dead { opacity: 0.4; filter: grayscale(0.8); }
 .leader .avatar { width: 62px; height: 62px; border-radius: 50%; background-size: cover; flex: none; box-shadow: 0 0 0 3px var(--slate-edge), 0 4px 10px rgba(0, 0, 0, 0.4); }
@@ -748,7 +750,7 @@ b { font-weight: 800; }
 .pstrip { display: flex; gap: 6px; z-index: 6; }
 .pchip { flex: 1; min-width: 0; appearance: none; font: inherit; color: var(--ink); cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px;
   padding: 12px 6px 8px; border-radius: 24px; border: 3px solid var(--panel-edge); background: var(--panel); box-shadow: var(--shadow); }
-.pchip.me { border-color: var(--lilac); background: linear-gradient(rgba(183, 156, 242, 0.22), var(--panel)); }
+.pchip.me { border-color: var(--lilac); background: linear-gradient(160deg, rgba(232, 220, 255, 0.36), rgba(196, 172, 250, 0.24)); box-shadow: 0 0 12px rgba(183, 156, 242, 0.3); }
 .pchip.next { border-color: var(--pink); box-shadow: 0 0 20px rgba(255, 127, 191, 0.65); }
 .pchip.dead { opacity: 0.4; filter: grayscale(0.85); }
 .pchip .avatar { position: relative; width: 90px; height: 90px; border-radius: 50%; background-size: cover; flex: none; box-shadow: 0 0 0 3px var(--slate-edge), 0 4px 10px rgba(0, 0, 0, 0.4); }

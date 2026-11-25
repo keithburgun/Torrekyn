@@ -2,6 +2,9 @@
 
 Newest first. The version shows on the title screen.
 
+## 0.13.9 — 2026-11-25
+- The player list fills the whole sidebar, and your own entry is lighter so it stands out
+
 ## 0.13.8 — 2026-11-25
 - Derby Pocket: 25 Health; Coffee Run is now 'After you play 5 Arrive units, your first Arrive each turn happens an extra time'
 
