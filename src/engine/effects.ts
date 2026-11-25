@@ -36,7 +36,7 @@ export interface CCtx {
 
 export interface Effect {
   /** a targeted play: any friendly unit, an unlocked one, or (Merge-o) an Alcove unit to Merge with */
-  target?: 'friendly' | 'unlocked' | 'alcove';
+  target?: 'friendly' | 'unlocked' | 'alcove' | 'other';
   battlecry?(c: Ctx): void;
   onPlay?(c: Ctx): void;
   onSell?(c: Ctx): void;
@@ -649,10 +649,21 @@ export const EFFECTS: Record<string, Effect> = {
     },
   },
   paradox: {
-    // gains the Health of your highest-Health other unit (Golden: double), for this battle
-    soc: (c) => {
-      const best = c.side.units.filter((u) => u !== c.self && u.hp > 0).reduce<CUnit | undefined>((a, b) => (!a || b.hp > a.hp ? b : a), undefined);
-      if (best) c.self.hp += best.hp * c.m;
+    // Arrive: become a copy of a friendly unit you choose: its card, stats, keywords and what it remembers (not its
+    // Arrive). Golden: a Golden copy (it gains the card's base stats once more, like a triple).
+    target: 'other',
+    battlecry: (c) => {
+      const t = c.target && c.target !== c.self ? c.target : pick(c.g, c.board.filter((u) => u !== c.self));
+      if (!t) return;
+      const me = c.self as Unit;
+      me.cardId = t.cardId;
+      me.atk = t.atk;
+      me.hp = t.hp;
+      me.kw = [...t.kw];
+      me.mem = { ...(t as Unit).mem };
+      delete me.mem.pv;
+      me.golden = t.golden || c.m > 1;
+      if (c.m > 1 && !t.golden) { me.atk += def(t.cardId).atk; me.hp += def(t.cardId).hp; }
     },
   },
   horseman: {}, // Reborn with full stats: see the reborn code in combat.ts

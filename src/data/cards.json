@@ -989,8 +989,8 @@
    "tier": 5,
    "atk": 1,
    "hp": 1,
-   "text": "Start of Combat: Gain the Health of your highest-Health other unit.",
-   "goldenText": "Start of Combat: Gain double the Health of your highest-Health other unit.",
+   "text": "Arrive: Choose a friendly unit. Become a copy of it.",
+   "goldenText": "Arrive: Choose a friendly unit. Become a Golden copy of it.",
    "keywords": []
   },
   {

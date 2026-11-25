@@ -183,11 +183,23 @@ describe('cards rewritten without slots', () => {
     expect(gemLevel(p, 'ancient_name_brambor')).toBe(1);
   });
 
-  it('Paradox: Start of Combat gains the Health of your highest-Health other unit', () => {
-    const { g, p, o } = setup();
-    const c = fight(g, p, o, [U(g, 'paradox', 1, 10), U(g, 'skel', 1, 40)], [U(g, 'skel', 1, 999)]);
-    c.run();
-    expect(at(c, afterSoc(c), 'paradox')!.hp).toBe(50);
+  it('Paradox: Arrive: becomes a copy of the friendly unit you choose (Golden: a Golden copy); never itself', async () => {
+    const { validTargets } = await import('../src/engine/game');
+    for (const golden of [false, true]) {
+      const { g, p } = setup();
+      const t = U(g, 'doctor', 9, 7); t.kw = ['taunt']; t.mem.n = 3;
+      const px = U(g, 'paradox', undefined, undefined, golden);
+      p.board = [t]; p.hand = [px];
+      expect(validTargets(p, 'paradox', px)).toEqual([t]);
+      play(g, p, 0, 1, t.uid);
+      const c = p.board[1];
+      expect(c.cardId).toBe('doctor');
+      expect(c.kw).toContain('taunt');
+      expect(c.mem.n).toBe(3);
+      expect(c.golden).toBe(golden);
+      expect([c.atk, c.hp]).toEqual(golden ? [9 + def('doctor').atk, 7 + def('doctor').hp] : [9, 7]);
+      expect(t.cardId).toBe('doctor'); // the original is untouched
+    }
   });
 
   it('Potato Gem: +2 Health to every unit in hand and army (+1 per improvement, Golden doubles)', () => {

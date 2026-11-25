@@ -2,6 +2,9 @@
 
 Newest first. The version shows on the title screen.
 
+## 0.13.11 — 2026-11-25
+- Paradox: 'Arrive: Choose a friendly unit. Become a copy of it.' (Golden: a Golden copy)
+
 ## 0.13.10 — 2026-11-25
 - Next opponent: no pink outline, just a slightly bigger NEXT tag
 

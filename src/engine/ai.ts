@@ -174,6 +174,11 @@ function bestTarget(g: GameState, p: Player, u: Unit): number | undefined {
     const keyed = (b: Unit) => { const k = effStats(p, b, 'board').kw; return ['divineShield', 'reborn', 'windfury'].filter((x) => k.includes(x as never)).length; };
     return best(others, (b) => keyed(b) * 1000 + unitScore(p, b, 'board')).uid;
   }
+  if (u.cardId === 'paradox') {
+    // copy the most valuable unit in the army
+    const others = cands.filter((b) => b !== u);
+    return others.length ? best(others, (b) => unitScore(p, b, 'board')).uid : undefined;
+  }
   if (u.cardId === 'therapist' || u.cardId === 'shield_neutral') {
     const noTaunt = cands.filter((b) => !b.kw.includes('taunt'));
     const pool = noTaunt.length ? noTaunt : cands;

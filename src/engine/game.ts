@@ -431,7 +431,8 @@ export function needsTarget(cardId: string): boolean {
 export function validTargets(p: Player, cardId: string, self?: Unit): Unit[] {
   const t = EFFECTS[cardId]?.target;
   if (!t) return [];
-  return [...p.board, ...(self ? [self] : [])].filter((u) => !(t === 'unlocked' && u.mem.locked) && !(t === 'alcove' && !isTribe(u, 'alcove')));
+  // ('other': not the card being played, e.g. Paradox can't copy itself)
+  return [...p.board, ...(self && t !== 'other' ? [self] : [])].filter((u) => !(t === 'unlocked' && u.mem.locked) && !(t === 'alcove' && !isTribe(u, 'alcove')));
 }
 
 export function play(g: GameState, p: Player, handIdx: number, pos: number, targetUid?: number): ActionResult {
