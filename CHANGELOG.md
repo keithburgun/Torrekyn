@@ -2,6 +2,9 @@
 
 Newest first. The version shows on the title screen.
 
+## 0.13.10 — 2026-11-25
+- Next opponent: no pink outline, just a slightly bigger NEXT tag
+
 ## 0.13.9 — 2026-11-25
 - The player list fills the whole sidebar, and your own entry is lighter so it stands out
 
