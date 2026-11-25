@@ -3,7 +3,7 @@ import {
 } from './core';
 import { EFFECTS, GEMS, battlecryTimes, hasBattlecry } from './effects';
 import { runCombat } from './combat';
-import { aiTakeTurn, aiChooseDiscover } from './ai';
+import { aiTakeTurn, aiChooseDiscover, finalSort } from './ai';
 import { setFxPhase, withFx, heroPing, peebSync } from './fx';
 import { PERSONAS, matchPersonas, personaProfile } from './personas';
 import { TRINKETS, HEROES, heroHealth, buyCost, gainPower, heroDef, heroEndTurn, heroHooks, hasTrinket, trinketCount, offerTrinkets, shopBonus, GREATER_TRINKET_TURN, LESSER_TRINKET_TURN } from './heroes';
@@ -603,8 +603,9 @@ export function endTurn(g: GameState): CombatResult[] {
     if (!p.human || g.simulateAll) aiTakeTurn(g, p);
     if (p.trinketOffer) p.trinketOffer = null;
     while (p.discovers.length) chooseDiscover(g, p, 0);
-    endTurnEffects(g, p);
+    endTurnEffects(g, p); // (a bot's bonus stats come at the very end of this)
     while (p.discovers.length) chooseDiscover(g, p, 0);
+    if (!p.human || g.simulateAll) finalSort(p); // then it lines its army up one last time
   }
   g.phase = 'combat';
   setFxPhase('combat');

@@ -2,6 +2,9 @@
 
 Newest first. The version shows on the title screen.
 
+## 0.13.5 — 2026-11-25
+- Marn Torf has a new portrait. Bots get their bonus stats at the very end of their turn and then line up their army one last time: highest Attack and Bubble units on the left, Avenge units on the right
+
 ## 0.13.4 — 2026-11-25
 - Leafbug has new art (a leafy sprout). Ability damage in battle (Witch, Disciple...) now shows a clear white ball flying from the source, or from where it stood if it's gone, to the target
 

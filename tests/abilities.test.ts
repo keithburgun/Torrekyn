@@ -130,6 +130,26 @@ describe('every ability changes something', () => {
     expect(ids.slice(0, 3).sort()).toEqual(['doctor', 'double', 'splashmaster'].sort()); // the big one, Rally and Twinstrike lead
   });
 
+  it('a bot gets its bonus stats at the end of its turn, then lines up: highest Attack and Bubble left, Avenge right', async () => {
+    const { endTurnEffects } = await import('../src/engine/game');
+    const { finalSort } = await import('../src/engine/ai');
+    const { g } = setup(33);
+    g.rating = 1500; g.round = 10;
+    const bot = g.players.find((x) => !x.human)!;
+    const big = makeUnit(g, 'ash'); big.atk = 30;
+    const bub = makeUnit(g, 'ash'); bub.kw = ['divineShield'];
+    const av = makeUnit(g, 'sapling');
+    const small = makeUnit(g, 'ash');
+    bot.board = [av, small, bub, big];
+    const before = [av, small, bub, big].map((u) => u.atk);
+    endTurnEffects(g, bot); // (End of Turn effects, then the bot bonus)
+    finalSort(bot); // (what endTurn does next, for bots)
+    expect([av, small, bub, big].every((u, i) => u.atk > before[i])).toBe(true);
+    expect(bot.board.slice(0, 2).sort((a, b) => a.uid - b.uid)).toEqual([bub, big].sort((a, b) => a.uid - b.uid));
+    expect(bot.board[bot.board.length - 1]).toBe(av);
+  });
+
+
   // ---- abilities that wait for something to happen: make it happen for real ----
   const fightOf = (g: GameState, p: Player, o: Player, mine: Unit[], theirs: Unit[]) =>
     new Combat(g, { p, board: mine, tier: p.tier, persistent: true }, { p: o, board: theirs, tier: 1, persistent: false });

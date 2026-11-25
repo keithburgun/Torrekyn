@@ -385,20 +385,30 @@ function placeAbandon(p: Player) {
   move(p, ai, to);
 }
 
+/**
+ * The very last thing a bot does each turn, after its End of Turn effects and its bot bonus stats: line up the army
+ * (the bonus lands quietly before the battle, so to you it just looks like a bot with bigger units).
+ */
+export function finalSort(p: Player) {
+  arrange(p);
+  if (on(p, 'plans')) carryLeft(p);
+  if (on(p, 'place')) placeAbandon(p);
+}
+
 export function arrange(p: Player) {
-  // left (attacks first): the biggest units, Rally and Twinstrike units; right: Avenge and Deathrattle units,
-  // which want to wait for things to die. Taunt and Bubble lean a little to the left.
+  // left (attacks first): the highest Attack, Bubble, Rally and Twinstrike units; right: Avenge (and Deathrattle) units,
+  // which want to wait for things to die. Taunt leans a little to the left.
   const order = [...p.board].filter((u) => !u.mem.locked);
-  const size = (u: Unit) => { const st = effStats(p, u, 'hand'); return st.atk + st.hp; };
-  const biggest = Math.max(1, ...order.map(size));
+  const atk = (u: Unit) => effStats(p, u, 'hand').atk;
+  const most = Math.max(1, ...order.map(atk));
   const rank = (u: Unit) => {
     const kw = effStats(p, u, 'hand').kw;
     const e = EFFECTS[u.cardId];
-    let r = -4 * (size(u) / biggest); // the biggest unit gets -4
+    let r = -4 * (atk(u) / most); // the highest Attack gets -4
     if (e?.rally) r -= 3;
     if (kw.includes('windfury')) r -= 3;
+    if (kw.includes('divineShield')) r -= 3;
     if (kw.includes('taunt')) r -= 1;
-    if (kw.includes('divineShield')) r -= 1;
     if (e?.avenge) r += 4;
     if (e?.deathrattle) r += 2;
     if (u.cardId === 'mod' || u.cardId === 'abandon') r += 5;
