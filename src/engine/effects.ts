@@ -810,20 +810,20 @@ export const EFFECTS: Record<string, Effect> = {
   tom_judith: {}, // see combat deathrattle multiplier
   // ===== new units (v0.12.39) =====
   golbana: {
-    // +3/+3 to your other units (Golden +6/+6), once, then once more for each Golden unit in your army (itself included)
+    // +2/+2 to your other units (Golden +4/+4), once, then once more for each other Golden unit in your army
     battlecry: (c) => {
-      const times = 1 + c.board.filter((u) => u.golden).length;
-      for (let i = 0; i < times; i++) for (const u of c.board) if (u !== c.self) buff(u, 3 * c.m, 3 * c.m);
+      const times = 1 + c.board.filter((u) => u.golden && u !== c.self).length;
+      for (let i = 0; i < times; i++) for (const u of c.board) if (u !== c.self) buff(u, 2 * c.m, 2 * c.m);
     },
   },
   isha: {
     onSellOther: (c, sold) => { if (isTribe(sold, 'demons')) buff(c.self, 3 * c.m, 3 * c.m); },
   },
   gunner: {
-    // one of Bubble / Doomstrike / Reborn it doesn't have yet (Golden: two)
+    // one of Taunt / Bubble / Doomstrike / Reborn it doesn't have yet (Golden: two)
     battlecry: (c) => {
       for (let i = 0; i < c.m; i++) {
-        const k = pick(c.g, (['divineShield', 'venomous', 'reborn'] as Keyword[]).filter((x) => !has(c.self, x)));
+        const k = pick(c.g, (['taunt', 'divineShield', 'venomous', 'reborn'] as Keyword[]).filter((x) => !has(c.self, x)));
         if (k) addKw(c.self, k);
       }
     },
@@ -838,7 +838,7 @@ export const EFFECTS: Record<string, Effect> = {
         if (id) c.c.spawn(c.side, id, false, c.side.units.indexOf(c.self) + 1);
         gain(c, randomTribeUpTo(c, 'brambor'));
       }
-      c.c.snap('trigger', { note: 'Avenger: Summon and get a Brambor unit' });
+      c.c.snap('trigger', { note: 'Demon Bear: Summon and get a Brambor unit' });
     },
   },
   merge_o: {

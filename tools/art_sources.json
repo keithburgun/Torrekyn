@@ -1002,20 +1002,21 @@
    "px": true
   },
   "golbana": {
-   "src": "S/Demons/demonarcher.png",
+   "src": "X/Tennor/glammaray_small.png",
    "px": true
   },
   "isha": {
-   "src": "S/Demons/infantry.png",
+   "src": "X/old/lemonsprite.png",
    "px": true
   },
   "gunner": {
-   "src": "S/Potato/shotgun.png",
+   "src": "X/iglootank.png",
    "px": true
   },
   "avenger": {
    "src": "X/demonbear.png",
-   "px": true
+   "px": true,
+   "scale": 0.9
   },
   "merge_o": {
    "src": "X/turret.png",

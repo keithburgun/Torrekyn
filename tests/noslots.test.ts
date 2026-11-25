@@ -947,14 +947,17 @@ describe('tribe-bound trinkets', () => {
 });
 
 describe('new units (v0.12.39)', () => {
-  it('Golbana: +3/+3 to your other units, once more for each Golden unit you have', () => {
-    const { g, p } = setup();
-    const a = U(g, 'ash', 1, 1), b = U(g, 'ash', 1, 1, true);
-    p.board = [a, b]; p.hand = [U(g, 'golbana')];
-    play(g, p, 0, 2);
-    expect([a.atk, a.hp]).toEqual([1 + 6, 1 + 6]); // 1 Golden unit: twice
-    const gb = p.board[2];
-    expect([gb.atk, gb.hp]).toEqual([6, 6]); // not itself
+  it('Golbana: +2/+2 to your other units, once more for each other Golden unit (Golden: +4/+4, and it does not count itself)', () => {
+    for (const golden of [false, true]) {
+      const { g, p } = setup();
+      const a = U(g, 'ash', 1, 1), b = U(g, 'ash', 1, 1, true);
+      p.board = [a, b]; p.hand = [U(g, 'golbana', undefined, undefined, golden)];
+      play(g, p, 0, 2);
+      const n = golden ? 4 : 2;
+      expect([a.atk, a.hp]).toEqual([1 + 2 * n, 1 + 2 * n]); // 1 other Golden unit: twice
+      const gb = p.board[2];
+      expect([gb.atk, gb.hp]).toEqual([6 * (golden ? 2 : 1), 6 * (golden ? 2 : 1)]); // not itself
+    }
   });
 
   it('Isha: +3/+3 after you sell a Business Demon (not other units)', () => {
@@ -967,17 +970,17 @@ describe('new units (v0.12.39)', () => {
     expect([isha.atk, isha.hp]).toEqual([5, 7]);
   });
 
-  it('Gunner: gains one of Bubble, Doomstrike or Reborn (Golden: two different ones)', () => {
+  it('Gunner: gains one of Taunt, Bubble, Doomstrike or Reborn (Golden: two different ones)', () => {
     for (const golden of [false, true]) {
       const { g, p } = setup();
       p.hand = [U(g, 'gunner', undefined, undefined, golden)];
       play(g, p, 0, 0);
-      const got = p.board[0].kw.filter((k) => ['divineShield', 'venomous', 'reborn'].includes(k));
+      const got = p.board[0].kw.filter((k) => ['taunt', 'divineShield', 'venomous', 'reborn'].includes(k));
       expect(got.length).toBe(golden ? 2 : 1);
     }
   });
 
-  it('Avenger: after 3 friendly units die, summons a Brambor unit and gets one in hand', async () => {
+  it('Demon Bear: after 3 friendly units die, summons a Brambor unit and gets one in hand', async () => {
     const { ALL_TRIBES } = await import('../src/engine/core');
     const g = newGame(21, 'You', ALL_TRIBES);
     const p = g.players[0], o = g.players[1];

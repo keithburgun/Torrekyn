@@ -2,6 +2,9 @@
 
 Newest first. The version shows on the title screen.
 
+## 0.13.1 — 2026-11-25
+- Golbana: +2/+2 (Golden +4/+4), repeats only for other Golden units; new art for Golbana, Isha and Gunner (they shared sprites with other cards); Gunner can also get Taunt; Avenger is now Demon Bear, drawn a little smaller. New tools/art_dupes.py finds cards that show the same sprite
+
 ## 0.13.0 — 2026-11-25
 - New units: Golbana, Isha (Business Demons), Gunner (Cloister), Avenger (Brambor), Merge-o (Alcove, Merges like Magnetic), Corrivath Harp (Azure), The Tree Man (Neverending). Derby Pocket: 21 Health, Coffee Run needs 7 Arrives. Turtlepult: +2 Health whenever another unit gains Health. Paradox is Tier 5. Fixed: Purple Gem's Reborn could become permanent on a Golden triple
 

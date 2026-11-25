@@ -1635,8 +1635,8 @@
    "tier": 3,
    "atk": 6,
    "hp": 6,
-   "text": "Arrive: Give your other units +3/+3. Repeat for every Golden unit you have.",
-   "goldenText": "Arrive: Give your other units +6/+6. Repeat for every Golden unit you have.",
+   "text": "Arrive: Give your other units +2/+2. Repeat for every other Golden unit you have.",
+   "goldenText": "Arrive: Give your other units +4/+4. Repeat for every other Golden unit you have.",
    "keywords": []
   },
   {
@@ -1657,13 +1657,13 @@
    "tier": 1,
    "atk": 1,
    "hp": 3,
-   "text": "Arrive: Gain Bubble, Doomstrike or Reborn at random.",
-   "goldenText": "Arrive: Gain two of Bubble, Doomstrike or Reborn at random.",
+   "text": "Arrive: Gain Taunt, Bubble, Doomstrike or Reborn at random.",
+   "goldenText": "Arrive: Gain two of Taunt, Bubble, Doomstrike or Reborn at random.",
    "keywords": []
   },
   {
    "id": "avenger",
-   "name": "Avenger",
+   "name": "Demon Bear",
    "tribe": "brambor",
    "tier": 4,
    "atk": 4,
