@@ -446,9 +446,19 @@ export function shopBonus(p: Player): number {
   return powersOf(p).reduce((n, h) => n + (h.shopBonus ?? 0), 0) + p.trinkets.reduce((s, t) => s + (trinketDef(t).shopBonus ?? 0), 0);
 }
 
-export function offerTrinkets(g: GameState, p: Player, greater: boolean) {
+/** Offer a Trinket choice (free: Devotion's). If one is already open, this one waits and comes up after it. */
+export function offerTrinkets(g: GameState, p: Player, greater: boolean, free = false) {
+  if (p.trinketOffer) { (p.trinketQueue ??= []).push({ greater, free }); return; }
+  p.trinketFree = free;
   const pool = TRINKETS.filter((t) => !!t.greater === greater && !p.trinkets.includes(t.id) && (!t.needsTribe || g.tribes.includes(t.needsTribe)));
   p.trinketOffer = sample(g, pool, 4).map((t) => t.id);
+  if (!p.trinketOffer.length) { p.trinketOffer = null; nextTrinketOffer(g, p); } // (none left to offer)
+}
+
+/** the open choice is settled: bring up the next one waiting, if any */
+function nextTrinketOffer(g: GameState, p: Player) {
+  const next = p.trinketQueue?.shift();
+  if (next) offerTrinkets(g, p, next.greater, next.free);
 }
 
 /** The hero powers a player has (usually one). */
@@ -527,6 +537,7 @@ export function pickTrinket(g: GameState, p: Player, id: string | null): boolean
   if (id === null) {
     p.trinketOffer = null;
     p.trinketFree = false;
+    nextTrinketOffer(g, p);
     return true;
   }
   if (!p.trinketOffer.includes(id)) return false;
@@ -545,6 +556,7 @@ export function pickTrinket(g: GameState, p: Player, id: string | null): boolean
     log(p, `Double Thing became another ${t.name}!`);
     t.onGain?.(g, p);
   }
+  nextTrinketOffer(g, p);
   return true;
 }
 

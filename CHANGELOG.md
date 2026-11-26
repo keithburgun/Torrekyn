@@ -2,6 +2,9 @@
 
 Newest first. The version shows on the title screen.
 
+## 0.14.7 — 2026-11-26
+- Two Trinket choices won at once (e.g. Devotion during the turn-6 offer) now come one after the other, instead of the second being a random Trinket
+
 ## 0.14.6 — 2026-11-26
 - Card Viewer: Heroes and Trinkets tabs (search, Lesser/Greater filter, 'only in this match')
 

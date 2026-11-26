@@ -539,8 +539,9 @@ function shopScore(g: GameState, p: Player, u: Unit): number {
 export function aiTakeTurn(g: GameState, p: Player) {
   G = g;
   while (p.discovers.length) chooseDiscover(g, p, aiChooseDiscover(g, p, p.discovers[0]));
-  if (p.trinketOffer) {
-    const affordable = p.trinketOffer.filter((t) => trinketDef(t).cost <= p.gold);
+  for (let guard = 0; guard < 6 && p.trinketOffer; guard++) {
+    // (one after another when two were won at once; a free one can take any of them)
+    const affordable = p.trinketFree ? [...p.trinketOffer] : p.trinketOffer.filter((t) => trinketDef(t).cost <= p.gold);
     const best = on(p, 'trinkets')
       ? affordable.filter((t) => trinketGain(p, t) > 0).sort((a, b) => trinketGain(p, b) - trinketGain(p, a))[0]
       : affordable.sort((a, b) => trinketDef(b).cost - trinketDef(a).cost)[0];

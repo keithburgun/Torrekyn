@@ -255,14 +255,8 @@ function completeQuest(g: GameState, p: Player, kind: 'devotion' | 'bill', rewar
     p.gold += reward;
     log(p, `Quest complete: gained ${reward} gold.`);
   } else {
-    // a free Lesser Trinket of your choice (a random one if a Trinket choice is already waiting)
-    if (!p.trinketOffer) {
-      offerTrinkets(g, p, false);
-      p.trinketFree = true;
-    } else {
-      const t = pick(g, TRINKETS.filter((x) => !x.greater && !p.trinkets.includes(x.id) && !p.trinketOffer!.includes(x.id)));
-      if (t) { p.trinkets.push(t.id); t.onGain?.(g, p); }
-    }
+    // a free Lesser Trinket of your choice (after any Trinket choice that's already open)
+    offerTrinkets(g, p, false, true);
     log(p, 'Devotion complete: gain a Lesser Trinket.');
   }
 }
@@ -657,6 +651,7 @@ export function endTurn(g: GameState): CombatResult[] {
   for (const p of alivePlayers(g)) {
     if (!p.human || g.simulateAll) aiTakeTurn(g, p);
     if (p.trinketOffer) p.trinketOffer = null;
+    p.trinketQueue = [];
     while (p.discovers.length) chooseDiscover(g, p, 0);
     endTurnEffects(g, p); // (a bot's bonus stats come at the very end of this)
     while (p.discovers.length) chooseDiscover(g, p, 0);

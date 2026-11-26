@@ -163,6 +163,8 @@ export interface Player {
   /** the Trinket choice waiting is free (Devotion) */
   trinketFree?: boolean;
   trinketOffer: string[] | null;
+  /** Trinket choices waiting their turn (two won at once: the second is offered after the first is settled) */
+  trinketQueue?: { greater: boolean; free?: boolean }[];
   /** triples made by the human player, waiting to be celebrated by the UI */
   tripleEvents?: { cardId: string; uids: number[]; goldenUid: number }[];
   /** snapshot of the board used when this player is a ghost */

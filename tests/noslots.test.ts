@@ -970,9 +970,33 @@ describe('tribe-bound trinkets', () => {
     for (const [tribes, banned] of [[['azure', 'kindred', 'alcove', 'demons', 'cloister'], ['bronze_compass', 'incense', 'whetstone']], [['neverending', 'brambor', 'alcove', 'demons', 'cloister'], []]] as const) {
       g.tribes = [...tribes];
       const seen = new Set<string>();
-      for (let k = 0; k < 200; k++) { p.trinkets = []; offerTrinkets(g, p, false); for (const t of p.trinketOffer!) seen.add(t); }
+      for (let k = 0; k < 200; k++) { p.trinkets = []; p.trinketOffer = null; offerTrinkets(g, p, false); for (const t of p.trinketOffer!) seen.add(t); }
       for (const t of ['bronze_compass', 'incense', 'whetstone']) expect(seen.has(t)).toBe(!(banned as readonly string[]).includes(t));
     }
+  });
+});
+
+describe('two Trinket choices at once', () => {
+  it('the second waits until the first is settled (Devotion during the turn-6 offer; two Devotions)', async () => {
+    const { offerTrinkets, pickTrinket } = await import('../src/engine/heroes');
+    const { g, p } = setup();
+    p.gold = 0;
+    offerTrinkets(g, p, false); // the turn-6 offer (paid)
+    const first = [...p.trinketOffer!];
+    offerTrinkets(g, p, false, true); // Devotion completes: free, waits
+    expect(p.trinketOffer).toEqual(first);
+    expect(p.trinketFree).toBe(false);
+    pickTrinket(g, p, null); // skip the paid one
+    expect(p.trinketOffer?.length).toBe(4);
+    expect(p.trinketFree).toBe(true); // now the free one
+    expect(pickTrinket(g, p, p.trinketOffer![0])).toBe(true);
+    expect([p.trinkets.length, p.trinketOffer]).toEqual([1, null]);
+    // two free ones in a row: both are chosen
+    offerTrinkets(g, p, false, true); offerTrinkets(g, p, false, true);
+    pickTrinket(g, p, p.trinketOffer![0]);
+    expect(p.trinketFree).toBe(true);
+    pickTrinket(g, p, p.trinketOffer![0]);
+    expect([p.trinkets.length, p.trinketOffer]).toEqual([3, null]);
   });
 });
 
