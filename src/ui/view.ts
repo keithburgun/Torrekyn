@@ -54,6 +54,7 @@ export const KEYWORD_HELP: Record<string, string> = {
   'End of Turn': 'Happens when you end your turn in the Tavern.',
   'Start of Turn': 'Happens when your turn in the Tavern begins.',
   Quest: 'Do what it asks, and get the reward when you finish.',
+  Spell: "Play it from your hand for its effect, then it's gone. There's one in the Tavern after every Refresh.",
 };
 
 /**
@@ -69,6 +70,7 @@ export function cardKeywords(u: { cardId: string; golden: boolean; kw?: Keyword[
     if (m) found.push([m.index, k]);
   }
   const out = found.sort((a, b) => a[0] - b[0]).map(([, k]) => k);
+  if (d.spell) out.unshift('Spell');
   for (const k of u.kw ?? []) { const n = KW_ICON[k]?.[1]; if (n && !out.includes(n)) out.push(n); }
   return out;
 }
@@ -82,6 +84,7 @@ export function abilityTags(cardId: string): string[] {
   const e = EFFECTS[cardId];
   const d = def(cardId);
   const tags: string[] = [];
+  if (d.spell) return []; // (the plate already says Spell)
   if (!e) return tags;
   if (e.battlecry) tags.push('Arrive');
   if (e.deathrattle) tags.push('Deathrattle');
@@ -123,7 +126,7 @@ export function cardHtml(u: { cardId: string; golden: boolean; atk: number; hp: 
   const atk = o.atk ?? u.atk;
   const hp = o.hp ?? u.hp;
   const kw = o.kw ?? u.kw;
-  const cls = ['card', `t-${d.tribe}`, d.allTribes ? 't-all' : '', u.golden ? 'golden' : '', o.small ? 'small' : '', o.large ? 'large' : '', ...kw.map((k) => `kw-${k}`), u.mem?.locked ? 'locked' : '', o.extraClass ?? ''].join(' ');
+  const cls = ['card', d.spell ? 't-spell spell' : `t-${d.tribe}`, d.allTribes ? 't-all' : '', u.golden ? 'golden' : '', o.small ? 'small' : '', o.large ? 'large' : '', ...kw.map((k) => `kw-${k}`), u.mem?.locked ? 'locked' : '', o.extraClass ?? ''].join(' ');
   const baseAtk = d.atk * (u.golden ? 2 : 1);
   const baseHp = d.hp * (u.golden ? 2 : 1);
   const icons = kw.filter((k) => k !== 'taunt' && k !== 'divineShield').map((k) => `<span class="kw-${k}" title="${KW_ICON[k][1]}">${KW_ICON[k][0]}</span>`).join('');
@@ -136,12 +139,17 @@ export function cardHtml(u: { cardId: string; golden: boolean; atk: number; hp: 
   <div class="kws">${icons}</div>
   <div class="abil">${tags}</div>
   <div class="name">${esc(d.name)}</div>
-  <div class="tribe-plate ${(TRIBE_SHORT[d.tribe] ?? d.tribe).length > 8 && !d.allTribes ? 'long' : ''}">${d.allTribes ? 'ALL' : TRIBE_SHORT[d.tribe] ?? d.tribe}</div>${o.badge ?? ''}
+  <div class="tribe-plate ${(TRIBE_SHORT[d.tribe] ?? d.tribe).length > 8 && !d.allTribes && !d.spell ? 'long' : ''}">${d.spell ? 'Spell' : d.allTribes ? 'ALL' : TRIBE_SHORT[d.tribe] ?? d.tribe}</div>${o.badge ?? ''}
   ${(u as { avenge?: string }).avenge ? `<div class="avenge-count" title="Avenge: friendly units died / needed"><i>⚔</i>${(u as { avenge?: string }).avenge}</div>` : ''}
   ${(() => { const c = (u as { note?: string }).note ?? (u.mem && (o.zone === "board" || o.zone === "combat" || o.zone === "hand") ? unitCounter(u as Unit) : null); return c ? `<div class="counter">${c}</div>` : ''; })()}
-  <div class="stat atk ${atk !== baseAtk ? 'buffed' : ''}" data-base="${baseAtk}" data-v="${atk}" ${statInner(atk)}</div>
-  <div class="stat hp ${hp > baseHp ? 'buffed' : hp < baseHp ? 'hurt' : ''}" data-base="${baseHp}" data-v="${hp}" ${statInner(hp)}</div>
+  ${d.spell ? spellCost(d) : `<div class="stat atk ${atk !== baseAtk ? 'buffed' : ''}" data-base="${baseAtk}" data-v="${atk}" ${statInner(atk)}</div>
+  <div class="stat hp ${hp > baseHp ? 'buffed' : hp < baseHp ? 'hurt' : ''}" data-base="${baseHp}" data-v="${hp}" ${statInner(hp)}</div>`}
 </div>`;
+}
+
+/** a Spell's price badge (a gold coin; a red orb for one paid with Health) */
+function spellCost(d: { cost?: number; healthCost?: boolean }) {
+  return `<div class="spell-cost ${d.healthCost ? 'in-hp' : ''}" title="Costs ${d.cost ?? 0} ${d.healthCost ? 'Health' : 'Gold'}"><span>${d.cost ?? 0}</span></div>`;
 }
 
 /** a stat as shown on a card: up to 999 as is, then 1.2k / 12.9k (rounded down, so it never overstates), 123k, 1.2M */
@@ -169,7 +177,7 @@ export const statOf = (el: Element) => Number((el as HTMLElement).dataset.v ?? e
 
 export function formatText(text: string): string {
   let t = esc(text);
-  t = t.replace(/(Arrive|Deathrattle|Rally|Avenge ?\(\d+\)|Start of (Combat|Turn)|End of Turn|Bubble|Taunt|Reborn|Doomstrike|Poisonous|Discover|Quest|Twinstrike|Merge)/g, '<b>$1</b>');
+  t = t.replace(/(Arrive|Spells?\b|Deathrattle|Rally|Avenge ?\(\d+\)|Start of (Combat|Turn)|End of Turn|Bubble|Taunt|Reborn|Doomstrike|Poisonous|Discover|Quest|Twinstrike|Merge)/g, '<b>$1</b>');
   return t;
 }
 
@@ -233,14 +241,14 @@ export function bigCardHtml(u: { cardId: string; golden: boolean; atk: number; h
   if (u.cardId === 'intern') text += ` (Sells for ${1 + (u.mem?.sellBonus ?? 0)} Gold)`;
   const kwExtra = u.kw.filter((k) => !d.keywords.includes(k)).map((k) => KW_ICON[k][1]);
   const bA = d.atk * (u.golden ? 2 : 1), bH = d.hp * (u.golden ? 2 : 1);
-  return `<div class="bigcard t-${d.tribe} ${d.allTribes ? 't-all' : ''} ${u.golden ? 'golden' : ''} ${extra}">
+  return `<div class="bigcard ${d.spell ? 't-spell spell' : `t-${d.tribe}`} ${d.allTribes ? 't-all' : ''} ${u.golden ? 'golden' : ''} ${extra}">
   <div class="art" style="background-image:url('${cardArt(u.cardId)}')"></div>
   <div class="tier" title="Tier ${d.tier}">${'★'.repeat(d.tier)}</div>
   <div class="name">${u.golden ? 'Golden ' : ''}${esc(d.name)}</div>
-  <div class="tribe"><span>${d.allTribes ? 'All Factions' : esc(TRIBE_NAMES[d.tribe] ?? d.tribe)}${d.token ? ' · Token' : ''}</span></div>
+  <div class="tribe"><span>${d.spell ? 'Spell' : d.allTribes ? 'All Factions' : esc(TRIBE_NAMES[d.tribe] ?? d.tribe)}${d.token ? ' · Token' : ''}</span></div>
   <div class="text"><div>${text ? formatText(text) : kwExtra.length ? '' : '<i>No ability.</i>'}${kwExtra.length ? `${text ? '<br>' : ''}<i class="kw-extra">${kwExtra.join(', ')}</i>` : ''}</div></div>
-  <div class="stat atk ${u.atk !== bA ? 'buffed' : ''}" ${statInner(u.atk)}</div>
-  <div class="stat hp ${u.hp > bH ? 'buffed' : u.hp < bH ? 'hurt' : ''}" ${statInner(u.hp)}</div>
+  ${d.spell ? spellCost(d) : `<div class="stat atk ${u.atk !== bA ? 'buffed' : ''}" ${statInner(u.atk)}</div>
+  <div class="stat hp ${u.hp > bH ? 'buffed' : u.hp < bH ? 'hurt' : ''}" ${statInner(u.hp)}</div>`}
 </div>`;
 }
 
@@ -253,9 +261,11 @@ export function unitView(p: Player, u: Unit, zone: 'board' | 'hand' | 'shop', i:
 export function gemText(p: Player, cardId: string, golden: boolean, text: string): string {
   // Banners: every Banner you've played adds +1 (Golden +2) to the ones after it
   if ((cardId === 'silver_banner' || cardId === 'gold_banner') && p.bannerBonus) {
-    const m = golden ? 2 : 1;
-    const n = (3 + p.bannerBonus) * m;
+    const n = 3 + p.bannerBonus;
     return `${text.replace(/\+\d+ (Attack|Health)/, `+${n} $1`)} (Improved ${p.bannerBonus === 1 ? 'once' : `${p.bannerBonus} times`}.)`;
+  }
+  if (cardId === 'red_banner' && p.bannerBonus) {
+    return `${text.replace(/\+\d+\/\+\d+/, `+${1 + p.bannerBonus}/+${2 + p.bannerBonus}`)} (Improved ${p.bannerBonus === 1 ? 'once' : `${p.bannerBonus} times`}.)`;
   }
   if (!GEMS.includes(cardId)) return text;
   const l = gemLevel(p, cardId);

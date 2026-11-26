@@ -82,13 +82,13 @@ describe('cards rewritten without slots', () => {
     const { g, p, o } = setup();
     const com = U(g, 'commitment', 8, 20);
     p.board = [com, U(g, 'skel', 1, 30)];
-    p.hand = [U(g, 'red_gem'), U(g, 'hug')];
+    p.hand = [U(g, 'sword'), U(g, 'hug')];
     play(g, p, 0, 2); // an Arrive unit
     play(g, p, 0, 3); // another
     expect(com.mem.imp).toBe(2);
     const c = fight(g, p, o, p.board.slice(0, 2), [U(g, 'skel', 1, 99)]);
     c.run();
-    expect(at(c, afterSoc(c), 'skel')!.atk).toBe(1 + 3 + 3); // +3 from Commitment, +3 from the Red Gem
+    expect(at(c, afterSoc(c), 'skel')!.atk).toBe(1 + 3); // +3 from Commitment (Sword buffed the left-most: Commitment)
   });
 
   it('Gelf Lanz (card): Rally gains the Attack of the unit it attacks, for the battle', () => {
@@ -205,10 +205,11 @@ describe('cards rewritten without slots', () => {
   it('Potato Gem: +2 Health to every unit in hand and army (+1 per improvement, Golden doubles)', () => {
     const { g, p } = setup();
     const b = U(g, 'skel', 1, 1), h = U(g, 'skel', 1, 1);
-    p.board = [b]; p.hand = [U(g, 'ancient_name_brambor', undefined, undefined, true), h];
+    p.board = [b]; p.hand = [U(g, 'ancient_name_brambor'), h];
     p.gemBonus = { ancient_name_brambor: 1 };
     play(g, p, 0, 1);
-    expect([b.hp, h.hp]).toEqual([7, 7]);
+    expect([b.hp, h.hp]).toEqual([4, 4]);
+    expect(p.hand).toEqual([h]); // the Spell is gone
   });
 });
 
@@ -226,18 +227,16 @@ describe('trinkets rewritten without slots', () => {
 });
 
 describe('v0.10.2 changes', () => {
-  it('Shield: has Taunt, and its Arrive gives the chosen unit Taunt (Golden: one more)', () => {
+  it('Shield (a Tier 1 Spell, 1 Gold): the chosen unit gets +3 Health and Taunt', () => {
     const { g, p } = setup();
     const a = U(g, 'doctor', 2, 2), b = U(g, 'doctor', 2, 2), c = U(g, 'doctor', 2, 2);
     [a, b, c].forEach((x) => (x.kw = []));
     p.board = [a, b, c];
     p.hand = [U(g, 'shield_neutral')];
-    expect(p.hand[0].kw).toContain('taunt');
-    play(g, p, 0, 3, b.uid);
+    expect([def('shield_neutral').spell, def('shield_neutral').tier, def('shield_neutral').cost]).toEqual([true, 1, 1]);
+    expect(play(g, p, 0, 3, b.uid).ok).toBe(true);
     expect([a.kw.includes('taunt'), b.kw.includes('taunt'), c.kw.includes('taunt')]).toEqual([false, true, false]);
-    p.hand = [U(g, 'shield_neutral', undefined, undefined, true)];
-    play(g, p, 0, 4, a.uid);
-    expect([a, b, c].filter((x) => x.kw.includes('taunt')).length).toBe(3);
+    expect([b.hp, p.board.length, p.hand.length]).toEqual([5, 3, 0]);
   });
 
   it('Storyteller: selling it gains a random Cloister unit (up to your Tier)', () => {
@@ -303,10 +302,10 @@ describe('v0.10.4 changes', () => {
     expect(summons).toBeGreaterThanOrEqual(4);
   });
 
-  it('stats: Omar Evans has no Doomstrike; Green Ninja is 5/2; every Gem is 1/1', () => {
+  it('stats: Omar Evans has no Doomstrike; Green Ninja is 5/2; every Gem is a Tier 3 Spell for 2 Gold', () => {
     expect(def('omar_evans').keywords).not.toContain('venomous');
     expect([def('orange_ninja').atk, def('orange_ninja').hp]).toEqual([5, 2]);
-    for (const id of ['tourmaline', 'red_gem', 'ancient_name_brambor', 'purple_gem', 'pink_gem', 'green_gem']) expect([def(id).atk, def(id).hp]).toEqual([1, 1]);
+    for (const id of ['tourmaline', 'red_gem', 'ancient_name_brambor', 'purple_gem', 'pink_gem', 'green_gem', 'white_gem']) expect([def(id).spell, def(id).tier, def(id).cost]).toEqual([true, 3, 2]);
   });
 });
 
@@ -454,7 +453,7 @@ it('Intern: in battle its card shows the Gold it now sells for (1 + its bonus)',
   if (frameUnitView && bigCardHtml) expect(bigCardHtml(frameUnitView(last))).toContain('Sells for 2 Gold');
 });
 
-it('Broken Land improves every Gem twice (Golden: four times); Potato Gem is Tier 2', async () => {
+it('Broken Land improves every Gem twice (Golden: four times)', async () => {
   const { gemLevel, GEMS } = await import('../src/engine/effects');
   for (const golden of [false, true]) {
     const { g, p } = setup();
@@ -462,7 +461,6 @@ it('Broken Land improves every Gem twice (Golden: four times); Potato Gem is Tie
     play(g, p, 0, 0);
     for (const id of GEMS) expect(gemLevel(p, id)).toBe(golden ? 4 : 2);
   }
-  expect(def('ancient_name_brambor').tier).toBe(2);
 });
 
 it('Life: Start of Combat gains a Pink Gem to your hand (Golden: 2); Grief: Upgrading costs 2 less (Golden 4)', () => {
@@ -481,9 +479,9 @@ it('Life: Start of Combat gains a Pink Gem to your hand (Golden: 2); Grief: Upgr
 });
 
 describe('v0.12.3 Kindred', () => {
-  it('Pink Gem: +1/+1 for good and Bubble until next turn, twice over for a Kindred unit (Golden doubles)', async () => {
+  it('Pink Gem: +1/+1 for good and Bubble until next turn, twice over for a Kindred unit', async () => {
     const { startTurn } = await import('../src/engine/game');
-    for (const golden of [false, true]) {
+    for (const golden of [false]) {
       const { g, p } = setup();
       const k = U(g, 'therapist', 2, 2); k.kw = [];
       const n = U(g, 'ash', 2, 2); n.kw = [];
@@ -1062,8 +1060,8 @@ describe('new units (v0.12.39)', () => {
 });
 
 describe('Gems (v0.13.2)', () => {
-  it('Green Gem: +3 Attack and Twinstrike, twice for a Cloister unit (Golden +6)', () => {
-    for (const golden of [false, true]) {
+  it('Green Gem: +3 Attack and Twinstrike, twice for a Cloister unit', () => {
+    for (const golden of [false]) {
       const { g, p } = setup();
       const cl = U(g, 'disciple', 1, 1), nb = U(g, 'ash', 1, 1);
       p.board = [cl, nb];
@@ -1075,8 +1073,8 @@ describe('Gems (v0.13.2)', () => {
     }
   });
 
-  it('Blue Gem: +8 Health and Taunt, twice for an Azure unit (Golden +16)', () => {
-    for (const golden of [false, true]) {
+  it('Blue Gem: +8 Health and Taunt, twice for an Azure unit', () => {
+    for (const golden of [false]) {
       const { g, p } = setup();
       const az = U(g, 'knight', 1, 1), nb = U(g, 'ash', 1, 1); az.kw = []; nb.kw = [];
       p.board = [az, nb];
@@ -1109,7 +1107,7 @@ describe('keyword panels', () => {
   it('list every keyword on a card (text first, then gained ones), each with an explanation', async () => {
     const { cardKeywords, keywordPanelsHtml } = await import('../src/ui/view');
     expect(cardKeywords({ cardId: 'warmech', golden: false })).toEqual(['Bubble', 'Reborn', 'Deathrattle']);
-    expect(cardKeywords({ cardId: 'tourmaline', golden: false })).toEqual(['Arrive', 'Taunt']);
+    expect(cardKeywords({ cardId: 'tourmaline', golden: false })).toEqual(['Spell', 'Taunt']);
     expect(cardKeywords({ cardId: 'merge_o', golden: false, kw: ['divineShield'] })).toEqual(['Merge', 'Bubble']);
     expect(cardKeywords({ cardId: 'avenger', golden: false })).toEqual(['Avenge']);
     expect(keywordPanelsHtml({ cardId: 'corrivath_harp', golden: false })).toContain('End of Turn');

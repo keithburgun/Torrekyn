@@ -94,7 +94,7 @@ describe('every ability changes something', () => {
   }
 
   it('every card with ability text has an ability', () => {
-    const PASSIVE = new Set(['remember', 'vulnerability', 'root', 'larva', 'orange_ninja', 'pyro', 'treasure', 'warmech', 'gem_wizard', 'sarinee', 'tom_judith', 'horseman', 'shield_azure', 'roll_guard', 'ash', 'white_ninja', 'peebnup_bubber', 'owl', 'memory', 'tree_man']);
+    const PASSIVE = new Set(['remember', 'vulnerability', 'root', 'larva', 'orange_ninja', 'pyro', 'treasure', 'warmech', 'gem_wizard', 'sarinee', 'tom_judith', 'horseman', 'shield_azure', 'roll_guard', 'ash', 'white_ninja', 'peebnup_bubber', 'owl', 'memory', 'tree_man', 'different_power_time']);
     const missing = CARDS.filter((c) => !c.token && c.text && !PASSIVE.has(c.id) && !Object.keys(EFFECTS[c.id] ?? {}).length).map((c) => c.id);
     expect(missing).toEqual([]);
     expect(def('skel').text).toBe('');
@@ -106,18 +106,17 @@ describe('every ability changes something', () => {
     p.board = []; p.hand = [makeUnit(g, 'sword')];
     play(g, p, 0, 0);
     expect(p.board[0].atk).toBe(def('sword').atk + 4);
-    // a Gem can aim at itself, and so can Therapist
-    for (const id of ['tourmaline', 'therapist']) {
+    // Therapist can aim at itself (a Spell can't: it isn't a unit)
+    for (const id of ['therapist']) {
       p.board = [makeUnit(g, 'ash')]; const self = makeUnit(g, id); p.hand = [self];
       expect(validTargets(p, id, self)).toContain(self);
       play(g, p, 0, 1, self.uid);
       expect(self.hp).toBeGreaterThan(def(id).hp);
       expect(p.board[0].hp).toBe(def('ash').hp);
     }
-    // Red Gem counts itself among the 3 left-most units
-    p.board = [makeUnit(g, 'ash')]; p.hand = [makeUnit(g, 'red_gem')];
-    play(g, p, 0, 0);
-    expect(p.board[0].atk).toBeGreaterThan(def('red_gem').atk);
+    const gem = makeUnit(g, 'tourmaline');
+    p.board = [makeUnit(g, 'ash')]; p.hand = [gem];
+    expect(validTargets(p, 'tourmaline', gem)).not.toContain(gem);
   });
 
   it('bots line up big, Rally and Twinstrike units on the left, Avenge units on the right', () => {

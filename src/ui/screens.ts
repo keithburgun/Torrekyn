@@ -65,7 +65,7 @@ export function filteredCards(v: ViewerState, g: GameState | null): CardDef[] {
   return CARDS.filter((c) => {
     if (c.hidden) return false;
     if (v.onlyMatch && g && c.tribe !== 'neutral' && !g.tribes.includes(c.tribe)) return false;
-    if (v.tribe && c.tribe !== v.tribe) return false;
+    if (v.tribe === 'spell' ? !c.spell : v.tribe && (c.tribe !== v.tribe || c.spell)) return false;
     if (v.tier && c.tier !== v.tier) return false;
     if (ab && !ab(c)) return false;
     if (!v.ability && c.token && !q) return false; // tokens only when asked for
@@ -78,8 +78,8 @@ export function cardGridHtml(v: ViewerState, g: GameState | null) {
   const list = filteredCards(v, g);
   if (!list.length) return '<div class="hint" style="padding:40px">No cards match these filters.</div>';
   return list.map((c) => {
-    const m = v.golden ? 2 : 1;
-    return `<div class="cv-cell">${bigCardHtml({ cardId: c.id, golden: v.golden, atk: c.atk * m, hp: c.hp * m, kw: [...c.keywords] })}</div>`;
+    const m = v.golden && !c.spell ? 2 : 1;
+    return `<div class="cv-cell">${bigCardHtml({ cardId: c.id, golden: v.golden && !c.spell, atk: c.atk * m, hp: c.hp * m, kw: [...c.keywords] })}</div>`;
   }).join('');
 }
 
@@ -97,7 +97,7 @@ export function cardViewerHtml(v: ViewerState, g: GameState | null) {
       <button class="btn" data-act="cv-close">Close</button>
     </div>
     <div class="cv-filters">
-      ${chip('cv-tribe', '', 'All tribes', !v.tribe)}${tribes.map((t) => chip('cv-tribe', t, `<span class="tdot t-${t}"></span>${esc(TRIBE_NAMES[t])}`, v.tribe === t, g && t !== 'neutral' && !g.tribes.includes(t) ? 'banned' : '')).join('')}
+      ${chip('cv-tribe', '', 'All tribes', !v.tribe)}${tribes.map((t) => chip('cv-tribe', t, `<span class="tdot t-${t}"></span>${esc(TRIBE_NAMES[t])}`, v.tribe === t, g && t !== 'neutral' && !g.tribes.includes(t) ? 'banned' : '')).join('')}${chip('cv-tribe', 'spell', '<span class="tdot t-spell"></span>Spells', v.tribe === 'spell')}
     </div>
     <div class="cv-filters">
       ${chip('cv-tier', '0', 'All tiers', !v.tier)}${[1, 2, 3, 4, 5, 6].map((t) => chip('cv-tier', String(t), `Tier ${t}`, v.tier === t)).join('')}

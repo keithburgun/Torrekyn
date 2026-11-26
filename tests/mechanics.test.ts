@@ -97,7 +97,7 @@ describe('mechanics', () => {
 
   it('skeleton deathrattle spawns skels', () => {
     const g = newGame(4);
-    const { c } = fight(g, [makeUnit(g, 'skeleton')], [makeUnit(g, 'tourmaline')]);
+    const { c } = fight(g, [makeUnit(g, 'skeleton')], [makeUnit(g, 'skel')]);
     expect(c.frames.some((f) => f.sides[0].some((u) => u.cardId === 'skel'))).toBe(true);
   });
 
@@ -198,9 +198,9 @@ describe('heroes', () => {
     g.round = 5;
     p.gold = 10;
     expect(powerCost(g, p, heroDef('locas_clare')!)).toBe(3);
-    const n = p.shop.length;
+    const n = p.shop.filter((u) => !def(u.cardId).spell).length;
     expect(useHeroPower(g, p, undefined, 'locas_clare')).toBe(true);
-    expect(p.shop.length).toBe(0);
+    expect(p.shop.length).toBe(1); // (the Spell stays)
     expect(p.hand.length).toBe(n);
     g.round = 6;
     expect(powerCost(g, p, heroDef('locas_clare')!)).toBe(7);

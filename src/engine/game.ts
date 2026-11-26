@@ -1,15 +1,15 @@
 import {
-  ALL_TRIBES, CARDS, CONFIG, addKw, cloneUnit, def, displayName, effStats, isTribe, log, makeUnit, mult, pick, rand, randInt, sample, shuffle,
+  ALL_TRIBES, CARDS, CONFIG, SPELLS, addKw, cloneUnit, def, displayName, effStats, handUnits, isSpell, isTribe, log, makeUnit, mult, pick, rand, randInt, sample, shuffle,
 } from './core';
 import { EFFECTS, GEMS, battlecryTimes, hasBattlecry } from './effects';
 import { runCombat } from './combat';
 import { aiTakeTurn, aiChooseDiscover, finalSort } from './ai';
 import { setFxPhase, withFx, heroPing, peebSync } from './fx';
 import { PERSONAS, matchPersonas, personaProfile } from './personas';
-import { TRINKETS, HEROES, heroHealth, buyCost, gainPower, heroDef, heroEndTurn, heroHooks, hasTrinket, trinketCount, offerTrinkets, shopBonus, GREATER_TRINKET_TURN, LESSER_TRINKET_TURN } from './heroes';
+import { TRINKETS, HEROES, freshPowers, heroHealth, buyCost, gainPower, heroDef, heroEndTurn, heroHooks, hasTrinket, trinketCount, offerTrinkets, shopBonus, GREATER_TRINKET_TURN, LESSER_TRINKET_TURN } from './heroes';
 import type { Discover, GameState, Player, Tribe, Unit } from './types';
 
-export const SAVE_VERSION = 5; // 5: Tier 6 and Poisonous (Stealth removed); older games in progress are dropped
+export const SAVE_VERSION = 6; // 6: Spells (Gems and Banners stopped being units); older games in progress are dropped
 
 
 
@@ -34,7 +34,7 @@ export function newGame(seed: number, humanName = 'You', tribes?: Tribe[], opts:
   g.players.push(newPlayer(0, humanName, true, 0));
   for (let i = 1; i < CONFIG.players; i++) g.players.push(newPlayer(i, `Rival ${i}`, false, i));
   for (const c of CARDS) {
-    if (c.token) continue;
+    if (c.token || c.spell) continue; // (Spells aren't drawn from the pool: see rollShop)
     if (c.tribe !== 'neutral' && !g.tribes.includes(c.tribe)) continue;
     g.pool[c.id] = CONFIG.copiesPerTier[c.tier];
   }
@@ -74,7 +74,7 @@ export const alivePlayers = (g: GameState) => g.players.filter((p) => p.alive);
 // ---------------- pool ----------------
 export function inPlay(g: GameState, cardId: string) {
   const d = def(cardId);
-  return !d.token && (d.tribe === 'neutral' || g.tribes.includes(d.tribe));
+  return !d.token && !d.spell && (d.tribe === 'neutral' || g.tribes.includes(d.tribe));
 }
 
 export function returnToPool(g: GameState, u: Unit) {
@@ -214,6 +214,9 @@ export function rollShop(g: GameState, p: Player) {
     if (p.stuffieBonus && isTribe(u, 'kindred')) { u.atk += p.stuffieBonus; u.hp += p.stuffieBonus; } // Stuffie Magic
     p.shop.push(u);
   }
+  // and one Spell, on the right (any Spell up to your Tavern Tier; they never run out)
+  const sp = pick(g, SPELLS.filter((c) => c.tier <= p.tier));
+  if (sp) p.shop.push(makeUnit(g, sp.id));
 }
 
 // ---------------- gaining cards ----------------
@@ -224,6 +227,7 @@ export function gainCard(g: GameState, p: Player, u: Unit, how: 'buy' | 'gain' =
     return false;
   }
   p.hand.push(u);
+  if (isSpell(u)) return true; // (a Spell isn't a unit: "whenever you gain a unit" effects and Quests ignore it)
   for (const b of [...p.board]) {
     const e = EFFECTS[b.cardId]?.onGain;
     if (e) withFx(g, p, { unit: b }, 'Ability', () => e({ g, p, self: b, m: mult(b), board: p.board }, u, how));
@@ -273,7 +277,7 @@ export function checkTriples(g: GameState, p: Player) {
     const counts = new Map<string, Unit[]>();
     // locked units count too: tripling frees them (the Golden copy arrives unlocked)
     for (const u of [...p.hand, ...p.board]) {
-      if (u.golden) continue;
+      if (u.golden || isSpell(u)) continue; // (Spells don't triple)
       const arr = counts.get(u.cardId) ?? [];
       arr.push(u);
       counts.set(u.cardId, arr);
@@ -368,6 +372,7 @@ export function buy(g: GameState, p: Player, shopIdx: number): ActionResult {
   if (busy(p)) return fail('Choose a card first');
   const u = p.shop[shopIdx];
   if (!u) return fail('Nothing there');
+  if (isSpell(u)) return buySpell(g, p, shopIdx);
   const cost = buyCost(p, u.cardId);
   if (p.gold < cost) return fail('Not enough gold');
   if (p.hand.length >= CONFIG.handSize) return fail('Your hand is full');
@@ -383,6 +388,19 @@ export function buy(g: GameState, p: Player, shopIdx: number): ActionResult {
     const e = EFFECTS[b.cardId]?.onBuy;
     if (e) withFx(g, p, { unit: b }, 'Ability', () => e({ g, p, self: b, m: mult(b), board: p.board }, u));
   }
+  return OK;
+}
+
+/** a Spell costs its own price, in Gold (or, for Haste, in Health); nothing "when you buy a unit" happens */
+function buySpell(g: GameState, p: Player, shopIdx: number): ActionResult {
+  const u = p.shop[shopIdx];
+  const d = def(u.cardId);
+  const cost = d.cost ?? 0;
+  if (d.healthCost ? p.health <= cost : p.gold < cost) return fail(d.healthCost ? 'Not enough Health' : 'Not enough gold');
+  if (p.hand.length >= CONFIG.handSize) return fail('Your hand is full');
+  if (d.healthCost) p.health -= cost; else p.gold -= cost;
+  p.shop.splice(shopIdx, 1);
+  gainCard(g, p, u, 'buy');
   return OK;
 }
 
@@ -432,13 +450,15 @@ export function validTargets(p: Player, cardId: string, self?: Unit): Unit[] {
   const t = EFFECTS[cardId]?.target;
   if (!t) return [];
   // ('other': not the card being played, e.g. Paradox can't copy itself)
-  return [...p.board, ...(self && t !== 'other' ? [self] : [])].filter((u) => !(t === 'unlocked' && u.mem.locked) && !(t === 'alcove' && !isTribe(u, 'alcove')));
+  // (a Spell isn't a unit: only your army)
+  return [...p.board, ...(self && t !== 'other' && !isSpell(cardId) ? [self] : [])].filter((u) => !(t === 'unlocked' && u.mem.locked) && !(t === 'alcove' && !isTribe(u, 'alcove')));
 }
 
 export function play(g: GameState, p: Player, handIdx: number, pos: number, targetUid?: number): ActionResult {
   if (busy(p)) return fail('Choose a card first');
   const u = p.hand[handIdx];
   if (!u) return fail('Nothing there');
+  if (isSpell(u)) return castSpell(g, p, handIdx, targetUid);
   // Merge (like Magnetic): Merge-o can still go into an Alcove unit when the army is full
   const mergeTarget = u.cardId === 'merge_o' && targetUid !== undefined ? p.board.find((b) => b.uid === targetUid && isTribe(b, 'alcove')) : undefined;
   if (p.board.length >= CONFIG.boardSize && !mergeTarget) return fail('Your army is full');
@@ -450,7 +470,6 @@ export function play(g: GameState, p: Player, handIdx: number, pos: number, targ
   if (u.cardId === 'owl') p.owlsSummoned = (p.owlsSummoned ?? 0) + 1;
   u.mem.pv = u.hp; // Health it had in hand doesn't count as gained (Turtlepult)
   const target = targetUid !== undefined ? p.board.find((b) => b.uid === targetUid) : undefined;
-  if (GEMS.includes(u.cardId)) p.lastGem = u.cardId; // (Corrivath Harp)
   if (hasBattlecry(u.cardId)) { p.battlecryUnitsThisTurn = (p.battlecryUnitsThisTurn ?? 0) + 1; runBattlecry(g, p, u, target); }
   const onPlay = EFFECTS[u.cardId]?.onPlay;
   if (onPlay) withFx(g, p, { unit: u }, 'Played', () => onPlay({ g, p, self: u, m: mult(u), board: p.board }));
@@ -466,6 +485,38 @@ export function play(g: GameState, p: Player, handIdx: number, pos: number, targ
   heroHooks.onPlay(g, p, u);
   if (u.cardId === 'merge_o' && target && target !== u && isTribe(target, 'alcove')) mergeInto(g, p, u, target);
   drainOverflow(g, p); // a card waiting for room takes the freed hand slot
+  return OK;
+}
+
+/**
+ * Cast a Spell from hand: it leaves the hand, does its thing (on the chosen unit, for targeted ones) and is gone.
+ * Spells aren't units: no Arrive, no "when you play a unit". Gem Wizard still makes Red Gems happen more times.
+ */
+export function castSpell(g: GameState, p: Player, handIdx: number, targetUid?: number): ActionResult {
+  const u = p.hand[handIdx];
+  const e = EFFECTS[u.cardId];
+  const target = targetUid !== undefined ? p.board.find((b) => b.uid === targetUid) : undefined;
+  if (e?.target) {
+    const ok = validTargets(p, u.cardId);
+    if (!ok.length) return fail(p.board.length ? 'No unit can take that' : 'You have no units to cast that on');
+    if (target && !ok.includes(target)) return fail("That unit can't take it");
+  }
+  p.hand.splice(handIdx, 1);
+  if (GEMS.includes(u.cardId)) p.lastGem = u.cardId; // (Corrivath Harp)
+  let times = 1;
+  if (u.cardId === 'red_gem') for (const b of p.board) if (b.cardId === 'gem_wizard') times = Math.max(times, b.golden ? 3 : 2);
+  const fn = e?.spell ?? e?.battlecry;
+  for (let i = 0; i < times; i++) {
+    withFx(g, p, { name: def(u.cardId).name }, i === 0 ? 'Spell' : 'Again!', () => {
+      if (u.cardId === 'different_power_time') {
+        const current = p.powers[0] ?? p.hero!;
+        queuePowerDiscover(g, p, sample(g, freshPowers(g), 3).map((h) => h.id), 'Different Power Time: Choose a Hero Power to replace yours', current);
+      } else fn?.({ g, p, self: u, m: 1, board: p.board, target });
+    });
+  }
+  p.spellsCast = (p.spellsCast ?? 0) + 1;
+  log(p, `Cast ${def(u.cardId).name}.`);
+  drainOverflow(g, p);
   return OK;
 }
 
@@ -595,7 +646,7 @@ function botBonus(g: GameState, p: Player) {
   const n = Math.round(full * (0.3 + 1.5 * rand(g)));
   if (!n) return;
   peebSync(g, p); // settle real Health gains first, so marking these as seen can't swallow one
-  for (const u of [...p.board, ...p.hand]) {
+  for (const u of [...p.board, ...handUnits(p)]) {
     u.atk += n;
     u.hp += n;
     u.mem.pv = u.hp; // a silent gain: Turtlepult doesn't see it, nothing else reacts

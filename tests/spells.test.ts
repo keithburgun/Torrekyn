@@ -1,0 +1,172 @@
+/** v0.14: Spells (like Battlegrounds' Tavern spells). One in the Tavern each Refresh; played from hand, then gone. */
+import { describe, it, expect } from 'vitest';
+import { newGame, play, buy, reroll, startTurn, endTurn, maxGoldFor, chooseDiscover, checkTriples } from '../src/engine/game';
+import { makeUnit, def, CARDS, isSpell, isTribe } from '../src/engine/core';
+import { Combat } from '../src/engine/combat';
+import type { GameState, Unit } from '../src/engine/types';
+
+function setup(seed = 7) {
+  const g = newGame(seed, 'You', ['azure', 'kindred', 'brambor', 'cloister']);
+  for (const p of g.players) { p.hero = undefined; p.powers = []; p.trinkets = []; p.discovers = []; p.trinketOffer = null; p.quests = []; }
+  g.phase = 'shop'; g.round = 3;
+  const p = g.players[0];
+  p.tier = 5; p.gold = 50; p.board = []; p.hand = [];
+  return { g, p };
+}
+const U = (g: GameState, id: string, atk?: number, hp?: number) => { const x = makeUnit(g, id); if (atk !== undefined) x.atk = atk; if (hp !== undefined) x.hp = hp; x.kw = []; return x; };
+const cast = (g: GameState, p: ReturnType<typeof setup>['p'], id: string, target?: Unit) => { p.hand.push(makeUnit(g, id)); return play(g, p, p.hand.length - 1, 0, target?.uid); };
+
+describe('Spells', () => {
+  it('the Tavern has exactly one Spell after every Refresh, on the right, up to your Tier; Spells are never in the pool', () => {
+    const { g, p } = setup();
+    for (const tier of [1, 2, 3, 4, 5]) {
+      p.tier = tier;
+      for (let i = 0; i < 20; i++) {
+        reroll(g, p);
+        expect(p.shop.filter((u) => isSpell(u)).length).toBe(1);
+        expect(isSpell(p.shop[p.shop.length - 1])).toBe(true);
+        expect(def(p.shop[p.shop.length - 1].cardId).tier).toBeLessThanOrEqual(tier);
+      }
+    }
+    for (const c of CARDS.filter((x) => x.spell)) expect(g.pool[c.id]).toBeUndefined();
+  });
+
+  it('the conversions: Gems are Tier 3 Spells for 2, Banners Tier 2, Shield Tier 1 for 1', () => {
+    for (const id of ['tourmaline', 'pink_gem', 'ancient_name_brambor', 'green_gem', 'red_gem', 'purple_gem', 'white_gem']) expect([def(id).spell, def(id).tier, def(id).cost]).toEqual([true, 3, 2]);
+    for (const id of ['silver_banner', 'gold_banner', 'red_banner']) expect([def(id).spell, def(id).tier, def(id).cost]).toEqual([true, 2, 2]);
+    expect([def('shield_neutral').spell, def('shield_neutral').tier, def('shield_neutral').cost]).toEqual([true, 1, 1]);
+    expect(def('omni_gem').spell).toBeFalsy(); // (a unit you sell, not one of the Gems)
+  });
+
+  it("buying costs the Spell's price (Haste: Health), and it goes to your hand; casting uses it up", () => {
+    const { g, p } = setup();
+    p.shop = [makeUnit(g, 'coin'), makeUnit(g, 'haste')];
+    p.gold = 5;
+    expect(buy(g, p, 0).ok).toBe(true);
+    expect(p.gold).toBe(4);
+    const hp = p.health;
+    expect(buy(g, p, 0).ok).toBe(true);
+    expect([p.gold, p.health]).toEqual([4, hp - 2]);
+    expect(play(g, p, 0, 0).ok).toBe(true); // Coin
+    expect(play(g, p, 0, 0).ok).toBe(true); // Haste
+    expect([p.gold, p.hand.length, p.board.length]).toEqual([6, 0, 0]);
+    p.health = 2; p.shop = [makeUnit(g, 'haste')];
+    expect(buy(g, p, 0).ok).toBe(false); // not with your last Health
+  });
+
+  it('Spells work with a full army, never triple, and nothing "when you play a unit" happens', () => {
+    const { g, p } = setup();
+    p.board = ['ash', 'skeleton', 'knight', 'disciple', 'farmer', 'therapist', 'sword'].map((id) => U(g, id, 1, 1));
+    p.hand = [makeUnit(g, 'coin'), makeUnit(g, 'coin'), makeUnit(g, 'coin')];
+    checkTriples(g, p);
+    expect(p.hand.map((u) => [u.cardId, u.golden])).toEqual([['coin', false], ['coin', false], ['coin', false]]);
+    const before = p.battlecriesThisTurn;
+    expect(play(g, p, 0, 0).ok).toBe(true);
+    expect(p.battlecriesThisTurn).toBe(before);
+    expect(p.board.length).toBe(7);
+  });
+
+  it('a targeted Spell needs a unit; Spells are not "units in your hand"', () => {
+    const { g, p } = setup();
+    expect(cast(g, p, 'tourmaline').ok).toBe(false);
+    p.hand = [];
+    const a = U(g, 'ash', 1, 1), h = U(g, 'ash', 1, 1);
+    p.board = [a]; p.hand = [h, makeUnit(g, 'coin')];
+    cast(g, p, 'ancient_name_brambor'); // Potato Gem: +2 Health to units in hand and army
+    expect([a.hp, h.hp, p.hand[1].hp]).toEqual([3, 3, 0]);
+  });
+
+  it('Coin, Invest, Scope, Strike Oil, Heal Up!', () => {
+    const { g, p } = setup();
+    p.gold = 0; p.goldNextTurn = 0; p.freeRerolls = 0;
+    cast(g, p, 'coin'); expect(p.gold).toBe(1);
+    cast(g, p, 'invest'); expect(p.goldNextTurn).toBe(2);
+    cast(g, p, 'scope'); expect(p.freeRerolls).toBe(2);
+    const max = maxGoldFor(g, p);
+    cast(g, p, 'strike_oil'); expect(maxGoldFor(g, p)).toBe(max + 1);
+    const hp = p.health;
+    cast(g, p, 'heal_up'); expect(p.health).toBe(hp + 5);
+  });
+
+  it('Growth Sprout (Tier 1), Potential (your Tier), Last of Our Kind (your most common faction)', () => {
+    const { g, p } = setup();
+    cast(g, p, 'growth_sprout');
+    expect(p.discovers[0].options.every((id) => def(id).tier === 1 && !def(id).spell)).toBe(true);
+    chooseDiscover(g, p, 0);
+    p.tier = 4;
+    cast(g, p, 'potential');
+    expect(p.discovers[0].options.every((id) => def(id).tier === 4)).toBe(true);
+    chooseDiscover(g, p, 0);
+    p.board = [U(g, 'knight'), U(g, 'knight'), U(g, 'disciple')];
+    cast(g, p, 'last_of_our_kind');
+    expect(p.discovers[0].options.every((id) => isTribe(id, 'azure') && def(id).tier <= 4)).toBe(true);
+  });
+
+  it("Blessin': +2/+2 to the chosen unit and every unit sharing a faction with it", () => {
+    const { g, p } = setup();
+    const k1 = U(g, 'knight', 1, 1), k2 = U(g, 'knight', 1, 1), d = U(g, 'disciple', 1, 1);
+    p.board = [k1, k2, d];
+    cast(g, p, 'blessin', k1);
+    expect([k1.atk, k2.atk, d.atk]).toEqual([3, 3, 1]);
+  });
+
+  it('Devour!: sells the chosen unit (you get its Gold) and gives its stats to a random friendly unit', () => {
+    const { g, p } = setup();
+    const a = U(g, 'ash', 5, 7), b = U(g, 'ash', 1, 1);
+    p.board = [a, b]; p.gold = 0;
+    cast(g, p, 'devour', a);
+    expect(p.board).toEqual([b]);
+    expect([b.atk, b.hp, p.gold]).toEqual([6, 8, 1]);
+  });
+
+  it('Banners: the chosen unit and its neighbours; each Banner improves the next; Red Banner: four random units +1/+2', () => {
+    const { g, p } = setup();
+    const us = [1, 2, 3, 4].map(() => U(g, 'ash', 1, 1));
+    p.board = [...us];
+    cast(g, p, 'silver_banner', us[1]);
+    expect(us.map((u) => u.atk)).toEqual([4, 4, 4, 1]);
+    cast(g, p, 'gold_banner', us[3]);
+    expect(us.map((u) => u.hp)).toEqual([1, 1, 5, 5]);
+    p.bannerBonus = 0;
+    cast(g, p, 'red_banner');
+    expect(us.every((u) => u.hp >= 3)).toBe(true);
+  });
+
+  it('Different Power Time: Discover a Hero Power that replaces yours', () => {
+    const { g, p } = setup();
+    p.hero = 'zara'; p.powers = ['zara'];
+    cast(g, p, 'different_power_time');
+    expect(p.discovers[0].powers).toBe(true);
+    const pick = p.discovers[0].options[0];
+    chooseDiscover(g, p, 0);
+    expect(p.powers).toEqual([pick]);
+  });
+
+  it('Elder: Start of Combat, ONE other Brambor unit gets its Attack', () => {
+    const { g, p } = setup();
+    const o = g.players[1];
+    const e = U(g, 'elder', 5, 50), b1 = U(g, 'farmer', 1, 50), b2 = U(g, 'farmer', 1, 50);
+    const c = new Combat(g, { p, board: [e, b1, b2], tier: 5, persistent: false }, { p: o, board: [U(g, 'skel', 0, 99)], tier: 1, persistent: false });
+    c.run();
+    const f = c.frames[c.frames.findIndex((x) => x.kind === 'attack') - 1];
+    expect(f.sides[0].filter((u) => u.cardId === 'farmer').map((u) => u.atk).sort()).toEqual([1, 6]);
+  });
+
+  it('bots buy and cast Spells, and finish games with them around', () => {
+    const g = newGame(99);
+    let cast = 0;
+    const { players } = g;
+    g.players[0].heroOffer = undefined;
+    g.simulateAll = true;
+    for (const pl of players) { pl.hero = pl.hero ?? 'zara'; }
+    g.phase = 'shop'; g.round = 0;
+    const start = (): void => { g.round++; for (const pl of players) startTurn(g, pl); };
+    start();
+    for (let r = 0; r < 14 && (g.phase as string) !== 'over'; r++) {
+      endTurn(g);
+      cast = players.reduce((s, pl) => s + (pl.spellsCast ?? 0), 0);
+    }
+    expect(cast).toBeGreaterThan(5);
+    for (const pl of players) expect(pl.hand.filter((u) => isSpell(u)).length).toBeLessThanOrEqual(3);
+  });
+});

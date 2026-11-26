@@ -1,4 +1,4 @@
-import { CONFIG, def, isTribe, TRIBE_NAMES } from '../engine/core';
+import { CONFIG, def, isSpell, isTribe, TRIBE_NAMES } from '../engine/core';
 import { store } from '../save/store';
 import { provider as cloudProvider, state as cloudState, statusText as cloudStatus, sync, syncNow, takeCombined } from '../save/sync';
 import { friendly, supabase } from '../save/providers/supabase';
@@ -32,7 +32,7 @@ declare const __NO_UPDATES__: boolean;
 type Zone = 'shop' | 'hand' | 'board' | 'placing'; // placing: the card being played, while you aim its Arrive
 interface Sel { zone: Zone; idx: number }
 interface Press { zone: Zone; idx: number; x: number; y: number; el: HTMLElement; pointerId: number }
-interface Targeting { kind: 'play'; handIdx: number; pos: number } // play a card that needs a target
+interface Targeting { kind: 'play'; handIdx: number; pos: number; spell?: boolean } // play a card that needs a target (a Spell: aimed from your hand)
 interface HeroTargeting { kind: 'hero'; id: string; shop?: boolean }
 
 // ---- layout: see layout.ts (landscape mirrors Battlegrounds on PC; portrait is for phones) ----
@@ -40,8 +40,11 @@ let L: Layout = LANDSCAPE;
 const boardCardX = (i: number) => L.slotX(i) + (L.slotW - L.cardW) / 2;
 
 function shopX(i: number, n: number) {
-  const total = (n - 1) * L.shopStep + L.shopCardW;
-  return L.cx - total / 2 + i * L.shopStep;
+  // a full Tavern (units plus the Spell) overlaps its cards a little rather than run off the screen
+  const room = L.portrait ? L.W - 12 : L.W - 560;
+  const step = Math.min(L.shopStep, Math.floor((room - L.shopCardW) / Math.max(1, n - 1)));
+  const total = (n - 1) * step + L.shopCardW;
+  return L.cx - total / 2 + i * step;
 }
 function handX(i: number, n: number) {
   const w = L.handCardW;
@@ -205,7 +208,7 @@ export class App {
     const t = this.targeting;
     if (!t) return null;
     const el = (t.kind === 'play'
-      ? this.stage.querySelector('.card.placing')
+      ? this.stage.querySelector(t.spell ? '.card.casting' : '.card.placing')
       : this.stage.querySelector('.my-hero')) as HTMLElement | null;
     if (!el) return null;
     const c = this.centre(el);
@@ -409,6 +412,7 @@ export class App {
       <h3>Your Turn</h3>
       Buy units from the Tavern for ${CONFIG.buyCost} gold, then play them from your hand into your army (up to ${CONFIG.boardSize}).
       Sell units for ${CONFIG.sellValue} gold. Refresh the Tavern for ${CONFIG.rerollCost}. Freeze it to keep the same units next turn.
+      The Tavern also always has one Spell (on the right), with its price on its coin: buy it, then cast it from your hand. It doesn't take a place in your army.
       Upgrade your Tavern to find stronger units (Tier 1 to ${CONFIG.maxTier}). Gold refills each turn and grows by 1, up to ${CONFIG.maxGold}.
       <h3>Your Army</h3>
       Your army has room for 7 units. Units attack in order from left to right, so drag them to rearrange.
@@ -494,18 +498,18 @@ export class App {
     const tgt = this.targeting;
     const targetUids = tgt?.kind === 'play'
       ? new Set(validTargets(p, p.hand[tgt.handIdx]?.cardId ?? '', p.hand[tgt.handIdx]).map((u) => u.uid))
-      : tgt?.kind === 'hero' ? new Set((tgt.shop ? p.shop : p.board).map((u) => u.uid)) : null;
+      : tgt?.kind === 'hero' ? new Set((tgt.shop ? p.shop.filter((u) => !isSpell(u)) : p.board).map((u) => u.uid)) : null;
     let h = this.leaderboardHtml();
     h += this.tavernBarHtml();
     // copies you already own (hand + army, not Golden; locked ones count too): 1 = shimmer, 2 = one buy away
     const owned = new Map<string, number>();
-    for (const u of [...p.hand, ...p.board]) if (!u.golden) owned.set(u.cardId, (owned.get(u.cardId) ?? 0) + 1);
+    for (const u of [...p.hand, ...p.board]) if (!u.golden && !isSpell(u)) owned.set(u.cardId, (owned.get(u.cardId) ?? 0) + 1);
     p.shop.forEach((u, i) => {
       const sel = this.sel?.zone === 'shop' && this.sel.idx === i ? 'selected' : '';
       const v = unitView(p, u, 'shop', i);
       const have = owned.get(u.cardId) ?? 0;
       const hint = have >= 2 ? 'triple-hint' : have === 1 ? 'pair-hint' : '';
-      h += cardHtml(v, { zone: 'shop', idx: i, id: u.uid, x: shopX(i, p.shop.length), y: L.shopY, small: L.small && !L.shopBig, large: L.shopBig, extraClass: `${sel} ${hint} ${p.gold < buyCost(p, u.cardId) ? 'unaffordable' : ''} ${p.frozen ? 'frozen' : ''} ${targetUids?.has(u.uid) ? 'targetable' : ''}`,
+      h += cardHtml(v, { zone: 'shop', idx: i, id: u.uid, x: shopX(i, p.shop.length), y: L.shopY, small: L.small && !L.shopBig, large: L.shopBig, extraClass: `${sel} ${hint} ${!this.canAfford(u.cardId) ? 'unaffordable' : ''} ${p.frozen ? 'frozen' : ''} ${targetUids?.has(u.uid) ? 'targetable' : ''}`,
         badge: have >= 2 ? '<div class="trip-tag">TRIPLE!</div>' : '' });
     });
     const skipping = p.heroMem.skipRound === this.g!.round;
@@ -517,7 +521,8 @@ export class App {
     // cards gained while the hand was full wait here until there's room
     if (p.overflow?.length) h += `<div class="overflow-pill abs" style="left:${L.cx - 160}px;top:${L.handY - 34}px;width:320px">Hand full · ${p.overflow.length} more card${p.overflow.length > 1 ? 's' : ''} waiting for room</div>`;
     // a unit being played with a targeted Arrive stays in the slot it was dropped on while you aim
-    const placing = tgt?.kind === 'play' && p.hand[tgt.handIdx] ? tgt : null;
+    const placing = tgt?.kind === 'play' && !tgt.spell && p.hand[tgt.handIdx] ? tgt : null;
+    const casting = tgt?.kind === 'play' && tgt.spell ? tgt.handIdx : -1;
     p.board.forEach((u, i) => {
       const sel = this.sel?.zone === 'board' && this.sel.idx === i ? 'selected' : '';
       const tg = targetUids?.has(u.uid) ? 'targetable' : '';
@@ -534,7 +539,7 @@ export class App {
       if (placing && i === placing.handIdx) return;
       const sel = this.sel?.zone === 'hand' && this.sel.idx === i ? 'selected' : '';
       const waiting = handLocked(p, u) ? `hand-locked unlock-${u.mem.unlockTier}` : '';
-      h += cardHtml(unitView(p, u, 'hand', i), { zone: 'hand', idx: i, x: handX(i, p.hand.length), y: L.handY, small: !L.shopBig, large: L.shopBig, extraClass: `in-hand ${sel} ${waiting}`, id: u.uid });
+      h += cardHtml(unitView(p, u, 'hand', i), { zone: 'hand', idx: i, x: handX(i, p.hand.length), y: L.handY, small: !L.shopBig, large: L.shopBig, extraClass: `in-hand ${sel} ${waiting} ${i === casting ? 'casting' : ''}`, id: u.uid });
     });
     h += this.rightSideHtml();
     h += `<div id="popover">${this.popoverHtml()}</div>`;
@@ -542,7 +547,7 @@ export class App {
       const merging = tgt.kind === 'play' && p.hand[tgt.handIdx]?.cardId === 'merge_o';
       h += `<div class="abs panel target-bar" style="left:${L.targetBar.x}px;top:${L.targetBar.y}px;width:${L.targetBar.w}px">
         <span>${tgt.kind === 'hero' ? (tgt.shop ? 'Choose a unit in the Tavern to load' : 'Choose a unit for your Hero Power') : merging ? `Choose an Alcove unit to Merge ${esc(def('merge_o').name)} into` : `Choose a target for ${esc(def(p.hand[tgt.handIdx]?.cardId ?? 'skel').name)}`}</span>
-        ${tgt.kind === 'play' ? `<button class="btn" data-act="no-target">${merging ? "Don't Merge" : 'No target'}</button>` : ''}
+        ${tgt.kind === 'play' && !tgt.spell ? `<button class="btn" data-act="no-target">${merging ? "Don't Merge" : 'No target'}</button>` : ''}
         <button class="btn" data-act="cancel-target">Cancel</button></div>`;
     }
     if ((p.discovers.length || p.trinketOffer) && this.modalHidden) {
@@ -843,9 +848,11 @@ export class App {
     const v = unitView(p, u, s.zone, s.idx);
     let actions = '';
     if (this.sel) {
-      if (s.zone === 'shop') actions = `<button class="btn primary" data-act="buy" ${p.gold < buyCost(p, u.cardId) ? 'disabled' : ''}>Buy <span class="cost">${buyCost(p, u.cardId)}<span class="coin"></span></span></button>`;
+      const hpCost = def(u.cardId).healthCost;
+      if (s.zone === 'shop') actions = `<button class="btn primary" data-act="buy" ${!this.canAfford(u.cardId) ? 'disabled' : ''}>Buy <span class="cost">${hpCost ? def(u.cardId).cost : buyCost(p, u.cardId)}<span class="${hpCost ? 'coin hp-cost' : 'coin'}"></span></span></button>`;
       if (s.zone === 'hand') actions = handLocked(p, u)
         ? `<button class="btn" disabled>Unlocks at Tier ${u.mem.unlockTier}</button>`
+        : isSpell(u) ? `<button class="btn primary" data-act="play">Cast</button>`
         : `<button class="btn primary" data-act="play" ${p.board.length >= CONFIG.boardSize ? 'disabled' : ''}>Play</button>`;
       if (s.zone === 'board') actions = `<button class="btn" data-act="left" ${s.idx === 0 || u.mem.locked ? 'disabled' : ''}>◀</button>
         <button class="btn primary" data-act="sell" ${u.mem.locked ? 'disabled' : ''}>Sell <span class="cost">+${sellValue(u, p)}<span class="coin"></span></span></button>
@@ -1546,10 +1553,36 @@ export class App {
     a.finished.catch(() => undefined).then(() => { fly.remove(); finish(); });
   }
 
+  /** can you pay for this Tavern card? (Haste is paid with Health: you need more than it costs) */
+  canAfford(cardId: string) {
+    const p = this.me;
+    const d = def(cardId);
+    return d.healthCost ? p.health > (d.cost ?? 0) : p.gold >= buyCost(p, cardId);
+  }
+
+  /** cast a Spell from hand: a targeted one waits for you to pick a unit (an arrow from the card in your hand) */
+  doCast(handIdx: number, targetUid?: number) {
+    const p = this.me;
+    const u = p.hand[handIdx];
+    if (!u) return;
+    if (needsTarget(u.cardId) && targetUid === undefined) {
+      if (!validTargets(p, u.cardId).length) return this.toast(p.board.length ? 'No unit can take that' : 'You have no units to cast that on');
+      this.targeting = { kind: 'play', handIdx, pos: 0, spell: true };
+      this.aimPt = null;
+      this.sel = null;
+      this.render();
+      return;
+    }
+    this.result(play(this.g!, p, handIdx, 0, targetUid), sfx.power, 'cast');
+    this.sel = null;
+    this.commit();
+  }
+
   doPlay(handIdx: number, pos: number) {
     const p = this.me;
     const u = p.hand[handIdx];
     if (!u) return;
+    if (isSpell(u)) return this.doCast(handIdx);
     // Merge-o with a full army: it can only Merge, so go straight to choosing the Alcove unit
     const mergeOnly = u.cardId === 'merge_o' && p.board.length >= CONFIG.boardSize && p.board.some((b) => isTribe(b, 'alcove'));
     if (p.board.length >= CONFIG.boardSize && !mergeOnly) return this.toast('Your army is full');
@@ -1853,6 +1886,15 @@ export class App {
     this.updateMarker(pt);
   }
 
+  /** the army unit whose card is under a stage point */
+  private boardUnitAt(pt: { x: number; y: number }) {
+    for (const el of this.stage.querySelectorAll<HTMLElement>('.card[data-zone="board"]:not(.ghost)')) {
+      const x = parseFloat(el.style.left), y = parseFloat(el.style.top);
+      if (pt.x >= x - 6 && pt.x <= x + el.offsetWidth + 6 && pt.y >= y - 6 && pt.y <= y + el.offsetHeight + 6) return this.me.board[Number(el.dataset.idx)];
+    }
+    return undefined;
+  }
+
   /** The board slot under x (0-6). */
   slotAt(x: number) {
     const step = L.slotX(1) - L.slotX(0);
@@ -1917,6 +1959,14 @@ export class App {
   /** While dragging over the army: light up the slot it will take and slide the other units to show the result. */
   updateMarker(pt: { x: number; y: number }) {
     const zone = this.press!.zone;
+    if (zone === 'hand' && isSpell(this.me.hand[this.press!.idx])) {
+      // a Spell takes no slot: light up the unit it would land on
+      const u = this.me.hand[this.press!.idx];
+      const on = needsTarget(u.cardId) ? this.boardUnitAt(pt) : undefined;
+      const ok = on && validTargets(this.me, u.cardId).includes(on) ? on : undefined;
+      for (const el of this.stage.querySelectorAll<HTMLElement>('.card[data-zone="board"]:not(.ghost)')) el.classList.toggle('aimed', !!ok && this.me.board[Number(el.dataset.idx)] === ok);
+      return;
+    }
     const over = pt.y > L.boardTop && pt.y < L.boardBottom && (zone === 'hand' || zone === 'board');
     const merge = over ? this.mergeAt(pt.x) : -1;
     this.showMergeGaps(merge);
@@ -1943,7 +1993,7 @@ export class App {
     this.stage.querySelectorAll('.merge-gap').forEach((e) => e.remove());
     this.ghost?.remove();
     this.ghost = null;
-    for (const el of this.stage.querySelectorAll<HTMLElement>('.card[data-zone="board"]:not(.ghost)')) { el.style.transform = ''; el.classList.remove('sliding'); }
+    for (const el of this.stage.querySelectorAll<HTMLElement>('.card[data-zone="board"]:not(.ghost)')) { el.style.transform = ''; el.classList.remove('sliding', 'aimed'); }
     this.stage.querySelectorAll('.slot-plate.drop-target').forEach((e) => e.classList.remove('drop-target'));
     this.stage.classList.remove('board-full-drag');
     this.press?.el.classList.remove('dragging');
@@ -2027,6 +2077,15 @@ export class App {
     if (press.zone === 'shop') {
       if (pt.y > L.shopDrop) { this.lastShopPos = { x: shopX(press.idx, p.shop.length), y: L.shopY }; this.result(buy(g, p, press.idx), sfx.buy, 'bought'); }
       else if (Math.hypot(pt.x - press.x, pt.y - press.y) > 80) this.toast('Drag it down onto your army to buy it (or tap it, then Buy)');
+    } else if (press.zone === 'hand' && isSpell(p.hand[press.idx])) {
+      // a Spell: dropped on a unit it can take, it lands there; dropped anywhere above your hand, it's cast (or aimed)
+      if (pt.y < L.boardBottom) {
+        const u = p.hand[press.idx];
+        const on = needsTarget(u.cardId) ? this.boardUnitAt(pt) : undefined;
+        if (on && validTargets(p, u.cardId).includes(on)) { this.doCast(press.idx, on.uid); return; }
+        this.doCast(press.idx);
+        return;
+      }
     } else if (press.zone === 'hand') {
       if (pt.y > L.boardTop && pt.y < L.boardBottom) {
         this.press = press; // dropIndex reads the zone being dragged

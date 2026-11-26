@@ -2,6 +2,12 @@
 
 Newest first. The version shows on the title screen.
 
+## 0.14.0 — 2026-11-26
+- Spells: the Tavern always has one Spell (on the right). Buy it at its own price, cast it from your hand, and it's gone
+- Gems are now Tier 3 Spells (2 Gold); Silver/Gold Banner are Tier 2 Spells (a unit and its neighbours); Shield is a Tier 1 Spell (+3 Health and Taunt)
+- New Spells: Coin, Growth Sprout, Scope, Invest, Haste, Red Banner, Strike Oil, Last of Our Kind, Potential, Blessin', Heal Up!, Devour!, Different Power Time
+- Elder: Start of Combat, give another Brambor this unit's Attack
+
 ## 0.13.12 — 2026-11-26
 - Bot bonus now rolls 30-180% of its amount each turn; it's a silent gain that triggers nothing
 

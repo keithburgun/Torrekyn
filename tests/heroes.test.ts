@@ -77,19 +77,19 @@ describe('hero powers', () => {
     const { g, p } = setup('derby_pocket');
     expect(heroDef('derby_pocket')!.health).toBe(25);
     const dummy = unit(g, firstOf((id) => !EFFECTS[id]), 1, 1);
-    // Red Gem (played on the right) gives the 3 left-most units +3 Attack each trigger; the dummy stays left-most
-    const playGem = () => { p.board = [dummy]; p.hand = [unit(g, 'red_gem')]; expect(play(g, p, 0, 1).ok).toBe(true); };
+    // Sword (played on the right) gives the left-most unit +4 Attack each trigger; the dummy stays left-most
+    const playGem = () => { p.board = [dummy]; p.hand = [unit(g, 'sword')]; expect(play(g, p, 0, 1).ok).toBe(true); };
     p.battlecryUnitsThisTurn = 0;
     for (let i = 0; i < 5; i++) playGem();
-    expect(dummy.atk).toBe(1 + 15);
+    expect(dummy.atk).toBe(1 + 20);
     expect(p.heroMem.coffee).toBe(5);
     playGem(); // the 6th, but not the first this turn: once
-    expect(dummy.atk).toBe(1 + 18);
+    expect(dummy.atk).toBe(1 + 24);
     p.battlecryUnitsThisTurn = 0; // a new turn
     playGem(); // the first Arrive this turn: twice
-    expect(dummy.atk).toBe(1 + 18 + 6);
+    expect(dummy.atk).toBe(1 + 24 + 8);
     playGem(); // the second: once
-    expect(dummy.atk).toBe(1 + 18 + 6 + 3);
+    expect(dummy.atk).toBe(1 + 24 + 8 + 4);
   });
 
   it('Bunny Wizard: locked until Tier 4, then Discovers a Kindred unit', () => {
@@ -132,10 +132,10 @@ describe('hero powers', () => {
     g.round += 3;
     expect(powerCost(g, p, h)).toBe(4);
     p.hand = [];
-    const n = p.shop.length;
+    const n = p.shop.filter((u) => !def(u.cardId).spell).length;
     expect(n).toBeGreaterThan(0);
     expect(useHeroPower(g, p)).toBe(true);
-    expect(p.shop.length).toBe(0);
+    expect(p.shop.map((u) => def(u.cardId).spell)).toEqual([true]); // the Spell stays
     expect(p.hand.length).toBe(n);
     g.round += 1;
     expect(powerCost(g, p, h)).toBe(7);
@@ -308,7 +308,7 @@ describe('hero powers', () => {
     p.battlecryUnitsThisTurn = 0; // (its first Arrive this turn)
     p.trinkets = ['crown_of_echoes'];
     p.board = [];
-    p.hand = [unit(g, 'red_gem')];
+    p.hand = [unit(g, 'sword')];
     const before = p.battlecriesThisTurn;
     play(g, p, 0, 0);
     expect(p.battlecriesThisTurn - before).toBe(3);

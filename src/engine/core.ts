@@ -37,6 +37,16 @@ const HERO_TOKENS: CardDef[] = [
 export const CARDS: CardDef[] = [...(cardData.cards as CardDef[]), ...HERO_TOKENS];
 const BY_ID = new Map(CARDS.map((c) => [c.id, c]));
 
+/** Spells: in the Tavern (one slot each Refresh), never in the unit pool */
+export const SPELLS: CardDef[] = CARDS.filter((c) => c.spell);
+export function isSpell(b: { cardId: string } | string): boolean {
+  return !!BY_ID.get(typeof b === 'string' ? b : b.cardId)?.spell;
+}
+/** the units in a player's hand (Spells left out): what "units in your hand" effects touch */
+export function handUnits(p: Player): Unit[] {
+  return p.hand.filter((u) => !isSpell(u));
+}
+
 export function def(id: string): CardDef {
   const d = BY_ID.get(id);
   if (!d) throw new Error('Unknown card ' + id);

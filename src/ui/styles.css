@@ -1643,3 +1643,26 @@ svg.aim-arrow.locked .aim-ring { opacity: 0.9; animation: aim-ring 0.9s ease-in-
 .popover.has-kw .pop-related.left { right: calc(100% + 14px + 260px + 16px); }
 .combat-zoom.has-kw .zoom-related.right { left: calc(100% + 14px + 260px + 16px); }
 .combat-zoom.has-kw .zoom-related.left { right: calc(100% + 14px + 260px + 16px); }
+
+/* ---- Spells: a lilac card with its price in a coin at the top left (a red orb when it costs Health) ---- */
+:root { --t-spell: #7a4fc4; }
+.t-spell { --tc: var(--t-spell); }
+.card.spell .face { background: linear-gradient(170deg, #f3ecff 20%, #d3c2f2); border-color: #9a7fd0; }
+.card.spell .art { border-radius: 50% / 46%; box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.8), 0 0 0 3px #b9a3e8; }
+.spell-cost { position: absolute; top: -12px; left: -12px; width: 40px; height: 40px; border-radius: 50%; z-index: 2;
+  display: flex; align-items: center; justify-content: center; font-family: var(--display); font-weight: 700; font-size: 25px; color: #fff;
+  background: radial-gradient(circle at 35% 30%, #fff8cf, var(--coin) 55%, #e59a12); box-shadow: 0 0 0 3px #fff, 0 3px 6px rgba(0, 0, 0, 0.3);
+  --outline: #26222c;
+  text-shadow: 2px 0 0 var(--outline), -2px 0 0 var(--outline), 0 2px 0 var(--outline), 0 -2px 0 var(--outline); }
+.spell-cost.in-hp { background: var(--hp-orb); }
+.card.small .spell-cost { width: 34px; height: 34px; font-size: 21px; }
+.card.large .spell-cost { width: 46px; height: 46px; font-size: 28px; }
+#stage.portrait .card.large .spell-cost { width: 58px; height: 58px; font-size: 36px; }
+#stage.portrait .card.small .spell-cost { width: 48px; height: 48px; font-size: 30px; }
+.bigcard.spell .spell-cost { top: -16px; left: -16px; width: 62px; height: 62px; font-size: 36px; }
+.bigcard.spell { background: linear-gradient(170deg, #f3ecff 20%, #d3c2f2); }
+/* a Spell in hand being aimed: lifted and glowing */
+.card.casting { transform: translateY(-30px) scale(1.06); z-index: 30; }
+.card.casting .face { box-shadow: 0 0 0 3px #fff, 0 0 26px rgba(185, 140, 255, 0.95); }
+.coin.hp-cost { background: var(--hp-orb); }
+.bigcard.spell { border-color: #9a7fd0; }

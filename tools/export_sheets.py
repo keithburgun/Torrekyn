@@ -98,7 +98,7 @@ def main():
     r = 2
     cards = sorted(cards, key=lambda c: (TRIBE_ORDER.index(c['tribe']), c['tier'], c['name'].lower()))
     for c in cards:
-        if c.get('token'):
+        if c.get('token') or c.get('spell'):
             continue
         spec = src['cards'].get(c['id'])
         vals = [TRIBE_NAME[c['tribe']], c['tier'], c['name'], c['atk'], c['hp'], c['text'], c.get('goldenText', ''), None, c['id'],
@@ -125,6 +125,21 @@ def main():
             body(wt.cell(r, i, v), TRIBE_FILL[c['tribe']] if i <= 5 else None, center=i in (2, 4, 5))
         wt.row_dimensions[r].height = ROW_PT
         wt.add_image(thumb(os.path.join(ROOT, 'public/art/v2/cards', f"{c['id']}.webp")), f'F{r}')
+        r += 1
+
+    # ---- Spells ----
+    wsp = wb.create_sheet('Spells')
+    style_sheet(wsp, ['Tier', 'Spell Name', 'Cost', 'Paid with', 'Effect', 'Art', 'Card ID', 'Art source', 'Crop (x, y, size)'], [6, 22, 7, 9, 56, 17, 22, 46, 16])
+    r = 2
+    for c in sorted((c for c in cards if c.get('spell')), key=lambda c: (c['tier'], c['name'].lower())):
+        spec = src['cards'].get(c['id'])
+        vals = [c['tier'], c['name'], c.get('cost', 0), 'Health' if c.get('healthCost') else 'Gold', c['text'], None, c['id'], where(spec) if spec else '', crop_text(spec) if spec else '']
+        for i, v in enumerate(vals, 1):
+            body(wsp.cell(r, i, v), None, center=i in (1, 3, 4))
+        wsp.row_dimensions[r].height = ROW_PT
+        art = os.path.join(ROOT, 'public/art/v2/cards', f"{c['id']}.webp")
+        if os.path.exists(art):
+            wsp.add_image(thumb(art), f'F{r}')
         r += 1
 
     # ---- Heroes ----

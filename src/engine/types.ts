@@ -21,6 +21,11 @@ export interface CardDef {
   hidden?: boolean;
   /** counts as every tribe (Andromeda Robin's Pumpkin) */
   allTribes?: boolean;
+  /** a Spell (like Battlegrounds' Tavern spells): one in the Tavern each Refresh, played from hand, then gone */
+  spell?: boolean;
+  /** a Spell's price in Gold (in Health instead for `healthCost` ones) */
+  cost?: number;
+  healthCost?: boolean;
 }
 
 /** Anything with stats and keywords: a persistent unit or a combat unit. */
@@ -108,6 +113,8 @@ export interface Player {
   stuffieBonus?: number;
   /** Owls summoned (played or summoned in battle) this game */
   owlsSummoned?: number;
+  /** Spells cast this game */
+  spellsCast?: number;
   /** the last Gem this player played from hand (Corrivath Harp) */
   lastGem?: string;
   redGemBonus: number;

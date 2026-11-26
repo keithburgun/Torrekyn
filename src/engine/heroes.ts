@@ -3,7 +3,7 @@
  * Heroes are the Torrekin champions. Trinkets are still PLACEHOLDERS.
  * Each hook is called from game.ts / combat.ts.
  */
-import { addKw, def, effStats, isTribe, log, makeUnit, pick, rand, sample, CONFIG } from './core';
+import { addKw, def, effStats, handUnits, isSpell, isTribe, log, makeUnit, pick, rand, sample, CONFIG } from './core';
 import type { GameState, Player, Tribe, Unit } from './types';
 import type { CUnit, Side, Combat } from './combat';
 import { EFFECTS, GEMS, hasBattlecry } from './effects';
@@ -70,7 +70,7 @@ function heroAvenge(s: Side, id: string, n: number): boolean {
 }
 
 /** Hero Powers nobody alive has (as their hero or a power they've gained), whose faction is in play: what Abragail and New Power choose from */
-function freshPowers(g: GameState): HeroDef[] {
+export function freshPowers(g: GameState): HeroDef[] {
   const taken = new Set<string>();
   for (const q of g.players) if (q.alive) { if (q.hero) taken.add(q.hero); q.powers.forEach((x) => taken.add(x)); }
   return HEROES.filter((h) => h.id !== 'abragail' && !taken.has(h.id) && (!h.needsTribe || g.tribes.includes(h.needsTribe)));
@@ -125,11 +125,15 @@ export const HEROES: HeroDef[] = [
   },
   {
     id: 'locas_clare', name: 'Locas Clare', title: 'Prankster and lockpick', power: 'Stealing A Boat', avatar: 6, health: 30,
-    text: 'Steal every unit in the Tavern (they go to your hand), then this resets to 7. Costs 1 less each turn.',
+    text: 'Steal every unit in the Tavern (they go to your hand), then this resets to 7. Costs 1 less each turn.', // (not the Spell)
     costFn: (g, p) => Math.max(0, 7 - (g.round - (p.heroMem.locasFrom ?? 1))),
-    locked: (g, p) => (!p.shop.length ? 'The Tavern is empty' : p.hand.length >= CONFIG.handSize ? 'Your hand is full' : null),
+    locked: (g, p) => (!p.shop.some((u) => !isSpell(u)) ? 'The Tavern is empty' : p.hand.length >= CONFIG.handSize ? 'Your hand is full' : null),
     use: (g, p) => {
-      while (p.shop.length && p.hand.length < CONFIG.handSize) gainCard(g, p, p.shop.shift()!);
+      for (const u of p.shop.filter((x) => !isSpell(x))) {
+        if (p.hand.length >= CONFIG.handSize) break;
+        p.shop.splice(p.shop.indexOf(u), 1);
+        gainCard(g, p, u);
+      }
       p.heroMem.locasFrom = g.round + 1; // back to 7 next turn
       log(p, 'Locas cleaned out the Tavern!');
     },
@@ -163,7 +167,7 @@ export const HEROES: HeroDef[] = [
   {
     id: 'eve_williams', name: 'Eve Williams', title: 'Revolutionary', power: 'Doom Bauble', avatar: 9, health: 26, cost: 1, targetShop: true,
     text: 'Select a unit in the Tavern. When you have space in a battle, FIRE it at a random enemy.',
-    locked: (g, p) => (!p.shop.length ? 'The Tavern is empty' : null),
+    locked: (g, p) => (!p.shop.some((u) => !isSpell(u)) ? 'The Tavern is empty' : null),
     use: (g, p, t) => {
       const i = t ? p.shop.indexOf(t) : -1;
       if (i < 0) return;
@@ -273,7 +277,7 @@ export const HEROES: HeroDef[] = [
       for (const k of Object.keys(p.heroMem)) if (k.startsWith('pot_') || k === 'pot') delete p.heroMem[k];
       queueDiscover(g, p, discoverOptions(g, (id) => tribes.includes(def(id).tribe) && def(id).tier <= p.tier), 'Into the Pot: Discover a unit');
     },
-    locked: (g, p) => (p.shop.length ? null : 'The Tavern is empty'),
+    locked: (g, p) => (p.shop.some((u) => !isSpell(u)) ? null : 'The Tavern is empty'),
     progress: (g, p) => `${p.heroMem.pot ?? 0}/${POT_SIZE}`,
   },
   {
@@ -333,7 +337,7 @@ export const TRINKETS: TrinketDef[] = [
   { id: 'iron_bracer', name: 'Big Big Shield', cost: 2, text: 'Start of Combat: Give 2 random friendly units Bubble.', soc: (c, s) => { for (const u of sample(c.g, s.units.filter((x) => x.hp > 0 && !x.kw.includes('divineShield')), 2)) addKw(u, 'divineShield'); } },
   { id: 'rattler', name: 'Rattler', cost: 2, text: 'Start of Combat: Give 4 random friendly units "Deathrattle: Summon a random Tier 1 unit."',
     soc: (c, s) => { for (const u of sample(c.g, s.units.filter((x) => x.hp > 0), 4)) u.mem.rattle = (u.mem.rattle ?? 0) + 1; } },
-  { id: 'spare_parts', name: 'Spare Parts', cost: 3, text: 'Every time you play a unit, give a random unit in your hand +2/+2.', onPlay: (g, p) => { const u = pick(g, p.hand); if (u) { u.atk += 2; u.hp += 2; } } },
+  { id: 'spare_parts', name: 'Spare Parts', cost: 3, text: 'Every time you play a unit, give a random unit in your hand +2/+2.', onPlay: (g, p) => { const u = pick(g, handUnits(p)); if (u) { u.atk += 2; u.hp += 2; } } },
   { id: 'war_drum', name: 'War Drum', cost: 3, text: 'Start of Combat: Give your units +2 Attack.', soc: (c, s) => { for (const u of s.units) u.atk += 2; } },
   { id: 'lucky_coin', name: 'Lucky Coin', cost: 0, text: 'Gain 8 Gold.', onGain: (g, p) => { p.gold += 8; } },
   { id: 'summit_key', name: 'Summit Key', cost: 2, text: 'In two turns, Discover a Tier 6 unit.',
@@ -351,14 +355,14 @@ export const TRINKETS: TrinketDef[] = [
     } },
   { id: 'gem_time', name: 'It is Officially Gem Time', cost: 4, text: 'Fill your hand with random Gems.',
     onGain: (g, p) => {
-      const gems = GEMS.filter((id) => def(id).tier <= p.tier);
+      const gems = [...GEMS];
       while (p.hand.length < CONFIG.handSize && gems.length) gainNew(g, p, pick(g, gems)!);
     } },
   // greater (offered at the start of turn 9)
   { id: 'dont_even_know', name: "I don't even KNOW", cost: 5, greater: true, text: 'Fill your hand with random units.',
     onGain: (g, p) => {
       while (p.hand.length < CONFIG.handSize) {
-        const id = drawFromPool(g, (cid) => def(cid).tier <= p.tier && !GEMS.includes(cid));
+        const id = drawFromPool(g, (cid) => def(cid).tier <= p.tier);
         if (!id) break;
         gainNew(g, p, id);
       }
@@ -471,6 +475,7 @@ export function useHeroPower(g: GameState, p: Player, target?: Unit, id?: string
   const h = id ? heroDef(id) : mainActive(p);
   if (!h || !canUseHeroPower(g, p, h.id) || !h.use) return false;
   if ((h.target || h.targetShop) && !target) return false;
+  if (h.targetShop && target && isSpell(target)) return false; // (Tavern powers take units, not the Spell)
   p.gold -= powerCost(g, p, h);
   p.usedPowers.push(h.id);
   heroFx(g, p, h, () => h.use!(g, p, target));
@@ -543,6 +548,8 @@ export function pickTrinket(g: GameState, p: Player, id: string | null): boolean
 
 /** What a unit costs you to buy (hero discounts included). */
 export function buyCost(p: Player, cardId?: string): number {
+  // a Spell: its own price (Haste costs Health instead: no Gold)
+  if (cardId && isSpell(cardId)) { const d = def(cardId); return d.healthCost ? 0 : d.cost ?? 0; }
   return Math.max(0, CONFIG.buyCost - (cardId ? heroHooks.discount(p, cardId) : 0));
 }
 

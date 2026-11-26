@@ -7,7 +7,7 @@
  * m = 1 for normal, 2 for golden.
  */
 import type { Body, Keyword, Player, Tribe, Unit, GameState } from './types';
-import { ALL_TRIBES, addKw, CARDS, def, effStats, has, isTribe, log, makeUnit, pick, rand, removeKw, sample, tribeOf, CONFIG } from './core';
+import { ALL_TRIBES, TRIBE_NAMES, addKw, CARDS, def, effStats, handUnits, has, isSpell, isTribe, log, makeUnit, pick, rand, removeKw, sample, tribeOf, CONFIG } from './core';
 import type { CUnit, Combat, Side } from './combat';
 import {
   destroyUnit, discoverOptions, gainNew, inPlay, maxGoldFor, queueDiscover, randomCardOfTier, sellUnit, drawFromPool,
@@ -38,6 +38,9 @@ export interface Effect {
   /** a targeted play: any friendly unit, an unlocked one, or (Merge-o) an Alcove unit to Merge with */
   target?: 'friendly' | 'unlocked' | 'alcove' | 'other';
   battlecry?(c: Ctx): void;
+  /** a Spell cast from hand (`self` is the Spell card, which is on no board). Gems use their `battlecry` instead,
+   * since cards also "play a Gem on" units in battle */
+  spell?(c: Ctx): void;
   onPlay?(c: Ctx): void;
   onSell?(c: Ctx): void;
   onSellOther?(c: Ctx, sold: Unit): void;
@@ -120,6 +123,21 @@ const buff = (b: Body | undefined, a: number, h: number) => {
 
 const gain = (c: { g: GameState; p: Player }, id: string | undefined, golden = false) => gainNew(c.g, c.p, id, golden);
 
+/** the faction most of your army belongs to (ties: a random one of them; none: undefined) */
+function mostCommonTribe(c: Ctx): Tribe | undefined {
+  const n = ALL_TRIBES.map((t) => [t, c.board.filter((u) => isTribe(u, t)).length] as const).filter(([, k]) => k > 0);
+  const most = Math.max(0, ...n.map(([, k]) => k));
+  return pick(c.g, n.filter(([, k]) => k === most).map(([t]) => t));
+}
+
+/** a targeted Spell's unit and the units next to it in the army */
+function withNeighbours(c: Ctx): Body[] {
+  const t = gemTarget(c);
+  if (!t) return [];
+  const i = c.board.indexOf(t);
+  return [c.board[i - 1], t, c.board[i + 1]].filter((u): u is Body => !!u);
+}
+
 /** a Potato Gem's Health right now (2, +1 per improvement) */
 export function potatoHp(p: Player): number {
   return 2 + gemLevel(p, 'ancient_name_brambor');
@@ -200,7 +218,7 @@ export const EFFECTS: Record<string, Effect> = {
   ancient_name_neverending: {
     battlecry: (c) => {
       for (const u of c.board) buff(u, 3 * c.m, 3 * c.m);
-      for (const u of c.p.hand) buff(u, 3 * c.m, 3 * c.m);
+      for (const u of handUnits(c.p)) buff(u, 3 * c.m, 3 * c.m);
     },
   },
   returner: {
@@ -322,7 +340,7 @@ export const EFFECTS: Record<string, Effect> = {
   doctor: {
     // Fighter: Rally summons random Tier 1 units
     rally: (c) => {
-      const ids = CARDS.filter((d) => !d.token && d.tier === 1 && inPlay(c.g, d.id)).map((d) => d.id);
+      const ids = CARDS.filter((d) => !d.token && !d.spell && d.tier === 1 && inPlay(c.g, d.id)).map((d) => d.id);
       for (let i = 0; i < c.m; i++) {
         const id = pick(c.g, ids);
         if (!id || !c.c.spawn(c.side, id, false, c.side.units.indexOf(c.self) + 1 + i)) return;
@@ -382,7 +400,7 @@ export const EFFECTS: Record<string, Effect> = {
     avenge: [3, 3],
     avengeFn: (c) => {
       if (!c.side.persistent) return;
-      const u = pick(c.g, c.p.hand);
+      const u = pick(c.g, handUnits(c.p));
       if (u) u.hp += 10 * c.m;
     },
   },
@@ -408,7 +426,7 @@ export const EFFECTS: Record<string, Effect> = {
   },
   honeysuckle_kindred: {
     deathrattle: (c) => {
-      const best = c.p.hand.filter((u) => isTribe(u, 'kindred')).sort((a, b) => hpOf(c.p, b) - hpOf(c.p, a)).slice(0, c.m);
+      const best = handUnits(c.p).filter((u) => isTribe(u, 'kindred')).sort((a, b) => hpOf(c.p, b) - hpOf(c.p, a)).slice(0, c.m);
       let pos = c.pos;
       for (const u of best) if (c.c.spawnUnit(c.side, u, pos)) pos++;
     },
@@ -451,8 +469,8 @@ export const EFFECTS: Record<string, Effect> = {
     },
   },
   elder: {
-    // your other Brambor units get its Attack (Golden: double)
-    soc: (c) => { for (const u of c.side.units) if (u !== c.self && u.hp > 0 && isTribe(u, 'brambor')) u.atk += c.self.atk * c.m; },
+    // another (random) Brambor unit gets its Attack (Golden: double)
+    soc: (c) => { const u = pick(c.g, c.side.units.filter((x) => x !== c.self && x.hp > 0 && isTribe(x, 'brambor'))); if (u) u.atk += c.self.atk * c.m; },
   },
   cursed_vines: {
     // +4/+4 to another friendly unit (Golden: two others), for this battle
@@ -472,7 +490,7 @@ export const EFFECTS: Record<string, Effect> = {
     battlecry: (c) => {
       const n = potatoHp(c.p) * c.m;
       for (const u of c.board) u.hp += n;
-      if (!c.combat || c.side?.persistent) for (const u of c.p.hand) u.hp += n;
+      if (!c.combat || c.side?.persistent) for (const u of handUnits(c.p)) u.hp += n;
     },
   },
   chosen_name: {
@@ -526,7 +544,7 @@ export const EFFECTS: Record<string, Effect> = {
   },
   songstress: {
     avenge: [2, 2],
-    avengeFn: (c) => buff(pick(c.g, c.p.hand), 6 * c.m, 6 * c.m),
+    avengeFn: (c) => buff(pick(c.g, handUnits(c.p)), 6 * c.m, 6 * c.m),
   },
   red_sea_snake: {
     rally: (c) => {
@@ -538,7 +556,7 @@ export const EFFECTS: Record<string, Effect> = {
   orange_ninja: {}, // Green Ninja: joins from your hand at Start of Combat (see combat)
   ambush: {
     deathrattle: (c) => {
-      const best = c.p.hand.filter((u) => isTribe(u, 'cloister')).sort((a, b) => atkOf(c.p, b) - atkOf(c.p, a)).slice(0, c.m);
+      const best = handUnits(c.p).filter((u) => isTribe(u, 'cloister')).sort((a, b) => atkOf(c.p, b) - atkOf(c.p, a)).slice(0, c.m);
       let pos = c.pos;
       const spawned: CUnit[] = [];
       for (const u of best) {
@@ -587,7 +605,7 @@ export const EFFECTS: Record<string, Effect> = {
   tinker: {
     // while in play: each Refresh gives a random shop unit Doomstrike, Bubble or Reborn (game.ts reroll)
     onRefresh: (c) => {
-      for (const u of sample(c.g, c.p.shop, c.m)) {
+      for (const u of sample(c.g, c.p.shop.filter((x) => !isSpell(x)), c.m)) {
         const opts = (['venomous', 'divineShield', 'reborn'] as Keyword[]).filter((k) => !has(u, k));
         const k = pick(c.g, opts);
         if (k) addKw(u, k);
@@ -749,14 +767,9 @@ export const EFFECTS: Record<string, Effect> = {
     },
   },
   shield_neutral: {
-    // Taunt on a friendly unit you choose (Golden: and one more random unit without it)
+    // Spell: +3 Health and Taunt on a unit you choose
     target: 'friendly',
-    battlecry: (c) => {
-      const t = gemTarget(c);
-      if (!t) return;
-      addKw(t, 'taunt');
-      if (c.m > 1) { const more = pick(c.g, c.board.filter((u) => u !== t && !has(u, 'taunt'))); if (more) addKw(more, 'taunt'); }
-    },
+    spell: (c) => { const t = gemTarget(c); if (!t) return; buff(t, 0, 3); addKw(t, 'taunt'); },
   },
   pickaxe: {
     // Gambler (id kept as 'pickaxe' so saves still load): Arrive: 1 free Refresh (Golden 2)
@@ -768,19 +781,17 @@ export const EFFECTS: Record<string, Effect> = {
       discover(c, (id) => def(id).tier === tier, `Scout: Discover a Tier ${tier} unit`, c.m);
     },
   },
+  // Banners (Spells): the chosen unit and the units next to it (+1 per Banner played before; see bannerBonus)
   silver_banner: {
-    battlecry: (c) => {
-      const i = c.board.indexOf(c.self);
-      for (const u of [c.board[i - 1], c.board[i + 1]]) if (u) u.atk += (3 + c.p.bannerBonus) * c.m;
-      c.p.bannerBonus += c.m;
-    },
+    target: 'friendly',
+    spell: (c) => { for (const u of withNeighbours(c)) u.atk += 3 + c.p.bannerBonus; c.p.bannerBonus++; },
   },
   gold_banner: {
-    battlecry: (c) => {
-      const i = c.board.indexOf(c.self);
-      for (const u of [c.board[i - 1], c.board[i + 1]]) if (u) u.hp += (3 + c.p.bannerBonus) * c.m;
-      c.p.bannerBonus += c.m;
-    },
+    target: 'friendly',
+    spell: (c) => { for (const u of withNeighbours(c)) u.hp += 3 + c.p.bannerBonus; c.p.bannerBonus++; },
+  },
+  red_banner: {
+    spell: (c) => { for (const u of sample(c.g, c.board, 4)) buff(u, 1 + c.p.bannerBonus, 2 + c.p.bannerBonus); },
   },
   poison: {
     deathrattle: (c) => {
@@ -886,6 +897,42 @@ export const EFFECTS: Record<string, Effect> = {
     },
   },
 
+  // ===== Spells (v0.14) =====
+  coin: { spell: (c) => { c.p.gold += 1; } },
+  growth_sprout: { spell: (c) => discover(c, (id) => def(id).tier === 1, 'Growth Sprout: Discover a Tier 1 unit', 1) },
+  scope: { spell: (c) => { c.p.freeRerolls = (c.p.freeRerolls ?? 0) + 2; } },
+  invest: { spell: (c) => { c.p.goldNextTurn += 2; } },
+  haste: { spell: (c) => { c.p.gold += 1; } }, // (bought with Health: see buy)
+  strike_oil: { spell: (c) => { c.p.maxGoldBonus += 1; } },
+  last_of_our_kind: {
+    spell: (c) => {
+      const t = mostCommonTribe(c);
+      discover(c, (id) => def(id).tier <= c.p.tier && (!t || isTribe(id, t)), `Last of Our Kind: Discover ${t ? `a unit from the ${TRIBE_NAMES[t]}` : 'a unit'}`, 1);
+    },
+  },
+  potential: { spell: (c) => discover(c, (id) => def(id).tier === c.p.tier, `Potential: Discover a Tier ${c.p.tier} unit`, 1) },
+  blessin: {
+    target: 'friendly',
+    spell: (c) => {
+      const t = gemTarget(c);
+      if (!t) return;
+      const tribes = ALL_TRIBES.filter((x) => isTribe(t, x));
+      for (const u of c.board) if (u === t || tribes.some((x) => isTribe(u, x))) buff(u, 2, 2);
+    },
+  },
+  heal_up: { spell: (c) => { c.p.health += 5; } },
+  devour: {
+    target: 'unlocked',
+    spell: (c) => {
+      const t = gemTarget(c) as Unit | undefined;
+      if (!t || (t as Unit).mem.locked) return;
+      const atk = t.atk, hp = t.hp;
+      sellUnit(c.g, c.p, t);
+      buff(pick(c.g, c.p.board), atk, hp);
+    },
+  },
+  different_power_time: {}, // see castSpell (game.ts): a Hero Power Discover
+
   // ===== Tier 6 =====
   invisible_hand: {
     // Reborn. Deathrattle: play 2 Red Gems (Golden: 4)
@@ -912,7 +959,7 @@ export const EFFECTS: Record<string, Effect> = {
     soc: (c) => {
       let pos = c.side.units.indexOf(c.self) + 1;
       for (let i = 0; i < 2 * c.m; i++) {
-        const id = pick(c.g, CARDS.filter((d) => d.tier === 5 && !d.token).map((d) => d.id));
+        const id = pick(c.g, CARDS.filter((d) => d.tier === 5 && !d.token && !d.spell).map((d) => d.id));
         if (!id || !c.c.spawn(c.side, id, false, pos)) break;
         c.c.snap('trigger', { note: `The Mayor: Summon ${def(id).name}` });
         pos++;
@@ -936,7 +983,7 @@ export const EFFECTS: Record<string, Effect> = {
   },
   adder: {
     // Poisonous. When it attacks and kills a unit, a random unit in your hand gets that unit's Attack and max Health (Golden: double)
-    onAttackKill: (c, _dead, atk, maxHp) => buff(pick(c.g, c.p.hand), atk * c.m, maxHp * c.m),
+    onAttackKill: (c, _dead, atk, maxHp) => buff(pick(c.g, handUnits(c.p)), atk * c.m, maxHp * c.m),
   },
   potato_lord: {
     rally: (c) => { for (let i = 0; i < c.m; i++) gain(c, randomTier(c, 5)); },

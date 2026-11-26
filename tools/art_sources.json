@@ -1038,6 +1038,102 @@
     0.5,
     1.0
    ]
+  },
+  "coin": {
+   "src": "K/goldcoin rgb.png",
+   "crop": [
+    0.5,
+    0.5,
+    1.0
+   ]
+  },
+  "growth_sprout": {
+   "src": "M/Skills/wateringcan.png",
+   "px": true,
+   "center": true,
+   "tribe": "spell"
+  },
+  "scope": {
+   "src": "I/Action Cards/refresh.psd",
+   "crop": [
+    0.52,
+    0.5,
+    0.8
+   ]
+  },
+  "invest": {
+   "src": "I/Action Cards/shift.psd",
+   "crop": [
+    0.5,
+    0.58,
+    0.8
+   ]
+  },
+  "haste": {
+   "src": "I/Action Cards/run.psd",
+   "crop": [
+    0.5,
+    0.5,
+    1.0
+   ]
+  },
+  "red_banner": {
+   "src": "M/Skills/solidarity.png",
+   "px": true,
+   "center": true,
+   "tribe": "spell"
+  },
+  "strike_oil": {
+   "src": "M/Skills/frack.png",
+   "px": true,
+   "center": true,
+   "tribe": "spell"
+  },
+  "last_of_our_kind": {
+   "src": "I/Action Cards/older/DAZZKE.psd",
+   "crop": [
+    0.5,
+    0.5,
+    1.0
+   ]
+  },
+  "potential": {
+   "src": "I/Action Cards/HACK.psd",
+   "crop": [
+    0.45,
+    0.45,
+    0.8
+   ]
+  },
+  "blessin": {
+   "src": "I/Action Cards/older/GALE.psd",
+   "crop": [
+    0.55,
+    0.5,
+    1.0
+   ]
+  },
+  "heal_up": {
+   "src": "X/potion.png",
+   "px": true,
+   "center": true,
+   "tribe": "spell"
+  },
+  "devour": {
+   "src": "I/Action Cards/bait2.psd",
+   "crop": [
+    0.5,
+    0.55,
+    0.75
+   ]
+  },
+  "different_power_time": {
+   "src": "I/Action Cards/swap.psd",
+   "crop": [
+    0.5,
+    0.6,
+    0.72
+   ]
   }
  }
 }
