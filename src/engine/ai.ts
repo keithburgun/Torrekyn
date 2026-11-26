@@ -48,7 +48,7 @@ const ECON: Record<string, number> = {
   memory: 3, storyteller: 4, command: 5, remember: 10, librarian: 10, restore: 12, farmer: 3, honeysuckle_brambor: 5,
   computer: 8, robot_boy: 10, robot_boy_buddy: 14, shopkeep: 4, intern: 3, purveyor: 10, miner: 6, pickaxe: 6, scout: 4, grief: 8,
   omni_gem: 30, exploit: 8, golden_light: 12, potato_lord: 10, jeweler: 3, distant_land: 8, larva: 12, adder: 6, invisible_hand: 0, builder: 5,
-  life: 14, beast_vine: 16, hug: 6, organizer: 7, corrivath_harp: 10,
+  life: 14, beast_vine: 16, hug: 6, organizer: 7, corrivath_harp: 10, corn_snail: 6,
 };
 
 /**
@@ -58,7 +58,7 @@ const ECON: Record<string, number> = {
 const GROWTH: Record<string, [number, number]> = {
   architect: [0, 2], chaos: [4, 4], aerial_drone: [3, 6], andromeda_robin: [0, 6],
   patchwork: [1, 4], shadow_place: [4, 4], warlock: [0, 4], funeral: [0, 2], vampire: [0, 2], locas: [2, 1], commitment: [3, 3],
-  ocean_sky: [2, 2], intern: [0, 0], builder: [0, 4], peebnup_bubber: [0, 3], elemental: [2, 2], isha: [2, 2],
+  ocean_sky: [2, 2], medic: [0, 4], intern: [0, 0], builder: [0, 4], peebnup_bubber: [0, 3], elemental: [2, 2], isha: [2, 2],
 };
 
 /** stats a growing unit adds over the turns it will still play, in unit-score points */

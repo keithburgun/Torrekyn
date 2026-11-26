@@ -1134,6 +1134,15 @@
     0.6,
     0.72
    ]
+  },
+  "corn_snail": {
+   "src": "X/old/superminion-enemy-right.png",
+   "px": true
+  },
+  "medic": {
+   "src": "M/Skills/rescue.png",
+   "px": true,
+   "center": true
   }
  }
 }

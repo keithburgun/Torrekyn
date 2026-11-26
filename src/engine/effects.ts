@@ -877,6 +877,8 @@ export const EFFECTS: Record<string, Effect> = {
     endTurn: (c) => { if (c.p.lastGem) for (let i = 0; i < c.m; i++) gain(c, c.p.lastGem); },
   },
   tree_man: {}, // its ability lives in Combat.noRoom (a summon that doesn't fit)
+  corn_snail: {}, // see castSpell (game.ts): grows after 3 Spells, once
+  medic: {}, // see ownerBonus (core.ts): Health for your hero's missing Health
 
   omni_gem: {
     onSell: (c) => { for (let i = 0; i < 2 * c.m; i++) gain(c, randomTier(c, 5)); },

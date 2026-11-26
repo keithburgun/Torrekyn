@@ -171,4 +171,34 @@ describe('Spells', () => {
     expect(cast).toBeGreaterThan(5);
     for (const pl of players) expect(pl.hand.filter((u) => isSpell(u)).length).toBeLessThanOrEqual(3);
   });
+
+  it('Corn Snail (Tier 1 Kindred 2/2): after 3 Spells played while it is in your army, +6/+6, only once; Librarian is a Tier 3 2/4', () => {
+    expect([def('librarian').tier, def('librarian').atk, def('librarian').hp]).toEqual([3, 2, 4]);
+    expect([def('corn_snail').tribe, def('corn_snail').tier, def('corn_snail').atk, def('corn_snail').hp]).toEqual(['kindred', 1, 2, 2]);
+    for (const golden of [false, true]) {
+      const { g, p } = setup();
+      const s = makeUnit(g, 'corn_snail', golden);
+      p.board = [s];
+      cast(g, p, 'coin'); cast(g, p, 'coin');
+      expect(s.atk).toBe(def('corn_snail').atk * (golden ? 2 : 1));
+      cast(g, p, 'coin');
+      const m = golden ? 2 : 1;
+      expect([s.atk, s.hp]).toEqual([(2 + 6) * m, (2 + 6) * m]);
+      for (let i = 0; i < 4; i++) cast(g, p, 'coin');
+      expect([s.atk, s.hp]).toEqual([(2 + 6) * m, (2 + 6) * m]); // only once
+    }
+  });
+
+  it('Medic (Tier 4 Kindred 9/9): +2 Health per Health your hero is missing (Golden +4), wherever it is', async () => {
+    const { effStats } = await import('../src/engine/core');
+    const { g, p } = setup();
+    p.maxHealth = 25; p.health = 25;
+    const m = makeUnit(g, 'medic'), gm = makeUnit(g, 'medic', true);
+    expect(effStats(p, m, 'board').hp).toBe(9);
+    p.health = 15;
+    expect(effStats(p, m, 'hand').hp).toBe(9 + 20);
+    expect(effStats(p, gm, 'board').hp).toBe(18 + 40);
+    p.health = 30; // above the start (Heal Up can't, but just in case): no bonus, never less
+    expect(effStats(p, m, 'board').hp).toBe(9);
+  });
 });

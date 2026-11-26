@@ -149,6 +149,10 @@ export function ownerBonus(p: Player, b: Body): { atk: number; hp: number } {
     atk += 3 * mult(b) * (p.deathrattlesGame ?? 0);
     hp += 1 * mult(b) * (p.deathrattlesGame ?? 0);
   }
+  if (b.cardId === 'medic') {
+    // +2 Health (Golden +4) per Health your hero is missing
+    hp += 2 * mult(b) * Math.max(0, (p.maxHealth ?? CONFIG.startHealth) - p.health);
+  }
   return { atk, hp };
 }
 

@@ -2,6 +2,10 @@
 
 Newest first. The version shows on the title screen.
 
+## 0.14.8 — 2026-11-26
+- Librarian is now Tier 3, 2/4
+- New Kindred units: Corn Snail (Tier 1, 2/2: after you play 3 Spells, +6/+6, once) and Medic (Tier 4, 9/9: +2 Health per Health your hero is missing)
+
 ## 0.14.7 — 2026-11-26
 - Two Trinket choices won at once (e.g. Devotion during the turn-6 offer) now come one after the other, instead of the second being a random Trinket
 

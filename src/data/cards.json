@@ -371,11 +371,33 @@
    "id": "librarian",
    "name": "Librarian",
    "tribe": "kindred",
-   "tier": 1,
+   "tier": 3,
    "atk": 2,
-   "hp": 1,
+   "hp": 4,
    "text": "Arrive: Discover a unit from one Tier higher.",
    "goldenText": "Arrive: Discover a unit from one Tier higher, twice.",
+   "keywords": []
+  },
+  {
+   "id": "corn_snail",
+   "name": "Corn Snail",
+   "tribe": "kindred",
+   "tier": 1,
+   "atk": 2,
+   "hp": 2,
+   "text": "After you play 3 Spells, give this +6/+6. (Only once.)",
+   "goldenText": "After you play 3 Spells, give this +12/+12. (Only once.)",
+   "keywords": []
+  },
+  {
+   "id": "medic",
+   "name": "Medic",
+   "tribe": "kindred",
+   "tier": 4,
+   "atk": 9,
+   "hp": 9,
+   "text": "Has +2 Health for each Health your hero is missing.",
+   "goldenText": "Has +4 Health for each Health your hero is missing.",
    "keywords": []
   },
   {

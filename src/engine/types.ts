@@ -92,6 +92,8 @@ export interface Player {
   human: boolean;
   avatar: number;
   health: number;
+  /** your hero's starting Health (Medic counts what's missing from it) */
+  maxHealth?: number;
   alive: boolean;
   placement: number;
   tier: number;

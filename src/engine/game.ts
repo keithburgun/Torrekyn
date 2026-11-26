@@ -64,7 +64,7 @@ export function selectHero(g: GameState, heroId: string) {
   p.hero = heroId;
   p.avatar = heroDef(heroId)?.avatar ?? 0;
   p.heroOffer = undefined;
-  for (const pl of g.players) if (pl.hero) { pl.health = heroHealth(pl.hero); gainPower(g, pl, pl.hero); }
+  for (const pl of g.players) if (pl.hero) { pl.health = pl.maxHealth = heroHealth(pl.hero); gainPower(g, pl, pl.hero); }
   startRound(g);
 }
 
@@ -509,6 +509,12 @@ export function castSpell(g: GameState, p: Player, handIdx: number, targetUid?: 
     });
   }
   p.spellsCast = (p.spellsCast ?? 0) + 1;
+  // Corn Snail: counts the Spells you play while it's in your army; the third one grows it, once
+  for (const b of [...p.board]) {
+    if (b.cardId !== 'corn_snail' || b.mem.done) continue;
+    b.mem.spells = (b.mem.spells ?? 0) + 1;
+    if (b.mem.spells >= 3) withFx(g, p, { unit: b }, 'Ability', () => { b.mem.done = 1; b.atk += 6 * mult(b); b.hp += 6 * mult(b); });
+  }
   log(p, `Cast ${def(u.cardId).name}.`);
   drainOverflow(g, p);
   return OK;
