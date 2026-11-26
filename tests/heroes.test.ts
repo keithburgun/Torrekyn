@@ -313,4 +313,15 @@ describe('hero powers', () => {
     play(g, p, 0, 0);
     expect(p.battlecriesThisTurn - before).toBe(3);
   });
+
+  it('powers about the start of the game are never offered mid-game (Abragail, New Power, Different Power Time)', async () => {
+    const { freshPowers } = await import('../src/engine/heroes');
+    for (let seed = 1; seed <= 5; seed++) {
+      const g = newGame(seed);
+      for (const p of g.players) { p.hero = undefined; p.powers = []; }
+      const ids = freshPowers(g).map((h) => h.id);
+      for (const id of ['mazrael_bettencourt', 'andromeda_robin', 'robot_boy_hero', 'abragail']) expect(ids).not.toContain(id);
+      expect(ids).toContain('oren_bark');
+    }
+  });
 });

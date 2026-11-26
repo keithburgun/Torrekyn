@@ -16,6 +16,8 @@ export interface HeroDef {
   title: string; // one-line identity shown on hero select
   power: string;
   text: string;
+  /** a power about the start of the game (Mazrael's skipped first turn, a starting Pumpkin): never offered later (Abragail, New Power, Different Power Time) */
+  startOnly?: boolean;
   avatar: number;
   /** starting Health (balance: stronger heroes start lower); CONFIG.startHealth when not set */
   health?: number;
@@ -69,16 +71,16 @@ function heroAvenge(s: Side, id: string, n: number): boolean {
   return true;
 }
 
-/** Hero Powers nobody alive has (as their hero or a power they've gained), whose faction is in play: what Abragail and New Power choose from */
+/** Hero Powers nobody alive has (and that still mean something mid-game: not the "start of the game" ones) (as their hero or a power they've gained), whose faction is in play: what Abragail and New Power choose from */
 export function freshPowers(g: GameState): HeroDef[] {
   const taken = new Set<string>();
   for (const q of g.players) if (q.alive) { if (q.hero) taken.add(q.hero); q.powers.forEach((x) => taken.add(x)); }
-  return HEROES.filter((h) => h.id !== 'abragail' && !taken.has(h.id) && (!h.needsTribe || g.tribes.includes(h.needsTribe)));
+  return HEROES.filter((h) => h.id !== 'abragail' && !h.startOnly && !taken.has(h.id) && (!h.needsTribe || g.tribes.includes(h.needsTribe)));
 }
 
 export const HEROES: HeroDef[] = [
   {
-    id: 'andromeda_robin', name: 'Andromeda Robin', title: 'Potato witch', power: 'Pumpkin Buddy', avatar: 0, health: 24, passive: true,
+    id: 'andromeda_robin', name: 'Andromeda Robin', title: 'Potato witch', power: 'Pumpkin Buddy', avatar: 0, health: 24, passive: true, startOnly: true,
     text: 'Start the game with a 1/1 Pumpkin. It has every tribe and gains the Deathrattle of any other unit that dies in combat.',
     onGain: (g, p) => { gainNew(g, p, 'pumpkin'); },
   },
@@ -209,7 +211,7 @@ export const HEROES: HeroDef[] = [
     progress: (g, p) => `Dragons ${1 + (p.heroMem.brood ?? 0)}/${1 + (p.heroMem.brood ?? 0)}`,
   },
   {
-    id: 'mazrael_bettencourt', name: 'Mazrael Bettencourt', title: 'Vampire of the Secret Arts', power: '1000 Years Old', avatar: 14, passive: true,
+    id: 'mazrael_bettencourt', name: 'Mazrael Bettencourt', title: 'Vampire of the Secret Arts', power: '1000 Years Old', avatar: 14, passive: true, startOnly: true,
     text: 'Skip your first turn. Discover a Tier 3, a Tier 4 and a Tier 5 unit. Each unlocks once your Tavern reaches its Tier.',
     startTurn: (g, p) => {
       if (g.round !== 1 || p.heroMem.longGame) return;
@@ -250,7 +252,7 @@ export const HEROES: HeroDef[] = [
     progress: (g, p) => `${p.heroMem.research ?? 0}/${ZUZUNI_FOR_RESEARCH}`,
   },
   {
-    id: 'robot_boy_hero', name: 'Robot Boy', title: 'A real-life robot boy', power: "I'm Robot Boy", avatar: 16, health: 25, passive: true,
+    id: 'robot_boy_hero', name: 'Robot Boy', title: 'A real-life robot boy', power: "I'm Robot Boy", avatar: 16, health: 25, passive: true, startOnly: true,
     text: 'Start the game with a 1/1 Orbo Pet with Doomstrike and every tribe.',
     onGain: (g, p) => { gainNew(g, p, 'orbo_pet'); },
   },

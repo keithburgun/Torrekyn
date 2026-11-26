@@ -2,6 +2,9 @@
 
 Newest first. The version shows on the title screen.
 
+## 0.14.5 — 2026-11-26
+- Abragail, New Power and Different Power Time no longer offer start-of-game powers (Mazrael's 1000 Years Old, Andromeda's Pumpkin Buddy, Robot Boy's Orbo Pet)
+
 ## 0.14.4 — 2026-11-26
 - Bot bonus stats: each unit rolls its own 30-180%
 
