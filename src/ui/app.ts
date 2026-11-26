@@ -15,7 +15,7 @@ import { clearSave, loadSave, save } from './save';
 import { debugOn, setDebug } from './debug';
 import { checkForUpdates, versionLabel } from './update';
 import { isMuted, setMuted, sfx } from './sfx';
-import { achievementsHtml, cardGridHtml, cardViewerHtml, filteredCards, tribesAnnounceHtml, type ViewerState } from './screens';
+import { achievementsHtml, cardViewerHtml, tribesAnnounceHtml, viewerCount, viewerGridHtml, type ViewerState } from './screens';
 import { playTriple } from './ceremony';
 import { placeBoardBg, placeHud } from './hud';
 import { puff } from './fx';
@@ -120,9 +120,9 @@ export class App {
       if (t.id !== 'cv-search' || !this.viewer) return;
       this.viewer.q = t.value;
       const grid = stage.querySelector('#cv-grid');
-      if (grid) grid.innerHTML = cardGridHtml(this.viewer, this.g);
+      if (grid) grid.innerHTML = viewerGridHtml(this.viewer, this.g);
       const c = stage.querySelector('#cv-count');
-      if (c) c.textContent = `${filteredCards(this.viewer, this.g).length} cards`;
+      if (c) c.textContent = viewerCount(this.viewer, this.g);
     });
     onUnlock((a) => this.achievementToast(a));
     // cloud saves: don't swap the game being played underneath you; redraw when progress arrives from elsewhere
@@ -1743,6 +1743,8 @@ export class App {
       case 'to-hero': sfx.click(); this.screen = 'hero'; this.render(); break;
       case 'cards': this.options = false; this.viewer = { fromGame: this.screen === 'shop' && !!this.g, onlyMatch: this.screen === 'shop', tribe: '', tier: 0, ability: '', golden: false, q: '' }; this.render(); break;
       case 'cv-close': this.viewer = null; this.render(); break;
+      case 'cv-tab': if (this.viewer) { this.viewer.tab = el.dataset.v as ViewerState['tab']; this.render(); } break;
+      case 'cv-kind': if (this.viewer) { this.viewer.kind = el.dataset.v!; this.render(); } break;
       case 'cv-tribe': if (this.viewer) { this.viewer.tribe = el.dataset.v!; this.render(); } break;
       case 'cv-tier': if (this.viewer) { this.viewer.tier = Number(el.dataset.v); this.render(); } break;
       case 'cv-ab': if (this.viewer) { this.viewer.ability = el.dataset.v!; this.render(); } break;

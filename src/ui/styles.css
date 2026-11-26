@@ -1666,3 +1666,18 @@ svg.aim-arrow.locked .aim-ring { opacity: 0.9; animation: aim-ring 0.9s ease-in-
 .card.casting .face { box-shadow: 0 0 0 3px #fff, 0 0 26px rgba(185, 140, 255, 0.95); }
 .coin.hp-cost { background: var(--hp-orb); }
 .bigcard.spell { border-color: #9a7fd0; }
+
+/* Card Viewer: Heroes and Trinkets tabs */
+.cv-tabs { display: flex; gap: 6px; }
+.cv-tabs .chip { font-size: 16px; padding: 6px 16px; }
+.cv-grid.cv-heroes, .cv-grid.cv-trinkets { gap: 18px; justify-content: flex-start; }
+.cv-hero.herocard { cursor: default; width: 250px; height: auto; min-height: 330px; }
+.cv-hero.herocard:hover, .cv-trinket.trinketcard:hover { transform: none; }
+.cv-hero .htitle { font-size: 14px; margin-top: -8px; text-align: center; }
+.cv-hero .pw { text-align: center; }
+.cv-trinket.trinketcard { cursor: default; height: auto; min-height: 280px; }
+.cv-trinket .gem { width: 56px; height: 56px; flex: none; }
+.cv-trinket .tk-kind { font-size: 12px; font-weight: 800; letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-soft); margin-bottom: -8px; }
+.cv-trinket .pc { font-family: var(--display); color: var(--coin); font-size: 22px !important; }
+.cv-needs { display: flex; align-items: center; gap: 6px; font-size: 13px; color: var(--ink-soft); margin-top: auto; }
+.cv-needs .tdot { width: 12px; height: 12px; }

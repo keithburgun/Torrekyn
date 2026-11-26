@@ -2,6 +2,9 @@
 
 Newest first. The version shows on the title screen.
 
+## 0.14.6 — 2026-11-26
+- Card Viewer: Heroes and Trinkets tabs (search, Lesser/Greater filter, 'only in this match')
+
 ## 0.14.5 — 2026-11-26
 - Abragail, New Power and Different Power Time no longer offer start-of-game powers (Mazrael's 1000 Years Old, Andromeda's Pumpkin Buddy, Robot Boy's Orbo Pet)
 
