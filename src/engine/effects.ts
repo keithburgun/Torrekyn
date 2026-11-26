@@ -920,7 +920,7 @@ export const EFFECTS: Record<string, Effect> = {
       for (const u of c.board) if (u === t || tribes.some((x) => isTribe(u, x))) buff(u, 2, 2);
     },
   },
-  heal_up: { spell: (c) => { c.p.health += 5; } },
+  heal_up: { spell: (c) => { c.p.health = Math.max(c.p.health, Math.min(10, c.p.health + 5)); } }, // (never lowers it)
   devour: {
     target: 'unlocked',
     spell: (c) => {

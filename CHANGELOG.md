@@ -2,6 +2,10 @@
 
 Newest first. The version shows on the title screen.
 
+## 0.14.1 — 2026-11-26
+- Scope is now Soda
+- Heal Up!: Increase your Health by 5, to a maximum of 10
+
 ## 0.14.0 — 2026-11-26
 - Spells: the Tavern always has one Spell (on the right). Buy it at its own price, cast it from your hand, and it's gone
 - Gems are now Tier 3 Spells (2 Gold); Silver/Gold Banner are Tier 2 Spells (a unit and its neighbours); Shield is a Tier 1 Spell (+3 Health and Taunt)

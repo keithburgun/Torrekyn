@@ -239,7 +239,7 @@ export function spellScore(g: GameState | undefined, p: Player, id: string): num
     case 'growth_sprout': v = round <= 4 ? 10 : 4; break;
     case 'last_of_our_kind': v = 8 + 5 * p.tier; break;
     case 'potential': v = 6 + 5 * p.tier; break;
-    case 'heal_up': v = p.health <= 10 ? 18 : p.health <= 18 ? 8 : 3; break;
+    case 'heal_up': v = p.health >= 10 ? -Infinity : 4 * Math.min(5, 10 - p.health); break;
     case 'devour': v = n >= CONFIG.boardSize - 1 ? 10 : 0; break;
     case 'different_power_time': v = 8; break;
     case 'shield_neutral': v = W(0, 3) + 2; break;
@@ -321,6 +321,7 @@ function castSpells(g: GameState, p: Player): boolean {
 function wantsCast(p: Player, u: Unit): boolean {
   if (EFFECTS[u.cardId]?.target && !validTargets(p, u.cardId).length) return false;
   if (u.cardId === 'devour') return p.board.length >= 3;
+  if (u.cardId === 'heal_up') return p.health < 10;
   // a Discover with a full hand would be wasted
   if (['growth_sprout', 'last_of_our_kind', 'potential'].includes(u.cardId)) return p.hand.length < CONFIG.handSize;
   return true;

@@ -1775,7 +1775,7 @@
   },
   {
    "id": "scope",
-   "name": "Scope",
+   "name": "Soda",
    "tribe": "neutral",
    "tier": 1,
    "atk": 0,
@@ -1872,8 +1872,8 @@
    "tier": 5,
    "atk": 0,
    "hp": 0,
-   "text": "Increase your Health by 5.",
-   "goldenText": "Increase your Health by 5.",
+   "text": "Increase your Health by 5, to a maximum of 10.",
+   "goldenText": "Increase your Health by 5, to a maximum of 10.",
    "keywords": [],
    "spell": true,
    "cost": 3

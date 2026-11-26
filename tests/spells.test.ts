@@ -76,7 +76,7 @@ describe('Spells', () => {
     expect([a.hp, h.hp, p.hand[1].hp]).toEqual([3, 3, 0]);
   });
 
-  it('Coin, Invest, Scope, Strike Oil, Heal Up!', () => {
+  it('Coin, Invest, Soda, Strike Oil, Heal Up! (to at most 10)', () => {
     const { g, p } = setup();
     p.gold = 0; p.goldNextTurn = 0; p.freeRerolls = 0;
     cast(g, p, 'coin'); expect(p.gold).toBe(1);
@@ -84,8 +84,10 @@ describe('Spells', () => {
     cast(g, p, 'scope'); expect(p.freeRerolls).toBe(2);
     const max = maxGoldFor(g, p);
     cast(g, p, 'strike_oil'); expect(maxGoldFor(g, p)).toBe(max + 1);
-    const hp = p.health;
-    cast(g, p, 'heal_up'); expect(p.health).toBe(hp + 5);
+    p.health = 3; cast(g, p, 'heal_up'); expect(p.health).toBe(8);
+    cast(g, p, 'heal_up'); expect(p.health).toBe(10); // up to 10
+    p.health = 14; cast(g, p, 'heal_up'); expect(p.health).toBe(14); // never lowers it
+    expect(def('scope').name).toBe('Soda');
   });
 
   it('Growth Sprout (Tier 1), Potential (your Tier), Last of Our Kind (your most common faction)', () => {
