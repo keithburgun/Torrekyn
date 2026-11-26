@@ -2,6 +2,9 @@
 
 Newest first. The version shows on the title screen.
 
+## 0.14.3 — 2026-11-26
+- Attack diamond: a yellower orange (between the old yellow and the new orange)
+
 ## 0.14.2 — 2026-11-26
 - Gold coins (the gold display and Spell prices) are flat, a pale whitish yellow; the Attack diamond is a saturated orange
 
