@@ -2,6 +2,9 @@
 
 Newest first. The version shows on the title screen.
 
+## 0.14.11 — 2026-11-26
+- Phones: a zoomed card's related cards (Farmer's Potato Gem...) show in the column beside it, always on the screen
+
 ## 0.14.10 — 2026-11-26
 - Omni-Gem is now a Tier 4 Spell (5 Gold): Discover a Tier 5 unit
 - Phones: a zoomed card shows its keyword panels beside it

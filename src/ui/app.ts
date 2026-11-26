@@ -863,7 +863,7 @@ export class App {
     // twice the old size: 236x340 card zoomed 1.78 (landscape) or 2.6 (phones)
     // on a phone, a card with keywords is shown a bit smaller, on the left, with the keyword panels beside it
     const kws = keywordPanelsHtml(v);
-    const kwBeside = L.portrait && !!kws;
+    const kwBeside = L.portrait && (!!kws || relatedCards(v.cardId).length > 0);
     const W = L.portrait ? (kwBeside ? 472 : 614) : 420;
     const H = L.portrait ? (kwBeside ? 680 : 884) + (actions ? 118 : 0) : 605 + (actions ? 54 : 0);
     let x: number;
@@ -901,7 +901,7 @@ export class App {
     const kwSide = L.portrait ? 'right'
       : !relatedCards(v.cardId).length ? relSide : roomAcross >= 290 ? across : relSide;
     return `<div class="popover ${kwBeside ? 'kw-beside' : ''} ${kws && kwSide === relSide ? 'has-kw' : ''} ${actions ? 'interactive' : ''} ${actionsTop ? 'actions-top' : ''} ${actions && this.justSelected() ? 'arming' : ''}" style="left:${x}px;top:${y}px;width:${W}px">
-      <div class="pop-card" data-card="${v.cardId}" data-golden="${v.golden ? 1 : 0}">${bigCardHtml(v, '', this.me)}</div>${actions ? `<div class="actions">${actions}</div>` : ''}${kws ? `<div class="pop-kw ${kwSide}">${kws}</div>` : ''}</div>`;
+      <div class="pop-card" data-card="${v.cardId}" data-golden="${v.golden ? 1 : 0}">${bigCardHtml(v, '', this.me)}</div>${actions ? `<div class="actions">${actions}</div>` : ''}${kws || kwBeside ? `<div class="pop-kw ${kwSide}">${kws}</div>` : ''}</div>`;
   }
 
   /** Phones: details for your hero power or a trinket, with a big Use button where it applies. */
@@ -1067,12 +1067,19 @@ export class App {
     const w = pop.offsetWidth;
     const y = parseFloat(pop.style.top);
     // beside it on the roomier side; on a tall screen above or below it
-    const where = L.portrait ? (y > L.H / 2 ? 'above' : 'below') : x + w / 2 < L.W / 2 ? 'right' : 'left';
+    // (on a phone: in the column beside the card, under its keyword panels, so it's never off the screen)
+    const col = L.portrait ? pop.querySelector<HTMLElement>('.pop-kw') : null;
+    const where = col ? `in-col ${ids.length > 1 ? 'many' : ''}` : L.portrait ? (y > L.H / 2 ? 'above' : 'below') : x + w / 2 < L.W / 2 ? 'right' : 'left';
     const el = document.createElement('div');
     el.className = `pop-related ${where} ${instant ? '' : 'fresh'}`;
     const from = { cardId: pc.dataset.card!, golden: pc.dataset.golden === '1' };
     el.innerHTML = ids.map((id) => `<div class="pop-card rel">${relatedCardHtml(id, this.me, from)}</div>`).join('');
-    pop.appendChild(el);
+    (col ?? pop).appendChild(el);
+    // keep the whole column on the screen
+    if (col) {
+      const over = y + col.offsetHeight - (L.H - 8);
+      if (over > 0) pop.style.top = `${Math.max(8, y - over)}px`;
+    }
   }
 
   toast(msg: string) {

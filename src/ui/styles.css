@@ -1691,3 +1691,7 @@ svg.aim-arrow.locked .aim-ring { opacity: 0.9; animation: aim-ring 0.9s ease-in-
 #stage.portrait .inspect-panel .hero-portrait { margin-right: 34px; }
 /* a zoomed card's keyword panels go over the corner buttons (mute, settings) */
 #stage.portrait .popover.kw-beside { z-index: 125; }
+/* phones: a card's related cards (Farmer's Potato Gem...) go in the column beside it, under the keyword panels */
+.pop-kw .pop-related.in-col { position: static; transform: none; display: flex; flex-wrap: wrap; gap: 10px; margin-top: 16px; }
+#stage.portrait .pop-kw .pop-related.in-col .pop-card { zoom: 1.6; }
+#stage.portrait .pop-kw .pop-related.in-col.many .pop-card { zoom: 0.78; }
