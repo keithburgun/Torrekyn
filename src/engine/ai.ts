@@ -47,7 +47,7 @@ const jitter = (g: GameState, p: Player, scale = 10) => ((prof(p).noise ?? 0) ? 
 const ECON: Record<string, number> = {
   memory: 3, storyteller: 4, command: 5, remember: 10, librarian: 10, restore: 12, farmer: 3, honeysuckle_brambor: 5,
   computer: 8, robot_boy: 10, robot_boy_buddy: 14, shopkeep: 4, intern: 3, purveyor: 10, miner: 6, pickaxe: 6, scout: 4, grief: 8,
-  omni_gem: 30, exploit: 8, golden_light: 12, potato_lord: 10, jeweler: 3, distant_land: 8, larva: 12, adder: 6, invisible_hand: 0, builder: 5,
+  exploit: 8, golden_light: 12, potato_lord: 10, jeweler: 3, distant_land: 8, larva: 12, adder: 6, invisible_hand: 0, builder: 5,
   life: 14, beast_vine: 16, hug: 6, organizer: 7, corrivath_harp: 10, corn_snail: 6,
 };
 
@@ -215,7 +215,7 @@ function bestTarget(g: GameState, p: Player, u: Unit): number | undefined {
   return cands.reduce((a, b) => (effStats(p, a, 'board').hp > effStats(p, b, 'board').hp ? a : b)).uid;
 }
 
-const SELL_NOW = ['omni_gem', 'exploit'];
+const SELL_NOW = ['exploit'];
 
 /**
  * What a Spell is worth to the bot right now, in unit-score points (a Gold is worth about 4; a +1/+1 about 1.6),
@@ -239,6 +239,7 @@ export function spellScore(g: GameState | undefined, p: Player, id: string): num
     case 'growth_sprout': v = round <= 4 ? 10 : 4; break;
     case 'last_of_our_kind': v = 8 + 5 * p.tier; break;
     case 'potential': v = 6 + 5 * p.tier; break;
+    case 'omni_gem': v = 36; break;
     case 'heal_up': v = p.health >= 10 ? -Infinity : 4 * Math.min(5, 10 - p.health); break;
     case 'devour': v = n >= CONFIG.boardSize - 1 ? 10 : 0; break;
     case 'different_power_time': v = 8; break;
@@ -323,7 +324,7 @@ function wantsCast(p: Player, u: Unit): boolean {
   if (u.cardId === 'devour') return p.board.length >= 3;
   if (u.cardId === 'heal_up') return p.health < 10;
   // a Discover with a full hand would be wasted
-  if (['growth_sprout', 'last_of_our_kind', 'potential'].includes(u.cardId)) return p.hand.length < CONFIG.handSize;
+  if (['growth_sprout', 'last_of_our_kind', 'potential', 'omni_gem'].includes(u.cardId)) return p.hand.length < CONFIG.handSize;
   return true;
 }
 

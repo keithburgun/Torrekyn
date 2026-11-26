@@ -861,8 +861,11 @@ export class App {
     // place it beside the card (above it for cards in hand)
     // phones get a much bigger card (zoomed in CSS) and big buttons; numbers here match styles.css
     // twice the old size: 236x340 card zoomed 1.78 (landscape) or 2.6 (phones)
-    const W = L.portrait ? 614 : 420;
-    const H = L.portrait ? 884 + (actions ? 118 : 0) : 605 + (actions ? 54 : 0);
+    // on a phone, a card with keywords is shown a bit smaller, on the left, with the keyword panels beside it
+    const kws = keywordPanelsHtml(v);
+    const kwBeside = L.portrait && !!kws;
+    const W = L.portrait ? (kwBeside ? 472 : 614) : 420;
+    const H = L.portrait ? (kwBeside ? 680 : 884) + (actions ? 118 : 0) : 605 + (actions ? 54 : 0);
     let x: number;
     let y: number;
     let actionsTop = false;
@@ -870,7 +873,7 @@ export class App {
       // portrait: shop cards show it over the army, army cards over the shop, hand cards above the hand
       const cx = s.zone === 'shop' ? shopX(s.idx, p.shop.length) + L.shopCardW / 2
         : s.zone === 'hand' ? handX(s.idx, p.hand.length) + L.handCardW / 2 : L.slotX(s.idx) + L.slotW / 2;
-      x = Math.max(8, Math.min(L.W - W - 8, cx - W / 2));
+      x = kwBeside ? 8 : Math.max(8, Math.min(L.W - W - 8, cx - W / 2));
       y = s.zone === 'shop' ? L.shopY + L.shopCardH + 14 : s.zone === 'board' ? L.slotTop - H - 6 : L.handY - H - 12;
       y = Math.max(8, Math.min(L.H - H - 8, y));
       // if there isn't room above the card, the big card covers it: then the buttons go on top of the
@@ -892,13 +895,12 @@ export class App {
     y = Math.max(8, Math.min(L.H - 10 - H, y));
     // what each keyword on it means, in panels on the roomier side (on a tall screen: across from the related cards)
     // (related cards go on the roomier side: put the panels across from them when they fit there, else beside them)
-    const kws = keywordPanelsHtml(v);
     const relSide = x + W / 2 < L.W / 2 ? 'right' : 'left';
     const across = relSide === 'right' ? 'left' : 'right';
     const roomAcross = across === 'left' ? x : L.W - (x + W);
-    const kwSide = L.portrait ? (y > L.H / 2 ? 'below' : 'above')
+    const kwSide = L.portrait ? 'right'
       : !relatedCards(v.cardId).length ? relSide : roomAcross >= 290 ? across : relSide;
-    return `<div class="popover ${kws && kwSide === relSide ? 'has-kw' : ''} ${actions ? 'interactive' : ''} ${actionsTop ? 'actions-top' : ''} ${actions && this.justSelected() ? 'arming' : ''}" style="left:${x}px;top:${y}px;width:${W}px">
+    return `<div class="popover ${kwBeside ? 'kw-beside' : ''} ${kws && kwSide === relSide ? 'has-kw' : ''} ${actions ? 'interactive' : ''} ${actionsTop ? 'actions-top' : ''} ${actions && this.justSelected() ? 'arming' : ''}" style="left:${x}px;top:${y}px;width:${W}px">
       <div class="pop-card" data-card="${v.cardId}" data-golden="${v.golden ? 1 : 0}">${bigCardHtml(v, '', this.me)}</div>${actions ? `<div class="actions">${actions}</div>` : ''}${kws ? `<div class="pop-kw ${kwSide}">${kws}</div>` : ''}</div>`;
   }
 

@@ -1681,3 +1681,13 @@ svg.aim-arrow.locked .aim-ring { opacity: 0.9; animation: aim-ring 0.9s ease-in-
 .cv-trinket .pc { font-family: var(--display); color: var(--coin); font-size: 22px !important; }
 .cv-needs { display: flex; align-items: center; gap: 6px; font-size: 13px; color: var(--ink-soft); margin-top: auto; }
 .cv-needs .tdot { width: 12px; height: 12px; }
+
+/* phones: a zoomed card with keywords sits on the left, a little smaller, with its keyword panels in a column beside it */
+#stage.portrait .popover.kw-beside .pop-card { zoom: 2; }
+#stage.portrait .pop-kw.right { left: calc(100% + 12px); width: 396px; }
+#stage.portrait .pop-kw.right .kw-panel { width: auto; }
+/* the leaderboard's player panel: room for the Health badge that sticks out of the portrait */
+.inspect-panel .hero-portrait { margin-right: 22px; }
+#stage.portrait .inspect-panel .hero-portrait { margin-right: 34px; }
+/* a zoomed card's keyword panels go over the corner buttons (mute, settings) */
+#stage.portrait .popover.kw-beside { z-index: 125; }

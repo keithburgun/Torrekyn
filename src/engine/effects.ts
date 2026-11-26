@@ -895,7 +895,8 @@ export const EFFECTS: Record<string, Effect> = {
   medic: {}, // see ownerBonus (core.ts): Health for your hero's missing Health
 
   omni_gem: {
-    onSell: (c) => { for (let i = 0; i < 2 * c.m; i++) gain(c, randomTier(c, 5)); },
+    // a Tier 4 Spell (5 Gold): Discover a Tier 5 unit (units only: never a Spell, so never another Omni-Gem)
+    spell: (c) => discover(c, (id) => def(id).tier === 5 && !def(id).spell, 'Omni-Gem: Discover a Tier 5 unit', 1),
   },
   white_gem: {
     // +4/+4 (+1/+1 per improvement; Golden doubles) to one unit of each faction: a different unit for each where it can

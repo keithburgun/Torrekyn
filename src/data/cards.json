@@ -1390,12 +1390,14 @@
    "id": "omni_gem",
    "name": "Omni-Gem",
    "tribe": "neutral",
-   "tier": 5,
-   "atk": 10,
-   "hp": 10,
-   "text": "When you sell this, gain 2 random Tier 5 units.",
-   "goldenText": "When you sell this, gain 4 random Tier 5 units.",
-   "keywords": []
+   "tier": 4,
+   "atk": 0,
+   "hp": 0,
+   "text": "Discover a Tier 5 unit.",
+   "goldenText": "Discover a Tier 5 unit.",
+   "keywords": [],
+   "spell": true,
+   "cost": 5
   },
   {
    "id": "buzz_boink",

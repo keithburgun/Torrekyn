@@ -179,14 +179,6 @@ describe('rework 2', () => {
     expect([left.atk, left.hp]).toEqual([10, 10]);
   });
 
-  it('Omni-Gem: selling it gains 2 Tier 5 units', () => {
-    const { g, p } = setup();
-    p.hand = [];
-    p.board = [u(g, 'omni_gem')];
-    sell(g, p, 0);
-    expect(p.hand.map((x) => def(x.cardId).tier)).toEqual([5, 5]);
-  });
-
   it('Scientist and Grief are Deathrattles now', () => {
     const { g, p, o } = setup();
     p.upgradeCost = 10;

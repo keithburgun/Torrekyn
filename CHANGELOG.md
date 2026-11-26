@@ -2,6 +2,11 @@
 
 Newest first. The version shows on the title screen.
 
+## 0.14.10 — 2026-11-26
+- Omni-Gem is now a Tier 4 Spell (5 Gold): Discover a Tier 5 unit
+- Phones: a zoomed card shows its keyword panels beside it
+- Phones: the Health badge no longer covers the text in the player panel
+
 ## 0.14.9 — 2026-11-26
 - New Azure unit: Ballooneer (Tier 2, 2/2). Rally: Give a friendly Azure unit +1/+1 and this Rally
 

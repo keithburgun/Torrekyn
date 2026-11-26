@@ -35,7 +35,7 @@ describe('Spells', () => {
     for (const id of ['tourmaline', 'pink_gem', 'ancient_name_brambor', 'green_gem', 'red_gem', 'purple_gem', 'white_gem']) expect([def(id).spell, def(id).tier, def(id).cost]).toEqual([true, 3, 2]);
     for (const id of ['silver_banner', 'gold_banner', 'red_banner']) expect([def(id).spell, def(id).tier, def(id).cost]).toEqual([true, 2, 2]);
     expect([def('shield_neutral').spell, def('shield_neutral').tier, def('shield_neutral').cost]).toEqual([true, 1, 1]);
-    expect(def('omni_gem').spell).toBeFalsy(); // (a unit you sell, not one of the Gems)
+    expect([def('omni_gem').spell, def('omni_gem').tier, def('omni_gem').cost]).toEqual([true, 4, 5]);
   });
 
   it("buying costs the Spell's price (Haste: Health), and it goes to your hand; casting uses it up", () => {
@@ -99,6 +99,11 @@ describe('Spells', () => {
     cast(g, p, 'potential');
     expect(p.discovers[0].options.every((id) => def(id).tier === 4)).toBe(true);
     chooseDiscover(g, p, 0);
+    for (let i = 0; i < 10; i++) {
+      cast(g, p, 'omni_gem');
+      expect(p.discovers[0].options.every((id) => def(id).tier === 5 && !def(id).spell)).toBe(true);
+      p.discovers = [];
+    }
     p.board = [U(g, 'knight'), U(g, 'knight'), U(g, 'disciple')];
     cast(g, p, 'last_of_our_kind');
     expect(p.discovers[0].options.every((id) => isTribe(id, 'azure') && def(id).tier <= 4)).toBe(true);

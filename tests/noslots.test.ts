@@ -413,11 +413,10 @@ describe('v0.12 card changes', () => {
     expect(def('lake').text).not.toMatch(/once/i);
   });
 
-  it('stats: Scientist Tier 3 4/1, Funeral 5/1, Omni-Gem 10/10; Restore is Avenge (2)', async () => {
+  it('stats: Scientist Tier 3 4/1, Funeral 5/1; Restore is Avenge (2)', async () => {
     const { EFFECTS } = await import('../src/engine/effects');
     expect([def('scientist').tier, def('scientist').atk, def('scientist').hp]).toEqual([3, 4, 1]);
     expect([def('funeral').atk, def('funeral').hp]).toEqual([12, 1]);
-    expect([def('omni_gem').atk, def('omni_gem').hp]).toEqual([10, 10]);
     expect(EFFECTS.restore.avenge).toEqual([2, 2]);
     expect(def('restore').text).toContain('Avenge (2)');
   });
@@ -1129,9 +1128,8 @@ describe('Gems (v0.13.2)', () => {
     expect(def('white_gem').tier).toBe(3);
   });
 
-  it('Broken Land is 19/29; Omni-Gem gives 2 Tier 5 units', () => {
+  it('Broken Land is 19/29', () => {
     expect([def('broken_land').atk, def('broken_land').hp]).toEqual([19, 29]);
-    expect(def('omni_gem').text).toContain('2 random Tier 5');
   });
 });
 
