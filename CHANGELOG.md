@@ -2,6 +2,9 @@
 
 Newest first. The version shows on the title screen.
 
+## 0.14.2 — 2026-11-26
+- Gold coins (the gold display and Spell prices) are flat, a pale whitish yellow; the Attack diamond is a saturated orange
+
 ## 0.14.1 — 2026-11-26
 - Scope is now Soda
 - Heal Up!: Increase your Health by 5, to a maximum of 10
