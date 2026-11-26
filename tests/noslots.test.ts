@@ -733,7 +733,7 @@ describe('Golden Light', () => {
 });
 
 describe('bot bonus', () => {
-  it('bots get +X/+X at End of Turn by your rating (in full +2 at 1000, +5 at 1250, +8 at 1500+), 60-100% of it each time; none unrated or for you', async () => {
+  it('bots get +X/+X at End of Turn by your rating (in full +2 at 1000, +5 at 1250, +8 at 1500+), 30-180% of it each time; none unrated or for you; triggers nothing', async () => {
     const { botBonusFor, newGame, endTurnEffects } = await import('../src/engine/game');
     expect([700, 875, 1000, 1125, 1250, 1500, 1800].map(botBonusFor)).toEqual([0, 1, 2, 3.5, 5, 8, 8]);
     for (const rating of [undefined, 1250]) {
@@ -744,10 +744,10 @@ describe('bot bonus', () => {
       g.round = 10;
       endTurnEffects(g, bot); endTurnEffects(g, me);
       const n = bot.board[0].atk - 2;
-      if (rating) { expect(n).toBeGreaterThanOrEqual(3); expect(n).toBeLessThanOrEqual(5); } else expect(n).toBe(0);
+      if (rating) { expect(n).toBeGreaterThanOrEqual(2); expect(n).toBeLessThanOrEqual(9); } else expect(n).toBe(0);
       expect([bot.hand[0].hp, me.board[0].atk]).toEqual([2 + n, 2]); // the same roll for the whole army and hand
     }
-    // at rating 1500 (+8 in full): many End of Turns land between 60% and 100% of the ramped amount, and use the range
+    // at rating 1500 (+8 in full): many End of Turns land between 30% and 180% of the ramped amount, and use the range
     const g = newGame(6, 'You', undefined, { rating: 1500 });
     const bot = g.players[1];
     for (const r of [1, 4, 10, 14]) {
@@ -758,10 +758,22 @@ describe('bot bonus', () => {
         seen.add(bot.board[0].atk);
       }
       const full = 8 * Math.min(1, (r - 1) / 9);
-      for (const v of seen) { expect(v).toBeGreaterThanOrEqual(Math.round(full * 0.6)); expect(v).toBeLessThanOrEqual(Math.round(full)); }
-      if (r >= 10) expect([...seen].sort()).toEqual([5, 6, 7, 8]);
+      for (const v of seen) { expect(v).toBeGreaterThanOrEqual(Math.round(full * 0.3)); expect(v).toBeLessThanOrEqual(Math.round(full * 1.8)); }
+      if (r >= 10) { expect(Math.min(...seen)).toBeLessThanOrEqual(4); expect(Math.max(...seen)).toBeGreaterThanOrEqual(12); }
       if (r === 1) expect([...seen]).toEqual([0]);
     }
+    // a Turtlepult in the bot's army doesn't react to the bonus, now or at its next check
+    const { peebSync } = await import('../src/engine/fx');
+    g.round = 10;
+    const tp = { uid: g.nextUid++, cardId: 'peebnup_bubber', golden: false, atk: 1, hp: 3, kw: [], mem: {} as Record<string, number> };
+    const other = { uid: g.nextUid++, cardId: 'ash', golden: false, atk: 2, hp: 2, kw: [], mem: {} as Record<string, number> };
+    bot.board = [tp, other]; bot.hand = [];
+    peebSync(g, bot);
+    endTurnEffects(g, bot);
+    const gain = other.hp - 2;
+    expect(gain).toBeGreaterThan(0);
+    peebSync(g, bot);
+    expect(tp.hp).toBe(3 + gain);
   });
 });
 

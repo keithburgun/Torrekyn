@@ -2,6 +2,9 @@
 
 Newest first. The version shows on the title screen.
 
+## 0.13.12 — 2026-11-26
+- Bot bonus now rolls 30-180% of its amount each turn; it's a silent gain that triggers nothing
+
 ## 0.13.11 — 2026-11-25
 - Paradox: 'Arrive: Choose a friendly unit. Become a copy of it.' (Golden: a Golden copy)
 
