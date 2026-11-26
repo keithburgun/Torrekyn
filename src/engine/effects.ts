@@ -110,6 +110,17 @@ function playGemOn(c: Ctx, gemId: string, target: Body | undefined) {
   }
 }
 
+/**
+ * Ballooneer's Rally: another living Azure unit gets +1/+1 (Golden: +2/+2), and the Rally itself for the rest of
+ * the battle (combat.ts runs Rallies a unit has gained: mem.balloon1 / balloon2 count them by size)
+ */
+export function balloonRally(c: CCtx, m: number) {
+  const t = pick(c.g, c.side.units.filter((u) => u !== c.self && u.hp > 0 && isTribe(u, 'azure')));
+  if (!t) return;
+  buff(t, m, m);
+  t.mem[`balloon${m}`] = (t.mem[`balloon${m}`] ?? 0) + 1;
+}
+
 /** a shop-style context for a combat hook (so Gem Arrive effects can run in battle) */
 function cctx(c: CCtx): Ctx {
   return { g: c.g, p: c.p, self: c.self, m: c.m, board: c.side.units.filter((u) => u.hp > 0), combat: c.c, side: c.side };
@@ -877,6 +888,9 @@ export const EFFECTS: Record<string, Effect> = {
     endTurn: (c) => { if (c.p.lastGem) for (let i = 0; i < c.m; i++) gain(c, c.p.lastGem); },
   },
   tree_man: {}, // its ability lives in Combat.noRoom (a summon that doesn't fit)
+  ballooneer: {
+    rally: (c) => balloonRally(c, c.m),
+  },
   corn_snail: {}, // see castSpell (game.ts): grows after 3 Spells, once
   medic: {}, // see ownerBonus (core.ts): Health for your hero's missing Health
 

@@ -201,4 +201,18 @@ describe('Spells', () => {
     p.health = 30; // above the start (Heal Up can't, but just in case): no bonus, never less
     expect(effStats(p, m, 'board').hp).toBe(9);
   });
+
+  it('Ballooneer (Tier 2 Azure 2/2): Rally gives another Azure unit +1/+1 and the Rally, which then spreads', () => {
+    expect([def('ballooneer').tribe, def('ballooneer').tier, def('ballooneer').atk, def('ballooneer').hp]).toEqual(['azure', 2, 2, 2]);
+    const { g, p } = setup();
+    const o = g.players[1];
+    const b = U(g, 'ballooneer', 1, 100), k1 = U(g, 'knight', 1, 100), k2 = U(g, 'knight', 1, 100);
+    k1.atk = 1; k2.atk = 1;
+    const c = new Combat(g, { p, board: [b, k1, k2], tier: 2, persistent: false }, { p: o, board: [U(g, 'skel', 0, 999)], tier: 1, persistent: false });
+    c.run();
+    const notes = c.frames.map((f) => f.note ?? '');
+    expect(notes.some((n) => n.startsWith('Ballooneer: Rally'))).toBe(true);
+    expect(notes.some((n) => n.startsWith("Knight: Ballooneer's Rally"))).toBe(true); // a Knight was given it and used it
+    expect(b.atk).toBe(1); // (battle-only: the army is untouched)
+  });
 });

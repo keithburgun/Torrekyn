@@ -2,6 +2,9 @@
 
 Newest first. The version shows on the title screen.
 
+## 0.14.9 — 2026-11-26
+- New Azure unit: Ballooneer (Tier 2, 2/2). Rally: Give a friendly Azure unit +1/+1 and this Rally
+
 ## 0.14.8 — 2026-11-26
 - Librarian is now Tier 3, 2/4
 - New Kindred units: Corn Snail (Tier 1, 2/2: after you play 3 Spells, +6/+6, once) and Medic (Tier 4, 9/9: +2 Health per Health your hero is missing)

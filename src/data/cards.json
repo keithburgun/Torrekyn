@@ -1733,6 +1733,17 @@
    "keywords": []
   },
   {
+   "id": "ballooneer",
+   "name": "Ballooneer",
+   "tribe": "azure",
+   "tier": 2,
+   "atk": 2,
+   "hp": 2,
+   "text": "Rally: Give a friendly Azure unit +1/+1 and this Rally.",
+   "goldenText": "Rally: Give a friendly Azure unit +2/+2 and this Rally.",
+   "keywords": []
+  },
+  {
    "id": "tree_man",
    "name": "The Tree Man",
    "tribe": "neverending",

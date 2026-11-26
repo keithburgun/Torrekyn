@@ -6,7 +6,7 @@
  *  - Twinstrike attacks twice; deaths resolve left-to-right, attacking side first.
  */
 import { addKw, cloneUnit, def, effStats, has, isTribe, mult, ownerBonus, pick, rand, removeKw, sample, tribeOf, CONFIG } from './core';
-import { EFFECTS, hasBattlecry, battlecryTimes, type CCtx } from './effects';
+import { EFFECTS, balloonRally, hasBattlecry, battlecryTimes, type CCtx } from './effects';
 import { gainNew, combatDamage, drawFromPool, BASE_DAMAGE, DAMAGE_PER_UNIT, onBattlecryTriggered } from './game';
 import { heroHooks, heroSoc, trinketCount } from './heroes';
 import { withFx } from './fx';
@@ -467,6 +467,19 @@ export class Combat {
       e.rally(this.ctx(a), t);
       for (const w of [...side.units]) if (w.hp > 0) EFFECTS[w.cardId]?.onRallyFriendly?.(this.ctx(w), a);
       this.snap('trigger', { source: a.id, note: `${def(a.cardId).name}: Rally` });
+      this.resolveDeaths();
+      if (a.hp <= 0) return;
+      if (t.hp <= 0) {
+        t = this.chooseTarget(a);
+        if (!t) return;
+      }
+    }
+    // Rallies it was given in this battle (Ballooneer's)
+    const gained = [1, 2].flatMap((m) => Array<number>(a.mem[`balloon${m}`] ?? 0).fill(m));
+    if (gained.length) {
+      for (const m of gained) balloonRally(this.ctx(a), m);
+      for (const w of [...side.units]) if (w.hp > 0) EFFECTS[w.cardId]?.onRallyFriendly?.(this.ctx(w), a);
+      this.snap('trigger', { source: a.id, note: `${def(a.cardId).name}: Ballooneer's Rally` });
       this.resolveDeaths();
       if (a.hp <= 0) return;
       if (t.hp <= 0) {

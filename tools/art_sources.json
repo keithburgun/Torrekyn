@@ -1143,6 +1143,10 @@
    "src": "M/Skills/rescue.png",
    "px": true,
    "center": true
+  },
+  "ballooneer": {
+   "src": "X/minimap-dragon.png",
+   "px": true
   }
  }
 }
