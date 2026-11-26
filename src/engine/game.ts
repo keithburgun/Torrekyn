@@ -631,7 +631,7 @@ export function endTurnEffects(g: GameState, p: Player) {
  * Bots cheat, scaled to your rating: every End of Turn their units in hand and army get +X/+X.
  * In full (from turn 10): rating 1000: +2/+2, 1250: +5/+5, 1500 and up: +8/+8 (in between, in proportion;
  * nothing at 750 or below). It ramps up linearly from +0/+0 on turn 1 to that full amount on turn 10, and each
- * time a bot gets it, it gets a random 30% to 180% of it (rounded).
+ * time a bot gets it, each of its units gets its own random 30% to 180% of it (rounded; the same number for Attack and Health).
  * It's a special gain that triggers nothing (no Turtlepult, no "whenever this gains" effects).
  * Only in rated games (a rating was given), so test and balance simulations play fair.
  */
@@ -643,10 +643,9 @@ function botBonus(g: GameState, p: Player) {
   if (p.human || g.rating === undefined) return;
   const full = botBonusFor(g.rating) * Math.min(1, Math.max(0, g.round - 1) / 9);
   if (!full) return;
-  const n = Math.round(full * (0.3 + 1.5 * rand(g)));
-  if (!n) return;
   peebSync(g, p); // settle real Health gains first, so marking these as seen can't swallow one
   for (const u of [...p.board, ...handUnits(p)]) {
+    const n = Math.round(full * (0.3 + 1.5 * rand(g))); // each unit rolls its own
     u.atk += n;
     u.hp += n;
     u.mem.pv = u.hp; // a silent gain: Turtlepult doesn't see it, nothing else reacts

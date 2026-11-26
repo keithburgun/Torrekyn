@@ -741,9 +741,12 @@ describe('bot bonus', () => {
       bot.board = [mk('ash')]; bot.hand = [mk('ash')]; me.board = [mk('ash')];
       g.round = 10;
       endTurnEffects(g, bot); endTurnEffects(g, me);
-      const n = bot.board[0].atk - 2;
-      if (rating) { expect(n).toBeGreaterThanOrEqual(2); expect(n).toBeLessThanOrEqual(9); } else expect(n).toBe(0);
-      expect([bot.hand[0].hp, me.board[0].atk]).toEqual([2 + n, 2]); // the same roll for the whole army and hand
+      for (const u of [bot.board[0], bot.hand[0]]) {
+        const n = u.atk - 2;
+        if (rating) { expect(n).toBeGreaterThanOrEqual(2); expect(n).toBeLessThanOrEqual(9); } else expect(n).toBe(0);
+        expect(u.hp).toBe(2 + n); // +X/+X: the same number for both stats
+      }
+      expect(me.board[0].atk).toBe(2);
     }
     // at rating 1500 (+8 in full): many End of Turns land between 30% and 180% of the ramped amount, and use the range
     const g = newGame(6, 'You', undefined, { rating: 1500 });
@@ -760,6 +763,11 @@ describe('bot bonus', () => {
       if (r >= 10) { expect(Math.min(...seen)).toBeLessThanOrEqual(4); expect(Math.max(...seen)).toBeGreaterThanOrEqual(12); }
       if (r === 1) expect([...seen]).toEqual([0]);
     }
+    // every unit rolls its own amount
+    bot.board = Array.from({ length: 7 }, () => ({ uid: g.nextUid++, cardId: 'ash', golden: false, atk: 0, hp: 0, kw: [], mem: {} }));
+    bot.hand = [];
+    endTurnEffects(g, bot);
+    expect(new Set(bot.board.map((u) => u.atk)).size).toBeGreaterThan(1);
     // a Turtlepult in the bot's army doesn't react to the bonus, now or at its next check
     const { peebSync } = await import('../src/engine/fx');
     g.round = 10;
@@ -771,7 +779,7 @@ describe('bot bonus', () => {
     const gain = other.hp - 2;
     expect(gain).toBeGreaterThan(0);
     peebSync(g, bot);
-    expect(tp.hp).toBe(3 + gain);
+    expect(tp.hp).toBe(3 + (tp.atk - 1)); // only its own bonus: nothing from the other unit's
   });
 });
 
