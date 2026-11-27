@@ -1,12 +1,5 @@
-import '@fontsource/amaranth/latin-400.css';
-import '@fontsource/amaranth/latin-400-italic.css';
-import '@fontsource/amaranth/latin-700.css';
-import '@fontsource/grenze/latin-400.css';
-import '@fontsource/grenze/latin-500.css';
-import '@fontsource/grenze/latin-600.css';
-import '@fontsource/grenze/latin-700.css';
-import '@fontsource/grenze/latin-800.css';
 import './ui/styles.css';
+import './ui/theme.css';
 import { installDebug } from './ui/debug';
 import { App } from './ui/app';
 import { preloadArt } from './ui/view';

@@ -153,13 +153,13 @@ export function cardHtml(u: { cardId: string; golden: boolean; atk: number; hp: 
   const cls = ['card', d.spell ? 't-spell spell' : `t-${d.tribe}`, d.allTribes ? 't-all' : '', u.golden ? 'golden' : '', o.small ? 'small' : '', o.large ? 'large' : '', ...kw.map((k) => `kw-${k}`), u.mem?.locked ? 'locked' : '', o.extraClass ?? ''].join(' ');
   const baseAtk = d.atk * (u.golden ? 2 : 1);
   const baseHp = d.hp * (u.golden ? 2 : 1);
-  const icons = kw.filter((k) => k !== 'taunt' && k !== 'divineShield').map((k) => `<span class="kw-${k}" title="${KW_ICON[k][1]}">${KW_ICON[k][0]}</span>`).join('');
+  const icons = kw.filter((k) => k !== 'taunt' && k !== 'divineShield').map((k) => `<span class="kw-ico kw-${k}" title="${KW_ICON[k][1]}"></span>`).join('');
   // Golden cards say so (a gold chip beside the first ability tag)
   const tags = (u.golden ? '<i class="gold">Golden</i>' : '') + abilityTags(u.cardId).slice(0, u.golden ? 1 : 2).map((t) => `<i>${t}</i>`).join('');
   return `<div class="${cls}" data-zone="${o.zone}" data-idx="${o.idx}" ${o.id !== undefined ? `data-id="${o.id}"` : ''} style="left:${o.x}px;top:${o.y}px">
   <div class="face"></div>
   <div class="art" style="background-image:url('${cardArt(u.cardId)}')"></div>
-  <div class="tier">${'★'.repeat(d.tier)}</div>
+  <div class="tier">${'<i></i>'.repeat(d.tier)}</div>
   <div class="kws">${icons}</div>
   <div class="abil">${tags}</div>
   <div class="name">${esc(d.name)}</div>
@@ -266,13 +266,15 @@ export function bigCardHtml(u: { cardId: string; golden: boolean; atk: number; h
   const kwExtra = u.kw.filter((k) => !d.keywords.includes(k)).map((k) => KW_ICON[k][1]);
   const bA = d.atk * (u.golden ? 2 : 1), bH = d.hp * (u.golden ? 2 : 1);
   return `<div class="bigcard ${d.spell ? 't-spell spell' : `t-${d.tribe}`} ${d.allTribes ? 't-all' : ''} ${u.golden ? 'golden' : ''} ${extra}">
-  <div class="art" style="background-image:url('${cardArt(u.cardId)}')"></div>
-  <div class="tier" title="Tier ${d.tier}">${'★'.repeat(d.tier)}</div>
-  <div class="name">${u.golden ? 'Golden ' : ''}${esc(d.name)}</div>
-  <div class="tribe"><span>${d.spell ? 'Spell' : d.allTribes ? 'All Factions' : esc(TRIBE_NAMES[d.tribe] ?? d.tribe)}${d.token ? ' · Token' : ''}</span></div>
+  <div class="tier" title="Tier ${d.tier}">${'<i></i>'.repeat(d.tier)}</div>
+  <div class="name ${d.name.length + (u.golden ? 7 : 0) > 15 ? 'long' : ''}">${u.golden ? 'Golden ' : ''}${esc(d.name)}</div>
+  <div class="art-wrap"><div class="art" style="background-image:url('${cardArt(u.cardId)}')"></div></div>
   <div class="text"><div>${text ? formatText(text) : kwExtra.length ? '' : '<i>No ability.</i>'}${kwExtra.length ? `${text ? '<br>' : ''}<i class="kw-extra">${kwExtra.join(', ')}</i>` : ''}</div></div>
-  ${d.spell ? spellCost(d) : `<div class="stat atk ${u.atk !== bA ? 'buffed' : ''}" ${statInner(u.atk)}</div>
-  <div class="stat hp ${u.hp > bH ? 'buffed' : u.hp < bH ? 'hurt' : ''}" ${statInner(u.hp)}</div>`}
+  <div class="foot">
+  ${d.spell ? spellCost(d) : `<div class="stat atk ${u.atk !== bA ? 'buffed' : ''}" ${statInner(u.atk)}</div>`}
+  <div class="tribe"><span>-${d.spell ? 'Spell' : d.allTribes ? 'All' : esc(TRIBE_SHORT[d.tribe] ?? d.tribe)}${d.token ? ' Token' : ''}-</span></div>
+  ${d.spell ? '<div class="stat-gap"></div>' : `<div class="stat hp ${u.hp > bH ? 'buffed' : u.hp < bH ? 'hurt' : ''}" ${statInner(u.hp)}</div>`}
+  </div>
 </div>`;
 }
 

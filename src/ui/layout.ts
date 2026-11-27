@@ -60,10 +60,10 @@ export interface Layout {
 }
 
 export const LANDSCAPE: Layout = {
-  portrait: false, W: 1600, H: 900, cx: 800, small: false, cardW: 140, cardH: 190,
-  shopBig: false, shopCardW: 140, shopCardH: 190, handCardW: 120, handCardH: 165,
+  portrait: false, W: 1600, H: 900, cx: 800, small: false, cardW: 150, cardH: 150,
+  shopBig: false, shopCardW: 150, shopCardH: 150, handCardW: 130, handCardH: 130,
   slotX: (i) => 263 + i * 154, slotW: 150, slotTop: 382, slotH: 236,
-  boardY: 398, shopY: 160, shopStep: 152, tavernY: 14,
+  boardY: 425, shopY: 170, shopStep: 152, tavernY: 14,
   heroY: 680, handY: 770, handWidth: 1040,
   shopDrop: 372, boardTop: 372, boardBottom: 625,
   leader: { x: 14, y: 14, w: 228, h: 800, horizontal: false },
@@ -106,10 +106,10 @@ export function portraitLayout(H: number): Layout {
   const btn = tall ? 128 : 116;
   const btnSize = 88;
   return {
-    portrait: true, tall, W, H, cx: 450, small: true, cardW: 120, cardH: 165,
-    shopBig: true, shopCardW: 168, shopCardH: 228, handCardW: 168, handCardH: 228,
+    portrait: true, tall, W, H, cx: 450, small: true, cardW: 120, cardH: 120,
+    shopBig: true, shopCardW: 168, shopCardH: 168, handCardW: 168, handCardH: 168,
     slotX: (i) => 17 + i * 124, slotW: 122, slotTop, slotH: sizes.board,
-    boardY: slotTop + 16, shopY, shopStep: 176, tavernY,
+    boardY: slotTop + 47, shopY: shopY + 30, shopStep: 176, tavernY,
     heroY: heroTop + 4 + heroSize / 2, handY, handWidth: 880,
     shopDrop: slotTop - 14, boardTop: slotTop - 14, boardBottom: slotTop + sizes.board + 10,
     leader: { x: 10, y: stripY, w: 790, h: sizes.strip, horizontal: true },

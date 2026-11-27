@@ -65,9 +65,6 @@ const PIX_ICON = {
   freeze: pixSvg(14, 14, '7,0,1 7,1,1 2,2,2 6,2,2 10,2,2 2,3,2 6,3,2 10,3,2 4,4,6 4,5,2 7,5,3 0,6,6 9,6,3 2,7,3 8,7,6 4,8,3 8,8,2 4,9,6 2,10,2 6,10,2 10,10,2 2,11,2 6,11,2 10,11,2 6,12,1 6,13,1'),
 };
 
-function uiStyle(): 'pixel' | 'smooth' {
-  return store.get('torrekin-ui2') === 'pixel' ? 'pixel' : 'smooth';
-}
 
 export class App {
   stage: HTMLElement;
@@ -172,7 +169,6 @@ export class App {
     L = currentLayout();
     this.stage.classList.toggle('portrait', L.portrait);
     this.stage.classList.toggle('tall', !!L.tall);
-    this.stage.classList.toggle('pix', uiStyle() === 'pixel');
     this.stage.classList.toggle('menu-bg', this.screen === 'title' || this.screen === 'rules' || this.screen === 'hero' || this.screen === 'tribes');
     // one night-sky backdrop for every screen, drawn once, very large and blurred (styles.css #stage::before)
     // made absolute: a url() inside a CSS variable is read relative to the stylesheet that uses it (assets/), not the page
@@ -495,7 +491,7 @@ export class App {
           <div class="nm">${esc(p.name)}</div>
           <div class="hero-nm">${esc(h?.name ?? '')}${p.human ? '' : ` · ${seatRating(this.g!, p.id)}`}</div>
           <div class="hpbar"><div style="width:${pct}%"></div></div>
-          <div class="nums"><span class="lhp"><i class="hp-dot"></i>${Math.max(0, p.health)}</span><span>★ ${p.tier}</span>${p.alive && (p.streak ?? 0) >= 2 ? `<span class="streak" title="${p.streak} wins in a row">🔥${p.streak}</span>` : ''}</div>
+          <div class="nums"><span class="lhp"><i class="hp-dot"></i>${Math.max(0, p.health)}</span><span class="ltier"><i class="pip"></i>${p.tier}</span>${p.alive && (p.streak ?? 0) >= 2 ? `<span class="streak" title="${p.streak} wins in a row">🔥${p.streak}</span>` : ''}</div>
         </div>
         ${next ? '<div class="tag">NEXT</div>' : ''}
         <div class="lb-hist">${this.historyHtml(p)}</div>
@@ -697,7 +693,7 @@ export class App {
       <div class="tavern-keeper" style="left:${t ? L.cx - t.kp / 2 : L.cx - 66}px;top:${L.tavernY}px">
         <div class="tk-portrait"></div>
         <div class="tk-num"><small>Tier</small><span>${p.tier}</span></div>
-        <div class="tk-tier">${'★'.repeat(p.tier)}</div>
+        <div class="tk-tier">${'<i class="pip"></i>'.repeat(p.tier)}</div>
         <div class="tk-label">Tavern · Tier ${p.tier}</div>
       </div>
       <div class="tavern-btn refresh ${p.gold < CONFIG.rerollCost && !p.freeRerolls ? 'off' : ''}" data-act="reroll" style="${at(t?.refresh ?? 0, L.cx + 87)}" title="${p.freeRerolls ? `${p.freeRerolls} free Refresh${p.freeRerolls > 1 ? 'es' : ''} left` : 'Refresh the Tavern'}">
@@ -729,7 +725,7 @@ export class App {
       const t = h.progress?.(g, p);
       if (!t) continue;
       const on = t === 'Active';
-      return `<div class="hero-count ${on ? 'on' : ''}" title="${esc(h.power)}">${on ? '★ Active' : esc(t)}</div>`;
+      return `<div class="hero-count ${on ? 'on' : ''}" title="${esc(h.power)}">${on ? 'Active' : esc(t)}</div>`;
     }
     return '';
   }
@@ -806,9 +802,9 @@ export class App {
       </div>
       <button class="gear" data-act="options" style="left:${L.gear.x}px;top:${L.gear.y}px;width:${L.gear.size}px;height:${L.gear.size}px;font-size:${Math.round(L.gear.size * 0.5)}px" title="Options">⚙</button>
       ${this.tribesHtml()}
-      <button class="btn cards-btn" data-act="cards" style="left:${L.cardsBtn.x}px;top:${L.cardsBtn.y}px${ph ? `;width:${ph.cardsW - 104}px` : ''}">📖 Cards</button>
+      <button class="btn cards-btn" data-act="cards" style="left:${L.cardsBtn.x}px;top:${L.cardsBtn.y}px${ph ? `;width:${ph.cardsW - 104}px` : ''}">Cards</button>
       <button class="btn undo-btn" data-act="undo" ${this.canUndo() ? '' : 'disabled'} title="Undo (Ctrl+Z). Anything that showed you something new, like a Refresh or a random effect, can't be undone." aria-label="Undo"
-        style="${ph ? `left:${L.cardsBtn.x + ph.cardsW - 92}px;top:${L.cardsBtn.y}px;width:92px` : `left:${L.cardsBtn.x}px;top:${L.cardsBtn.y + 56}px`}">${ph ? '↶' : '↶ Undo'}</button>
+        style="${ph ? `left:${L.cardsBtn.x + ph.cardsW - 92}px;top:${L.cardsBtn.y}px;width:92px` : `left:${L.cardsBtn.x}px;top:${L.cardsBtn.y + 56}px`}">Undo</button>
       ${this.sheet ? this.sheetHtml() : ''}`;
   }
 
@@ -838,7 +834,6 @@ export class App {
       <div class="hint" style="margin-top:-8px">Auto picks portrait when the window is taller than it is wide.</div>
       <div class="opt-row"><span>Sound</span>${seg('sound', [['on', 'On'], ['off', 'Off']], isMuted() ? 'off' : 'on')}</div>
       ${this.cloudRowHtml()}
-      <div class="opt-row"><span>Interface</span>${seg('ui-style', [['smooth', 'Smooth'], ['pixel', 'Pixel']], uiStyle())}</div>
       <div class="opt-row"><span>Card art</span>${seg('art-style', [['illustrated', 'Illustrated'], ['classic', 'Classic']], getArtStyle())}</div>
       <div class="opt-row"><span>Battle speed</span>${seg('speed', SPEEDS.map((s) => [String(s.v), s.label]), String(speed), 'v')}</div>
       <div class="opt-row"><span>Debug mode (errors on screen)</span>${seg('debug', [['on', 'On'], ['off', 'Off']], debugOn() ? 'on' : 'off')}</div>
@@ -1535,7 +1530,7 @@ export class App {
       this.stage.querySelectorAll<HTMLElement>('.hero-count, .power-pill').forEach((e) => els.push(e));
       if (stale) {
         const short = text.split(' · ')[0].replace(/^.*? (?=\S+$)/, '');
-        this.stage.querySelectorAll<HTMLElement>('.hero-count').forEach((e) => { e.textContent = short === 'Active' ? '★ Active' : short; e.classList.toggle('on', short === 'Active'); });
+        this.stage.querySelectorAll<HTMLElement>('.hero-count').forEach((e) => { e.textContent = short; e.classList.toggle('on', short === 'Active'); });
       }
     } else if (key === 'quest') {
       this.stage.querySelectorAll<HTMLElement>('.quest-chip').forEach((e) => els.push(e));

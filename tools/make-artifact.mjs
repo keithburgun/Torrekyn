@@ -9,7 +9,7 @@ const head = html.match(/<head>([\s\S]*?)<\/head>/)[1];
 const body = html.match(/<body>([\s\S]*?)<\/body>/)[1];
 const keep = (head.match(/<(script|link)[^>]*>(<\/script>)?/g) ?? []).filter((t) => !/manifest|apple-touch|rel="icon"/.test(t));
 const page = `<title>Torrekin</title>
-<meta name="theme-color" content="#e9dcff">
+<meta name="theme-color" content="#373940">
 <meta name="color-scheme" content="only dark">
 <meta name="darkreader-lock">
 ${keep.join('\n')}

@@ -1290,97 +1290,6 @@ svg.aim-arrow.locked .aim-ring { opacity: 0.9; animation: aim-ring 0.9s ease-in-
 .stat[data-n="6"] > span { transform: scale(0.48); }
 .card .stat.hurt { color: #ffd2d2; text-decoration: none; }
 
-/* =====================================================================
-   PIXEL UI (Options → Interface: Pixel). Square, notched-corner frames with a dark 1-"pixel" outline,
-   a hard bevel (light top edge, dark bottom edge) and a hard drop shadow instead of soft glows.
-   Cards and their art are left alone; this restyles buttons, panels, badges and chips.
-   ===================================================================== */
-#stage.pix {
-  --px: 4px;            /* one "pixel" */
-  --pix-ink: #120e18;   /* outline */
-  --pix-drop: rgba(8, 6, 12, 0.7);
-  /* outline with the corner pixels cut off, plus a hard shadow below */
-  --pix-frame: 0 calc(-1 * var(--px)) 0 0 var(--pix-ink), 0 var(--px) 0 0 var(--pix-ink), calc(-1 * var(--px)) 0 0 0 var(--pix-ink), var(--px) 0 0 0 var(--pix-ink);
-  --pix-bevel: inset 0 var(--px) 0 0 rgba(255, 255, 255, 0.24), inset 0 calc(-1 * var(--px)) 0 0 rgba(0, 0, 0, 0.32);
-}
-#stage.pix .btn, #stage.pix .chip, #stage.pix .end-turn, #stage.pix .toast, #stage.pix .tip, #stage.pix .quest-chip, #stage.pix .trinket-chip,
-#stage.pix .panel, #stage.pix .tk-tier, #stage.pix .leader .tag, #stage.pix #cv-search, #stage.pix .panel.account input {
-  border-radius: 0; border: 0;
-}
-/* buttons */
-#stage.pix .btn {
-  background: var(--slate-hi); margin: var(--px);
-  box-shadow: var(--pix-frame), 0 calc(2 * var(--px)) 0 0 var(--pix-drop), var(--pix-bevel);
-  transition: filter 0.1s;
-}
-#stage.pix .btn:hover { transform: none; filter: brightness(1.15); }
-#stage.pix .btn:active { transform: translateY(var(--px)); box-shadow: var(--pix-frame), var(--pix-bevel); }
-#stage.pix .btn:focus-visible { outline: var(--px) solid #ffcf4a; outline-offset: var(--px); }
-#stage.pix .btn.primary { background: var(--pink-deep); box-shadow: var(--pix-frame), 0 calc(2 * var(--px)) 0 0 var(--pix-drop), inset 0 var(--px) 0 0 #ffb6dc, inset 0 calc(-1 * var(--px)) 0 0 #a83373; }
-#stage.pix .btn.on { background: #3f9fc2; box-shadow: var(--pix-frame), 0 calc(2 * var(--px)) 0 0 var(--pix-drop), inset 0 var(--px) 0 0 #aef0ff, inset 0 calc(-1 * var(--px)) 0 0 #23708c; }
-#stage.pix .btn.primary:active, #stage.pix .btn.on:active { box-shadow: var(--pix-frame); }
-#stage.pix .seg { gap: calc(3 * var(--px)); }
-#stage.pix .chip { background: var(--slate); margin: 3px; box-shadow: 0 -3px 0 0 var(--pix-ink), 0 3px 0 0 var(--pix-ink), -3px 0 0 0 var(--pix-ink), 3px 0 0 0 var(--pix-ink), inset 0 -3px 0 0 rgba(0, 0, 0, 0.3); }
-#stage.pix .chip.on { background: var(--pink-deep); box-shadow: 0 -3px 0 0 var(--pix-ink), 0 3px 0 0 var(--pix-ink), -3px 0 0 0 var(--pix-ink), 3px 0 0 0 var(--pix-ink), inset 0 3px 0 0 #ffb6dc; }
-#stage.pix .end-turn {
-  border-radius: 0; background: var(--pink-deep);
-  box-shadow: var(--pix-frame), 0 calc(2 * var(--px)) 0 0 var(--pix-drop), inset 0 var(--px) 0 0 #ffb6dc, inset 0 calc(-2 * var(--px)) 0 0 #a83373;
-}
-#stage.pix .end-turn:active { transform: translateY(var(--px)); box-shadow: var(--pix-frame), inset 0 var(--px) 0 0 #ffb6dc; }
-/* panels, tooltips, toasts */
-#stage.pix .panel {
-  background: rgba(30, 26, 38, 0.94); backdrop-filter: none;
-  box-shadow: var(--pix-frame), inset 0 0 0 var(--px) #4d4560, inset 0 0 0 calc(2 * var(--px)) var(--pix-ink), calc(2 * var(--px)) calc(2 * var(--px)) 0 calc(var(--px)) var(--pix-drop);
-}
-#stage.pix .tip, #stage.pix .toast, #stage.pix .quest-chip, #stage.pix .trinket-chip, #stage.pix .tk-tier {
-  background: var(--slate); box-shadow: var(--pix-frame), inset 0 0 0 3px var(--lilac-deep), var(--px) var(--px) 0 var(--px) var(--pix-drop);
-}
-#stage.pix .toast { box-shadow: var(--pix-frame), inset 0 0 0 3px var(--pink), var(--px) var(--px) 0 var(--px) var(--pix-drop); }
-#stage.pix .quest-chip { box-shadow: var(--pix-frame), inset 0 0 0 3px #ffcf4a; }
-#stage.pix .leader .row { border-radius: 0; border: 0; box-shadow: inset 0 0 0 3px rgba(255, 255, 255, 0.06); }
-#stage.pix .leader .row.me { box-shadow: inset 0 0 0 3px var(--lilac); }
-
-#stage.pix .leader .hpbar, #stage.pix .leader .hpbar div { border-radius: 0; }
-#stage.pix .leader .hpbar { box-shadow: 0 0 0 2px var(--pix-ink); }
-#stage.pix .leader .tag { box-shadow: 0 0 0 2px var(--pix-ink); }
-#stage.pix #cv-search, #stage.pix .panel.account input { box-shadow: inset 0 0 0 3px var(--slate-edge), 0 0 0 3px var(--pix-ink); }
-/* round things become square tiles */
-#stage.pix .leader .avatar, #stage.pix .tk-portrait, #stage.pix .hero-power, #stage.pix .hero-power .hp-icon,
-#stage.pix .trinket-orb, #stage.pix .tb-cost, #stage.pix .coin, #stage.pix .tx-portrait {
-  border-radius: 0;
-}
-#stage.pix .leader .avatar { box-shadow: 0 0 0 3px var(--pix-ink), 0 0 0 6px var(--slate-edge); }
-#stage.pix .tk-portrait { background: #2d2640; box-shadow: 0 0 0 4px var(--pix-ink), 0 0 0 8px var(--pink), 0 0 0 12px var(--pix-ink), inset 0 4px 0 0 #5a4a7a; }
-#stage.pix .hero-power { box-shadow: 0 0 0 4px var(--pix-ink), 0 0 0 8px var(--lilac), 0 0 0 12px var(--pix-ink); }
-#stage.pix .hero-power.passive { box-shadow: 0 0 0 4px var(--pix-ink), 0 0 0 8px #8a8396, 0 0 0 12px var(--pix-ink); }
-#stage.pix .trinket-orb { background: #5fcde0; box-shadow: 0 0 0 3px var(--pix-ink), inset 0 4px 0 0 #e4fcff, inset 0 -4px 0 0 #2f8fb0; }
-#stage.pix .trinket-orb.greater { background: var(--pink); box-shadow: 0 0 0 3px var(--pix-ink), inset 0 4px 0 0 #ffd0ea, inset 0 -4px 0 0 var(--pink-deep); }
-#stage.pix .coin, #stage.pix .tb-cost { background: var(--coin); box-shadow: 0 0 0 2px var(--pix-ink), inset 0 2px 0 0 #fff8cf, inset 0 -2px 0 0 #b07a12; }
-#stage.pix .tb-cost { box-shadow: 0 0 0 3px var(--pix-ink), inset 0 3px 0 0 #fff8cf, inset 0 -3px 0 0 #b07a12; }
-/* Tavern buttons: square stone keys instead of domed orbs */
-#stage.pix #mute-btn, #stage.pix .gear, #stage.pix .tribes-chip, #stage.pix .tribes-tip {
-  border-radius: 0; border: 0; margin: 0; background: var(--slate); box-shadow: var(--pix-frame), inset 0 0 0 3px var(--slate-edge), 0 calc(2 * var(--px)) 0 0 var(--pix-drop);
-}
-#stage.pix .tribes-tip { box-shadow: var(--pix-frame), inset 0 0 0 3px var(--lilac-deep), var(--px) var(--px) 0 var(--px) var(--pix-drop); }
-#stage.pix #mute-btn.muted { box-shadow: var(--pix-frame), inset 0 0 0 3px var(--pink); }
-#stage.pix .slot-plate { border-radius: 0; border-width: 4px; }
-/* coins and gold pips: chunky pixel circles (an octagon) */
-#stage.pix .coin, #stage.pix .tb-cost, #stage.pix .pip {
-  border-radius: 0; clip-path: polygon(30% 0, 70% 0, 100% 30%, 100% 70%, 70% 100%, 30% 100%, 0 70%, 0 30%);
-}
-#stage.pix .coin, #stage.pix .pip.full { background: var(--coin); box-shadow: inset 0 3px 0 0 #fff8cf, inset 0 -3px 0 0 #b07a12; }
-#stage.pix .tb-cost { box-shadow: inset 0 3px 0 0 #fff8cf, inset 0 -3px 0 0 #b07a12, inset 0 0 0 2px #5a3a00; }
-#stage.pix .herocard, #stage.pix .trinketcard, #stage.pix .ach, #stage.pix .ach-toast {
-  border-radius: 0; border: 0; background: var(--slate-hi);
-  box-shadow: var(--pix-frame), inset 0 0 0 var(--px) var(--lilac-deep), inset 0 0 0 calc(2 * var(--px)) var(--pix-ink), calc(2 * var(--px)) calc(2 * var(--px)) 0 var(--px) var(--pix-drop);
-}
-#stage.pix .trinketcard.greater { box-shadow: var(--pix-frame), inset 0 0 0 var(--px) var(--pink), inset 0 0 0 calc(2 * var(--px)) var(--pix-ink), calc(2 * var(--px)) calc(2 * var(--px)) 0 var(--px) var(--pix-drop); }
-#stage.pix .ach { box-shadow: var(--pix-frame), inset 0 0 0 3px var(--slate-edge); }
-#stage.pix .ach.done { box-shadow: var(--pix-frame), inset 0 0 0 3px #ffcf4a; }
-#stage.pix .ach-bar, #stage.pix .ach-bar div { border-radius: 0; }
-#stage.pix .trinketcard .gem { border-radius: 0; clip-path: polygon(30% 0, 70% 0, 100% 30%, 100% 70%, 70% 100%, 30% 100%, 0 70%, 0 30%); background: #5fcde0; box-shadow: inset 0 6px 0 0 #e4fcff, inset 0 -6px 0 0 #2f8fb0; }
-/* hero portraits (and the power button on your own hero) stay round, with the round gold cost coin */
-#stage.pix .my-hero .tb-cost { clip-path: none; border-radius: 50%; background: radial-gradient(circle at 35% 30%, #fff8cf, var(--coin) 55%, #e59a12); box-shadow: 0 0 0 3px var(--slate); }
 
 /* Hero Health: a red circle (like a unit's Health) beside the portrait, not a heart over the face */
 .hero-portrait .hp, .scene-tx.battle .tx-hp, .combat-name .hpb, .enemy-keeper .tk-portrait .hp {
@@ -1395,85 +1304,27 @@ svg.aim-arrow.locked .aim-ring { opacity: 0.9; animation: aim-ring 0.9s ease-in-
 .scene-tx.battle .enemy .tx-hp { left: auto; right: calc(100% + 4px); }
 .combat-name .hpb { width: 34px; height: 34px; font-size: 17px; right: -12px; bottom: -8px; -webkit-text-stroke: 2px #7a0d14; }
 .herocard .hero-portrait .hp { left: calc(100% - 26px); bottom: -4px; }
-
-/* ---------- Tavern buttons: flat pixel plaques (Upgrade gold, Refresh green, Freeze ice) ----------
-   One colour block with a dark notched outline, a light top edge and dark bottom edge, a pixel icon,
-   the label on a dark strip inside the button, and the cost as a coin tag on the corner. */
-#stage.pix .tavern-btn {
-  --tb: #8d76c9; --tb-hi: #e4dafc; --tb-lo: #4b3a78; --tb-ink: #1a1222;
-  border-radius: 0; border: 0; background: var(--tb); justify-content: flex-start; flex-direction: column; padding-top: 10px; box-sizing: border-box;
-  box-shadow: 0 -4px 0 0 #120e18, 0 4px 0 0 #120e18, -4px 0 0 0 #120e18, 4px 0 0 0 #120e18, 0 9px 0 0 rgba(8, 6, 12, 0.7),
-    inset 0 4px 0 0 var(--tb-hi), inset 0 -4px 0 0 var(--tb-lo);
-  transition: transform 0.08s, filter 0.1s;
-}
-#stage.pix .tavern-btn::before { display: none; }
-#stage.pix .tavern-btn.upgrade { --tb: #f0b73c; --tb-hi: #fff1b8; --tb-lo: #a5700f; }
-#stage.pix .tavern-btn.refresh { --tb: #4cc38a; --tb-hi: #c8f7dd; --tb-lo: #23845a; }
-#stage.pix .tavern-btn.freeze { --tb: #62b8ec; --tb-hi: #e0f5ff; --tb-lo: #2d77a8; }
-#stage.pix .tavern-btn.freeze.on { --tb: #dff7ff; --tb-hi: #ffffff; --tb-lo: #8fd3f0; --tb-ink: #2d77a8; animation: frost 1.6s ease-in-out infinite; }
 @keyframes frost { 50% { filter: brightness(1.08) drop-shadow(0 0 10px rgba(160, 230, 255, 0.9)); } }
-#stage.pix .tavern-btn:hover { filter: brightness(1.1); transform: translateY(-2px); }
-#stage.pix .tavern-btn:active { transform: translateY(5px);
-  box-shadow: 0 -4px 0 0 #120e18, 0 4px 0 0 #120e18, -4px 0 0 0 #120e18, 4px 0 0 0 #120e18, inset 0 4px 0 0 var(--tb-lo), inset 0 -4px 0 0 var(--tb-hi); }
-#stage.pix .tavern-btn.off { opacity: 1; filter: saturate(0.15) brightness(0.62); }
-#stage.pix .tavern-btn.off:hover { transform: none; }
-#stage.pix .tavern-btn .tb-icon { width: 44%; aspect-ratio: 1; color: var(--tb-ink); line-height: 0; text-shadow: none; font-size: 0;
-  filter: drop-shadow(0 3px 0 rgba(255, 255, 255, 0.35)); }
-#stage.pix .tavern-btn .tb-icon svg { width: 100%; height: 100%; display: block; }
-#stage.pix .tavern-btn .tb-label { position: absolute; left: 4px; right: 4px; bottom: 4px; top: auto; transform: none; height: 27%;
-  display: flex; align-items: center; justify-content: center; background: rgba(18, 14, 24, 0.55);
-  font-family: var(--display); font-size: 17px; font-weight: 700; color: #fff; text-shadow: 0 2px 0 rgba(0, 0, 0, 0.5); letter-spacing: 0.02em; }
-#stage.pix .tavern-btn .tb-cost { top: -12px; right: -12px; width: 32px; height: 32px; border-radius: 0; font-size: 18px; color: #4a2f00;
-  background: #ffcf4a; clip-path: polygon(30% 0, 70% 0, 100% 30%, 100% 70%, 70% 100%, 30% 100%, 0 70%, 0 30%);
-  box-shadow: inset 0 0 0 3px #120e18, inset 0 6px 0 0 #fff1b8, inset 0 -6px 0 0 #b07a12; }
-#stage.pix.portrait .tavern-btn { padding-top: 14px; }
-#stage.pix.portrait .tavern-btn .tb-label { font-size: 21px; }
-#stage.pix.portrait .tavern-btn .tb-cost { width: 40px; height: 40px; font-size: 22px; }
 /* the "You took N damage" screen: your Health as the same red orb */
 .rb-heart { width: 84px; height: 84px; padding-bottom: 0; -webkit-mask: none; mask: none; border-radius: 50%;
   background: var(--hp-orb); box-shadow: 0 0 0 4px #fff;
   -webkit-text-stroke: 4px #7a0d14; paint-order: stroke fill; text-shadow: none; }
 #stage.portrait .rb-heart { width: 118px; height: 118px; }
-
-/* cost coins: a pixel-drawn coin (outline included) instead of a clipped shape, so the edge is clean all the way round */
-#stage .tavern-btn .tb-cost, #stage.pix .tb-cost:not(.my-hero .tb-cost), #stage.pix .coin, #stage.pix .pip.full {
-  clip-path: none; border-radius: 0; box-shadow: none; background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 14 14' shape-rendering='crispEdges'%3E%3Crect x='5' y='1' width='4' height='1' fill='%23d7ca60'/%3E%3Crect x='3' y='2' width='8' height='1' fill='%23d7ca60'/%3E%3Crect x='2' y='3' width='9' height='1' fill='%23d7ca60'/%3E%3Crect x='2' y='4' width='10' height='1' fill='%23d7ca60'/%3E%3Crect x='1' y='5' width='11' height='1' fill='%23d7ca60'/%3E%3Crect x='1' y='6' width='11' height='1' fill='%23d7ca60'/%3E%3Crect x='1' y='7' width='11' height='1' fill='%23d7ca60'/%3E%3Crect x='1' y='8' width='11' height='1' fill='%23d7ca60'/%3E%3Crect x='2' y='9' width='10' height='1' fill='%23d7ca60'/%3E%3Crect x='2' y='10' width='9' height='1' fill='%23d7ca60'/%3E%3Crect x='4' y='11' width='6' height='1' fill='%23d7ca60'/%3E%3Crect x='11' y='3' width='1' height='1' fill='%23f6eda6'/%3E%3Crect x='12' y='5' width='1' height='1' fill='%23f6eda6'/%3E%3Crect x='12' y='6' width='1' height='1' fill='%23f6eda6'/%3E%3Crect x='12' y='7' width='1' height='1' fill='%23f6eda6'/%3E%3Crect x='12' y='8' width='1' height='1' fill='%23f6eda6'/%3E%3Crect x='11' y='10' width='1' height='1' fill='%23f6eda6'/%3E%3Crect x='3' y='11' width='1' height='1' fill='%23f6eda6'/%3E%3Crect x='10' y='11' width='1' height='1' fill='%23f6eda6'/%3E%3Crect x='5' y='12' width='4' height='1' fill='%23f6eda6'/%3E%3Crect x='5' y='0' width='4' height='1' fill='%23001a0e'/%3E%3Crect x='3' y='1' width='2' height='1' fill='%23001a0e'/%3E%3Crect x='9' y='1' width='2' height='1' fill='%23001a0e'/%3E%3Crect x='2' y='2' width='1' height='1' fill='%23001a0e'/%3E%3Crect x='11' y='2' width='1' height='1' fill='%23001a0e'/%3E%3Crect x='1' y='3' width='1' height='1' fill='%23001a0e'/%3E%3Crect x='12' y='3' width='1' height='1' fill='%23001a0e'/%3E%3Crect x='1' y='4' width='1' height='1' fill='%23001a0e'/%3E%3Crect x='12' y='4' width='1' height='1' fill='%23001a0e'/%3E%3Crect x='0' y='5' width='1' height='1' fill='%23001a0e'/%3E%3Crect x='13' y='5' width='1' height='1' fill='%23001a0e'/%3E%3Crect x='0' y='6' width='1' height='1' fill='%23001a0e'/%3E%3Crect x='13' y='6' width='1' height='1' fill='%23001a0e'/%3E%3Crect x='0' y='7' width='1' height='1' fill='%23001a0e'/%3E%3Crect x='13' y='7' width='1' height='1' fill='%23001a0e'/%3E%3Crect x='0' y='8' width='1' height='1' fill='%23001a0e'/%3E%3Crect x='13' y='8' width='1' height='1' fill='%23001a0e'/%3E%3Crect x='1' y='9' width='1' height='1' fill='%23001a0e'/%3E%3Crect x='12' y='9' width='1' height='1' fill='%23001a0e'/%3E%3Crect x='1' y='10' width='1' height='1' fill='%23001a0e'/%3E%3Crect x='12' y='10' width='1' height='1' fill='%23001a0e'/%3E%3Crect x='2' y='11' width='1' height='1' fill='%23001a0e'/%3E%3Crect x='11' y='11' width='1' height='1' fill='%23001a0e'/%3E%3Crect x='3' y='12' width='2' height='1' fill='%23001a0e'/%3E%3Crect x='9' y='12' width='2' height='1' fill='%23001a0e'/%3E%3Crect x='5' y='13' width='4' height='1' fill='%23001a0e'/%3E%3C/svg%3E") center / 100% 100% no-repeat; image-rendering: pixelated;
-}
 #stage .tavern-btn .tb-cost { padding-top: 1px; }
 
-/* Tavern buttons styled like Begin Battle: pink pixel blocks with solid black pixel icons and a white label */
-#stage.pix .tavern-btn, #stage.pix .tavern-btn.upgrade, #stage.pix .tavern-btn.refresh, #stage.pix .tavern-btn.freeze {
-  --tb: var(--pink-deep); --tb-hi: #ffb6dc; --tb-lo: #a83373; --tb-ink: #000;
-  box-shadow: 0 -4px 0 0 #120e18, 0 4px 0 0 #120e18, -4px 0 0 0 #120e18, 4px 0 0 0 #120e18, 0 12px 0 0 rgba(8, 6, 12, 0.7),
-    inset 0 4px 0 0 var(--tb-hi), inset 0 -8px 0 0 var(--tb-lo);
-}
-#stage.pix .tavern-btn.freeze.on { --tb: #62b8ec; --tb-hi: #e0f5ff; --tb-lo: #2d77a8; --tb-ink: #000; }
-#stage.pix .tavern-btn .tb-icon { filter: none; width: 42%; }
-#stage.pix .tavern-btn .tb-label { background: none; bottom: 9px; height: auto; font-size: 18px; text-shadow: 0 2px 0 rgba(120, 20, 70, 0.45); }
-#stage.pix.portrait .tavern-btn .tb-label { font-size: 22px; bottom: 11px; }
-
-/* Trinkets: Keith's pixel present instead of a plain orb (greater trinkets glow pink) */
-#stage .trinket-orb, #stage .trinketcard .gem, #stage.pix .trinket-orb, #stage.pix .trinket-orb.greater, #stage.pix .trinketcard .gem {
-  border-radius: 0; clip-path: none; box-shadow: none; background: var(--trinket-art) center / contain no-repeat;
-  filter: drop-shadow(0 3px 0 rgba(8, 6, 12, 0.6)) drop-shadow(0 0 6px rgba(255, 255, 255, 0.35));
-}
-#stage .trinket-orb.greater, #stage .trinketcard.greater .gem, #stage.pix .trinket-orb.greater, #stage.pix .trinketcard.greater .gem {
-  filter: drop-shadow(0 3px 0 rgba(8, 6, 12, 0.6)) drop-shadow(0 0 10px var(--pink)) drop-shadow(0 0 4px #fff);
-}
-
 /* Smooth look (default): Tavern buttons are rounded pink buttons like Begin Battle, with Keith's black pixel icons */
-#stage:not(.pix) .tavern-btn {
+#stage .tavern-btn {
   border-radius: 50%; border: 3px solid #ffb6dc; background: linear-gradient(#ff9fd0, var(--pink-deep));
   box-shadow: 0 6px 0 #a83373, 0 0 22px rgba(255, 127, 191, 0.45); transition: filter 0.12s, transform 0.08s;
 }
-#stage:not(.pix) .tavern-btn::before { display: none; }
-#stage:not(.pix) .tavern-btn:hover { filter: brightness(1.08); }
-#stage:not(.pix) .tavern-btn:active { transform: translateY(4px); box-shadow: 0 2px 0 #a83373, 0 0 18px rgba(255, 127, 191, 0.45); }
-#stage:not(.pix) .tavern-btn.freeze.on { border-color: #c8f3ff; background: linear-gradient(#bdf0ff, #4fb6d6); box-shadow: 0 6px 0 #2d77a8, 0 0 24px rgba(140, 220, 255, 0.7); }
-#stage:not(.pix) .tavern-btn.off { opacity: 1; filter: saturate(0.2) brightness(0.65); }
-#stage:not(.pix) .tavern-btn .tb-icon { width: 44%; aspect-ratio: 1; color: #000; line-height: 0; font-size: 0; text-shadow: none; }
-#stage:not(.pix) .tavern-btn .tb-icon svg { width: 100%; height: 100%; display: block; }
-#stage:not(.pix) .tavern-btn .tb-cost { top: -8px; right: -8px; width: 32px; height: 32px; font-size: 18px; color: #4a2f00; }
+#stage .tavern-btn::before { display: none; }
+#stage .tavern-btn:hover { filter: brightness(1.08); }
+#stage .tavern-btn:active { transform: translateY(4px); box-shadow: 0 2px 0 #a83373, 0 0 18px rgba(255, 127, 191, 0.45); }
+#stage .tavern-btn.freeze.on { border-color: #c8f3ff; background: linear-gradient(#bdf0ff, #4fb6d6); box-shadow: 0 6px 0 #2d77a8, 0 0 24px rgba(140, 220, 255, 0.7); }
+#stage .tavern-btn.off { opacity: 1; filter: saturate(0.2) brightness(0.65); }
+#stage .tavern-btn .tb-icon { width: 44%; aspect-ratio: 1; color: #000; line-height: 0; font-size: 0; text-shadow: none; }
+#stage .tavern-btn .tb-icon svg { width: 100%; height: 100%; display: block; }
+#stage .tavern-btn .tb-cost { top: -8px; right: -8px; width: 32px; height: 32px; font-size: 18px; color: #4a2f00; }
 
 /* leaderboard Health: a small red orb, not a heart */
 .leader .hp-dot { display: inline-block; width: 11px; height: 11px; margin-right: 4px; border-radius: 50%; vertical-align: -1px;

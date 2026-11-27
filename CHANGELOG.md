@@ -2,6 +2,9 @@
 
 Newest first. The version shows on the title screen.
 
+## 0.16.0 — 2026-11-27
+- New look: the pixel UI from Keith's mockup. TinyComfortable and Major Arcana fonts at one pixel density, square framed cards on the board/Tavern/hand, the mockup's large card when zoomed, pixel frames for buttons and panels, red Health orbs, coins and tier pips
+
 ## 0.15.7 — 2026-11-27
 - Royal Guard is now Tier 3
 
