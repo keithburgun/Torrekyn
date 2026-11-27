@@ -2,6 +2,9 @@
 
 Newest first. The version shows on the title screen.
 
+## 0.15.3 — 2026-11-27
+- Golden units no longer have the moving shine
+
 ## 0.15.2 — 2026-11-27
 - The army and hand panels are darker and half see-through
 
