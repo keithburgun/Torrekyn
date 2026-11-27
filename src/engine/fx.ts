@@ -4,7 +4,7 @@
  * ticked up. Effects are wrapped with `withFx`; it compares your units before and after and queues an
  * event on `p.fx`. Bots and simulations skip all of this.
  */
-import { def, effStats } from './core';
+import { def } from './core';
 import type { GameState, Player, Unit } from './types';
 
 export type FxPhase = 'shop' | 'end' | 'combat' | 'start';
@@ -71,10 +71,9 @@ interface Snap {
 function snap(g: GameState, p: Player): Snap {
   const units = new Map<number, { atk: number; hp: number; kw: string[]; zone: 'board' | 'hand' | 'shop' }>();
   const counters = new Map<string, string>();
-  p.board.forEach((u, i) => {
-    const s = effStats(p, u, 'board', i);
-    units.set(u.uid, { atk: s.atk, hp: s.hp, kw: [...s.kw], zone: 'board' });
-  });
+  // (a unit's own stats, without "your X units have +N" bonuses: those just become true, with no animation —
+  // Ashlie, Romance, Castleabra, Medic, War Mech; only what's given to a unit animates)
+  p.board.forEach((u) => units.set(u.uid, { atk: u.atk, hp: u.hp, kw: [...u.kw], zone: 'board' }));
   p.hand.forEach((u) => units.set(u.uid, { atk: u.atk, hp: u.hp, kw: [...u.kw], zone: 'hand' }));
   // the shop too, so a shop unit that gets something (Tinker) shows it; new shop units are just a Refresh
   p.shop.forEach((u) => { if (!units.has(u.uid)) units.set(u.uid, { atk: u.atk, hp: u.hp, kw: [...u.kw], zone: 'shop' }); });

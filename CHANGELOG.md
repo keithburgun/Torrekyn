@@ -2,6 +2,9 @@
 
 Newest first. The version shows on the title screen.
 
+## 0.15.4 — 2026-11-27
+- 'Your X units have +N' bonuses (Ashlie, Romance, Castleabra, Medic, War Mech) just take effect with no animation; effects that give stats still animate
+
 ## 0.15.3 — 2026-11-27
 - Golden units no longer have the moving shine
 

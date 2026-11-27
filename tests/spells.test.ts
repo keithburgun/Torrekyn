@@ -386,4 +386,16 @@ describe('Spells', () => {
       }
     }
   });
+
+  it('"have" bonuses (Ashlie) just become true: no buff animation on the units; given stats (Sword) still animate', () => {
+    const { g, p } = setup();
+    p.human = true; g.simulateAll = false; p.fx = [];
+    const ne = U(g, 'skeleton', 1, 1);
+    p.board = [ne]; p.hand = [makeUnit(g, 'ashlie')];
+    play(g, p, 0, 1);
+    expect((p.fx ?? []).flatMap((e) => e.buffs).filter((b) => b.uid === ne.uid)).toEqual([]);
+    p.fx = []; p.hand = [makeUnit(g, 'sword')];
+    play(g, p, 0, 2); // Sword: the left-most unit gets +4 Attack: that animates
+    expect((p.fx ?? []).flatMap((e) => e.buffs).some((b) => b.uid === ne.uid && b.atk === 4)).toBe(true);
+  });
 });
