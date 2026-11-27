@@ -424,3 +424,19 @@ describe('Enchantments: where a unit\'s gains came from', () => {
     expect(parts.map((x) => [x.s, x.a, x.everywhere])).toEqual([['Ashlie', 1, true], ['Romance', 2, true]]);
   });
 });
+
+describe('Shotgun', () => {
+  it('whenever you play a Spell, your other units get +1 Attack (Golden +2)', () => {
+    for (const golden of [false, true]) {
+      const { g, p } = setup();
+      const s = makeUnit(g, 'shotgun', golden), a = U(g, 'skel', 1, 1), b = U(g, 'skel', 1, 1);
+      p.board = [s, a, b];
+      p.hand = [makeUnit(g, 'red_gem')];
+      play(g, p, 0, 0);
+      const m = golden ? 2 : 1;
+      expect([a.atk, b.atk]).toEqual([1 + 3 + m, 1 + 3 + m]);
+      expect(s.atk).toBe(def('shotgun').atk * m + 3);
+      expect(a.ench?.find((e) => e.s === 'Shotgun')).toMatchObject({ a: m });
+    }
+  });
+});

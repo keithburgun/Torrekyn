@@ -1168,6 +1168,11 @@
   "castleabra": {
    "src": "S/Generic/vampire.png",
    "px": true
+  },
+  "shotgun": {
+   "src": "L/shotgun.png",
+   "px": true,
+   "_note": "drawn for Torrekin; a copy is kept in tools/art_custom/"
   }
  }
 }

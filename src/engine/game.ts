@@ -513,6 +513,11 @@ export function castSpell(g: GameState, p: Player, handIdx: number, targetUid?: 
     });
   }
   p.spellsCast = (p.spellsCast ?? 0) + 1;
+  // Shotgun: whenever you play a Spell, your other units get +1 Attack (Golden +2)
+  for (const b of [...p.board]) {
+    if (b.cardId !== 'shotgun') continue;
+    withFx(g, p, { unit: b }, 'Ability', () => { for (const o of p.board) if (o !== b) o.atk += mult(b); });
+  }
   // Corn Snail: counts the Spells you play while it's in your army; the third one grows it, once
   for (const b of [...p.board]) {
     if (b.cardId !== 'corn_snail' || b.mem.done) continue;

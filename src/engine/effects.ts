@@ -914,6 +914,7 @@ export const EFFECTS: Record<string, Effect> = {
       }
     },
   },
+  shotgun: {}, // see castSpell (game.ts): other units +1 Attack per Spell
   corn_snail: {}, // see castSpell (game.ts): grows after 3 Spells, once
   medic: {}, // see ownerBonus (core.ts): Health for your hero's missing Health
 

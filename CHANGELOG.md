@@ -2,6 +2,9 @@
 
 Newest first. The version shows on the title screen.
 
+## 0.15.6 — 2026-11-27
+- New Brambor unit: Shotgun (Tier 2, 3/1): whenever you play a Spell, your other units get +1 Attack
+
 ## 0.15.5 — 2026-11-27
 - Enchantments panel on zoomed cards (where each bonus came from); '(wherever they are)' on class-wide bonuses; new game-over screen with your final army, turns, wins and losses; hand panel lights up while dragging from the Tavern
 

@@ -390,6 +390,17 @@
    "keywords": []
   },
   {
+   "id": "shotgun",
+   "name": "Shotgun",
+   "tribe": "brambor",
+   "tier": 2,
+   "atk": 3,
+   "hp": 1,
+   "text": "Whenever you play a Spell, give your other units +1 Attack.",
+   "goldenText": "Whenever you play a Spell, give your other units +2 Attack.",
+   "keywords": []
+  },
+  {
    "id": "corn_snail",
    "name": "Corn Snail",
    "tribe": "kindred",
