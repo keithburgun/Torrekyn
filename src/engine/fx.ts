@@ -38,7 +38,7 @@ export function heroPing(g: GameState, p: Player, name: string, label: string) {
 
 /** Progress shown on a card ("2/4"), if it has one. */
 export function unitCounter(u: Unit): string | null {
-  if (u.cardId === 'lake') return u.mem.done ? null : `${u.mem.buys ?? 0}/3`;
+  if (u.cardId === 'lake') return u.mem.done ? 'Done!' : `${u.mem.buys ?? 0}/3`;
   if (u.cardId === 'corn_snail') return u.mem.done ? null : `${u.mem.spells ?? 0}/3`;
   if (u.cardId === 'shopkeep') return `${(u.mem.buys ?? 0) % 4}/4`;
   if (u.cardId === 'larva') { if (u.mem.done) return 'Done!'; const left = (u.golden ? 2 : 3) - (u.mem.turns ?? 0); return `${left} turn${left === 1 ? '' : 's'} left`; }

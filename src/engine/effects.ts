@@ -290,11 +290,7 @@ export const EFFECTS: Record<string, Effect> = {
     battlecry: (c) => discover(c, (id) => def(id).tier === 1, 'Discover a Tier 1 unit', c.m),
   },
   royal_guard: {
-    soc: (c) => {
-      const i = c.side.units.indexOf(c.self);
-      const targets = c.m === 2 ? [c.side.units[i - 1], c.side.units[i + 1]] : [c.side.units[i + 1]];
-      for (const u of targets) if (u) addKw(u, 'divineShield');
-    },
+    deathrattle: (c) => c.c.spawnMany(c.side, 'shield_azure', false, c.m === 2 ? 4 : 2, c.pos),
   },
   message: {
     // +2/+2 (Golden +4/+4) to your units with Taunt or Bubble

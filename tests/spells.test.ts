@@ -220,4 +220,22 @@ describe('Spells', () => {
     expect(notes.some((n) => n.startsWith("Knight: Ballooneer's Rally"))).toBe(true); // a Knight was given it and used it
     expect(b.atk).toBe(1); // (battle-only: the army is untouched)
   });
+
+  it('Royal Guard: Deathrattle, summon 2 Bulwarks (Golden: 4); Gelf Lanz is 10/20; Lake says Done! once it has doubled', async () => {
+    const { unitCounter } = await import('../src/engine/fx');
+    expect([def('gelf_lanz').atk, def('gelf_lanz').hp]).toEqual([10, 20]);
+    for (const golden of [false, true]) {
+      const { g, p } = setup();
+      const o = g.players[1];
+      const c = new Combat(g, { p, board: [makeUnit(g, 'royal_guard', golden)], tier: 2, persistent: false }, { p: o, board: [U(g, 'skel', 99, 99)], tier: 1, persistent: false });
+      c.run();
+      const most = Math.max(...c.frames.map((f) => f.sides[0].filter((u) => u.cardId === 'shield_azure').length));
+      expect(most).toBe(golden ? 4 : 2);
+    }
+    const { g } = setup();
+    const lake = makeUnit(g, 'lake');
+    expect(unitCounter(lake)).toBe('0/3');
+    lake.mem.done = 1;
+    expect(unitCounter(lake)).toBe('Done!');
+  });
 });

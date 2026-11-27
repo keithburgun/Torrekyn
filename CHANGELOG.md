@@ -2,6 +2,11 @@
 
 Newest first. The version shows on the title screen.
 
+## 0.14.14 — 2026-11-27
+- Royal Guard: Deathrattle: Summon 2 Bulwarks (Golden: 4)
+- Lake shows Done! once it has doubled (it only happens once)
+- Gelf Lanz (the unit) is 10/20
+
 ## 0.14.13 — 2026-11-27
 - Turtlepult: Whenever a friendly unit gains stats, this gains +2 Health (Attack gains count now, and its own gains too)
 

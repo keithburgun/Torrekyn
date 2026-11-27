@@ -240,8 +240,8 @@
    "tier": 2,
    "atk": 3,
    "hp": 5,
-   "text": "Start of Combat: Give the unit to the right of this Bubble.",
-   "goldenText": "Start of Combat: Give the units adjacent to this Bubble.",
+   "text": "Deathrattle: Summon 2 Bulwarks.",
+   "goldenText": "Deathrattle: Summon 4 Bulwarks.",
    "keywords": []
   },
   {
@@ -328,8 +328,8 @@
    "name": "Gelf Lanz",
    "tribe": "azure",
    "tier": 5,
-   "atk": 30,
-   "hp": 10,
+   "atk": 10,
+   "hp": 20,
    "text": "Rally: Gain the Attack of the targeted unit.",
    "goldenText": "Rally: Gain double the Attack of the targeted unit.",
    "keywords": []
