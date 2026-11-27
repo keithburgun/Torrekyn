@@ -2,6 +2,9 @@
 
 Newest first. The version shows on the title screen.
 
+## 0.15.2 — 2026-11-27
+- The army and hand panels are darker and half see-through
+
 ## 0.15.1 — 2026-11-27
 - A plain grey panel behind your army and your hand (and the enemy army in battle); no slots
 - Spell cards are dark grey with a white SPELL banner

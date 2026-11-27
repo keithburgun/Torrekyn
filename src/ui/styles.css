@@ -1763,4 +1763,4 @@ svg.aim-arrow.locked .aim-ring { opacity: 0.9; animation: aim-ring 0.9s ease-in-
 #stage.portrait .panel.stats .cv-head { flex-wrap: wrap; }
 #stage.portrait .panel.stats .cv-head h2 { display: none; }
 /* the play area and the hand: a solid grey panel each, no slots */
-.zone-plate { position: absolute; border-radius: 22px; background: #3a3842; pointer-events: none; z-index: 0; }
+.zone-plate { position: absolute; border-radius: 22px; background: rgba(18, 16, 24, 0.5); pointer-events: none; z-index: 0; }
