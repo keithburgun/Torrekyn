@@ -336,4 +336,18 @@ describe('Spells', () => {
       expect(most).toBe(golden ? 6 : 4); // Skeleton's 2 Skels, each summoned 2x (3x)
     }
   });
+
+  it('Reborn counts as a summon: Faris reacts, and Deathberry Bush brings back two', () => {
+    const { g, p } = setup();
+    const o = g.players[1];
+    const rb = U(g, 'ash', 1, 1); rb.kw = ['reborn'];
+    const f = U(g, 'faris', 6, 50);
+    const c = new Combat(g, { p, board: [rb, f, makeUnit(g, 'deathberry_bush')], tier: 4, persistent: false }, { p: o, board: [U(g, 'skel', 1, 999)], tier: 1, persistent: false });
+    c.run();
+    const i = c.frames.findIndex((fr) => (fr.note ?? '').includes('Reborn'));
+    expect(i).toBeGreaterThan(-1);
+    const fr = c.frames.slice(i).find((x) => x.sides[0].filter((u) => u.cardId === 'ash').length === 2);
+    expect(fr).toBeTruthy(); // the Reborn one and its Deathberry copy
+    expect(fr!.sides[0].find((u) => u.cardId === 'faris')!.kw).toContain('divineShield');
+  });
 });

@@ -259,7 +259,8 @@ export class Combat {
 
   /**
    * Deathberry Bush: each summon on its side happens twice (Golden: 3 times; two Bushes multiply). The extra copies
-   * are summons too (Faris, Alabaster see them) but aren't multiplied again. Reborn isn't a summon.
+   * are summons too (Faris, Alabaster see them) but aren't multiplied again. Reborn is a summon too (copies come
+   * back the same way, without Reborn).
    */
   private berryBusy = false;
   private berries(s: Side, cu: CUnit) {
@@ -418,6 +419,8 @@ export class Combat {
             for (const side of this.sides) for (const w of [...side.units]) {
               if (w.hp > 0) EFFECTS[w.cardId]?.onRebornAny?.(this.ctx(w), r);
             }
+            // coming back counts as being summoned (as in Battlegrounds): Faris, Alabaster, hero powers, Deathberry Bush
+            this.onSummoned(s, r);
             this.snap('trigger', { source: r.id, note: `${d.name}: Reborn` });
           }
         }

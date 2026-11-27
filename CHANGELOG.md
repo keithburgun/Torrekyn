@@ -2,6 +2,9 @@
 
 Newest first. The version shows on the title screen.
 
+## 0.14.16 — 2026-11-27
+- Reborn now counts as a summon (as in Battlegrounds): Faris, Deathberry Bush and other summon effects see it
+
 ## 0.14.15 — 2026-11-27
 - Tavern: 3 units at Tier 1, 4 from Tier 2 on (was 5 at Tiers 4-5)
 - Potato Gem: all units in the Tavern have +1 Health for the rest of the game
