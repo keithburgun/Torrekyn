@@ -10,7 +10,7 @@ import {
 import { HEROES, buyCost, canUseHeroPower, heroDef, heroHealth, mainActive, pickTrinket, powerCost, powersOf, trinketDef, useHeroPower, type HeroDef } from '../engine/heroes';
 import type { CombatResult, GameState, Player } from '../engine/types';
 import { CombatPlayer, SPEEDS, speedSetting } from './combatView';
-import { art, bigCardHtml, cardHtml, offeredUnit, setStat, statOf, esc, getArtStyle, heroArt, relatedCards, relatedCardHtml, setArtStyle, unitView, KEYWORD_HELP, KW_ICON, keywordPanelsHtml, type ArtStyle } from './view';
+import { art, bigCardHtml, cardHtml, offeredUnit, setStat, statOf, esc, getArtStyle, heroArt, relatedCards, relatedCardHtml, setArtStyle, unitView, KEYWORD_HELP, KW_ICON, keywordPanelsHtml, enchRows, enchPanelHtml, type ArtStyle } from './view';
 import { clearSave, loadSave, save } from './save';
 import { debugOn, setDebug } from './debug';
 import { checkForUpdates, versionLabel } from './update';
@@ -966,10 +966,13 @@ export class App {
     const shownId = tab ? rel[tab - 1] : v.cardId;
     // (◀ ▶ sit on the card's edges, with a count on top: no extra height)
     const tabs = rel.length ? `<button class="btn rel-arrow prev" data-act="rel-prev" aria-label="Previous">◀</button><button class="btn rel-arrow next" data-act="rel-next" aria-label="Next">▶</button><div class="rel-count">${tab ? 'Related · ' : ''}${tab + 1}/${rel.length + 1}</div>` : '';
-    const kws = keywordPanelsHtml(tab ? { cardId: shownId, golden: false } : v);
+    // where its gains came from: under the card (on a phone, at the top of the side column)
+    const enchN = tab ? 0 : enchRows(p, u).length;
+    const ench = enchN ? enchPanelHtml(p, u) : '';
+    const kws = (L.portrait ? ench : '') + keywordPanelsHtml(tab ? { cardId: shownId, golden: false } : v);
     const kwBeside = L.portrait && !!kws;
     const W = L.portrait ? (kwBeside ? 472 : 614) : 420;
-    const H = L.portrait ? (kwBeside ? 680 : 884) + (actions ? 118 : 0) : 605 + (actions ? 54 : 0);
+    const H = L.portrait ? (kwBeside ? 680 : 884) + (actions ? 118 : 0) : 605 + (actions ? 54 : 0) + (enchN ? 44 + 26 * enchN : 0);
     let x: number;
     let y: number;
     let actionsTop = false;
@@ -1005,7 +1008,7 @@ export class App {
     const kwSide = L.portrait ? 'right'
       : !relatedCards(v.cardId).length ? relSide : roomAcross >= 290 ? across : relSide;
     return `<div class="popover ${kwBeside ? 'kw-beside' : ''} ${kws && kwSide === relSide ? 'has-kw' : ''} ${actions ? 'interactive' : ''} ${actionsTop ? 'actions-top' : ''} ${actions && this.justSelected() ? 'arming' : ''}" style="left:${x}px;top:${y}px;width:${W}px">
-      <div class="pop-cardwrap">${tabs}<div class="pop-card ${tab ? 'rel-shown' : ''}" data-card="${v.cardId}" data-golden="${v.golden ? 1 : 0}">${shownHtml}</div></div>${actions ? `<div class="actions">${actions}</div>` : ''}${kws ? `<div class="pop-kw ${kwSide}">${kws}</div>` : ''}</div>`;
+      <div class="pop-cardwrap">${tabs}<div class="pop-card ${tab ? 'rel-shown' : ''}" data-card="${v.cardId}" data-golden="${v.golden ? 1 : 0}">${shownHtml}</div></div>${!L.portrait && ench ? ench : ''}${actions ? `<div class="actions">${actions}</div>` : ''}${kws ? `<div class="pop-kw ${kwSide}">${kws}</div>` : ''}</div>`;
   }
 
   /** Phones: details for your hero power or a trinket, with a big Use button where it applies. */
@@ -1130,11 +1133,16 @@ export class App {
         <span class="rc-label">Rating</span><span class="rc-from">${c.before}</span><span class="rc-arrow">→</span><span class="rc-to">${c.after}</span>
         <span class="rc-delta">${c.delta >= 0 ? '+' : ''}${c.delta}</span></div>` : '';
     // top 4 is a win
-    return `<div class="modal"><h2>${place <= 4 ? 'Victory!' : 'Defeat'}</h2>
+    const r = p.record ?? { w: 0, l: 0, d: 0 };
+    const stat = (n: number, label: string, cls = '') => `<div class="over-stat ${cls}"><b>${n}</b><span>${label}</span></div>`;
+    // your final army, whole cards (what they had at the end, with every bonus)
+    const army = p.board.map((u, i) => `<div class="over-card">${bigCardHtml(unitView(p, u, 'board', i), '', p)}</div>`).join('');
+    return `<div class="modal over-modal"><h2 class="${place <= 4 ? 'over-win' : 'over-lose'}">${place <= 4 ? 'Victory!' : 'Defeat'}</h2>
       <div class="hint lead" style="font-size:26px">You finished ${ordinal(place)}</div>
       ${rating}
-      <div class="hint lead">Rounds survived: ${this.g!.round}</div>
-      ${(() => { const rec = liveMatch(this.g); return rec?.battles.length ? `<div class="over-final">${finalBattleHtml(rec)}</div>` : ''; })()}
+      <div class="over-stats">${stat(this.g!.round, this.g!.round === 1 ? 'Turn played' : 'Turns played')}${stat(r.w, r.w === 1 ? 'Battle won' : 'Battles won', 'w')}${stat(r.l, r.l === 1 ? 'Battle lost' : 'Battles lost', 'l')}${r.d ? stat(r.d, r.d === 1 ? 'Tie' : 'Ties') : ''}</div>
+      <div class="over-army-wrap"><div class="over-label">Your final army</div>
+        <div class="over-army">${army || '<div class="hint">(no army)</div>'}</div></div>
       <div style="display:flex;gap:14px;flex-wrap:wrap;justify-content:center"><button class="btn big primary" data-act="new">Play Again</button>
         ${liveMatch(this.g)?.battles.length ? '<button class="btn big" data-act="over-replay">Watch Replay</button>' : ''}
         <button class="btn big" data-act="history">Match History</button><button class="btn big" data-act="title">Title</button></div></div>`;
@@ -2002,6 +2010,8 @@ export class App {
       this.ghost.classList.remove('selected');
       this.stage.appendChild(this.ghost);
       this.press.el.classList.add('dragging');
+      // a Tavern card goes to your hand: light up the hand's panel
+      if (this.press.zone === 'shop') this.stage.classList.add('shop-drag');
       // keep getting this pointer's events even if it leaves the game's frame (itch.io shows the game in a frame)
       try { this.stage.setPointerCapture(this.press.pointerId); } catch { /* not supported */ }
     }
@@ -2122,7 +2132,7 @@ export class App {
     this.ghost = null;
     for (const el of this.stage.querySelectorAll<HTMLElement>('.card[data-zone="board"]:not(.ghost)')) { el.style.transform = ''; el.classList.remove('sliding', 'aimed'); }
     this.stage.querySelectorAll('.slot-plate.drop-target').forEach((e) => e.classList.remove('drop-target'));
-    this.stage.classList.remove('board-full-drag');
+    this.stage.classList.remove('board-full-drag', 'shop-drag');
     this.press?.el.classList.remove('dragging');
     this.press = null;
     this.dragging = false;

@@ -257,7 +257,7 @@ describe('Spells', () => {
       expect(p.shopBuff).toBeUndefined();
       new Combat(g, { p, board: [makeUnit(g, 'sapling', golden)], tier: 1, persistent: true }, { p: o, board: [U(g, 'skel', 99, 99)], tier: 1, persistent: false }).run();
       const m = golden ? 2 : 1;
-      expect(p.shopBuff).toEqual({ brambor: [m, m] });
+      expect(p.shopBuff).toEqual([{ key: 'brambor', src: 'Sapling', a: m, h: m }]);
       p.tier = 5; p.gold = 99;
       for (let i = 0; i < 10; i++) {
         reroll(g, p);
@@ -397,5 +397,30 @@ describe('Spells', () => {
     p.fx = []; p.hand = [makeUnit(g, 'sword')];
     play(g, p, 0, 2); // Sword: the left-most unit gets +4 Attack: that animates
     expect((p.fx ?? []).flatMap((e) => e.buffs).some((b) => b.uid === ne.uid && b.atk === 4)).toBe(true);
+  });
+});
+
+describe('Enchantments: where a unit\'s gains came from', () => {
+  it('a Spell, a Tavern buff and a triple note their source', async () => {
+    const { ownerBonusParts } = await import('../src/engine/core');
+    const { g, p } = setup();
+    const a = U(g, 'skel', 1, 1), b = U(g, 'skel', 1, 1), c = U(g, 'skel', 1, 1);
+    p.board = [a];
+    p.hand = [makeUnit(g, 'red_gem')];
+    play(g, p, 0, 0);
+    expect(a.ench).toEqual([{ s: 'Red Gem', a: 3, h: 0 }]);
+    p.hand = [makeUnit(g, 'pink_gem')];
+    play(g, p, 0, 0, a.uid);
+    expect(a.ench?.find((e) => e.s === 'Pink Gem')).toMatchObject({ a: 1, h: 1, k: ['divineShield'] });
+    p.board = [a, b]; p.hand = [c];
+    checkTriples(g, p);
+    const gold = [...p.board, ...p.hand].find((u) => u.golden)!;
+    expect(gold.ench?.map((e) => e.s).sort()).toEqual(['Pink Gem', 'Red Gem']);
+    // "have" bonuses: shown with their source, everywhere
+    p.tribeAtk.neverending = 3;
+    (await import('../src/engine/core')).noteHave(p, 'tribe:neverending', 'Ashlie', 1, 0);
+    (await import('../src/engine/core')).noteHave(p, 'tribe:neverending', 'Romance', 2, 0);
+    const parts = ownerBonusParts(p, makeUnit(g, 'bramble'));
+    expect(parts.map((x) => [x.s, x.a, x.everywhere])).toEqual([['Ashlie', 1, true], ['Romance', 2, true]]);
   });
 });

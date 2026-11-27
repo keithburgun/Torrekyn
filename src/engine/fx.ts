@@ -4,7 +4,7 @@
  * ticked up. Effects are wrapped with `withFx`; it compares your units before and after and queues an
  * event on `p.fx`. Bots and simulations skip all of this.
  */
-import { def } from './core';
+import { addEnch, def, enchTotal } from './core';
 import type { GameState, Player, Unit } from './types';
 
 export type FxPhase = 'shop' | 'end' | 'combat' | 'start';
@@ -68,6 +68,26 @@ interface Snap {
   counters: Map<string, string>;
 }
 
+/**
+ * Where a unit's gains came from (the zoomed card's Enchantments panel): what an effect gave each of your units, less what
+ * it already noted itself (addEnch). Runs for everyone, also bots and simulations, so a unit's list is the same either way.
+ */
+function enchSnap(p: Player) {
+  const m = new Map<number, { u: Unit; id: string; atk: number; hp: number; kw: string[]; e: [number, number] }>();
+  for (const u of [...p.board, ...p.hand, ...p.shop]) if (!m.has(u.uid)) m.set(u.uid, { u, id: u.cardId, atk: u.atk, hp: u.hp, kw: [...u.kw], e: enchTotal(u) });
+  return m;
+}
+function noteEnch(p: Player, before: Map<number, { u: Unit; id: string; atk: number; hp: number; kw: string[]; e: [number, number] }>, src: string) {
+  for (const u of [...p.board, ...p.hand, ...p.shop]) {
+    const b = before.get(u.uid);
+    if (!b || b.u !== u || b.id !== u.cardId) continue; // (a transformed unit starts over)
+    const e = enchTotal(u);
+    const a = u.atk - b.atk - (e[0] - b.e[0]), h = u.hp - b.hp - (e[1] - b.e[1]);
+    const kw = u.kw.filter((k) => !b.kw.includes(k) && !(u.ench ?? []).some((x) => x.k?.includes(k)));
+    addEnch(u, src, Math.max(0, a), Math.max(0, h), kw);
+  }
+}
+
 function snap(g: GameState, p: Player): Snap {
   const units = new Map<number, { atk: number; hp: number; kw: string[]; zone: 'board' | 'hand' | 'shop' }>();
   const counters = new Map<string, string>();
@@ -93,9 +113,15 @@ let depth = 0;
  * inside another effect count toward the outer one.
  */
 export function withFx<T>(g: GameState, p: Player, who: { unit?: Unit; hero?: boolean; name?: string }, label: string, fn: () => T): T {
-  if (depth > 0 || !tracking(g, p)) {
+  const srcName = who.name ?? (who.unit ? def(who.unit.cardId).name : '');
+  if (depth > 0) {
     depth++;
-    try { return fn(); } finally { depth--; if (!depth) peebSync(g, p); }
+    try { return fn(); } finally { depth--; }
+  }
+  const eb = enchSnap(p);
+  if (!tracking(g, p)) {
+    depth++;
+    try { return fn(); } finally { depth--; noteEnch(p, eb, srcName); peebSync(g, p); }
   }
   const before = snap(g, p);
   depth++;
@@ -103,6 +129,7 @@ export function withFx<T>(g: GameState, p: Player, who: { unit?: Unit; hero?: bo
     return fn();
   } finally {
     depth--;
+    noteEnch(p, eb, srcName);
     const after = snap(g, p);
     const ev: FxEvent = {
       phase, src: who.unit?.uid, hero: who.hero, name: who.name ?? (who.unit ? def(who.unit.cardId).name : ''), label,

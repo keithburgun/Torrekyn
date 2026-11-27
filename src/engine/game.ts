@@ -1,5 +1,5 @@
 import {
-  ALL_TRIBES, CARDS, CONFIG, SPELLS, addKw, applyShopBuffs, cloneUnit, def, displayName, effStats, handUnits, isSpell, isTribe, log, makeUnit, mult, pick, rand, randInt, sample, shuffle,
+  ALL_TRIBES, CARDS, CONFIG, SPELLS, addEnch, addKw, applyShopBuffs, cloneUnit, def, displayName, effStats, handUnits, isSpell, isTribe, log, makeUnit, mult, pick, rand, randInt, sample, shuffle,
 } from './core';
 import { EFFECTS, GEMS, battlecryTimes, hasBattlecry } from './effects';
 import { runCombat } from './combat';
@@ -290,6 +290,7 @@ export function checkTriples(g: GameState, p: Player) {
     for (const u of three) {
       gold.atk += u.atk - d.atk;
       gold.hp += u.hp - d.hp;
+      for (const e of u.ench ?? []) addEnch(gold, e.s, e.a, e.h, e.k ?? []);
       for (const k of u.kw) {
         if (!temp(u, k)) permanent.add(k);
         if (!gold.kw.includes(k)) gold.kw.push(k);
@@ -711,6 +712,8 @@ export function endTurn(g: GameState): CombatResult[] {
     for (const [me, vs, side] of sides) {
       if (me < 0) continue;
       const result = r.winner === -1 ? 'draw' : r.winner === side ? 'win' : 'loss';
+      const rec = (g.players[me].record ??= { w: 0, l: 0, d: 0 });
+      rec[result === 'win' ? 'w' : result === 'loss' ? 'l' : 'd']++;
       const h = (g.players[me].history ??= []);
       h.push({ round: g.round, vs: vs >= 0 ? vs : r.ghostOf ?? -1, ghost: vs < 0, result, dmg: result === 'draw' ? (r.stalemate?.[side] ?? 0) : r.damage });
       if (h.length > 6) h.shift();

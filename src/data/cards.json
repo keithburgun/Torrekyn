@@ -55,8 +55,8 @@
    "tier": 2,
    "atk": 3,
    "hp": 3,
-   "text": "Arrive: Your Neverending units have +1 Attack this game.",
-   "goldenText": "Arrive: Your Neverending units have +2 Attack this game.",
+   "text": "Arrive: Your Neverending units (wherever they are) have +1 Attack this game.",
+   "goldenText": "Arrive: Your Neverending units (wherever they are) have +2 Attack this game.",
    "keywords": []
   },
   {
@@ -134,8 +134,8 @@
    "tier": 3,
    "atk": 4,
    "hp": 4,
-   "text": "Deathrattle: Your Neverending units have +1/+1 for the rest of the game.",
-   "goldenText": "Deathrattle: Your Neverending units have +2/+2 for the rest of the game.",
+   "text": "Deathrattle: Your Neverending units (wherever they are) have +1/+1 for the rest of the game.",
+   "goldenText": "Deathrattle: Your Neverending units (wherever they are) have +2/+2 for the rest of the game.",
    "keywords": []
   },
   {
@@ -156,8 +156,8 @@
    "tier": 4,
    "atk": 1,
    "hp": 10,
-   "text": "Avenge (2): Your Neverending units have +1 Attack this game.",
-   "goldenText": "Avenge (2): Your Neverending units have +2 Attack this game.",
+   "text": "Avenge (2): Your Neverending units (wherever they are) have +1 Attack this game.",
+   "goldenText": "Avenge (2): Your Neverending units (wherever they are) have +2 Attack this game.",
    "keywords": []
   },
   {
@@ -907,8 +907,8 @@
    "tier": 1,
    "atk": 1,
    "hp": 2,
-   "text": "Rally: Your Twinbots have +1 Attack this game.",
-   "goldenText": "Rally: Your Twinbots have +2 Attack this game.",
+   "text": "Rally: Your Twinbots (wherever they are) have +1 Attack this game.",
+   "goldenText": "Rally: Your Twinbots (wherever they are) have +2 Attack this game.",
    "keywords": []
   },
   {
@@ -1019,8 +1019,8 @@
    "tier": 3,
    "atk": 4,
    "hp": 1,
-   "text": "Deathrattle: For the rest of the game, your Alcove units have +2 Attack.",
-   "goldenText": "Deathrattle: For the rest of the game, your Alcove units have +4 Attack.",
+   "text": "Deathrattle: For the rest of the game, your Alcove units (wherever they are) have +2 Attack.",
+   "goldenText": "Deathrattle: For the rest of the game, your Alcove units (wherever they are) have +4 Attack.",
    "keywords": []
   },
   {

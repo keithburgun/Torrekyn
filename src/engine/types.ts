@@ -41,7 +41,10 @@ export interface Body {
 /** A unit the player owns (shop, hand or board). Stats include permanent buffs. */
 export interface Unit extends Body {
   uid: number;
+  /** where stats and keywords it gained came from (the zoomed card's "Enchantments" panel): source name and amounts */
+  ench?: Ench[];
 }
+export interface Ench { s: string; a: number; h: number; k?: string[] }
 
 
 export interface Quest {
@@ -118,9 +121,11 @@ export interface Player {
   /** Owls summoned (played or summoned in battle) this game */
   owlsSummoned?: number;
   /** "units in the Tavern have +X/+Y for the rest of the game", by tribe ('all': every unit) — see addShopBuff */
-  shopBuff?: Record<string, [number, number]>;
+  shopBuff?: { key: string; src: string; a: number; h: number }[];
   /** Root: each Refresh, this many random Tavern units get +6/+6 */
   rootRefresh?: number;
+  /** the sources of "your X units have +N" bonuses, by bonus ('tribe:neverending', 'alcove', 'twin'): name -> [atk, hp] */
+  haveSrc?: Record<string, Record<string, [number, number]>>;
   /** Spells cast this game */
   spellsCast?: number;
   /** the last Gem this player played from hand (Corrivath Harp) */
@@ -159,6 +164,8 @@ export interface Player {
   /** wins in a row (a loss or a draw ends it) */
   streak?: number;
   /** recent battles, newest last (kept short): who they fought and how it went */
+  /** battles this game: won, lost, tied (the game-over screen) */
+  record?: { w: number; l: number; d: number };
   history?: { round: number; vs: number; ghost?: boolean; result: 'win' | 'loss' | 'draw'; dmg: number }[];
   /** cards gained while the hand was full: they move into the hand as soon as there's room */
   overflow?: Unit[];

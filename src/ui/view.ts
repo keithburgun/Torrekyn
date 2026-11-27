@@ -1,7 +1,7 @@
 import artManifest from '../data/art.json';
 import { store } from '../save/store';
 import artV2 from '../data/artV2.json';
-import { CARDS, def, effStats, TRIBE_NAMES } from '../engine/core';
+import { CARDS, def, effStats, isSpell, ownerBonusParts, TRIBE_NAMES } from '../engine/core';
 import { EFFECTS, GEMS, gemLevel, scoutTier } from '../engine/effects';
 import type { Keyword, Player, Unit, CombatFrameUnit } from '../engine/types';
 import { unitCounter } from '../engine/fx';
@@ -73,6 +73,30 @@ export function cardKeywords(u: { cardId: string; golden: boolean; kw?: Keyword[
   if (d.spell) out.unshift('Spell');
   for (const k of u.kw ?? []) { const n = KW_ICON[k]?.[1]; if (n && !out.includes(n)) out.push(n); }
   return out;
+}
+
+/**
+ * Where a unit's gains came from (like Hearthstone Battlegrounds' enchantments under a card): what was given to it, by
+ * whom, and the "your X units have +N" bonuses it gets (wherever it is). Empty if nothing.
+ */
+export function enchRows(p: Player | undefined, u: Unit): string[] {
+  if (isSpell(u)) return [];
+  const amt = (a: number, h: number) => (a && h ? `+${a}/+${h}` : a ? `+${a} Attack` : h ? `+${h} Health` : '');
+  const rows: string[] = [];
+  for (const e of u.ench ?? []) {
+    const kws = (e.k ?? []).filter((k) => u.kw.includes(k as Keyword)).map((k) => KW_ICON[k as Keyword]?.[1] ?? k);
+    const what = [amt(e.a, e.h), ...kws].filter(Boolean).join(', ');
+    if (what) rows.push(`<b>${esc(e.s)}:</b> ${esc(what)}`);
+  }
+  if (p) for (const x of ownerBonusParts(p, u)) {
+    const what = amt(x.a, x.h);
+    if (what) rows.push(`<b>${esc(x.s)}:</b> ${esc(what)}${x.everywhere ? ' <i>(wherever they are)</i>' : ''}`);
+  }
+  return rows;
+}
+export function enchPanelHtml(p: Player | undefined, u: Unit): string {
+  const rows = enchRows(p, u);
+  return rows.length ? `<div class="ench-panel"><div class="ench-title">Enchantments</div>${rows.map((r) => `<div class="ench-row">${r}</div>`).join('')}</div>` : '';
 }
 
 /** one panel per keyword on the card, explaining it */

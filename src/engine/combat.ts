@@ -5,7 +5,7 @@
  *  - Bubble absorbs one hit; Doomstrike kills on damage (one use), Poisonous always does; Reborn returns at 1 Health;
  *  - Twinstrike attacks twice; deaths resolve left-to-right, attacking side first.
  */
-import { addKw, cloneUnit, def, effStats, has, isTribe, mult, ownerBonus, pick, rand, removeKw, sample, tribeOf, CONFIG } from './core';
+import { addEnch, addKw, cloneUnit, def, effStats, has, isTribe, mult, ownerBonus, pick, rand, removeKw, sample, tribeOf, CONFIG } from './core';
 import { EFFECTS, balloonRally, hasBattlecry, battlecryTimes, type CCtx } from './effects';
 import { gainNew, combatDamage, drawFromPool, BASE_DAMAGE, DAMAGE_PER_UNIT, onBattlecryTriggered } from './game';
 import { heroHooks, heroSoc, trinketCount } from './heroes';
@@ -80,8 +80,11 @@ export class Combat {
     return this.sides[1 - s.idx];
   }
 
+  /** name of the card whose effect is running (for where permanent gains came from) */
+  hook = '';
   ctx(u: CUnit, pos = -1): CCtx {
     const side = this.sides[u.side];
+    this.hook = def(u.cardId).name;
     return { g: this.g, c: this, side, self: u, m: mult(u), p: side.owner, pos };
   }
 
@@ -173,7 +176,9 @@ export class Combat {
     // any keyword it gained at some point in the battle (a Bubble gained and then broken still counts)
     const seen = new Set<Keyword>(cu.kw);
     for (const f of this.frames) for (const x of f.sides[cu.side]) if (x.id === cu.id) x.kw.forEach((k) => seen.add(k));
-    for (const k of seen) if (!cu.startKw.includes(k) && !u.kw.includes(k)) u.kw.push(k);
+    const nk = [...seen].filter((k) => !cu.startKw.includes(k) && !u.kw.includes(k));
+    u.kw.push(...nk);
+    addEnch(u, 'Remember', a * m, h * m, nk);
     if (a || h) s.owner.log.push(`Remember: ${def(u.cardId).name} kept +${a * m}/+${h * m}.`);
   }
 
@@ -184,7 +189,10 @@ export class Combat {
     const s = this.sides[cu.side];
     if (!s.persistent || cu.src === null) return;
     const u = s.owner.board.find((x) => x.uid === cu.src);
-    if (u) fn(u);
+    if (!u) return;
+    const [a0, h0, k0] = [u.atk, u.hp, [...u.kw]];
+    fn(u);
+    addEnch(u, this.hook || 'Battle', Math.max(0, u.atk - a0), Math.max(0, u.hp - h0), u.kw.filter((k) => !k0.includes(k)));
   }
 
   /**

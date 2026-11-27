@@ -7,7 +7,7 @@
  * m = 1 for normal, 2 for golden.
  */
 import type { Body, Keyword, Player, Tribe, Unit, GameState } from './types';
-import { ALL_TRIBES, SPELLS, TRIBE_NAMES, addKw, addShopBuff, CARDS, def, effStats, handUnits, has, isSpell, isTribe, log, makeUnit, pick, rand, removeKw, sample, tribeOf, CONFIG } from './core';
+import { ALL_TRIBES, SPELLS, TRIBE_NAMES, addKw, addShopBuff, noteHave, CARDS, def, effStats, handUnits, has, isSpell, isTribe, log, makeUnit, pick, rand, removeKw, sample, tribeOf, CONFIG } from './core';
 import type { CUnit, Combat, Side } from './combat';
 import {
   destroyUnit, discoverOptions, gainNew, inPlay, maxGoldFor, queueDiscover, randomCardOfTier, sellUnit, drawFromPool,
@@ -194,6 +194,7 @@ export const EFFECTS: Record<string, Effect> = {
   ashlie: {
     battlecry: (c) => {
       c.p.tribeAtk.neverending = (c.p.tribeAtk.neverending ?? 0) + c.m;
+      noteHave(c.p, 'tribe:neverending', 'Ashlie', c.m, 0);
       if (c.combat) for (const u of c.board) if (isTribe(u, 'neverending')) u.atk += c.m;
     },
   },
@@ -222,7 +223,7 @@ export const EFFECTS: Record<string, Effect> = {
   romance: {
     avenge: [2, 2],
     avengeFn: (c) => {
-      if (c.side.persistent) c.p.tribeAtk.neverending = (c.p.tribeAtk.neverending ?? 0) + c.m; // (not in a practice battle)
+      if (c.side.persistent) { c.p.tribeAtk.neverending = (c.p.tribeAtk.neverending ?? 0) + c.m; noteHave(c.p, 'tribe:neverending', 'Romance', c.m, 0); } // (not in a practice battle)
       for (const u of c.side.units) if (isTribe(u, 'neverending')) u.atk += c.m;
     },
   },
@@ -233,6 +234,7 @@ export const EFFECTS: Record<string, Effect> = {
       if (c.side.persistent) {
         c.p.tribeAtk.neverending = (c.p.tribeAtk.neverending ?? 0) + c.m;
         (c.p.tribeHp ??= {}).neverending = (c.p.tribeHp.neverending ?? 0) + c.m;
+        noteHave(c.p, 'tribe:neverending', 'Castleabra', c.m, c.m);
       }
       for (const u of c.side.units) if (u.hp > 0 && isTribe(u, 'neverending')) { u.atk += c.m; u.hp += c.m; }
     },
@@ -456,7 +458,7 @@ export const EFFECTS: Record<string, Effect> = {
   // ===== Brambor =====
   sapling: {
     // Deathrattle: Brambor units in the Tavern have +1/+1 for the rest of the game (Golden +2/+2)
-    deathrattle: (c) => { if (c.side?.persistent) addShopBuff(c.p, 'brambor', c.m, c.m); },
+    deathrattle: (c) => { if (c.side?.persistent) addShopBuff(c.p, 'brambor', c.m, c.m, 'Sapling'); },
   },
   farmer: {
     avenge: [3, 3],
@@ -503,7 +505,7 @@ export const EFFECTS: Record<string, Effect> = {
   },
   ancient_name_brambor: {
     // Potato Gem (a Spell): Tavern units have +1 Health for the rest of the game (+1 per improvement)
-    battlecry: (c) => { if (!c.combat || c.side?.persistent) addShopBuff(c.p, 'all', 0, potatoHp(c.p) * c.m); },
+    battlecry: (c) => { if (!c.combat || c.side?.persistent) addShopBuff(c.p, 'all', 0, potatoHp(c.p) * c.m, 'Potato Gem'); },
   },
   chosen_name: {
     soc: (c) => buff(c.self, c.self.atk * c.m, c.self.hp * c.m),
@@ -600,7 +602,7 @@ export const EFFECTS: Record<string, Effect> = {
   left_twinbot: {
     // all your Twinbots get +1 Attack for the rest of the game (ownerBonus), including the ones in this battle
     rally: (c) => {
-      if (c.side.persistent) c.p.twinBonus = (c.p.twinBonus ?? 0) + c.m;
+      if (c.side.persistent) { c.p.twinBonus = (c.p.twinBonus ?? 0) + c.m; noteHave(c.p, 'twin', 'Left Twinbot', c.m, 0); }
       for (const u of c.side.units) if (u.hp > 0 && (u.cardId === 'left_twinbot' || u.cardId === 'right_twinbot')) buff(u, c.m, 0);
     },
   },
@@ -670,7 +672,7 @@ export const EFFECTS: Record<string, Effect> = {
   scientist: {
     // Deathrattle: Alcove units have +2 Attack (Golden +4) for the rest of the game, starting with this battle
     deathrattle: (c) => {
-      c.p.alcoveAtkThisTier += 2 * c.m;
+      if (c.side.persistent) { c.p.alcoveAtkThisTier += 2 * c.m; noteHave(c.p, 'alcove', 'Scientist', 2 * c.m, 0); }
       for (const u of c.side.units) if (u.hp > 0 && isTribe(u, 'alcove')) u.atk += 2 * c.m;
     },
   },
@@ -686,6 +688,7 @@ export const EFFECTS: Record<string, Effect> = {
       me.atk = t.atk;
       me.hp = t.hp;
       me.kw = [...t.kw];
+      me.ench = (t as Unit).ench?.map((e) => ({ ...e, ...(e.k ? { k: [...e.k] } : {}) }));
       me.mem = { ...(t as Unit).mem };
       delete me.mem.pv; delete me.mem.pa;
       me.golden = t.golden || c.m > 1;
@@ -907,6 +910,7 @@ export const EFFECTS: Record<string, Effect> = {
         const nd = def(id), m = t.golden ? 2 : 1;
         t.cardId = id; t.atk = nd.atk * m; t.hp = nd.hp * m; t.kw = [...nd.keywords];
         (t as Unit).mem = {};
+        delete (t as Unit).ench;
       }
     },
   },

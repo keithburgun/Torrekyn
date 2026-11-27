@@ -2,6 +2,9 @@
 
 Newest first. The version shows on the title screen.
 
+## 0.15.5 — 2026-11-27
+- Enchantments panel on zoomed cards (where each bonus came from); '(wherever they are)' on class-wide bonuses; new game-over screen with your final army, turns, wins and losses; hand panel lights up while dragging from the Tavern
+
 ## 0.15.4 — 2026-11-27
 - 'Your X units have +N' bonuses (Ashlie, Romance, Castleabra, Medic, War Mech) just take effect with no animation; effects that give stats still animate
 

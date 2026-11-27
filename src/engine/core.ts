@@ -46,13 +46,15 @@ export function isSpell(b: { cardId: string } | string): boolean {
  * "Units in the Tavern have +X/+Y for the rest of the game" (Potato Gem: all units; Sapling: Brambor). Kept on the
  * player by tribe ('all' for every unit); new Tavern units get it as they appear, and the ones there now get it too.
  */
-export function addShopBuff(p: Player, key: Tribe | 'all', atk: number, hp: number) {
-  const b = ((p.shopBuff ??= {})[key] ??= [0, 0]);
-  b[0] += atk; b[1] += hp;
-  for (const u of p.shop) if (!isSpell(u) && (key === 'all' || isTribe(u, key))) { u.atk += atk; u.hp += hp; }
+export function addShopBuff(p: Player, key: Tribe | 'all', atk: number, hp: number, src: string) {
+  if (!Array.isArray(p.shopBuff)) p.shopBuff = [];
+  const e = p.shopBuff.find((x) => x.key === key && x.src === src);
+  if (e) { e.a += atk; e.h += hp; } else p.shopBuff.push({ key, src, a: atk, h: hp });
+  for (const u of p.shop) if (!isSpell(u) && (key === 'all' || isTribe(u, key))) { u.atk += atk; u.hp += hp; addEnch(u, src, atk, hp); }
 }
 export function applyShopBuffs(p: Player, u: Unit) {
-  for (const [key, [a, h]] of Object.entries(p.shopBuff ?? {})) if (key === 'all' || isTribe(u, key as Tribe)) { u.atk += a; u.hp += h; }
+  if (!Array.isArray(p.shopBuff)) return;
+  for (const e of p.shopBuff) if (e.key === 'all' || isTribe(u, e.key as Tribe)) { u.atk += e.a; u.hp += e.h; addEnch(u, e.src, e.a, e.h); }
 }
 
 /** the units in a player's hand (Spells left out): what "units in your hand" effects touch */
@@ -114,7 +116,55 @@ export function makeUnit(g: GameState, cardId: string, golden = false): Unit {
 }
 
 export function cloneUnit(u: Unit): Unit {
-  return { ...u, kw: [...u.kw], mem: { ...u.mem } };
+  return { ...u, kw: [...u.kw], mem: { ...u.mem }, ...(u.ench ? { ench: u.ench.map((e) => ({ ...e, ...(e.k ? { k: [...e.k] } : {}) })) } : {}) };
+}
+
+/** note where a unit's gain came from (merged per source) */
+export function addEnch(u: Unit, s: string, a: number, h: number, k: string[] = []) {
+  if (!a && !h && !k.length) return;
+  const list = (u.ench ??= []);
+  const e = list.find((x) => x.s === s);
+  if (e) { e.a += a; e.h += h; if (k.length) e.k = [...new Set([...(e.k ?? []), ...k])]; }
+  else list.push({ s, a, h, ...(k.length ? { k: [...k] } : {}) });
+}
+export function enchTotal(u: Unit): [number, number] {
+  return (u.ench ?? []).reduce<[number, number]>((t, e) => [t[0] + e.a, t[1] + e.h], [0, 0]);
+}
+
+/** remember who gave a "your X units have +N" bonus (shown on the cards it applies to) */
+export function noteHave(p: Player, key: string, src: string, a: number, h: number) {
+  const m = ((p.haveSrc ??= {})[key] ??= {});
+  const v = (m[src] ??= [0, 0]);
+  v[0] += a; v[1] += h;
+}
+
+/** a unit's "have" bonuses, piece by piece, for the Enchantments panel */
+export function ownerBonusParts(p: Player, b: Body): { s: string; a: number; h: number; everywhere: boolean }[] {
+  const out: { s: string; a: number; h: number; everywhere: boolean }[] = [];
+  const fromSources = (key: string, a: number, h: number, fallback: string) => {
+    let ra = a, rh = h;
+    for (const [s, [sa, sh]] of Object.entries(p.haveSrc?.[key] ?? {})) {
+      const ta = Math.min(sa, ra), th = Math.min(sh, rh);
+      if (ta || th) out.push({ s, a: ta, h: th, everywhere: true });
+      ra -= ta; rh -= th;
+    }
+    if (ra > 0 || rh > 0) out.push({ s: fallback, a: Math.max(0, ra), h: Math.max(0, rh), everywhere: true });
+  };
+  const d = def(b.cardId);
+  if (!d.spell) for (const t of ALL_TRIBES) {
+    if (!(d.allTribes || d.tribe === t)) continue;
+    fromSources(`tribe:${t}`, p.tribeAtk?.[t] ?? 0, p.tribeHp?.[t] ?? 0, `${TRIBE_NAMES[t]} bonuses`);
+  }
+  if (p.trinkets?.includes('bronze_compass') && isTribe(b, 'neverending')) out.push({ s: 'Purple Bracer', a: 12, h: 0, everywhere: true });
+  if (isTribe(b, 'alcove') && p.alcoveAtkThisTier) fromSources('alcove', p.alcoveAtkThisTier, 0, 'Scientist');
+  if ((b.cardId === 'left_twinbot' || b.cardId === 'right_twinbot') && p.twinBonus) fromSources('twin', p.twinBonus, 0, 'Twinbot');
+  if (b.cardId === 'owl' && p.owlsSummoned) out.push({ s: `${p.owlsSummoned} Owl${p.owlsSummoned === 1 ? '' : 's'} summoned`, a: mult(b) * p.owlsSummoned, h: 2 * mult(b) * p.owlsSummoned, everywhere: false });
+  if (b.cardId === 'warmech' && p.deathrattlesGame) out.push({ s: `${p.deathrattlesGame} Deathrattle${p.deathrattlesGame === 1 ? '' : 's'} triggered`, a: 3 * mult(b) * p.deathrattlesGame, h: mult(b) * p.deathrattlesGame, everywhere: false });
+  if (b.cardId === 'medic') {
+    const miss = Math.max(0, (p.maxHealth ?? CONFIG.startHealth) - p.health);
+    if (miss) out.push({ s: `${miss} Health missing`, a: 0, h: 2 * mult(b) * miss, everywhere: false });
+  }
+  return out;
 }
 
 export function mult(b: Body): number {
