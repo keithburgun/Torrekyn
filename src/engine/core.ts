@@ -132,6 +132,13 @@ export function isTribe(b: Body | string, t: Tribe): boolean {
 }
 
 /** Permanent "+Attack for this tribe" bonuses that apply to a card (all of them for the Pumpkin). */
+export function tribeHpFor(p: Player, cardId: string): number {
+  const d = def(cardId);
+  if (d.spell) return 0;
+  if (!d.allTribes) return p.tribeHp?.[d.tribe] ?? 0;
+  return Object.values(p.tribeHp ?? {}).reduce((s, v) => s + (v ?? 0), 0);
+}
+
 export function tribeAtkFor(p: Player, cardId: string): number {
   const d = def(cardId);
   if (!d.allTribes) return p.tribeAtk[d.tribe] ?? 0;
@@ -148,7 +155,7 @@ export function displayName(b: Body): string {
  */
 export function ownerBonus(p: Player, b: Body): { atk: number; hp: number } {
   let atk = tribeAtkFor(p, b.cardId);
-  let hp = 0;
+  let hp = tribeHpFor(p, b.cardId);
   if (p.trinkets?.includes('bronze_compass') && isTribe(b, 'neverending')) atk += 12; // Purple Bracer
   if (isTribe(b, 'alcove')) atk += p.alcoveAtkThisTier ?? 0; // Scientist
   if (b.cardId === 'left_twinbot' || b.cardId === 'right_twinbot') { atk += p.twinBonus ?? 0; }

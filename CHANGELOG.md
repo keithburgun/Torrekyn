@@ -2,6 +2,13 @@
 
 Newest first. The version shows on the title screen.
 
+## 0.14.18 — 2026-11-27
+- Skeleton is now Party Guy; Thicket is now Earthen Husk; Sickle is a Cloister unit
+- New Neverending unit: Castleabra (Tier 3, 4/4): Deathrattle: your Neverending units have +1/+1 for the rest of the game
+- The army's slot outlines aren't drawn any more
+- The Options gear works during battles
+- Romance's lasting Attack no longer leaks out of the bots' practice battles
+
 ## 0.14.17 — 2026-11-27
 - Alabaster doesn't give Reborn again to a unit coming back from Reborn
 

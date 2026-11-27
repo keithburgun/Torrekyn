@@ -106,6 +106,8 @@ export interface Player {
   shop: Unit[];
   frozen: boolean;
   tribeAtk: Partial<Record<Tribe, number>>;
+  /** "your <tribe> units have +N Health for the rest of the game" (Castleabra): anywhere (army, hand, Tavern, Discovers) */
+  tribeHp?: Partial<Record<Tribe, number>>;
   /** Scientist: extra Attack for Alcove units, for the rest of the game (name kept so saved games still load) */
   alcoveAtkThisTier: number;
   /** Tinker: extra stats for Alcove units in the shop, for the rest of the game (name kept so saved games still load) */

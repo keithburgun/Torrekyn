@@ -1164,6 +1164,10 @@
   "faris": {
    "src": "M/PatC/placeholder-faris.png",
    "px": true
+  },
+  "castleabra": {
+   "src": "S/Generic/vampire.png",
+   "px": true
   }
  }
 }

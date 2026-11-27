@@ -359,4 +359,31 @@ describe('Spells', () => {
     c.run();
     expect(c.frames.filter((fr) => (fr.note ?? '').startsWith('Ash: Reborn')).length).toBe(1);
   });
+
+  it('Castleabra (Tier 3 Neverending 4/4): Deathrattle: Neverending units +1/+1 for the rest of the game, everywhere they show', async () => {
+    const { effStats } = await import('../src/engine/core');
+    expect([def('castleabra').tribe, def('castleabra').tier, def('castleabra').atk, def('castleabra').hp]).toEqual(['neverending', 3, 4, 4]);
+    expect([def('skeleton').name, def('thicket').name, def('sickle').tribe]).toEqual(['Party Guy', 'Earthen Husk', 'cloister']);
+    for (const golden of [false, true]) {
+      const { g, p } = setup();
+      const o = g.players[1];
+      const ne = U(g, 'skeleton', 1, 50), other = U(g, 'knight', 1, 50);
+      // a practice battle changes nothing for later
+      new Combat(g, { p, board: [makeUnit(g, 'castleabra', golden), ne, other], tier: 3, persistent: false }, { p: o, board: [U(g, 'skel', 99, 999)], tier: 1, persistent: false }).run();
+      expect(p.tribeHp?.neverending ?? 0).toBe(0);
+      const c = new Combat(g, { p, board: [makeUnit(g, 'castleabra', golden), ne, other], tier: 3, persistent: true }, { p: o, board: [U(g, 'skel', 99, 999)], tier: 1, persistent: false });
+      c.run();
+      const m = golden ? 2 : 1;
+      // in that battle: the living Neverending unit got it right away
+      const f = c.frames.find((fr) => (fr.note ?? '').startsWith('Castleabra'))
+        ?? c.frames.find((fr) => !fr.sides[0].some((u) => u.cardId === 'castleabra'));
+      const pg = f!.sides[0].find((u) => u.cardId === 'skeleton');
+      if (pg) expect(pg.atk).toBe(1 + m);
+      // and from now on, anywhere: army, hand, Tavern, Discovers
+      for (const zone of ['board', 'hand', 'shop'] as const) {
+        expect(effStats(p, makeUnit(g, 'skeleton'), zone)).toMatchObject({ atk: def('skeleton').atk + m, hp: def('skeleton').hp + m });
+        expect(effStats(p, makeUnit(g, 'knight'), zone)).toMatchObject({ atk: def('knight').atk, hp: def('knight').hp });
+      }
+    }
+  });
 });

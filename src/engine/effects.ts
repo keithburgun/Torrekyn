@@ -222,8 +222,19 @@ export const EFFECTS: Record<string, Effect> = {
   romance: {
     avenge: [2, 2],
     avengeFn: (c) => {
-      c.p.tribeAtk.neverending = (c.p.tribeAtk.neverending ?? 0) + c.m;
+      if (c.side.persistent) c.p.tribeAtk.neverending = (c.p.tribeAtk.neverending ?? 0) + c.m; // (not in a practice battle)
       for (const u of c.side.units) if (isTribe(u, 'neverending')) u.atk += c.m;
+    },
+  },
+  castleabra: {
+    // Deathrattle: your Neverending units have +1/+1 (Golden +2/+2) for the rest of the game: the ones in this battle now,
+    // and everywhere after (army, hand, Tavern, Discovers: see ownerBonus)
+    deathrattle: (c) => {
+      if (c.side.persistent) {
+        c.p.tribeAtk.neverending = (c.p.tribeAtk.neverending ?? 0) + c.m;
+        (c.p.tribeHp ??= {}).neverending = (c.p.tribeHp.neverending ?? 0) + c.m;
+      }
+      for (const u of c.side.units) if (u.hp > 0 && isTribe(u, 'neverending')) { u.atk += c.m; u.hp += c.m; }
     },
   },
   ancient_name_neverending: {

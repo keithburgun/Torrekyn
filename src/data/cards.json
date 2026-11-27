@@ -12,7 +12,7 @@
  "cards": [
   {
    "id": "skeleton",
-   "name": "Skeleton",
+   "name": "Party Guy",
    "tribe": "neverending",
    "tier": 1,
    "atk": 1,
@@ -72,7 +72,7 @@
   },
   {
    "id": "thicket",
-   "name": "Thicket",
+   "name": "Earthen Husk",
    "tribe": "neverending",
    "tier": 2,
    "atk": 4,
@@ -84,7 +84,7 @@
   {
    "id": "sickle",
    "name": "Sickle",
-   "tribe": "neverending",
+   "tribe": "cloister",
    "tier": 3,
    "atk": 7,
    "hp": 7,
@@ -128,14 +128,25 @@
    "keywords": []
   },
   {
+   "id": "castleabra",
+   "name": "Castleabra",
+   "tribe": "neverending",
+   "tier": 3,
+   "atk": 4,
+   "hp": 4,
+   "text": "Deathrattle: Your Neverending units have +1/+1 for the rest of the game.",
+   "goldenText": "Deathrattle: Your Neverending units have +2/+2 for the rest of the game.",
+   "keywords": []
+  },
+  {
    "id": "necromancer",
    "name": "Necromancer",
    "tribe": "neverending",
    "tier": 4,
    "atk": 2,
    "hp": 4,
-   "text": "Deathrattle: Summon 2 Skeletons.",
-   "goldenText": "Deathrattle: Summon 2 Golden Skeletons.",
+   "text": "Deathrattle: Summon 2 Party Guys.",
+   "goldenText": "Deathrattle: Summon 2 Golden Party Guys.",
    "keywords": []
   },
   {

@@ -166,7 +166,7 @@ export class App {
     this.stage.style.setProperty('--bg', `url('${new URL(art('art/bg.png'), document.baseURI).href}')`);
     this.stage.style.setProperty('--trinket-art', `url('${new URL(art('art/trinket.png'), document.baseURI).href}')`);
     placeBoardBg(this.stage, L, null);
-    if (this.screen === 'combat' && this.combat) return; // the battle is playing on this screen; leave it be
+    if (this.screen === 'combat' && this.combat) { this.renderOverlays(); return; } // the battle is playing on this screen; leave it be (but Options can open over it)
     this.stage.classList.toggle('in-battle', this.screen === 'combat');
     // a new screen fades in quickly (shop and battle also fade out first; see afterEndTurn / startCombat)
     if (this.shownScreen !== this.screen) {
@@ -563,6 +563,28 @@ export class App {
    * The shop screen while a battle plays on it: everything stays where it was (leaderboard, your hero, gold,
    * the Cards button...), the Tavern's circle shows your opponent, and the battle draws both armies and your hand.
    */
+  /**
+   * While a battle plays, the screen isn't redrawn (the battle owns it): Options, the account panel, the Card Viewer
+   * and achievements are drawn in a layer of their own on top, so the gear works mid-battle.
+   */
+  private renderOverlays() {
+    let el = this.stage.querySelector<HTMLElement>('#ovl');
+    let html = '';
+    if (this.options) html += this.optionsHtml();
+    if (this.account) html += this.accountHtml();
+    if (this.viewer) html += cardViewerHtml(this.viewer, this.g);
+    if (this.achOpen) html += achievementsHtml();
+    if (!html) { el?.remove(); return; }
+    if (!el) {
+      el = document.createElement('div');
+      el.id = 'ovl';
+      el.className = 'abs';
+      el.style.cssText = 'inset:0;z-index:200';
+      this.stage.appendChild(el);
+    }
+    el.innerHTML = html;
+  }
+
   battleHtml() {
     const g = this.g!;
     const b = this.battle!;
