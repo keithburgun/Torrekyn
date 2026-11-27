@@ -2,6 +2,9 @@
 
 Newest first. The version shows on the title screen.
 
+## 0.14.17 — 2026-11-27
+- Alabaster doesn't give Reborn again to a unit coming back from Reborn
+
 ## 0.14.16 — 2026-11-27
 - Reborn now counts as a summon (as in Battlegrounds): Faris, Deathberry Bush and other summon effects see it
 

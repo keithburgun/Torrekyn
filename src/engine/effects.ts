@@ -974,7 +974,8 @@ export const EFFECTS: Record<string, Effect> = {
   alabaster: {
     // the first 3 (Golden: 6) friendly units summoned in each battle get Reborn
     onSummonFriendly: (c, u) => {
-      if ((c.self.mem.alabaster ?? 0) >= 3 * c.m || has(u, 'reborn')) return;
+      // (not a unit coming back from Reborn: that would loop, and Battlegrounds doesn't either)
+      if ((c.self.mem.alabaster ?? 0) >= 3 * c.m || has(u, 'reborn') || u.mem.wasReborn) return;
       c.self.mem.alabaster = (c.self.mem.alabaster ?? 0) + 1;
       addKw(u, 'reborn');
     },

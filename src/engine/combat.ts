@@ -413,7 +413,7 @@ export class Combat {
             // Horseman comes back with its full stats (as it started the battle); others with 1 Health
             const full = u.cardId === 'horseman';
             const r = this.makeCU(s.idx, u.cardId, u.golden, full ? u.startAtk : d.atk * m + ownerBonus(s.owner, u).atk, full ? u.startHp : 1,
-              d.keywords.filter((k) => k !== 'reborn'), u.src, { ...u.mem, rattle: 0 });
+              d.keywords.filter((k) => k !== 'reborn'), u.src, { ...u.mem, rattle: 0, wasReborn: 1 });
             s.units.splice(Math.min(pos, s.units.length), 0, r);
             this.addFx({ k: 'reborn', to: r.id });
             for (const side of this.sides) for (const w of [...side.units]) {

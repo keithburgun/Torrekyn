@@ -350,4 +350,13 @@ describe('Spells', () => {
     expect(fr).toBeTruthy(); // the Reborn one and its Deathberry copy
     expect(fr!.sides[0].find((u) => u.cardId === 'faris')!.kw).toContain('divineShield');
   });
+
+  it("Alabaster doesn't give Reborn again to a unit coming back from Reborn", () => {
+    const { g, p } = setup();
+    const o = g.players[1];
+    const rb = U(g, 'ash', 1, 1); rb.kw = ['reborn'];
+    const c = new Combat(g, { p, board: [rb, U(g, 'alabaster', 1, 999)], tier: 4, persistent: false }, { p: o, board: [U(g, 'skel', 5, 999)], tier: 1, persistent: false });
+    c.run();
+    expect(c.frames.filter((fr) => (fr.note ?? '').startsWith('Ash: Reborn')).length).toBe(1);
+  });
 });
