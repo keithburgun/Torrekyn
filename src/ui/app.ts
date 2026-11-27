@@ -18,7 +18,7 @@ import { isMuted, setMuted, sfx } from './sfx';
 import { statsPanelHtml, type StatsTab, cardViewerHtml, tribesAnnounceHtml, viewerCount, viewerGridHtml, type ViewerState } from './screens';
 import { playTriple } from './ceremony';
 import { placeBoardBg, placeHud } from './hud';
-import { puff } from './fx';
+import { dust } from './fx';
 import type { FxEvent } from '../engine/fx';
 import { battleIntro, recruitWipe, fadeOut, fadeClear, fadeIn } from './transitions';
 import { getRating, isProvisional, rateGame, seatRating, setRatingDebug } from './rating';
@@ -170,6 +170,7 @@ export class App {
     this.stage.classList.toggle('portrait', L.portrait);
     this.stage.classList.toggle('tall', !!L.tall);
     this.stage.classList.toggle('menu-bg', this.screen === 'title' || this.screen === 'rules' || this.screen === 'hero' || this.screen === 'tribes');
+    this.stage.classList.toggle('title-bg', this.screen === 'title');
     // one night-sky backdrop for every screen, drawn once, very large and blurred (styles.css #stage::before)
     // made absolute: a url() inside a CSS variable is read relative to the stylesheet that uses it (assets/), not the page
     this.stage.style.setProperty('--bg', `url('${new URL(art('art/bg.png'), document.baseURI).href}')`);
@@ -372,7 +373,7 @@ export class App {
       if (!before || (before.zone !== now.zone && now.zone === 'board')) {
         el.classList.add('summon-in');
         el.style.setProperty('--life', '650ms');
-        if (now.zone === 'board') puff(this.stage, parseFloat(el.style.left) + el.offsetWidth / 2, parseFloat(el.style.top) + el.offsetHeight / 2, 650);
+        if (now.zone === 'board') dust(this.stage, parseFloat(el.style.left) + el.offsetWidth / 2, parseFloat(el.style.top) + el.offsetHeight, el.offsetWidth, 600);
         continue;
       }
       const da = now.atk - before.atk;
@@ -834,7 +835,7 @@ export class App {
       <div class="hint" style="margin-top:-8px">Auto picks portrait when the window is taller than it is wide.</div>
       <div class="opt-row"><span>Sound</span>${seg('sound', [['on', 'On'], ['off', 'Off']], isMuted() ? 'off' : 'on')}</div>
       ${this.cloudRowHtml()}
-      <div class="opt-row"><span>Card art</span>${seg('art-style', [['illustrated', 'Illustrated'], ['classic', 'Classic']], getArtStyle())}</div>
+      <div class="opt-row"><span>Card art</span>${seg('art-style', [['retro', 'Retro'], ['illustrated', 'Illustrated'], ['classic', 'Classic']], getArtStyle())}</div>
       <div class="opt-row"><span>Battle speed</span>${seg('speed', SPEEDS.map((s) => [String(s.v), s.label]), String(speed), 'v')}</div>
       <div class="opt-row"><span>Debug mode (errors on screen)</span>${seg('debug', [['on', 'On'], ['off', 'Off']], debugOn() ? 'on' : 'off')}</div>
       <div class="opt-row"><span>Your rating (debug)</span><div class="seg rating-adjust">
@@ -1414,7 +1415,7 @@ export class App {
             if (t.kind === 'summon') {
               el.style.visibility = '';
               el.classList.add('summon-in');
-              puff(this.stage, to.x, to.y, 650);
+              dust(this.stage, to.x, to.y + el.offsetHeight / 2, el.offsetWidth, 600);
               sfx.puff();
               return;
             }

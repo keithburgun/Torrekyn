@@ -29,3 +29,19 @@ export function puff(layer: HTMLElement, x: number, y: number, life = 700, size 
   layer.appendChild(ring);
   setTimeout(() => ring.remove(), life + 50);
 }
+
+/**
+ * Keith's dust puff (a 9-frame pixel sprite sheet) where a unit lands: played once at the bottom of the card,
+ * about as wide as the card. (cx, bottom) is the card's bottom centre, in the layer's coordinates.
+ */
+export function dust(layer: HTMLElement, cx: number, bottom: number, width: number, life = 600) {
+  const d = document.createElement('div');
+  d.className = 'fx dust';
+  const s = width * 1.25; // the frames have empty margins; the puff itself ends up about card-wide
+  d.style.left = `${cx - s / 2}px`;
+  d.style.top = `${bottom - s * (29 / 32)}px`; // the frames' lowest pixels sit on the card's bottom edge
+  d.style.width = d.style.height = `${s}px`;
+  d.style.setProperty('--life', `${life}ms`);
+  layer.appendChild(d);
+  setTimeout(() => d.remove(), life + 60);
+}

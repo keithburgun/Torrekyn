@@ -483,3 +483,64 @@ html, body { background: #202125; }
 #stage .tk-num span { display: block; height: auto; line-height: calc(20 * var(--u)) !important; padding-top: calc(4 * var(--u)); }
 #stage .tk-tier { margin-top: calc(-12 * var(--u)); }
 #stage .tk-tier { margin-top: calc(-6 * var(--u)); }
+/* the dust puff where a unit lands (src/ui/fx.ts dust) */
+#stage .fx.dust { position: absolute; z-index: 40; pointer-events: none; image-rendering: pixelated;
+  background: url('../assets/ui/dust.png') 0 0 / 900% 100% no-repeat; animation: dust-play var(--life, 600ms) steps(9, jump-none) forwards; }
+@keyframes dust-play { to { background-position: 100% 0; } }
+
+/* =====================================================================================================
+   Round 4: faction banners, keyword marks between the stats, the round hero rim, bigger Health
+   ===================================================================================================== */
+/* the art's backdrop is dark grey (Retro art has it built in) */
+#stage .card .art, #stage .bigcard .art { background-color: var(--ink-dark); }
+/* a faction banner under each small card: a flat rectangle in the faction's colour with its name */
+#stage .card .tribe-plate { display: flex; position: absolute; left: calc(2 * var(--u)); right: calc(2 * var(--u)); top: 100%; bottom: auto; margin-top: calc(-2 * var(--u));
+  height: calc(10 * var(--u)); border-radius: 0; box-shadow: 0 0 0 var(--u) var(--ink-dark); background: var(--tc); color: #fff6e6; text-shadow: none;
+  align-items: center; justify-content: center; white-space: nowrap; overflow: hidden; font-size: var(--fs-text) !important; line-height: calc(10 * var(--u)) !important;
+  padding-top: var(--u); letter-spacing: 0; text-transform: none; z-index: 1; }
+#stage .card.small .tribe-plate, #stage .card.large .tribe-plate, #stage .card .tribe-plate.long { left: calc(1 * var(--u)); right: calc(1 * var(--u)); height: calc(10 * var(--u)); font-size: var(--fs-text) !important; }
+#stage .t-alcove .tribe-plate, #stage .bigcard.t-alcove .tribe span { color: var(--ink-dark); }
+#stage .card.spell .tribe-plate, #stage .bigcard.spell .tribe span { background: #c4c6cf; color: var(--ink-dark); }
+#stage .card.t-neutral .tribe-plate, #stage .bigcard.t-neutral .tribe span { background: #6b625a; }
+/* the same banner at the bottom of the big card */
+#stage .bigcard .tribe { padding-bottom: calc(3 * var(--u)); }
+#stage .bigcard .tribe span { display: inline-block; background: var(--tc); color: #fff6e6; padding: var(--u) calc(4 * var(--u)) 0; line-height: calc(11 * var(--u)); box-shadow: 0 0 0 var(--u) var(--ink-dark); }
+#stage .bigcard.t-all .tribe span, #stage .card.t-all .tribe-plate { background: linear-gradient(90deg, var(--t-neverending), var(--t-azure), var(--t-kindred), var(--t-brambor), var(--t-cloister), var(--t-alcove), var(--t-demons)); }
+/* keyword marks: a row between the two numbers */
+#stage .card .kws { top: auto; right: auto; bottom: calc(2 * var(--u)); left: 50%; transform: translateX(-50%); flex-direction: row; gap: 0; }
+#stage .card.kw-divineShield::after { bottom: calc(-13 * var(--u)); }
+/* the title screen: plain black */
+#stage.title-bg { background-color: #020202; }
+/* "Banned": no dark border, a little taller */
+#stage .an-label.out, #stage .an-label.in { box-shadow: none; padding: calc(2 * var(--u)) calc(5 * var(--u)) var(--u); line-height: calc(13 * var(--u)); }
+/* your hero's Health: a bigger orb overlapping the portrait's corner, its number dead centre */
+#stage .hero-portrait .hp, #stage .enemy-keeper .tk-portrait .hp, #stage .combat-name .hpb {
+  width: calc(27 * var(--u)) !important; height: calc(27 * var(--u)) !important; background-image: url('../assets/ui/orb_hero.png');
+  left: auto !important; right: calc(-9 * var(--u)) !important; top: auto !important; bottom: calc(-5 * var(--u)) !important;
+  display: flex !important; align-items: center; justify-content: center; padding: 0 !important; line-height: 1 !important; text-align: center; z-index: 3; }
+#stage .hero-portrait .hp > *, #stage .hero-portrait .hp { font-variant-numeric: lining-nums; }
+
+/* =====================================================================================================
+   Big card: every element has a fixed place (in card pixels, the card is 140 x 178)
+     name 9-23 · art 62 x 62 at 26-88 · text 92-147 · numbers and faction banner 150-172
+   Art with a transparent background (Retro sprites) sits in its box at the bottom centre; square art fills it.
+   ===================================================================================================== */
+#stage .bigcard { display: block; padding: 0; }
+#stage .bigcard .name { position: absolute; left: calc(8 * var(--u)); right: calc(8 * var(--u)); top: calc(9 * var(--u)); height: calc(14 * var(--u)); margin: 0;
+  display: flex; align-items: center; justify-content: center; }
+#stage .bigcard .art-wrap { position: absolute; left: calc(39 * var(--u)); top: calc(26 * var(--u)); width: calc(62 * var(--u)); height: calc(62 * var(--u)); padding: 0; display: block; }
+#stage .bigcard .art { position: absolute; inset: 0; width: 100%; height: 100%; max-height: none; aspect-ratio: auto; background-size: contain; background-repeat: no-repeat;
+  background-position: center bottom; background-color: transparent; box-shadow: none; }
+#stage .bigcard .text { position: absolute; left: calc(11 * var(--u)); right: calc(11 * var(--u)); top: calc(92 * var(--u)); height: calc(55 * var(--u)); max-height: none; padding: 0;
+  display: flex; align-items: center; justify-content: center; line-height: calc(11 * var(--u)); }
+#stage .bigcard .text.dense { line-height: calc(9 * var(--u)); }
+#stage .bigcard .foot { position: absolute; left: calc(9 * var(--u)); right: calc(9 * var(--u)); top: calc(150 * var(--u)); height: calc(22 * var(--u)); margin: 0;
+  display: flex; align-items: flex-end; justify-content: space-between; }
+/* small cards: sprites fit their art window above the numbers; square art fills it */
+#stage .card .art { background-size: contain; background-repeat: no-repeat; background-position: center bottom; background-origin: content-box;
+  padding: calc(3 * var(--u)) calc(3 * var(--u)) calc(4 * var(--u)); }
+#stage .bigcard .text, #stage .bigcard .foot, #stage .bigcard .name { width: auto; }
+#stage .bigcard .text > div { max-width: 100%; }
+#stage .bigcard .tribe span { white-space: nowrap; }
+/* phones: the army's small cards get a colour strip instead of a named banner (no room for the name) */
+#stage.portrait .card.small .tribe-plate { height: calc(3 * var(--u)); font-size: 0 !important; padding: 0; margin-top: calc(-1 * var(--u)); }

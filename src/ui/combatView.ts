@@ -5,7 +5,7 @@ import { bigCardHtml, cardHtml, esc, frameUnitView, heroArt, keywordPanelsHtml, 
 import { sfx } from './sfx';
 import { currentLayout, type Layout } from './layout';
 import { placeBoardBg, placeHud } from './hud';
-import { puff } from './fx';
+import { dust, puff } from './fx';
 
 
 /** battle speeds: Normal, then > (1.5x as fast) and >> (2.5x as fast); Normal itself runs 15% faster than the old ×1 */
@@ -676,7 +676,7 @@ export class CombatPlayer {
             sfx.puff();
             el.classList.add('summon-in');
             el.style.setProperty('--life', `${this.t(750)}ms`);
-            puff(this.fxLayer, x + this.L.cardW / 2, y + this.L.cardH / 2, this.t(750), this.L.large ? 1.3 : 1);
+            dust(this.fxLayer, x + this.L.cardW / 2, y + this.L.cardH, this.L.cardW, this.t(600));
           }
         }
         this.layer.appendChild(el);

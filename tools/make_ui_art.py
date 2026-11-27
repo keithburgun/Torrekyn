@@ -219,12 +219,13 @@ for d in (7, 11, 13, 15, 21): save(clean_disc(d, hx('e3b84a')), f'coin_{d}')
 save(clean_disc(21, hx('8e1a26')), 'orb')
 save(clean_disc(9, hx('8e1a26')), 'orb_small')
 save(clean_disc(23, hx('8e1a26')), 'orb_big')
+save(clean_disc(27, hx('8e1a26')), 'orb_hero')
 # octagon portrait: mask, and a 2-px off-white rim
 def octa(n, cut, inset=0):
     a, b = inset, n - 1 - inset; k = cut + inset * 1.0
     return {(x, y) for y in range(n) for x in range(n) if a <= x <= b and a <= y <= b and
             (x - a) + (y - a) >= cut and (b - x) + (y - a) >= cut and (x - a) + (b - y) >= cut and (b - x) + (b - y) >= cut}
-N, CUT = 56, 15
+N, CUT = 56, 8
 outer = octa(N, CUT); inner = octa(N, CUT, 2)
 m = Image.new('RGBA', (N, N), CLEAR); r = Image.new('RGBA', (N, N), CLEAR)
 for p in outer:

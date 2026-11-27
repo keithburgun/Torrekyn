@@ -64,7 +64,7 @@ export const LANDSCAPE: Layout = {
   shopBig: false, shopCardW: 150, shopCardH: 150, handCardW: 130, handCardH: 130,
   slotX: (i) => 263 + i * 154, slotW: 150, slotTop: 382, slotH: 236,
   boardY: 425, shopY: 170, shopStep: 160, tavernY: 14,
-  heroY: 680, handY: 770, handWidth: 1040,
+  heroY: 680, handY: 758, handWidth: 1040,
   shopDrop: 372, boardTop: 372, boardBottom: 625,
   leader: { x: 14, y: 14, w: 228, h: 800, horizontal: false },
   endTurn: { x: 1410, y: 374 }, gold: { x: 1400, y: 640 }, gear: { x: 1494, y: 12, size: 44 }, mute: { x: 1546, y: 12, size: 44 },

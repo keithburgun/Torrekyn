@@ -1,6 +1,7 @@
 import artManifest from '../data/art.json';
 import { store } from '../save/store';
 import artV2 from '../data/artV2.json';
+import artRetro from '../data/artRetro.json';
 import { CARDS, def, effStats, isSpell, ownerBonusParts, TRIBE_NAMES } from '../engine/core';
 import { EFFECTS, GEMS, gemLevel, scoutTier } from '../engine/effects';
 import type { Keyword, Player, Unit, CombatFrameUnit } from '../engine/types';
@@ -12,19 +13,22 @@ export const art = (path: string) => BASE + path;
  * Art style: "illustrated" (Keith's art from Spellstorm, Gem Wizards Tactics and Dragon Bridge, public/art/v2,
  * built by tools/build_art.py) or "classic" (the original generated placeholder art, public/art/cards|heroes).
  */
-export type ArtStyle = 'illustrated' | 'classic';
-let artStyle: ArtStyle = 'illustrated';
+/** 'retro' (the default): 2-3 colour pixel art on a dark background; 'illustrated': the full-colour art; 'classic': the first art */
+export type ArtStyle = 'retro' | 'illustrated' | 'classic';
+let artStyle: ArtStyle = 'retro';
 export const getArtStyle = () => artStyle;
 /** read the setting (startup, and after a cloud save) */
-export function reloadArtStyle() { artStyle = store.get('torrekin-art') === 'classic' ? 'classic' : 'illustrated'; }
+export function reloadArtStyle() { const s = store.get('torrekin-art'); artStyle = s === 'classic' || s === 'illustrated' ? s : 'retro'; }
 reloadArtStyle();
 export function setArtStyle(s: ArtStyle) {
   artStyle = s;
   store.set('torrekin-art', s);
 }
 const V2 = artV2 as Record<string, string>;
-export const cardArt = (id: string) => art((artStyle === 'illustrated' && V2[`card:${id}`]) || ((artManifest as Record<string, string>)[id] ?? `art/cards/${id}.svg`));
-export const heroArt = (id: string | undefined) => art((artStyle === 'illustrated' && id && V2[`hero:${id}`]) || `art/heroes/${id ?? 'unknown'}.svg`);
+const RETRO = artRetro as Record<string, string>;
+export const cardArt = (id: string) => art((artStyle === 'retro' && RETRO[`card:${id}`]) || (artStyle !== 'classic' && V2[`card:${id}`]) || ((artManifest as Record<string, string>)[id] ?? `art/cards/${id}.svg`));
+// (hero portraits stay illustrated for now: the retro ones are in tools/art_retro/heroes for Keith to rework)
+export const heroArt = (id: string | undefined) => art((artStyle !== 'classic' && id && V2[`hero:${id}`]) || `art/heroes/${id ?? 'unknown'}.svg`);
 
 export const esc = (s: string) => s.replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]!);
 
@@ -163,7 +167,7 @@ export function cardHtml(u: { cardId: string; golden: boolean; atk: number; hp: 
   <div class="kws">${icons}</div>
   <div class="abil">${tags}</div>
   <div class="name">${esc(d.name)}</div>
-  <div class="tribe-plate ${(TRIBE_SHORT[d.tribe] ?? d.tribe).length > 8 && !d.allTribes && !d.spell ? 'long' : ''}">${d.spell ? 'Spell' : d.allTribes ? 'ALL' : TRIBE_SHORT[d.tribe] ?? d.tribe}</div>${o.badge ?? ''}
+  <div class="tribe-plate ${(TRIBE_SHORT[d.tribe] ?? d.tribe).length > 8 && !d.allTribes && !d.spell ? 'long' : ''}">${d.spell ? 'Spell' : d.allTribes ? 'All Types' : TRIBE_SHORT[d.tribe] ?? d.tribe}</div>${o.badge ?? ''}
   ${(u as { avenge?: string }).avenge ? `<div class="avenge-count" title="Avenge: friendly units died / needed"><i>⚔</i>${(u as { avenge?: string }).avenge}</div>` : ''}
   ${(() => { const c = (u as { note?: string }).note ?? (u.mem && (o.zone === "board" || o.zone === "combat" || o.zone === "hand") ? unitCounter(u as Unit) : null); return c ? `<div class="counter">${c}</div>` : ''; })()}
   ${d.spell ? spellCost(d) : `<div class="stat atk ${atk !== baseAtk ? 'buffed' : ''}" data-base="${baseAtk}" data-v="${atk}" ${statInner(atk)}</div>
@@ -269,10 +273,10 @@ export function bigCardHtml(u: { cardId: string; golden: boolean; atk: number; h
   <div class="tier" title="Tier ${d.tier}">${'<i></i>'.repeat(d.tier)}</div>
   <div class="name ${d.name.length + (u.golden ? 7 : 0) > 15 ? 'long' : ''}">${u.golden ? 'Golden ' : ''}${esc(d.name)}</div>
   <div class="art-wrap"><div class="art" style="background-image:url('${cardArt(u.cardId)}')"></div></div>
-  <div class="text"><div>${text ? formatText(text) : kwExtra.length ? '' : '<i>No ability.</i>'}${kwExtra.length ? `${text ? '<br>' : ''}<i class="kw-extra">${kwExtra.join(', ')}</i>` : ''}</div></div>
+  <div class="text ${(text?.length ?? 0) + kwExtra.join(', ').length > 112 ? 'dense' : ''}"><div>${text ? formatText(text) : kwExtra.length ? '' : '<i>No ability.</i>'}${kwExtra.length ? `${text ? '<br>' : ''}<i class="kw-extra">${kwExtra.join(', ')}</i>` : ''}</div></div>
   <div class="foot">
   ${d.spell ? spellCost(d) : `<div class="stat atk ${u.atk !== bA ? 'buffed' : ''}" ${statInner(u.atk)}</div>`}
-  <div class="tribe"><span>-${d.spell ? 'Spell' : d.allTribes ? 'All' : esc(TRIBE_SHORT[d.tribe] ?? d.tribe)}${d.token ? ' Token' : ''}-</span></div>
+  <div class="tribe"><span>${d.spell ? 'Spell' : d.allTribes ? 'All Types' : esc(TRIBE_SHORT[d.tribe] ?? d.tribe)}${d.token && !d.allTribes ? ' Token' : ''}</span></div>
   ${d.spell ? '<div class="stat-gap"></div>' : `<div class="stat hp ${u.hp > bH ? 'buffed' : u.hp < bH ? 'hurt' : ''}" ${statInner(u.hp)}</div>`}
   </div>
 </div>`;
