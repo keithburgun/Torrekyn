@@ -53,6 +53,13 @@ export interface BattleOnShop {
   controls: { x: number; y: number };
 }
 
+/** a plain grey panel behind an army row (as in the Tavern: no slots) */
+function zonePlate(L: Layout, y: number, h: number) {
+  const pad = L.portrait ? 14 : 10;
+  const left = L.slotX(0) - pad, right = L.slotX(6) + L.slotW + pad;
+  return `<div class="zone-plate" style="left:${left}px;top:${y - pad}px;width:${right - left}px;height:${h + pad * 2}px"></div>`;
+}
+
 export class CombatPlayer {
   els = new Map<number, HTMLElement>();
   speed = 1;
@@ -92,7 +99,7 @@ export class CombatPlayer {
       const bannerY = (onShop.enemyY + L.cardH + onShop.myY) / 2;
       this.L = { ...L, combat: { ...L.combat, myY: onShop.myY, enemyY: onShop.enemyY, myHero: onShop.myHero, enemyHero: onShop.enemyHero, banner: bannerY } };
       const add = document.createElement('div');
-      add.innerHTML = `${controls(onShop.controls.x, onShop.controls.y, true).replace("combat-ctl ", "combat-ctl onshop ")}
+      add.innerHTML = `${zonePlate(L, onShop.enemyY, L.cardH)}${controls(onShop.controls.x, onShop.controls.y, true).replace("combat-ctl ", "combat-ctl onshop ")}
         <div class="vs-banner fleeting" style="left:${L.cx}px;top:${bannerY}px">ROUND ${round} · BATTLE</div>
         <div id="clayer" class="abs" style="inset:0;pointer-events:none"></div>
         <div id="fxlayer" class="abs" style="inset:0;pointer-events:none;z-index:40"></div>`;
@@ -102,7 +109,7 @@ export class CombatPlayer {
     const most = Math.max(0, ...r.frames.map((f) => Math.max(f.sides[0].length, f.sides[1].length)));
     if (this.L.portrait && most <= 5) this.L = { ...this.L, small: false, large: true, cardW: 168, cardH: 228, combat: { ...this.L.combat, step: 176 } };
     placeBoardBg(stage, this.L, (this.L.combat.enemyY + this.L.combat.myY + this.L.cardH) / 2);
-    stage.innerHTML = `
+    stage.innerHTML = `${zonePlate(this.L, this.L.combat.enemyY, this.L.cardH)}${zonePlate(this.L, this.L.combat.myY, this.L.cardH)}
       <div class="combat-name enemy" style="left:${this.L.combat.enemyHero.x - this.av.enemy / 2}px;top:${this.L.combat.enemyHero.y - this.av.enemy / 2}px"><div class="avatar" id="avatar-enemy" style="background-image:url('${heroArt(opp.hero)}')"><div class="hpb">${this.ghost ? '💀' : Math.max(0, this.hpBefore(oppId))}</div></div>
         <div>${r.b === -1 ? 'Ghost of ' : ''}${esc(opp.name)}<div class="hint" style="padding:0;text-align:left">${esc(heroDef(opp.hero)?.name ?? '')}</div></div></div>
       <div class="combat-name mine" style="left:${this.L.combat.myHero.x - this.av.mine / 2}px;top:${this.L.combat.myHero.y - this.av.mine / 2}px"><div class="avatar" id="avatar-me" style="background-image:url('${heroArt(meP.hero)}')"><div class="hpb">${Math.max(0, this.hpBefore(0))}</div></div><div>${esc(meP.name)}</div></div>

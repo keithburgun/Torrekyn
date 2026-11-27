@@ -1646,10 +1646,13 @@ svg.aim-arrow.locked .aim-ring { opacity: 0.9; animation: aim-ring 0.9s ease-in-
 .combat-zoom.has-kw .zoom-related.left { right: calc(100% + 14px + 260px + 16px); }
 
 /* ---- Spells: a lilac card with its price in a coin at the top left (a red orb when it costs Health) ---- */
-:root { --t-spell: #7a4fc4; }
+:root { --t-spell: #ffffff; }
 .t-spell { --tc: var(--t-spell); }
-.card.spell .face { background: linear-gradient(170deg, #f3ecff 20%, #d3c2f2); border-color: #9a7fd0; }
-.card.spell .art { border-radius: 50% / 46%; box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.8), 0 0 0 3px #b9a3e8; }
+/* (dark grey card, white SPELL banner) */
+.card.spell .face { background: #4b4853; border-color: #6a6672; }
+.card.spell .name { color: #fff; }
+.card.spell .tribe-plate { background: #fff; color: #2c2933; text-shadow: none; }
+.card.spell .art { border-radius: 50% / 46%; box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.8), 0 0 0 3px #8a8692; }
 .spell-cost { position: absolute; top: -12px; left: -12px; width: 40px; height: 40px; border-radius: 50%; z-index: 2;
   display: flex; align-items: center; justify-content: center; font-family: var(--display); font-weight: 700; font-size: 25px; color: #fff;
   background: var(--coin); box-shadow: 0 0 0 3px #fff;
@@ -1661,12 +1664,14 @@ svg.aim-arrow.locked .aim-ring { opacity: 0.9; animation: aim-ring 0.9s ease-in-
 #stage.portrait .card.large .spell-cost { width: 58px; height: 58px; font-size: 36px; }
 #stage.portrait .card.small .spell-cost { width: 48px; height: 48px; font-size: 30px; }
 .bigcard.spell .spell-cost { top: -16px; left: -16px; width: 62px; height: 62px; font-size: 36px; }
-.bigcard.spell { background: linear-gradient(170deg, #f3ecff 20%, #d3c2f2); }
+.bigcard.spell { background: #4b4853; }
+.bigcard.spell .name { color: #fff; }
+.bigcard.spell .tribe span { background: #fff; color: #2c2933; text-shadow: none; }
 /* a Spell in hand being aimed: lifted and glowing */
 .card.casting { transform: translateY(-30px) scale(1.06); z-index: 30; }
 .card.casting .face { box-shadow: 0 0 0 3px #fff, 0 0 26px rgba(185, 140, 255, 0.95); }
 .coin.hp-cost { background: var(--hp-orb); }
-.bigcard.spell { border-color: #9a7fd0; }
+.bigcard.spell { border-color: #6a6672; }
 
 /* Card Viewer: Heroes and Trinkets tabs */
 .cv-tabs { display: flex; gap: 6px; }
@@ -1757,3 +1762,5 @@ svg.aim-arrow.locked .aim-ring { opacity: 0.9; animation: aim-ring 0.9s ease-in-
 .rp-sp small { font-family: var(--body); font-size: 12px; line-height: 1.1; display: block; color: var(--ink-soft); }
 #stage.portrait .panel.stats .cv-head { flex-wrap: wrap; }
 #stage.portrait .panel.stats .cv-head h2 { display: none; }
+/* the play area and the hand: a solid grey panel each, no slots */
+.zone-plate { position: absolute; border-radius: 22px; background: #3a3842; pointer-events: none; z-index: 0; }

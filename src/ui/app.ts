@@ -528,6 +528,8 @@ export class App {
     });
     const skipping = p.heroMem.skipRound === this.g!.round;
     if (!p.shop.length) h += `<div class="hint abs" style="left:${L.cx - 240}px;top:${L.shopY + 70}px;width:480px">${skipping ? 'You skip your first turn. The Tavern opens next turn.' : 'The Tavern is empty. Refresh for new units.'}</div>`;
+    // the play area and the hand: one plain panel each (no slots drawn)
+    h += this.zonePlatesHtml(true);
     // army positions (drop targets)
     for (let i = 0; i < CONFIG.boardSize; i++) {
       h += `<div class="slot-plate" data-slot="${i}" style="left:${L.slotX(i)}px;top:${L.slotTop}px;width:${L.slotW}px;height:${L.slotH}px"></div>`;
@@ -577,6 +579,18 @@ export class App {
    * The shop screen while a battle plays on it: everything stays where it was (leaderboard, your hero, gold,
    * the Cards button...), the Tavern's circle shows your opponent, and the battle draws both armies and your hand.
    */
+  /** a plain grey panel behind the army (and, in the Tavern, one behind the hand) */
+  private zonePlatesHtml(hand: boolean) {
+    const pad = L.portrait ? 14 : 10;
+    const left = L.slotX(0) - pad, right = L.slotX(CONFIG.boardSize - 1) + L.slotW + pad;
+    let h = `<div class="zone-plate" style="left:${left}px;top:${L.slotTop - pad}px;width:${right - left}px;height:${L.slotH + pad * 2}px"></div>`;
+    if (hand) {
+      const w = L.handWidth + pad * 2;
+      h += `<div class="zone-plate hand" style="left:${L.cx - w / 2}px;top:${L.handY - pad}px;width:${w}px;height:${L.handCardH + pad * 2}px"></div>`;
+    }
+    return h;
+  }
+
   // ---------- Match History and replays ----------
 
   /** open the Stats screen on a tab (Match History loads its list) */
@@ -659,6 +673,7 @@ export class App {
         <div class="tk-portrait battle-av" id="avatar-enemy" style="background-image:url('${heroArt(opp.hero)}');${t ? `width:${kp}px;height:${kp}px` : ''}"><div class="hp hpb">${b.ghost ? '💀' : Math.max(0, opp.health)}</div></div>
         <div class="tk-name">${b.ghost ? 'Ghost of ' : ''}${esc(opp.name)}</div>
       </div>`;
+      h += this.zonePlatesHtml(false);
       for (let i = 0; i < CONFIG.boardSize; i++) h += `<div class="slot-plate" data-slot="${i}" style="left:${L.slotX(i)}px;top:${L.slotTop}px;width:${L.slotW}px;height:${L.slotH}px"></div>`;
       h += this.heroAreaHtml().replace('class="hero-portrait"', 'class="hero-portrait battle-av" id="avatar-me"').replace('<div class="hp">', '<div class="hp hpb">');
       h += this.rightSideHtml();

@@ -2,6 +2,10 @@
 
 Newest first. The version shows on the title screen.
 
+## 0.15.1 — 2026-11-27
+- A plain grey panel behind your army and your hand (and the enemy army in battle); no slots
+- Spell cards are dark grey with a white SPELL banner
+
 ## 0.15.0 — 2026-11-27
 - Replays: every battle you fight is recorded. Watch any round again, or a whole match; export a match to a file and import replays
 - Stats screen (was Achievements): tabs for your Stats, Achievements and Match History
