@@ -2,6 +2,9 @@
 
 Newest first. The version shows on the title screen.
 
+## 0.15.7 — 2026-11-27
+- Royal Guard is now Tier 3
+
 ## 0.15.6 — 2026-11-27
 - New Brambor unit: Shotgun (Tier 2, 3/1): whenever you play a Spell, your other units get +1 Attack
 
