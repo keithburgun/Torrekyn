@@ -513,7 +513,7 @@ describe('v0.12.3 Kindred', () => {
     }
   });
 
-  it('Turtlepult: +2 Health whenever another friendly unit gains Health, in the shop and in battle (Golden: +4)', () => {
+  it('Turtlepult: +2 Health whenever a friendly unit gains stats, in the shop and in battle (Golden: +4)', () => {
     for (const golden of [false, true]) {
       const { g, p, o } = setup();
       const pb = U(g, 'peebnup_bubber', 8, 8, golden);
@@ -534,8 +534,14 @@ describe('v0.12.3 Kindred', () => {
       const c = fight(g, p, o, [a, b, bub], [U(g, 'skel', 0, 99)]);
       c.run();
       const f = afterSoc(c);
-      // the 2 others each gained Health (Bannerlord's), so +2 each (Golden +4) on top of its own 3
-      expect(at(c, f, 'peebnup_bubber')!.hp).toBe(8 + 3 + 4 * (golden ? 2 : 1));
+      // all 3 (itself too) gained stats (Bannerlord's), so +2 each (Golden +4) on top of its own 3
+      expect(at(c, f, 'peebnup_bubber')!.hp).toBe(8 + 3 + 6 * (golden ? 2 : 1));
+      // Attack counts too: Sword gives the left-most unit +4 Attack
+      const { g: g2, p: p2 } = setup();
+      const t = U(g2, 'ash', 1, 1), pb2 = U(g2, 'peebnup_bubber', 8, 8, golden);
+      p2.board = [t, pb2]; peebSync(g2, p2);
+      p2.hand = [U(g2, 'sword')]; play(g2, p2, 0, 2);
+      expect(pb2.hp).toBe(8 + 2 * (golden ? 2 : 1));
     }
   });
 
@@ -606,15 +612,15 @@ describe('v0.12.3 Kindred', () => {
     // Pink Gem on another unit: both gain +2, nothing more
     p.hand = [U(g, 'pink_gem')]; play(g, p, 0, 3, k.uid);
     expect([A.hp, B.hp]).toEqual([10, 10]);
-    // Pink Gem on Turtlepult A (Kindred: +2 Health): B gains +2 once, A gets nothing back
+    // Pink Gem on Turtlepult A (Kindred: +2/+2): A and B each get +2 once (A's own gain counts); what they get from that doesn't
     p.hand = [U(g, 'pink_gem')]; play(g, p, 0, 3, A.uid);
-    expect([A.hp, B.hp]).toEqual([12, 12]);
-    // in battle: Bannerlord's +3 Health to all 3 units; each Turtlepult gets +2 for each of the other 2 on top of its own 3
+    expect([A.hp, B.hp]).toEqual([14, 12]);
+    // in battle: Bannerlord's +3/+3 to all 3 units; each Turtlepult gets +2 for each of the 3 on top of its own 3
     p.trinkets = ['bannerlords_standard'];
     const c = fight(g, p, o, [U(g, 'doctor', 1, 50), U(g, 'peebnup_bubber', 1, 8), U(g, 'peebnup_bubber', 1, 8)], [U(g, 'skel', 0, 99)]);
     c.run();
     const f = afterSoc(c);
-    expect(c.frames[f].sides[0].filter((u) => u.cardId === 'peebnup_bubber').map((u) => u.hp)).toEqual([15, 15]);
+    expect(c.frames[f].sides[0].filter((u) => u.cardId === 'peebnup_bubber').map((u) => u.hp)).toEqual([17, 17]);
   });
 });
 

@@ -437,7 +437,7 @@ function makeGolden(g: GameState, p: Player) {
   gold.kw = [...new Set([...gold.kw, ...u.kw])];
   gold.uid = u.uid;
   gold.mem = { ...u.mem }; // keeps being locked (Commitment), counters and so on
-  delete gold.mem.pv; // (Turtlepult starts watching it fresh)
+  delete gold.mem.pv; delete gold.mem.pa; // (Turtlepult starts watching it fresh)
   p.board[p.board.indexOf(u)] = gold;
   log(p, `${trinketDef('golden_lantern').name} made ${d.name} Golden!`);
 }

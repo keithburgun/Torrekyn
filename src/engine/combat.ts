@@ -93,8 +93,9 @@ export class Combat {
   /** a hero power / trinket of this side is acting */
   heroSide: 0 | 1 | undefined;
 
-  /** Health each unit has gained so far (its Health plus damage taken), for Turtlepult (+2 Health whenever another unit gains some) */
+  /** stats each unit has gained so far (Health plus damage taken; Attack), for Turtlepult (+2 Health whenever another unit gains stats) */
   private seenHp = new Map<number, number>();
+  private seenAtk = new Map<number, number>();
   private peebSync() {
     for (const s of this.sides) {
       const peebs = s.units.filter((u) => u.cardId === 'peebnup_bubber' && u.hp > 0 && !u.processed);
@@ -102,14 +103,15 @@ export class Combat {
       let total = 0;
       for (const u of s.units) {
         const v = u.hp + (u.taken ?? 0);
-        const was = this.seenHp.get(u.id);
-        if (was !== undefined && v > was && u.hp > 0) { delta.set(u.id, v - was); total += v - was; }
+        const was = this.seenHp.get(u.id), wasA = this.seenAtk.get(u.id);
+        if (u.hp > 0 && ((was !== undefined && v > was) || (wasA !== undefined && u.atk > wasA))) { delta.set(u.id, 1); total++; }
         this.seenHp.set(u.id, v);
+        this.seenAtk.set(u.id, u.atk);
       }
       if (total <= 0) continue;
-      // +2 (Golden +4) for each other unit that gained Health in this event; what it gets from this doesn't count again
+      // +2 (Golden +4) for each friendly unit (itself too) that gained stats in this event; what it gets from this doesn't count again
       for (const pb of peebs) {
-        const others = [...delta.keys()].filter((id) => id !== pb.id).length;
+        const others = delta.size; // (itself included, but not what it gets from this)
         if (others > 0) pb.hp += 2 * others * mult(pb);
         this.seenHp.set(pb.id, pb.hp + (pb.taken ?? 0));
       }

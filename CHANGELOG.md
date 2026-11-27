@@ -2,6 +2,9 @@
 
 Newest first. The version shows on the title screen.
 
+## 0.14.13 — 2026-11-27
+- Turtlepult: Whenever a friendly unit gains stats, this gains +2 Health (Attack gains count now, and its own gains too)
+
 ## 0.14.12 — 2026-11-27
 - Phones: a zoomed card's related cards are now tabs on the card itself (◀ ▶ on its edges, with a count)
 - Ballooneer has new art: a hot-air balloon

@@ -390,7 +390,7 @@ export const EFFECTS: Record<string, Effect> = {
       if (!t.kw.includes('divineShield')) { addKw(t, 'divineShield'); t.mem.tmpShield = 1; }
     },
   },
-  // Turtlepult is handled by peebSync (fx.ts) in the shop and Combat.peebSync in battle
+  // Turtlepult (whenever another friendly unit gains stats: +2 Health) is handled by peebSync (fx.ts) in the shop and Combat.peebSync in battle
   peebnup_bubber: {},
   elemental: {
     onSellOther: (c, sold) => { if (isTribe(sold, 'kindred')) buff(c.self, sold.atk * c.m, sold.hp * c.m); },
@@ -690,7 +690,7 @@ export const EFFECTS: Record<string, Effect> = {
       me.hp = t.hp;
       me.kw = [...t.kw];
       me.mem = { ...(t as Unit).mem };
-      delete me.mem.pv;
+      delete me.mem.pv; delete me.mem.pa;
       me.golden = t.golden || c.m > 1;
       if (c.m > 1 && !t.golden) { me.atk += def(t.cardId).atk; me.hp += def(t.cardId).hp; }
     },

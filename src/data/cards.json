@@ -1514,8 +1514,8 @@
    "tier": 5,
    "atk": 8,
    "hp": 8,
-   "text": "Whenever another friendly unit gains Health, this gains +2 Health.",
-   "goldenText": "Whenever another friendly unit gains Health, this gains +4 Health.",
+   "text": "Whenever a friendly unit gains stats, this gains +2 Health.",
+   "goldenText": "Whenever a friendly unit gains stats, this gains +4 Health.",
    "keywords": []
   },
   {

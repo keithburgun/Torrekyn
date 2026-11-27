@@ -192,7 +192,7 @@ export function startTurn(g: GameState, p: Player) {
       delete u.mem.tmpAtk; delete u.mem.tmpHp; delete u.mem.tmpReborn; delete u.mem.tmpShield;
     }
   }
-  for (const u of p.board) u.mem.pv = u.hp; // Health lost as those wear off isn't a change Turtlepult tracks
+  for (const u of p.board) { u.mem.pv = u.hp; u.mem.pa = u.atk; } // stats lost as those wear off aren't a change Turtlepult tracks
   // a skipped turn (Mazrael Bettencourt's first): no shop and no gold
   if (p.heroMem.skipRound === g.round) {
     for (const u of p.shop) returnToPool(g, u);
@@ -462,7 +462,7 @@ export function play(g: GameState, p: Player, handIdx: number, pos: number, targ
   pos = Math.max(0, Math.min(pos, p.board.length));
   p.board.splice(pos, 0, u);
   if (u.cardId === 'owl') p.owlsSummoned = (p.owlsSummoned ?? 0) + 1;
-  u.mem.pv = u.hp; // Health it had in hand doesn't count as gained (Turtlepult)
+  u.mem.pv = u.hp; u.mem.pa = u.atk; // stats it had in hand don't count as gained (Turtlepult)
   const target = targetUid !== undefined ? p.board.find((b) => b.uid === targetUid) : undefined;
   if (hasBattlecry(u.cardId)) { p.battlecryUnitsThisTurn = (p.battlecryUnitsThisTurn ?? 0) + 1; runBattlecry(g, p, u, target); }
   const onPlay = EFFECTS[u.cardId]?.onPlay;
@@ -648,7 +648,7 @@ function botBonus(g: GameState, p: Player) {
     const n = Math.round(full * (0.3 + 1.5 * rand(g))); // each unit rolls its own
     u.atk += n;
     u.hp += n;
-    u.mem.pv = u.hp; // a silent gain: Turtlepult doesn't see it, nothing else reacts
+    u.mem.pv = u.hp; u.mem.pa = u.atk; // a silent gain: Turtlepult doesn't see it, nothing else reacts
   }
 }
 
