@@ -444,3 +444,42 @@ html, body { background: #202125; }
 #stage .tk-num small { top: calc(-3 * var(--u)); }
 #stage .tk-num span { top: calc(4 * var(--u)); line-height: calc(16 * var(--u)) !important; }
 #stage .tk-tier .pip, #stage .leader .pip { box-shadow: none; border-radius: 0; background-color: transparent; }
+
+/* =====================================================================================================
+   Round 3: flat coins and orbs (drawn at the size shown), octagon heroes, a floating Tier, bigger Tavern icons
+   ===================================================================================================== */
+#stage .coin { width: calc(7 * var(--u)); height: calc(7 * var(--u)); background-image: url('../assets/ui/coin_7.png'); }
+#stage .gold-display .coin { width: calc(11 * var(--u)); height: calc(11 * var(--u)); background-image: url('../assets/ui/coin_11.png'); }
+#stage .tb-cost, #stage .tavern-btn .tb-cost, #stage .my-hero .tb-cost { width: calc(13 * var(--u)) !important; height: calc(13 * var(--u)) !important; line-height: calc(13 * var(--u)); background-image: url('../assets/ui/coin_13.png'); }
+#stage .spell-cost { width: calc(15 * var(--u)); height: calc(15 * var(--u)); line-height: calc(15 * var(--u)); background-image: url('../assets/ui/coin_15.png'); }
+#stage .bigcard .spell-cost { width: calc(21 * var(--u)); height: calc(21 * var(--u)); line-height: calc(21 * var(--u)); background-image: url('../assets/ui/coin_21.png'); }
+#stage .spell-cost.in-hp, #stage .bigcard .spell-cost.in-hp { background-image: url('../assets/ui/orb.png'); }
+#stage .coin.hp-cost, #stage .hp-dot { width: calc(9 * var(--u)); height: calc(9 * var(--u)); background-image: url('../assets/ui/orb_small.png'); }
+#stage .hero-portrait .hp, #stage .combat-name .hpb, #stage .enemy-keeper .tk-portrait .hp { width: calc(21 * var(--u)) !important; height: calc(21 * var(--u)) !important; background-image: url('../assets/ui/orb.png'); color: #ffd7cf; padding: 0; }
+#stage .rb-heart { width: calc(23 * var(--u)) !important; height: calc(23 * var(--u)) !important; background-image: url('../assets/ui/orb_big.png'); padding: 0; }
+.scene-tx.battle .tx-hp { width: calc(21 * var(--u)) !important; height: calc(21 * var(--u)) !important; background-image: url('../assets/ui/orb.png'); padding: 0; }
+/* heroes: an octagon with a 2-px off-white rim */
+#stage .hero-portrait::before, #stage .enemy-keeper .tk-portrait::before { -webkit-mask-image: url('../assets/ui/octa_mask.png'); mask-image: url('../assets/ui/octa_mask.png'); }
+#stage .hero-portrait::after, #stage .enemy-keeper .tk-portrait::after { background-image: url('../assets/ui/octa_ring.png'); }
+.scene-tx.battle .tx-portrait { border-radius: 0; box-shadow: none !important; -webkit-mask: url('../assets/ui/octa_mask.png') center / 100% 100% no-repeat; mask: url('../assets/ui/octa_mask.png') center / 100% 100% no-repeat; }
+/* Tier: no disc, just "Tier", the number and its stars, stacked */
+#stage .tk-portrait:not(.battle-av) { background: none; }
+#stage .tk-num { justify-content: center; padding: 0; }
+#stage .tk-num small, #stage .tk-num span { position: static; top: auto; margin: 0; }
+#stage .tk-num small { color: var(--frame-dk); line-height: calc(10 * var(--u)) !important; }
+#stage .tk-num span { color: var(--frame); line-height: calc(24 * var(--u)) !important; height: calc(20 * var(--u)); display: flex; align-items: flex-end; justify-content: center; }
+#stage .tk-tier { margin-top: calc(-14 * var(--u)); }
+/* Tavern icons: twice the size (two UI pixels per icon pixel; 1.5 on phones), and Freeze is a snowflake */
+#stage { --ip: calc(2 * var(--u)); }
+#stage.portrait { --ip: calc(1.5 * var(--u)); }
+#stage .tavern-btn .tb-icon { width: auto; aspect-ratio: auto; line-height: 0; }
+#stage .tavern-btn.upgrade .tb-icon svg { width: calc(11 * var(--ip)); height: calc(14 * var(--ip)); }
+#stage .tavern-btn.refresh .tb-icon svg { width: calc(12 * var(--ip)); height: calc(14 * var(--ip)); }
+#stage .tavern-btn.freeze .tb-icon svg { display: none; }
+#stage .tavern-btn.freeze .tb-icon::before { content: ''; display: block; width: calc(13 * var(--ip)); height: calc(13 * var(--ip)); background: url('../assets/ui/icon_snow.png') center / 100% 100% no-repeat; }
+#stage .tavern-btn.freeze.on .tb-icon::before { filter: brightness(0) saturate(100%) invert(86%) sepia(19%) saturate(600%) hue-rotate(160deg); }
+#stage .tk-num { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: calc(2 * var(--u)); }
+#stage .tk-num small { display: block; height: auto; line-height: calc(10 * var(--u)) !important; }
+#stage .tk-num span { display: block; height: auto; line-height: calc(20 * var(--u)) !important; padding-top: calc(4 * var(--u)); }
+#stage .tk-tier { margin-top: calc(-12 * var(--u)); }
+#stage .tk-tier { margin-top: calc(-6 * var(--u)); }

@@ -198,4 +198,41 @@ save(circle(56, [(2, OFFWHITE), (3, INK)]), 'round_ring')
 save(circle(46, [(1, INK), (2, hx('e3b84a')), (3, INK), (99, hx('3d1016'))]), 'tier_disc')
 # a selected filter in the Card Viewer: a white box
 save(framed(16, 16, hx('ede4d3'), edge=hx('ffffff'), shade=hx('c9c0b0')), 'btn_white')
+# ---- round 3: flat circles with clean 1-px outlines, an octagon portrait frame, a snowflake ----
+def clean_disc(d, fill, edge=INK):
+    """a flat disc of odd size d: a midpoint-circle outline (1 px, no doubled pixels) filled inside"""
+    r = (d - 1) // 2; c = r
+    ring = set(); x, y, err = r, 0, 1 - r
+    while x >= y:
+        for px_, py_ in ((x, y), (y, x), (-y, x), (-x, y), (-x, -y), (-y, -x), (y, -x), (x, -y)): ring.add((c + px_, c + py_))
+        y += 1
+        if err < 0: err += 2 * y + 1
+        else: x -= 1; err += 2 * (y - x) + 1
+    im = Image.new('RGBA', (d, d), CLEAR); px = im.load()
+    for yy in range(d):
+        xs = [x_ for (x_, y_) in ring if y_ == yy]
+        if xs:
+            for xx in range(min(xs) + 1, max(xs)): px[xx, yy] = fill
+    for p in ring: px[p] = edge
+    return im
+for d in (7, 11, 13, 15, 21): save(clean_disc(d, hx('e3b84a')), f'coin_{d}')
+save(clean_disc(21, hx('8e1a26')), 'orb')
+save(clean_disc(9, hx('8e1a26')), 'orb_small')
+save(clean_disc(23, hx('8e1a26')), 'orb_big')
+# octagon portrait: mask, and a 2-px off-white rim
+def octa(n, cut, inset=0):
+    a, b = inset, n - 1 - inset; k = cut + inset * 1.0
+    return {(x, y) for y in range(n) for x in range(n) if a <= x <= b and a <= y <= b and
+            (x - a) + (y - a) >= cut and (b - x) + (y - a) >= cut and (x - a) + (b - y) >= cut and (b - x) + (b - y) >= cut}
+N, CUT = 56, 15
+outer = octa(N, CUT); inner = octa(N, CUT, 2)
+m = Image.new('RGBA', (N, N), CLEAR); r = Image.new('RGBA', (N, N), CLEAR)
+for p in outer:
+    m.putpixel(p, (255, 255, 255, 255))
+    if p not in inner: r.putpixel(p, OFFWHITE)
+save(m, 'octa_mask'); save(r, 'octa_ring')
+# Freeze: a snowflake
+SNOW = ['.....#.#.....', '......#......', '.#....#....#.', '..#...#...#..', '...#..#..#...', '#...#.#.#...#', '#############',
+        '#...#.#.#...#', '...#..#..#...', '..#...#...#..', '.#....#....#.', '......#......', '.....#.#.....']
+save(grid(SNOW, {'#': FRAME}), 'icon_snow')
 print('ok', sorted(os.listdir(OUT)))
