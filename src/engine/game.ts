@@ -1,5 +1,5 @@
 import {
-  ALL_TRIBES, CARDS, CONFIG, SPELLS, addKw, cloneUnit, def, displayName, effStats, handUnits, isSpell, isTribe, log, makeUnit, mult, pick, rand, randInt, sample, shuffle,
+  ALL_TRIBES, CARDS, CONFIG, SPELLS, addKw, applyShopBuffs, cloneUnit, def, displayName, effStats, handUnits, isSpell, isTribe, log, makeUnit, mult, pick, rand, randInt, sample, shuffle,
 } from './core';
 import { EFFECTS, GEMS, battlecryTimes, hasBattlecry } from './effects';
 import { runCombat } from './combat';
@@ -212,7 +212,10 @@ export function rollShop(g: GameState, p: Player) {
     if (!id) continue;
     const u = makeUnit(g, id);
     if (p.stuffieBonus && isTribe(u, 'kindred')) { u.atk += p.stuffieBonus; u.hp += p.stuffieBonus; } // Stuffie Magic
+    applyShopBuffs(p, u); // Potato Gem, Sapling
     p.shop.push(u);
+    // Igloo Tank: an Azure unit appearing in the Tavern: it and the Igloo get +2 Attack (Golden +4)
+    if (isTribe(u, 'azure')) for (const b of p.board) if (b.cardId === 'igloo_tank') withFx(g, p, { unit: b }, 'Ability', () => { u.atk += 2 * mult(b); b.atk += 2 * mult(b); });
   }
   // and one Spell, on the right (any Spell up to your Tavern Tier; they never run out)
   const sp = pick(g, SPELLS.filter((c) => c.tier <= p.tier));
@@ -580,6 +583,11 @@ export function reroll(g: GameState, p: Player): ActionResult {
   }
   p.frozen = false;
   rollShop(g, p);
+  // Root (played this game): random Tavern units get +6/+6 each Refresh
+  for (let i = 0; i < (p.rootRefresh ?? 0); i++) {
+    const u = pick(g, p.shop.filter((x) => !isSpell(x)));
+    if (u) withFx(g, p, { name: 'Root' }, 'Refresh', () => { u.atk += 6; u.hp += 6; });
+  }
   // "when you Refresh" (Tinker)
   for (const b of [...p.board]) {
     const e = EFFECTS[b.cardId]?.onRefresh;

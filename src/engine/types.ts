@@ -115,6 +115,10 @@ export interface Player {
   stuffieBonus?: number;
   /** Owls summoned (played or summoned in battle) this game */
   owlsSummoned?: number;
+  /** "units in the Tavern have +X/+Y for the rest of the game", by tribe ('all': every unit) — see addShopBuff */
+  shopBuff?: Record<string, [number, number]>;
+  /** Root: each Refresh, this many random Tavern units get +6/+6 */
+  rootRefresh?: number;
   /** Spells cast this game */
   spellsCast?: number;
   /** the last Gem this player played from hand (Corrivath Harp) */

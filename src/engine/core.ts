@@ -13,7 +13,7 @@ export const CONFIG = {
   rerollCost: 1,
   /** cost to upgrade TO tier n (index n) */
   upgradeCost: [0, 0, 5, 8, 10, 13], // to reach Tier 2, 3, 4, 5 (each drops 1 gold per turn until bought)
-  shopSize: [0, 3, 4, 4, 5, 5],
+  shopSize: [0, 3, 4, 4, 4, 4],
   copiesPerTier: [0, 15, 13, 11, 9, 7, 5], // Tier 6: never in the Tavern
   /** 7 tribes exist; 3 are banned each match, so 4 are in play (plus Neutral) */
   tribesPerGame: 4,
@@ -42,6 +42,19 @@ export const SPELLS: CardDef[] = CARDS.filter((c) => c.spell);
 export function isSpell(b: { cardId: string } | string): boolean {
   return !!BY_ID.get(typeof b === 'string' ? b : b.cardId)?.spell;
 }
+/**
+ * "Units in the Tavern have +X/+Y for the rest of the game" (Potato Gem: all units; Sapling: Brambor). Kept on the
+ * player by tribe ('all' for every unit); new Tavern units get it as they appear, and the ones there now get it too.
+ */
+export function addShopBuff(p: Player, key: Tribe | 'all', atk: number, hp: number) {
+  const b = ((p.shopBuff ??= {})[key] ??= [0, 0]);
+  b[0] += atk; b[1] += hp;
+  for (const u of p.shop) if (!isSpell(u) && (key === 'all' || isTribe(u, key))) { u.atk += atk; u.hp += hp; }
+}
+export function applyShopBuffs(p: Player, u: Unit) {
+  for (const [key, [a, h]] of Object.entries(p.shopBuff ?? {})) if (key === 'all' || isTribe(u, key as Tribe)) { u.atk += a; u.hp += h; }
+}
+
 /** the units in a player's hand (Spells left out): what "units in your hand" effects touch */
 export function handUnits(p: Player): Unit[] {
   return p.hand.filter((u) => !isSpell(u));

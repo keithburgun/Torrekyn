@@ -279,7 +279,7 @@ export function gemText(p: Player, cardId: string, golden: boolean, text: string
     case 'green_gem': t = t.replace(/\+\d+ Attack/, `+${(3 + l) * m} Attack`); break;
     case 'white_gem': t = t.replace(/\+\d+\/\+\d+/, `+${(4 + l) * m}/+${(4 + l) * m}`); break;
     case 'red_gem': t = t.replace(/\+\d+ Attack/, `+${(3 + l) * m} Attack`); break;
-    case 'ancient_name_brambor': t = t.replace(/\+\d+ Health/, `+${(2 + l) * m} Health`); break;
+    case 'ancient_name_brambor': t = t.replace(/\+\d+ Health/, `+${(1 + l) * m} Health`); break;
   }
   return `${t} (Improved ${l === 1 ? 'once' : `${l} times`}.)`;
 }
@@ -297,7 +297,7 @@ function gemNote(p: Player, u: Unit): string | undefined {
     case 'green_gem': return `+${(3 + l) * m} Attack`;
     case 'white_gem': return `+${(4 + l) * m}/+${(4 + l) * m}`;
     case 'red_gem': return `+${(3 + l) * m} Atk`;
-    case 'ancient_name_brambor': return `+${(2 + l) * m} Health`;
+    case 'ancient_name_brambor': return `+${(1 + l) * m} Health`;
   }
   return undefined;
 }

@@ -48,7 +48,7 @@ const ECON: Record<string, number> = {
   memory: 3, storyteller: 4, command: 5, remember: 10, librarian: 10, restore: 12, farmer: 3, honeysuckle_brambor: 5,
   computer: 8, robot_boy: 10, robot_boy_buddy: 14, shopkeep: 4, intern: 3, purveyor: 10, miner: 6, pickaxe: 6, scout: 4, grief: 8,
   exploit: 8, golden_light: 12, potato_lord: 10, jeweler: 3, distant_land: 8, larva: 12, adder: 6, invisible_hand: 0, builder: 5,
-  life: 14, beast_vine: 16, hug: 6, organizer: 7, corrivath_harp: 10, corn_snail: 6,
+  life: 14, beast_vine: 16, hug: 6, organizer: 7, corrivath_harp: 10, corn_snail: 6, root: 10, andromeda_robin: 8, hack_factory: 9,
 };
 
 /**
@@ -56,7 +56,7 @@ const ECON: Record<string, number> = {
  * whole army. Battles can't see this (cardValues measures one turn), so it's set by hand. Golden doubles it.
  */
 const GROWTH: Record<string, [number, number]> = {
-  architect: [0, 2], chaos: [4, 4], aerial_drone: [3, 6], andromeda_robin: [0, 6],
+  architect: [0, 2], chaos: [4, 4], aerial_drone: [3, 6], igloo_tank: [3, 0],
   patchwork: [1, 4], shadow_place: [4, 4], warlock: [0, 4], funeral: [0, 2], vampire: [0, 2], locas: [2, 1], commitment: [3, 3],
   ocean_sky: [2, 2], medic: [0, 4], intern: [0, 0], builder: [0, 4], peebnup_bubber: [0, 3], elemental: [2, 2], isha: [2, 2],
 };
@@ -249,7 +249,7 @@ export function spellScore(g: GameState | undefined, p: Player, id: string): num
     case 'purple_gem': v = W(1 + l(id), 1 + l(id)) + 4; break;
     case 'green_gem': v = W((3 + l(id)) * (have('cloister') ? 2 : 1), 0) + maxAtk * 0.4; break;
     case 'red_gem': v = W((3 + l(id)) * Math.min(3, n), 0) * (p.board.some((u) => u.cardId === 'gem_wizard') ? 2 : 1); break;
-    case 'ancient_name_brambor': v = W(0, (2 + l(id)) * (n + handUnits(p).length)); break;
+    case 'ancient_name_brambor': v = W(0, (1 + l(id)) * Math.max(4, 16 - round)); break; // (every unit bought from now on)
     case 'white_gem': v = W(4 + l(id), 4 + l(id)) * ALL_TRIBES.filter((t) => have(t)).length; break;
     case 'silver_banner': v = W((3 + b) * Math.min(3, n), 0); break;
     case 'gold_banner': v = W(0, (3 + b) * Math.min(3, n)); break;
@@ -907,7 +907,7 @@ export const PLANS: Plan[] = [
   { id: 'bill_milton', pieces: ['bill_milton', 'sarinee', 'investor'] },
   { id: 'abandon', pieces: ['abandon', 'sarinee', 'ancient_name_neverending', 'broken_land'] },
   { id: 'battlecries', pieces: ['chaos', 'life', 'aerial_drone', 'commitment'], fuel: (id) => has(id, 'battlecry') || id === 'sarinee' || id === 'organizer' },
-  { id: 'potato_gems', pieces: ['andromeda_robin', 'broken_land', 'organizer', 'peebnup_bubber'], fuel: (id) => id === 'ancient_name_brambor' || id === 'sarinee' },
+  { id: 'potato_gems', pieces: ['broken_land', 'organizer', 'peebnup_bubber'], fuel: (id) => id === 'ancient_name_brambor' || id === 'sarinee' },
 ];
 /** Gems that buff one unit (worth piling on a carry) */
 const BUFF_GEMS = ['tourmaline', 'purple_gem', 'pink_gem', 'green_gem'];

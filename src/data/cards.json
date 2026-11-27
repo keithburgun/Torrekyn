@@ -552,8 +552,8 @@
    "tier": 1,
    "atk": 3,
    "hp": 1,
-   "text": "Avenge (3): Become a 9/9 Rootling.",
-   "goldenText": "Avenge (3): Become an 18/18 Rootling.",
+   "text": "Deathrattle: Brambor units in the Tavern have +1/+1 for the rest of the game.",
+   "goldenText": "Deathrattle: Brambor units in the Tavern have +2/+2 for the rest of the game.",
    "keywords": []
   },
   {
@@ -612,8 +612,8 @@
    "tier": 2,
    "atk": 2,
    "hp": 8,
-   "text": "At the end of combat, if this survived, gain a random Brambor unit.",
-   "goldenText": "At the end of combat, if this survived, gain 2 random Brambor units.",
+   "text": "Arrive: For the rest of the game, whenever you Refresh the Tavern, give a random unit in it +6/+6.",
+   "goldenText": "Arrive: For the rest of the game, whenever you Refresh the Tavern, give a random unit in it +12/+12.",
    "keywords": []
   },
   {
@@ -689,8 +689,8 @@
    "tier": 3,
    "atk": 0,
    "hp": 0,
-   "text": "Give your units in hand and army +2 Health.",
-   "goldenText": "Give your units in hand and army +2 Health.",
+   "text": "All units in the Tavern have +1 Health for the rest of the game.",
+   "goldenText": "All units in the Tavern have +1 Health for the rest of the game.",
    "keywords": [],
    "spell": true,
    "cost": 2
@@ -700,8 +700,8 @@
    "name": "Chosen Name",
    "tribe": "brambor",
    "tier": 5,
-   "atk": 10,
-   "hp": 10,
+   "atk": 5,
+   "hp": 5,
    "text": "Start of Combat: Double this unit's stats.",
    "goldenText": "Start of Combat: Triple this unit's stats.",
    "keywords": []
@@ -713,8 +713,8 @@
    "tier": 5,
    "atk": 30,
    "hp": 30,
-   "text": "End of Turn: Play a Potato Gem on two random friendly units. Improve your Potato Gems.",
-   "goldenText": "End of Turn: Play a Potato Gem on two random friendly units. Improve your Potato Gems twice.",
+   "text": "Arrive: Discover a Spell.",
+   "goldenText": "Arrive: Discover 2 Spells.",
    "keywords": []
   },
   {
@@ -1553,6 +1553,17 @@
    "allTribes": true
   },
   {
+   "id": "faris",
+   "name": "Faris",
+   "tribe": "neutral",
+   "tier": 2,
+   "atk": 6,
+   "hp": 1,
+   "text": "Whenever you summon a unit in battle, gain +3 Attack and Bubble.",
+   "goldenText": "Whenever you summon a unit in battle, gain +6 Attack and Bubble.",
+   "keywords": []
+  },
+  {
    "id": "adder",
    "name": "Adder",
    "tribe": "cloister",
@@ -1724,6 +1735,17 @@
    "keywords": []
   },
   {
+   "id": "hack_factory",
+   "name": "Hack Factory",
+   "tribe": "alcove",
+   "tier": 2,
+   "atk": 2,
+   "hp": 3,
+   "text": "End of Turn: Transform the unit to the left of this into a random unit of a higher Tier (up to Tier 6!).",
+   "goldenText": "End of Turn: Transform the units next to this into random units of a higher Tier (up to Tier 6!).",
+   "keywords": []
+  },
+  {
    "id": "corrivath_harp",
    "name": "Corrivath Harp",
    "tribe": "azure",
@@ -1746,6 +1768,19 @@
    "keywords": []
   },
   {
+   "id": "igloo_tank",
+   "name": "Igloo Tank",
+   "tribe": "azure",
+   "tier": 3,
+   "atk": 1,
+   "hp": 8,
+   "text": "Taunt. Whenever an Azure unit appears in the Tavern, give it and this +2 Attack.",
+   "goldenText": "Taunt. Whenever an Azure unit appears in the Tavern, give it and this +4 Attack.",
+   "keywords": [
+    "taunt"
+   ]
+  },
+  {
    "id": "tree_man",
    "name": "The Tree Man",
    "tribe": "neverending",
@@ -1754,6 +1789,17 @@
    "hp": 1,
    "text": "Whenever you summon units that don't fit in your army, give all your units +2/+4.",
    "goldenText": "Whenever you summon units that don't fit in your army, give all your units +4/+8.",
+   "keywords": []
+  },
+  {
+   "id": "deathberry_bush",
+   "name": "Deathberry Bush",
+   "tribe": "neverending",
+   "tier": 4,
+   "atk": 1,
+   "hp": 8,
+   "text": "Whenever you summon units in battle, summon twice as many.",
+   "goldenText": "Whenever you summon units in battle, summon three times as many.",
    "keywords": []
   },
   {

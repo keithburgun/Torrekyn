@@ -2,6 +2,14 @@
 
 Newest first. The version shows on the title screen.
 
+## 0.14.15 — 2026-11-27
+- Tavern: 3 units at Tier 1, 4 from Tier 2 on (was 5 at Tiers 4-5)
+- Potato Gem: all units in the Tavern have +1 Health for the rest of the game
+- Sapling: Deathrattle: Brambor units in the Tavern have +1/+1 for the rest of the game
+- Root: Arrive: for the rest of the game, each Refresh gives a random Tavern unit +6/+6
+- Chosen Name is 5/5; Andromeda Robin: Arrive: Discover a Spell
+- New units: Deathberry Bush (Neverending), Igloo Tank (Azure), Hack Factory (Alcove), Faris (Neutral)
+
 ## 0.14.14 — 2026-11-27
 - Royal Guard: Deathrattle: Summon 2 Bulwarks (Golden: 4)
 - Lake shows Done! once it has doubled (it only happens once)

@@ -7,7 +7,7 @@
  * m = 1 for normal, 2 for golden.
  */
 import type { Body, Keyword, Player, Tribe, Unit, GameState } from './types';
-import { ALL_TRIBES, TRIBE_NAMES, addKw, CARDS, def, effStats, handUnits, has, isSpell, isTribe, log, makeUnit, pick, rand, removeKw, sample, tribeOf, CONFIG } from './core';
+import { ALL_TRIBES, SPELLS, TRIBE_NAMES, addKw, addShopBuff, CARDS, def, effStats, handUnits, has, isSpell, isTribe, log, makeUnit, pick, rand, removeKw, sample, tribeOf, CONFIG } from './core';
 import type { CUnit, Combat, Side } from './combat';
 import {
   destroyUnit, discoverOptions, gainNew, inPlay, maxGoldFor, queueDiscover, randomCardOfTier, sellUnit, drawFromPool,
@@ -151,7 +151,7 @@ function withNeighbours(c: Ctx): Body[] {
 
 /** a Potato Gem's Health right now (2, +1 per improvement) */
 export function potatoHp(p: Player): number {
-  return 2 + gemLevel(p, 'ancient_name_brambor');
+  return 1 + gemLevel(p, 'ancient_name_brambor');
 }
 
 function discover(c: Ctx, filter: (id: string) => boolean, reason: string, times: number) {
@@ -444,13 +444,8 @@ export const EFFECTS: Record<string, Effect> = {
 
   // ===== Brambor =====
   sapling: {
-    avenge: [3, 3],
-    avengeFn: (c) => {
-      c.self.cardId = 'rootling';
-      c.self.atk = 9 * c.m;
-      c.self.hp = 9 * c.m;
-      c.self.kw = [];
-    },
+    // Deathrattle: Brambor units in the Tavern have +1/+1 for the rest of the game (Golden +2/+2)
+    deathrattle: (c) => { if (c.side?.persistent) addShopBuff(c.p, 'brambor', c.m, c.m); },
   },
   farmer: {
     avenge: [3, 3],
@@ -467,7 +462,10 @@ export const EFFECTS: Record<string, Effect> = {
     avenge: [3, 3],
     avengeFn: (c) => { for (let i = 0; i < c.m; i++) gain(c, randomTribeUpTo(c, 'brambor')); },
   },
-  root: {}, // end of combat, see combat
+  root: {
+    // Arrive: for the rest of the game, each Refresh gives a random Tavern unit +6/+6 (see reroll; Golden: twice)
+    battlecry: (c) => { c.p.rootRefresh = (c.p.rootRefresh ?? 0) + c.m; },
+  },
   splashmaster: {
     rally: (c, t) => {
       removeKw(t, 'taunt');
@@ -493,23 +491,15 @@ export const EFFECTS: Record<string, Effect> = {
     deathrattle: (c) => { for (let i = 0; i < 2 * c.m; i++) gain(c, pick(c.g, GEMS)); },
   },
   ancient_name_brambor: {
-    // Potato Gem: +2 Health (Golden +4; +1 per improvement) to every unit in your hand and army
-    battlecry: (c) => {
-      const n = potatoHp(c.p) * c.m;
-      for (const u of c.board) u.hp += n;
-      if (!c.combat || c.side?.persistent) for (const u of handUnits(c.p)) u.hp += n;
-    },
+    // Potato Gem (a Spell): Tavern units have +1 Health for the rest of the game (+1 per improvement)
+    battlecry: (c) => { if (!c.combat || c.side?.persistent) addShopBuff(c.p, 'all', 0, potatoHp(c.p) * c.m); },
   },
   chosen_name: {
     soc: (c) => buff(c.self, c.self.atk * c.m, c.self.hp * c.m),
   },
   andromeda_robin: {
-    // a Potato Gem's Health on two random friendly units, then Potato Gems improve (Golden: twice)
-    endTurn: (c) => {
-      const n = potatoHp(c.p);
-      for (const u of sample(c.g, c.board, 2)) u.hp += n;
-      improveGem(c.p, 'ancient_name_brambor', c.m);
-    },
+    // Arrive: Discover a Spell, any up to your Tier (Golden: 2)
+    battlecry: (c) => discoverFrom(c, SPELLS.filter((d) => d.tier <= c.p.tier).map((d) => d.id), 'Andromeda Robin: Discover a Spell', c.m),
   },
   // ===== Cloister =====
   green_gem: {
@@ -886,6 +876,28 @@ export const EFFECTS: Record<string, Effect> = {
   tree_man: {}, // its ability lives in Combat.noRoom (a summon that doesn't fit)
   ballooneer: {
     rally: (c) => balloonRally(c, c.m),
+  },
+  deathberry_bush: {}, // see Combat.spawn: summons happen 2x (Golden 3x)
+  igloo_tank: {}, // see rollShop (game.ts)
+  faris: {
+    // a unit summoned on its side in battle: +3 Attack (Golden +6) and Bubble
+    onSummonFriendly: (c) => { c.self.atk += 3 * c.m; addKw(c.self, 'divineShield'); },
+  },
+  hack_factory: {
+    // End of Turn: the unit to its left (Golden: both neighbours) becomes a random unit of a higher Tier, up to Tier 6
+    endTurn: (c) => {
+      const i = c.board.indexOf(c.self);
+      for (const t of (c.m === 2 ? [c.board[i - 1], c.board[i + 1]] : [c.board[i - 1]])) {
+        if (!t) continue;
+        const tier = def(t.cardId).tier;
+        const ids = CARDS.filter((d) => !d.token && !d.spell && d.tier > tier && (d.tribe === 'neutral' || c.g.tribes.includes(d.tribe))).map((d) => d.id);
+        const id = pick(c.g, ids);
+        if (!id) continue;
+        const nd = def(id), m = t.golden ? 2 : 1;
+        t.cardId = id; t.atk = nd.atk * m; t.hp = nd.hp * m; t.kw = [...nd.keywords];
+        (t as Unit).mem = {};
+      }
+    },
   },
   corn_snail: {}, // see castSpell (game.ts): grows after 3 Spells, once
   medic: {}, // see ownerBonus (core.ts): Health for your hero's missing Health

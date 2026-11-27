@@ -1148,6 +1148,22 @@
    "src": "X/custom/ballooneer.png",
    "px": true,
    "_note": "drawn for Torrekin; a copy is kept in tools/art_custom/"
+  },
+  "deathberry_bush": {
+   "src": "M/Effects/deathberries.png",
+   "px": true
+  },
+  "igloo_tank": {
+   "src": "X/iglootank.png",
+   "px": true
+  },
+  "hack_factory": {
+   "src": "X/robot-superfactory.png",
+   "px": true
+  },
+  "faris": {
+   "src": "M/PatC/placeholder-faris.png",
+   "px": true
   }
  }
 }

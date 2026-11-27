@@ -250,10 +250,29 @@ export class Combat {
     return cu;
   }
 
-  /** a unit was summoned during battle: hero powers, then friendly units that care (Alabaster) */
+  /** a unit was summoned during battle: hero powers, then friendly units that care (Alabaster, Faris) */
   private onSummoned(s: Side, cu: CUnit) {
     heroHooks.onSummon(this, s, cu);
     for (const w of [...s.units]) if (w !== cu && w.hp > 0) EFFECTS[w.cardId]?.onSummonFriendly?.(this.ctx(w), cu);
+    this.berries(s, cu);
+  }
+
+  /**
+   * Deathberry Bush: each summon on its side happens twice (Golden: 3 times; two Bushes multiply). The extra copies
+   * are summons too (Faris, Alabaster see them) but aren't multiplied again. Reborn isn't a summon.
+   */
+  private berryBusy = false;
+  private berries(s: Side, cu: CUnit) {
+    if (this.berryBusy) return;
+    const k = s.units.filter((u) => u.cardId === 'deathberry_bush' && u.hp > 0 && u !== cu).reduce((n, u) => n * (u.golden ? 3 : 2), 1);
+    if (k <= 1) return;
+    this.berryBusy = true;
+    try {
+      for (let i = 1; i < k; i++) {
+        const pos = s.units.indexOf(cu) + 1;
+        if (!this.spawnCopy(s, cu, pos)) break;
+      }
+    } finally { this.berryBusy = false; }
   }
 
   kill(t: CUnit, source?: CUnit) {
@@ -627,20 +646,8 @@ export function runCombat(g: GameState, a: Player, b: Player, bIsGhost: boolean)
     const left = c.sides.map((s) => s.units.filter((u) => u.hp > 0).length);
     if (left[0] && left[1]) stalemate = [combatDamage(c.sides[1].tier, left[1]), combatDamage(c.sides[0].tier, left[0])];
   }
-  // end of combat: Root
   for (const s of c.sides) {
     if (!s.persistent) continue;
-    for (const u of s.units) {
-      if (u.hp > 0 && u.cardId === 'root') {
-        const src = s.owner.board.find((x) => x.uid === u.src);
-        withFx(g, s.owner, { unit: src, name: 'Root' }, 'After the battle', () => {
-          for (let i = 0; i < mult(u); i++) {
-            const id = pickTribe(g, s.owner, 'brambor');
-            if (id) gainNew(g, s.owner, id);
-          }
-        });
-      }
-    }
     for (const fn of s.afterFns) withFx(g, s.owner, { name: 'Battle' }, 'After the battle', fn);
   }
   // remember boards for Remember / scouting

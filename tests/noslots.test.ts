@@ -174,13 +174,14 @@ describe('cards rewritten without slots', () => {
     expect(f.sides[0].find((u) => u.cardId === 'skel')!.atk).toBe(1);
   });
 
-  it('Andromeda Robin: a Potato Gem on two random units, then Potato Gems improve', () => {
-    const { g, p } = setup();
-    const a = U(g, 'andromeda_robin', 1, 1), b = U(g, 'skel', 1, 1), c = U(g, 'skel', 1, 1);
-    p.board = [a, b, c];
-    endTurnEffects(g, p);
-    expect(a.hp + b.hp + c.hp).toBe(3 + 4); // two units got +2
-    expect(gemLevel(p, 'ancient_name_brambor')).toBe(1);
+  it('Andromeda Robin: Arrive: Discover a Spell (up to your Tier; Golden: 2)', () => {
+    for (const golden of [false, true]) {
+      const { g, p } = setup();
+      p.tier = 2; p.board = []; p.hand = [U(g, 'andromeda_robin', undefined, undefined, golden)];
+      play(g, p, 0, 0);
+      expect(p.discovers.length).toBe(golden ? 2 : 1);
+      expect(p.discovers[0].options.every((id) => def(id).spell && def(id).tier <= 2)).toBe(true);
+    }
   });
 
   it('Paradox: Arrive: becomes a copy of the friendly unit you choose (Golden: a Golden copy); never itself', async () => {
@@ -202,14 +203,20 @@ describe('cards rewritten without slots', () => {
     }
   });
 
-  it('Potato Gem: +2 Health to every unit in hand and army (+1 per improvement, Golden doubles)', () => {
+  it('Potato Gem: units in the Tavern have +1 Health for the rest of the game (+1 per improvement); not your army', async () => {
+    const { reroll } = await import('../src/engine/game');
     const { g, p } = setup();
-    const b = U(g, 'skel', 1, 1), h = U(g, 'skel', 1, 1);
-    p.board = [b]; p.hand = [U(g, 'ancient_name_brambor'), h];
+    const b = U(g, 'skel', 1, 1);
+    p.board = [b]; p.tier = 1;
+    reroll(g, p);
+    const before = p.shop.filter((u) => !def(u.cardId).spell).map((u) => u.hp);
     p.gemBonus = { ancient_name_brambor: 1 };
+    p.hand = [U(g, 'ancient_name_brambor')];
     play(g, p, 0, 1);
-    expect([b.hp, h.hp]).toEqual([4, 4]);
-    expect(p.hand).toEqual([h]); // the Spell is gone
+    expect(p.shop.filter((u) => !def(u.cardId).spell).map((u) => u.hp)).toEqual(before.map((h) => h + 2)); // the ones there now
+    expect(b.hp).toBe(1);
+    p.gold = 10; reroll(g, p);
+    for (const u of p.shop.filter((x) => !def(x.cardId).spell)) expect(u.hp).toBe(def(u.cardId).hp + 2); // and every new one
   });
 });
 

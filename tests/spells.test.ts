@@ -72,8 +72,8 @@ describe('Spells', () => {
     p.hand = [];
     const a = U(g, 'ash', 1, 1), h = U(g, 'ash', 1, 1);
     p.board = [a]; p.hand = [h, makeUnit(g, 'coin')];
-    cast(g, p, 'ancient_name_brambor'); // Potato Gem: +2 Health to units in hand and army
-    expect([a.hp, h.hp, p.hand[1].hp]).toEqual([3, 3, 0]);
+    cast(g, p, 'red_banner'); // four random friendly units: the army, not the hand
+    expect([a.hp, h.hp, p.hand[1].hp]).toEqual([3, 1, 0]);
   });
 
   it('Coin, Invest, Soda, Strike Oil, Heal Up! (to at most 10)', () => {
@@ -174,7 +174,8 @@ describe('Spells', () => {
       cast = players.reduce((s, pl) => s + (pl.spellsCast ?? 0), 0);
     }
     expect(cast).toBeGreaterThan(5);
-    for (const pl of players) expect(pl.hand.filter((u) => isSpell(u)).length).toBeLessThanOrEqual(3);
+    // (Gems that arrive at End of Turn or after the battle, e.g. Corrivath Harp's, wait in hand for the next turn)
+    for (const pl of players) expect(pl.hand.filter((u) => isSpell(u)).length).toBeLessThanOrEqual(6);
   });
 
   it('Corn Snail (Tier 1 Kindred 2/2): after 3 Spells played while it is in your army, +6/+6, only once; Librarian is a Tier 3 2/4', () => {
@@ -237,5 +238,102 @@ describe('Spells', () => {
     expect(unitCounter(lake)).toBe('0/3');
     lake.mem.done = 1;
     expect(unitCounter(lake)).toBe('Done!');
+  });
+
+  it('the Tavern shows 3 units at Tier 1 and 4 from Tier 2 on (plus the Spell)', async () => {
+    const { reroll } = await import('../src/engine/game');
+    const { CONFIG } = await import('../src/engine/core');
+    expect(CONFIG.shopSize).toEqual([0, 3, 4, 4, 4, 4]);
+    const { g, p } = setup();
+    for (const t of [1, 2, 5]) { p.tier = t; reroll(g, p); expect(p.shop.filter((u) => !isSpell(u)).length).toBe(t === 1 ? 3 : 4); }
+  });
+
+  it('Sapling: Deathrattle: Brambor units in the Tavern have +1/+1 this game (Golden +2/+2); a practice battle changes nothing', async () => {
+    const { reroll } = await import('../src/engine/game');
+    for (const golden of [false, true]) {
+      const { g, p } = setup();
+      const o = g.players[1];
+      new Combat(g, { p, board: [makeUnit(g, 'sapling', golden)], tier: 1, persistent: false }, { p: o, board: [U(g, 'skel', 99, 99)], tier: 1, persistent: false }).run();
+      expect(p.shopBuff).toBeUndefined();
+      new Combat(g, { p, board: [makeUnit(g, 'sapling', golden)], tier: 1, persistent: true }, { p: o, board: [U(g, 'skel', 99, 99)], tier: 1, persistent: false }).run();
+      const m = golden ? 2 : 1;
+      expect(p.shopBuff).toEqual({ brambor: [m, m] });
+      p.tier = 5; p.gold = 99;
+      for (let i = 0; i < 10; i++) {
+        reroll(g, p);
+        for (const u of p.shop.filter((x) => !isSpell(x))) expect(u.atk - def(u.cardId).atk).toBe(isTribe(u, 'brambor') ? m : 0);
+      }
+    }
+  });
+
+  it('Root: Arrive: from now on, each Refresh gives a random Tavern unit +6/+6 (Golden: twice)', async () => {
+    const { reroll } = await import('../src/engine/game');
+    for (const golden of [false, true]) {
+      const { g, p } = setup();
+      p.tier = 1; p.board = []; p.hand = [makeUnit(g, 'root', golden)];
+      play(g, p, 0, 0);
+      p.gold = 99;
+      reroll(g, p);
+      const extra = p.shop.filter((u) => !isSpell(u)).reduce((s, u) => s + u.atk - def(u.cardId).atk, 0);
+      expect(extra).toBe(6 * (golden ? 2 : 1));
+    }
+  });
+
+  it('Chosen Name is 5/5', () => { expect([def('chosen_name').atk, def('chosen_name').hp]).toEqual([5, 5]); });
+
+  it('Igloo Tank (Tier 3 Azure 1/8 Taunt): each Azure unit appearing in the Tavern: it and the Igloo get +2 Attack', async () => {
+    const { reroll } = await import('../src/engine/game');
+    expect([def('igloo_tank').tribe, def('igloo_tank').tier, def('igloo_tank').atk, def('igloo_tank').hp, def('igloo_tank').keywords]).toEqual(['azure', 3, 1, 8, ['taunt']]);
+    const { g, p } = setup();
+    const ig = makeUnit(g, 'igloo_tank');
+    p.board = [ig]; p.tier = 5; p.gold = 99;
+    let azure = 0;
+    for (let i = 0; i < 15; i++) {
+      reroll(g, p);
+      for (const u of p.shop.filter((x) => isTribe(x, 'azure'))) { azure++; expect(u.atk).toBe(def(u.cardId).atk + 2); }
+    }
+    expect(azure).toBeGreaterThan(0);
+    expect(ig.atk).toBe(1 + 2 * azure);
+  });
+
+  it('Hack Factory (Tier 2 Alcove 2/3): End of Turn, the unit to its left becomes a random higher-Tier unit (up to Tier 6)', async () => {
+    const { endTurnEffects } = await import('../src/engine/game');
+    expect([def('hack_factory').tribe, def('hack_factory').tier, def('hack_factory').atk, def('hack_factory').hp]).toEqual(['alcove', 2, 2, 3]);
+    let six = false;
+    for (let seed = 1; seed < 60; seed++) {
+      const { g, p } = setup(seed);
+      const l = makeUnit(g, 'ash'), hf = makeUnit(g, 'hack_factory'), r = makeUnit(g, 'skeleton');
+      p.board = [l, hf, r];
+      endTurnEffects(g, p);
+      expect(def(l.cardId).tier).toBeGreaterThan(1);
+      expect(def(l.cardId).spell).toBeFalsy();
+      expect([l.atk, l.hp]).toEqual([def(l.cardId).atk, def(l.cardId).hp]);
+      expect(r.cardId).toBe('skeleton'); // (Golden: both sides)
+      if (def(l.cardId).tier === 6) six = true;
+    }
+    expect(six).toBe(true);
+  });
+
+  it('Faris (Tier 2 Neutral 6/1): +3 Attack and Bubble whenever a friendly unit is summoned in battle', () => {
+    const { g, p } = setup();
+    const o = g.players[1];
+    const f = U(g, 'faris', 6, 1);
+    const c = new Combat(g, { p, board: [makeUnit(g, 'skeleton'), f], tier: 2, persistent: false }, { p: o, board: [U(g, 'skel', 1, 99)], tier: 1, persistent: false });
+    c.run();
+    const after = c.frames.find((fr) => (fr.note ?? '').startsWith('Summon Skel'));
+    const fr = after!.sides[0].find((u) => u.cardId === 'faris')!;
+    expect(fr.atk).toBeGreaterThanOrEqual(6 + 3);
+    expect(fr.kw).toContain('divineShield');
+  });
+
+  it('Deathberry Bush (Tier 4 Neverending 1/8): summons in battle happen twice (Golden: 3 times)', () => {
+    for (const golden of [false, true]) {
+      const { g, p } = setup();
+      const o = g.players[1];
+      const c = new Combat(g, { p, board: [makeUnit(g, 'skeleton'), makeUnit(g, 'deathberry_bush', golden)], tier: 4, persistent: false }, { p: o, board: [U(g, 'skel', 1, 999)], tier: 1, persistent: false });
+      c.run();
+      const most = Math.max(...c.frames.map((fr) => fr.sides[0].filter((u) => u.cardId === 'skel').length));
+      expect(most).toBe(golden ? 6 : 4); // Skeleton's 2 Skels, each summoned 2x (3x)
+    }
   });
 });

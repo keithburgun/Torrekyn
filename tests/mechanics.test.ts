@@ -106,10 +106,8 @@ describe('mechanics', () => {
     const p: Player = human(g);
     p.discovers = [];
     p.board = [makeUnit(g, 'skel')];
-    p.hand = [makeUnit(g, 'ancient_name_brambor')]; // Potato Gem: +2 Health to every unit in hand and army
-    const hp0 = p.board[0].hp;
+    p.hand = [makeUnit(g, 'skeleton')];
     play(g, p, 0, 1);
-    expect(p.board[0].hp).toBe(hp0 + 2);
     sell(g, p, 0);
     sell(g, p, 0);
     p.hand = [makeUnit(g, 'skel')];
