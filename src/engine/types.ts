@@ -238,6 +238,8 @@ export interface CombatResult {
 
 export interface GameState {
   version: number;
+  /** this match's id in Match History (replays) */
+  replayId?: string;
   /** the human's rating when the game began (matchmaking; bots' End of Turn bonus) */
   rating?: number;
   seed: number;

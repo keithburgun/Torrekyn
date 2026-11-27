@@ -2,7 +2,9 @@
 import { ALL_TRIBES, CARDS, TRIBE_NAMES, def } from '../engine/core';
 import { EFFECTS } from '../engine/effects';
 import type { CardDef, GameState, Tribe } from '../engine/types';
-import { ACHIEVEMENTS, isUnlocked, progress, statValue, unlockedCount } from './achievements';
+import { ACHIEVEMENTS, allStats, isUnlocked, progress, statValue, unlockedCount } from './achievements';
+import { getRating } from './rating';
+import { historyBody, type MatchMeta } from './replays';
 import { abilityTags, bigCardHtml, cardArt, esc, heroArt } from './view';
 import { HEROES, TRINKETS, heroHealth } from '../engine/heroes';
 
@@ -156,7 +158,56 @@ export function cardViewerHtml(v: ViewerState, g: GameState | null) {
 }
 
 // ---------------- achievements ----------------
+export type StatsTab = 'stats' | 'achievements' | 'history';
+
+/** the Stats screen: your numbers, Achievements and Match History, as tabs */
+export function statsPanelHtml(tab: StatsTab, list: MatchMeta[] | null, msg: string) {
+  const t = (v: StatsTab, label: string) => `<button class="chip ${tab === v ? 'on' : ''}" data-act="stats-tab" data-v="${v}">${label}</button>`;
+  const body = tab === 'achievements' ? achievementsBody() : tab === 'history' ? historyBody(list, msg) : statsBody();
+  const count = tab === 'achievements' ? `${unlockedCount()} / ${ACHIEVEMENTS.length} unlocked` : '';
+  return `<div class="modal" style="z-index:85"><div class="panel achv stats">
+    <div class="cv-head"><h2>Stats</h2><div class="cv-tabs">${t('stats', 'Stats')}${t('achievements', 'Achievements')}${t('history', 'Match History')}</div>
+      <span class="cv-count">${count}</span><button class="btn" data-act="stats-close">Close</button></div>
+    <div class="ach-scroll">${body}</div>
+  </div></div>`;
+}
+
+function statsBody() {
+  const s = allStats();
+  const n = (k: string) => (s[k] ?? 0).toLocaleString();
+  const r = getRating();
+  const places = r.history.map((h) => h.place).filter((x) => x > 0);
+  const avg = places.length ? (places.reduce((a, b) => a + b, 0) / places.length).toFixed(2) : '–';
+  const box = (label: string, v: string, sub = '') => `<div class="st-box"><div class="st-v">${v}</div><div class="st-l">${esc(label)}</div>${sub ? `<div class="st-s">${esc(sub)}</div>` : ''}</div>`;
+  const games = s.games ?? 0;
+  const pct = (k: string) => (games ? `${Math.round(((s[k] ?? 0) / games) * 100)}% of games` : '');
+  const battles = (s.combatWins ?? 0) + (s.combatLosses ?? 0);
+  const heroes = HEROES.map((h) => ({ h, plays: s[`heroPlay:${h.id}`] ?? 0, wins: s[`heroWin:${h.id}`] ?? 0 })).filter((x) => x.plays).sort((a, b) => b.plays - a.plays || b.wins - a.wins);
+  const tribes = ALL_TRIBES.map((t) => ({ t, wins: s[`tribeWin:${t}`] ?? 0 })).filter((x) => x.wins);
+  return `<h3 class="ach-group">Games</h3><div class="st-grid">
+      ${box('Games played', n('games'))}${box('1st places', n('firsts'), pct('firsts'))}${box('Top 3 finishes', n('top3'), pct('top3'))}
+      ${box('Average place', avg, places.length ? `over ${places.length} rated game${places.length === 1 ? '' : 's'}` : '')}
+      ${box('Rating', String(r.rating), `peak ${r.peak}`)}
+    </div>
+    <h3 class="ach-group">Battles</h3><div class="st-grid">
+      ${box('Battles won', n('combatWins'), battles ? `${Math.round(((s.combatWins ?? 0) / battles) * 100)}% of battles` : '')}${box('Battles lost', n('combatLosses'))}${box('Damage dealt', n('damage'))}
+    </div>
+    <h3 class="ach-group">In the Tavern</h3><div class="st-grid">
+      ${box('Units bought', n('bought'))}${box('Units played', n('played'))}${box('Units sold', n('sold'))}${box('Spells cast', n('cast'))}
+      ${box('Refreshes', n('rerolls'))}${box('Tavern upgrades', n('upgrades'))}${box('Freezes', n('freezes'))}${box('Golden units', n('triples'))}
+      ${box('Discovers', n('discovers'))}${box('Trinkets', n('trinkets'))}${box('Hero Powers used', n('heroPowers'))}
+    </div>
+    <h3 class="ach-group">Heroes</h3>${heroes.length ? `<div class="st-heroes">${heroes.map(({ h, plays, wins }) => `<div class="st-hero">
+      <span class="rp-hero" style="background-image:url('${heroArt(h.id)}')"></span><div><div class="st-hn">${esc(h.name)}</div>
+      <div class="hint" style="padding:0;text-align:left">${plays} game${plays === 1 ? '' : 's'} · ${wins} win${wins === 1 ? '' : 's'}</div></div></div>`).join('')}</div>` : '<div class="hint">Finish a game to see your heroes here.</div>'}
+    ${tribes.length ? `<h3 class="ach-group">Wins with 4+ of a faction</h3><div class="st-grid">${tribes.map(({ t, wins }) => box(TRIBE_NAMES[t], String(wins))).join('')}</div>` : ''}`;
+}
+
 export function achievementsHtml() {
+  return statsPanelHtml('achievements', null, '');
+}
+
+function achievementsBody() {
   const groups = [...new Set(ACHIEVEMENTS.map((a) => a.group))];
   const body = groups.map((grp) => `<h3 class="ach-group">${esc(grp)}</h3><div class="ach-grid">${ACHIEVEMENTS.filter((a) => a.group === grp).map((a) => {
     const done = isUnlocked(a.id);
@@ -167,10 +218,7 @@ export function achievementsHtml() {
       ${a.stat && !done ? `<div class="ach-bar"><div style="width:${Math.round(pr * 100)}%"></div></div><div class="ach-num">${statValue(a).toLocaleString()} / ${a.target!.toLocaleString()}</div>` : ''}</div>
     </div>`;
   }).join('')}</div>`).join('');
-  return `<div class="modal" style="z-index:85"><div class="panel achv">
-    <div class="cv-head"><h2>Achievements</h2><span class="cv-count">${unlockedCount()} / ${ACHIEVEMENTS.length} unlocked</span><button class="btn" data-act="ach-close">Close</button></div>
-    <div class="ach-scroll">${body}</div>
-  </div></div>`;
+  return body;
 }
 
 export { def };

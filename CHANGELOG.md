@@ -2,6 +2,11 @@
 
 Newest first. The version shows on the title screen.
 
+## 0.15.0 — 2026-11-27
+- Replays: every battle you fight is recorded. Watch any round again, or a whole match; export a match to a file and import replays
+- Stats screen (was Achievements): tabs for your Stats, Achievements and Match History
+- Game over: the final battle (both armies and who was left), final standings, and Watch Replay
+
 ## 0.14.18 — 2026-11-27
 - Skeleton is now Party Guy; Thicket is now Earthen Husk; Sickle is a Cloister unit
 - New Neverending unit: Castleabra (Tier 3, 4/4): Deathrattle: your Neverending units have +1/+1 for the rest of the game

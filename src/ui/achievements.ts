@@ -161,6 +161,8 @@ export function progress(a: AchievementDef): number {
   if (!a.stat) return isUnlocked(a.id) ? 1 : 0;
   return Math.min(1, (saved.stats[a.stat] ?? 0) / (a.target ?? 1));
 }
+/** every counter (for the Stats screen) */
+export function allStats(): Record<string, number> { return { ...saved.stats }; }
 export function statValue(a: AchievementDef) { return a.stat ? saved.stats[a.stat] ?? 0 : 0; }
 
 export function newGameStarted() {

@@ -15,7 +15,7 @@ import { clearSave, loadSave, save } from './save';
 import { debugOn, setDebug } from './debug';
 import { checkForUpdates, versionLabel } from './update';
 import { isMuted, setMuted, sfx } from './sfx';
-import { achievementsHtml, cardViewerHtml, tribesAnnounceHtml, viewerCount, viewerGridHtml, type ViewerState } from './screens';
+import { statsPanelHtml, type StatsTab, cardViewerHtml, tribesAnnounceHtml, viewerCount, viewerGridHtml, type ViewerState } from './screens';
 import { playTriple } from './ceremony';
 import { placeBoardBg, placeHud } from './hud';
 import { puff } from './fx';
@@ -26,6 +26,7 @@ import { EXPERT_ELO, personaById } from '../engine/personas';
 import { bump, evaluate, newGameStarted, noteGame, onUnlock, recordCombat, recordGameEnd, type AchievementDef } from './achievements';
 import { currentLayout, getMode, LANDSCAPE, setMode, type Layout, type LayoutMode } from './layout';
 import { ALL_TRIBES } from '../engine/core';
+import { deleteMatch, exportJson, exportName, finalBattleHtml, getMatch, importJson, listMatches, liveMatch, recordBattle, recordEnd, replayGame, replayHtml, saveFile, type MatchMeta, type MatchRecord } from './replays';
 
 declare const __NO_UPDATES__: boolean;
 
@@ -71,7 +72,7 @@ function uiStyle(): 'pixel' | 'smooth' {
 export class App {
   stage: HTMLElement;
   g: GameState | null = null;
-  screen: 'title' | 'rules' | 'tribes' | 'hero' | 'shop' | 'combat' | 'over' = 'title';
+  screen: 'title' | 'rules' | 'tribes' | 'hero' | 'shop' | 'combat' | 'over' | 'replay' = 'title';
   sel: Sel | null = null;
   hover: Sel | null = null;
   press: Press | null = null;
@@ -83,7 +84,12 @@ export class App {
   /** the cloud-save sign-in window: which form, and any message to show */
   account: { msg: string; ok?: boolean; busy?: boolean } | null = null;
   viewer: ViewerState | null = null; // card viewer open
-  achOpen = false; // achievements window open
+  /** the Stats screen (tabs: Stats, Achievements, Match History; list: the matches, null while loading) */
+  history: { tab: StatsTab; list: MatchMeta[] | null; msg: string } | null = null;
+  get achOpen() { return !!this.history; }
+  /** the replay being looked at; `watching`: a recorded battle playing */
+  replayView: { rec: MatchRecord; msg: string } | null = null;
+  watching: { prev: App['screen']; stash: { history: App['history']; replayView: App['replayView'] } } | null = null;
   busy = false; // a ceremony is playing
   lastShopPos: { x: number; y: number } | null = null;
   showTribes = false; // tribes tooltip pinned open (tap on phones)
@@ -115,6 +121,13 @@ export class App {
     stage.addEventListener('mouseover', (e) => this.onHover(e));
     stage.addEventListener('mousemove', (e) => { this.mouse = { x: e.clientX, y: e.clientY }; });
     stage.addEventListener('contextmenu', (e) => e.preventDefault());
+    // Match History: a replay file picked to import
+    stage.addEventListener('change', (e) => {
+      const t = e.target as HTMLInputElement;
+      if (t.id !== 'rp-file' || !t.files?.[0]) return;
+      void t.files[0].text().then(importJson).then((rec) => { this.history = null; this.replayView = { rec, msg: 'Imported.' }; this.render(); })
+        .catch((err: Error) => { if (this.history) { this.history.msg = err.message; this.render(); } });
+    });
     stage.addEventListener('input', (e) => {
       const t = e.target as HTMLInputElement;
       if (t.id !== 'cv-search' || !this.viewer) return;
@@ -142,7 +155,7 @@ export class App {
     window.addEventListener('keydown', (e) => {
       if ((e.target as HTMLElement).tagName === 'INPUT') return;
       if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'z' && !e.shiftKey) { e.preventDefault(); this.undo(); return; }
-      if (e.key === 'Escape') { this.sheet = null; this.targeting = null; this.sel = null; this.viewer = null; this.achOpen = false; this.render(); }
+      if (e.key === 'Escape') { this.sheet = null; this.targeting = null; this.sel = null; this.viewer = null; this.history = null; this.render(); }
     });
     this.render();
   }
@@ -166,7 +179,7 @@ export class App {
     this.stage.style.setProperty('--bg', `url('${new URL(art('art/bg.png'), document.baseURI).href}')`);
     this.stage.style.setProperty('--trinket-art', `url('${new URL(art('art/trinket.png'), document.baseURI).href}')`);
     placeBoardBg(this.stage, L, null);
-    if (this.screen === 'combat' && this.combat) { this.renderOverlays(); return; } // the battle is playing on this screen; leave it be (but Options can open over it)
+    if ((this.screen === 'combat' || this.screen === 'replay') && this.combat) { this.renderOverlays(); return; } // the battle is playing on this screen; leave it be (but Options can open over it)
     this.stage.classList.toggle('in-battle', this.screen === 'combat');
     // a new screen fades in quickly (shop and battle also fade out first; see afterEndTurn / startCombat)
     if (this.shownScreen !== this.screen) {
@@ -185,7 +198,8 @@ export class App {
     if (this.options) html += this.optionsHtml();
     if (this.account) html += this.accountHtml();
     if (this.viewer) html += cardViewerHtml(this.viewer, this.g);
-    if (this.achOpen) html += achievementsHtml();
+    if (this.history) html += statsPanelHtml(this.history.tab, this.history.list, this.history.msg);
+    if (this.replayView) html += replayHtml(this.replayView.rec, !this.combat, this.replayView.msg);
     const before = this.cardCentres();
     // messages on screen survive the redraw (a failed buy is followed straight away by one, which used to wipe
     // its "Not enough gold" / "Your hand is full" message, so the card just seemed to snap back)
@@ -389,7 +403,7 @@ export class App {
         ${canContinue ? `<button class="btn big primary" data-act="continue">Continue (Round ${saved!.round})</button>` : ''}
         <div class="new-row"><button class="btn big ${canContinue ? '' : 'primary'}" data-act="new">New Game</button>${this.ratingBadge()}</div>
         <button class="btn big" data-act="rules">How to Play</button>
-        <button class="btn big" data-act="achievements">Achievements</button>
+        <button class="btn big" data-act="stats">Stats</button>
         <button class="btn big" data-act="options">Options</button>
       </div>
     </div>
@@ -563,6 +577,49 @@ export class App {
    * The shop screen while a battle plays on it: everything stays where it was (leaderboard, your hero, gold,
    * the Cards button...), the Tavern's circle shows your opponent, and the battle draws both armies and your hand.
    */
+  // ---------- Match History and replays ----------
+
+  /** open the Stats screen on a tab (Match History loads its list) */
+  private openStats(tab: StatsTab) {
+    this.options = false;
+    this.history = { tab, list: this.history?.list ?? null, msg: this.history?.tab === tab ? this.history.msg : '' };
+    this.render();
+    if (tab === 'history') void listMatches().then((list) => { if (this.history) { this.history.list = list; this.render(); } });
+  }
+
+  private async exportReplay(id: string) {
+    const rec = this.replayView?.rec.id === id ? this.replayView.rec : await getMatch(id);
+    if (!rec) return;
+    const res = await saveFile(exportName(rec), exportJson(rec));
+    const msg = res === 'saved' ? 'Replay saved.' : res === 'declined' ? '' : "Couldn't save the file here.";
+    if (this.replayView) this.replayView.msg = msg; else if (this.history) this.history.msg = msg;
+    this.render();
+  }
+
+  /** play a recorded battle on the battle screen (and, for "Watch all", the ones after it); then back to the replay */
+  private watchReplay(rec: MatchRecord, i: number, all: boolean) {
+    const b = rec.battles[i];
+    if (!b || (this.combat && this.screen !== 'replay')) return;
+    if (!this.watching) this.watching = { prev: this.screen, stash: { history: this.history, replayView: this.replayView } };
+    this.history = null;
+    this.replayView = null;
+    this.sel = null;
+    this.hover = null;
+    this.screen = 'replay';
+    this.stage.innerHTML = '';
+    this.combat = new CombatPlayer(this.stage, replayGame(rec, b), b.r, b.meSide, b.round, () => {
+      this.combat = null;
+      if (all && i + 1 < rec.battles.length) { this.watchReplay(rec, i + 1, true); return; }
+      const w = this.watching!;
+      this.watching = null;
+      this.screen = w.prev;
+      this.history = w.stash.history;
+      this.replayView = w.stash.replayView ?? { rec, msg: '' };
+      this.render();
+    });
+    void this.combat.play();
+  }
+
   /**
    * While a battle plays, the screen isn't redrawn (the battle owns it): Options, the account panel, the Card Viewer
    * and achievements are drawn in a layer of their own on top, so the gear works mid-battle.
@@ -573,7 +630,8 @@ export class App {
     if (this.options) html += this.optionsHtml();
     if (this.account) html += this.accountHtml();
     if (this.viewer) html += cardViewerHtml(this.viewer, this.g);
-    if (this.achOpen) html += achievementsHtml();
+    if (this.history) html += statsPanelHtml(this.history.tab, this.history.list, this.history.msg);
+    if (this.replayView) html += replayHtml(this.replayView.rec, !this.combat, this.replayView.msg);
     if (!html) { el?.remove(); return; }
     if (!el) {
       el = document.createElement('div');
@@ -777,7 +835,7 @@ export class App {
       <div class="hint" style="margin-top:-8px">Picks the bots in your next game: the weakest are about 1230, the Expert 1500, the strongest about 1520.</div>
       <div style="display:flex;gap:12px;justify-content:center">
         <button class="btn" data-act="cards">Card Viewer</button>
-        <button class="btn" data-act="achievements">Achievements</button>
+        <button class="btn" data-act="stats">Stats</button>
       </div>
       <div style="display:flex;gap:12px;justify-content:center;margin-top:8px">
         <button class="btn big primary" data-act="close-options">Done</button>
@@ -1046,6 +1104,7 @@ export class App {
     recordGameEnd(g);
     const c = rateGame(g);
     if (c) { this.lastRating = c; save(g); }
+    void recordEnd(g, c ?? this.lastRating).then(() => { if (this.screen === 'over') this.render(); });
   }
 
   overHtml() {
@@ -1060,7 +1119,10 @@ export class App {
       <div class="hint lead" style="font-size:26px">You finished ${ordinal(place)}</div>
       ${rating}
       <div class="hint lead">Rounds survived: ${this.g!.round}</div>
-      <div style="display:flex;gap:14px"><button class="btn big primary" data-act="new">Play Again</button><button class="btn big" data-act="title">Title</button></div></div>`;
+      ${(() => { const rec = liveMatch(this.g); return rec?.battles.length ? `<div class="over-final">${finalBattleHtml(rec)}</div>` : ''; })()}
+      <div style="display:flex;gap:14px;flex-wrap:wrap;justify-content:center"><button class="btn big primary" data-act="new">Play Again</button>
+        ${liveMatch(this.g)?.battles.length ? '<button class="btn big" data-act="over-replay">Watch Replay</button>' : ''}
+        <button class="btn big" data-act="history">Match History</button><button class="btn big" data-act="title">Title</button></div></div>`;
   }
 
   updateDetail() {
@@ -1671,6 +1733,7 @@ export class App {
     const meSide = mine.a === 0 ? 0 : 1;
     const oppId = meSide === 0 ? (mine.b === -1 ? mine.ghostOf! : mine.b) : mine.a;
     if (mine.frames[0]) this.seenBoards.set(oppId, mine.frames[0].sides[1 - meSide]);
+    void recordBattle(g, mine, meSide, oppId, round); // (Match History: this battle, everyone's Health after it)
     const opp = g.players[oppId];
     // the battle plays right here on the shop screen: Health shown is from before this battle's damage
     const loserId = mine.winner === -1 ? -2 : mine.winner === 0 ? mine.b : mine.a;
@@ -1786,8 +1849,18 @@ export class App {
       case 'cv-ab': if (this.viewer) { this.viewer.ability = el.dataset.v!; this.render(); } break;
       case 'cv-golden': if (this.viewer) { this.viewer.golden = (el as HTMLInputElement).checked; this.render(); } break;
       case 'cv-match': if (this.viewer) { this.viewer.onlyMatch = (el as HTMLInputElement).checked; this.render(); } break;
-      case 'achievements': this.options = false; this.achOpen = true; this.render(); break;
-      case 'ach-close': this.achOpen = false; this.render(); break;
+      case 'achievements': this.openStats('achievements'); break;
+      case 'stats': this.openStats('stats'); break;
+      case 'stats-tab': this.openStats(el.dataset.v as StatsTab); break;
+      case 'stats-close': this.history = null; this.render(); break;
+      case 'history': this.openStats('history'); break;
+      case 'rp-open': void getMatch(el.dataset.id!).then((rec) => { if (rec) { this.replayView = { rec, msg: '' }; this.render(); } }); break;
+      case 'over-replay': { const rec = liveMatch(this.g); if (rec) { this.replayView = { rec, msg: '' }; this.render(); } break; }
+      case 'rp-close': this.replayView = null; this.render(); break;
+      case 'rp-delete': void deleteMatch(el.dataset.id!).then(() => this.openStats('history')); break;
+      case 'rp-export': void this.exportReplay(el.dataset.id!); break;
+      case 'rp-import': (this.stage.querySelector('#rp-file') as HTMLInputElement | null)?.click(); break;
+      case 'rp-watch': if (this.replayView) this.watchReplay(this.replayView.rec, Number(el.dataset.i), el.dataset.all === '1'); break;
       case 'check-update': e.preventDefault(); checkForUpdates(true); break;
       case 'hero-pick': selectHero(g!, el.dataset.id!); this.screen = 'shop'; this.commit(); break;
       case 'undo': this.undo(); break;
