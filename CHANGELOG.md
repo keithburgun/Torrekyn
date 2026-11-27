@@ -2,6 +2,10 @@
 
 Newest first. The version shows on the title screen.
 
+## 0.14.12 — 2026-11-27
+- Phones: a zoomed card's related cards are now tabs on the card itself (◀ ▶ on its edges, with a count)
+- Ballooneer has new art: a hot-air balloon
+
 ## 0.14.11 — 2026-11-26
 - Phones: a zoomed card's related cards (Farmer's Potato Gem...) show in the column beside it, always on the screen
 

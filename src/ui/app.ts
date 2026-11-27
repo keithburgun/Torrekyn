@@ -862,8 +862,17 @@ export class App {
     // phones get a much bigger card (zoomed in CSS) and big buttons; numbers here match styles.css
     // twice the old size: 236x340 card zoomed 1.78 (landscape) or 2.6 (phones)
     // on a phone, a card with keywords is shown a bit smaller, on the left, with the keyword panels beside it
-    const kws = keywordPanelsHtml(v);
-    const kwBeside = L.portrait && (!!kws || relatedCards(v.cardId).length > 0);
+    // phones: related cards (Farmer's Potato Gem...) are tabs of the zoomed card itself (◀ ▶ step through them)
+    const rel = L.portrait ? relatedCards(v.cardId) : [];
+    const key = `${s.zone}:${s.idx}:${v.cardId}`;
+    if (key !== this.relTabKey) { this.relTabKey = key; this.relTab = 0; }
+    const tab = rel.length ? ((this.relTab % (rel.length + 1)) + rel.length + 1) % (rel.length + 1) : 0;
+    const shownHtml = tab ? relatedCardHtml(rel[tab - 1], this.me, { cardId: v.cardId, golden: v.golden }) : bigCardHtml(v, '', this.me);
+    const shownId = tab ? rel[tab - 1] : v.cardId;
+    // (◀ ▶ sit on the card's edges, with a count on top: no extra height)
+    const tabs = rel.length ? `<button class="btn rel-arrow prev" data-act="rel-prev" aria-label="Previous">◀</button><button class="btn rel-arrow next" data-act="rel-next" aria-label="Next">▶</button><div class="rel-count">${tab ? 'Related · ' : ''}${tab + 1}/${rel.length + 1}</div>` : '';
+    const kws = keywordPanelsHtml(tab ? { cardId: shownId, golden: false } : v);
+    const kwBeside = L.portrait && !!kws;
     const W = L.portrait ? (kwBeside ? 472 : 614) : 420;
     const H = L.portrait ? (kwBeside ? 680 : 884) + (actions ? 118 : 0) : 605 + (actions ? 54 : 0);
     let x: number;
@@ -901,7 +910,7 @@ export class App {
     const kwSide = L.portrait ? 'right'
       : !relatedCards(v.cardId).length ? relSide : roomAcross >= 290 ? across : relSide;
     return `<div class="popover ${kwBeside ? 'kw-beside' : ''} ${kws && kwSide === relSide ? 'has-kw' : ''} ${actions ? 'interactive' : ''} ${actionsTop ? 'actions-top' : ''} ${actions && this.justSelected() ? 'arming' : ''}" style="left:${x}px;top:${y}px;width:${W}px">
-      <div class="pop-card" data-card="${v.cardId}" data-golden="${v.golden ? 1 : 0}">${bigCardHtml(v, '', this.me)}</div>${actions ? `<div class="actions">${actions}</div>` : ''}${kws || kwBeside ? `<div class="pop-kw ${kwSide}">${kws}</div>` : ''}</div>`;
+      <div class="pop-cardwrap">${tabs}<div class="pop-card ${tab ? 'rel-shown' : ''}" data-card="${v.cardId}" data-golden="${v.golden ? 1 : 0}">${shownHtml}</div></div>${actions ? `<div class="actions">${actions}</div>` : ''}${kws ? `<div class="pop-kw ${kwSide}">${kws}</div>` : ''}</div>`;
   }
 
   /** Phones: details for your hero power or a trinket, with a big Use button where it applies. */
@@ -1040,6 +1049,9 @@ export class App {
 
   /** the zoomed card, and when it was first shown (its related cards appear beside it after half a second) */
   private relKey = '';
+  /** phones: which of a zoomed card's tabs is showing (0: the card; 1+: its related cards) */
+  private relTab = 0;
+  private relTabKey = '';
   private relAt = 0;
   private relTimer = 0;
 
@@ -1060,26 +1072,19 @@ export class App {
   private showRelated(instant = false) {
     const pop = this.stage.querySelector('#popover .popover') as HTMLElement | null;
     const pc = pop?.querySelector('.pop-card') as HTMLElement | null;
-    if (!pop || !pc || pc.dataset.card !== this.relKey || pop.querySelector('.pop-related')) return;
+    if (L.portrait || !pop || !pc || pc.dataset.card !== this.relKey || pop.querySelector('.pop-related')) return; // (phones: tabs instead)
     const ids = relatedCards(pc.dataset.card!);
     if (!ids.length) return;
     const x = parseFloat(pop.style.left);
     const w = pop.offsetWidth;
     const y = parseFloat(pop.style.top);
     // beside it on the roomier side; on a tall screen above or below it
-    // (on a phone: in the column beside the card, under its keyword panels, so it's never off the screen)
-    const col = L.portrait ? pop.querySelector<HTMLElement>('.pop-kw') : null;
-    const where = col ? `in-col ${ids.length > 1 ? 'many' : ''}` : L.portrait ? (y > L.H / 2 ? 'above' : 'below') : x + w / 2 < L.W / 2 ? 'right' : 'left';
+    const where = x + w / 2 < L.W / 2 ? 'right' : 'left';
     const el = document.createElement('div');
     el.className = `pop-related ${where} ${instant ? '' : 'fresh'}`;
     const from = { cardId: pc.dataset.card!, golden: pc.dataset.golden === '1' };
     el.innerHTML = ids.map((id) => `<div class="pop-card rel">${relatedCardHtml(id, this.me, from)}</div>`).join('');
-    (col ?? pop).appendChild(el);
-    // keep the whole column on the screen
-    if (col) {
-      const over = y + col.offsetHeight - (L.H - 8);
-      if (over > 0) pop.style.top = `${Math.max(8, y - over)}px`;
-    }
+    pop.appendChild(el);
   }
 
   toast(msg: string) {
@@ -1773,6 +1778,7 @@ export class App {
       case 'buy': if (this.sel && !this.justSelected()) { this.lastShopPos = { x: shopX(this.sel.idx, p!.shop.length), y: L.shopY }; this.result(buy(g!, p!, this.sel.idx), sfx.buy, 'bought'); this.sel = null; this.commit(); } break;
       case 'play': if (this.sel && !this.justSelected()) this.doPlay(this.sel.idx, p!.board.length); break;
       case 'sell': if (this.sel && !this.justSelected()) { this.result(sell(g!, p!, this.sel.idx), sfx.sell, 'sold'); this.sel = null; this.commit(); } break;
+      case 'rel-prev': case 'rel-next': this.relTab += act === 'rel-next' ? 1 : -1; this.render(); break;
       case 'left': case 'right': if (this.sel) {
         const to = this.sel.idx + (act === 'left' ? -1 : 1);
         const r = move(p!, this.sel.idx, to);

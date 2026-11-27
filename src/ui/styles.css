@@ -1691,7 +1691,11 @@ svg.aim-arrow.locked .aim-ring { opacity: 0.9; animation: aim-ring 0.9s ease-in-
 #stage.portrait .inspect-panel .hero-portrait { margin-right: 34px; }
 /* a zoomed card's keyword panels go over the corner buttons (mute, settings) */
 #stage.portrait .popover.kw-beside { z-index: 125; }
-/* phones: a card's related cards (Farmer's Potato Gem...) go in the column beside it, under the keyword panels */
-.pop-kw .pop-related.in-col { position: static; transform: none; display: flex; flex-wrap: wrap; gap: 10px; margin-top: 16px; }
-#stage.portrait .pop-kw .pop-related.in-col .pop-card { zoom: 1.6; }
-#stage.portrait .pop-kw .pop-related.in-col.many .pop-card { zoom: 0.78; }
+/* phones: a card's related cards (Farmer's Potato Gem...) are tabs of the zoomed card: ◀ ▶ on its edges, a count on top */
+.pop-cardwrap { position: relative; }
+.rel-arrow { position: absolute; top: 50%; z-index: 5; width: 84px; height: 84px; padding: 0; margin-top: -42px; font-size: 34px; border-radius: 50%;
+  pointer-events: auto; box-shadow: 0 0 0 4px #fff, 0 6px 14px rgba(0, 0, 0, 0.45); }
+.rel-arrow.prev { left: -6px; }
+.rel-arrow.next { right: -6px; }
+.rel-count { position: absolute; top: -18px; right: 10px; z-index: 5; padding: 6px 16px; border-radius: 30px; background: #2a2238; color: #fff;
+  font-family: var(--display); font-size: 26px; box-shadow: 0 0 0 3px #fff; }
