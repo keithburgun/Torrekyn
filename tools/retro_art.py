@@ -162,12 +162,15 @@ def for_game(im):
 
 def install():
     """copy tools/art_retro/cards into public/art/retro/cards in the game's form, and write the manifest"""
-    src = os.path.join(OUT, 'cards'); dst = os.path.join(ROOT, 'public/art/retro/cards'); os.makedirs(dst, exist_ok=True)
+    src = os.path.join(OUT, 'cards'); dst = os.path.join(OUT, 'game'); os.makedirs(dst, exist_ok=True)
     m = {}
     for f in sorted(os.listdir(src)):
         if not f.endswith('.png'): continue
-        for_game(Image.open(os.path.join(src, f))).save(os.path.join(dst, f))
-        m['card:' + f[:-4]] = 'art/retro/cards/' + f
+        g = for_game(Image.open(os.path.join(src, f))); g.save(os.path.join(dst, f))
+        # bundled into the game as data URIs (tiny files; the artifact host limits how many files a page may have)
+        import io, base64
+        b = io.BytesIO(); g.save(b, 'PNG', optimize=True)
+        m['card:' + f[:-4]] = 'data:image/png;base64,' + base64.b64encode(b.getvalue()).decode()
     json.dump(m, open(os.path.join(ROOT, 'src/data/artRetro.json'), 'w'), indent=1)
     print('installed', len(m))
 

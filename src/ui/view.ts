@@ -8,7 +8,7 @@ import type { Keyword, Player, Unit, CombatFrameUnit } from '../engine/types';
 import { unitCounter } from '../engine/fx';
 
 export const BASE = import.meta.env.BASE_URL;
-export const art = (path: string) => BASE + path;
+export const art = (path: string) => (path.startsWith('data:') ? path : BASE + path);
 /**
  * Art style: "illustrated" (Keith's art from Spellstorm, Gem Wizards Tactics and Dragon Bridge, public/art/v2,
  * built by tools/build_art.py) or "classic" (the original generated placeholder art, public/art/cards|heroes).
