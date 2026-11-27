@@ -417,7 +417,7 @@ export class App {
     return `<div class="title-wrap"><div class="panel rules">
       <h3>The Goal</h3>
       Six players draft armies of units and battle automatically each round. Everyone starts at about ${CONFIG.startHealth} Health (stronger heroes start with less).
-      Lose a battle and you take damage equal to the winner's Tavern Tier, plus 1 for each of their surviving units (at most 12). If time runs out with both armies still standing, both players take damage that way.
+      Lose a battle and you take 1 damage, plus 1 for each of the winner's surviving units. If time runs out with both armies still standing, both players take damage that way.
       Be the last one standing.
       <h3>Your Turn</h3>
       Buy units from the Tavern for ${CONFIG.buyCost} gold, then play them from your hand into your army (up to ${CONFIG.boardSize}).
@@ -491,7 +491,7 @@ export class App {
           <div class="nm">${esc(p.name)}</div>
           <div class="hero-nm">${esc(h?.name ?? '')}${p.human ? '' : ` · ${seatRating(this.g!, p.id)}`}</div>
           <div class="hpbar"><div style="width:${pct}%"></div></div>
-          <div class="nums"><span class="lhp"><i class="hp-dot"></i>${Math.max(0, p.health)}</span><span class="ltier"><i class="pip"></i>${p.tier}</span>${p.alive && (p.streak ?? 0) >= 2 ? `<span class="streak" title="${p.streak} wins in a row">🔥${p.streak}</span>` : ''}</div>
+          <div class="nums"><span class="lhp"><i class="hp-dot"></i>${Math.max(0, p.health)}</span><span class="ltier"><i class="pip"></i>${p.tier}</span>${p.alive && (p.streak ?? 0) >= 2 ? `<span class="streak" title="${p.streak} wins in a row"><i class="flame"></i>${p.streak}</span>` : ''}</div>
         </div>
         ${next ? '<div class="tag">NEXT</div>' : ''}
         <div class="lb-hist">${this.historyHtml(p)}</div>
@@ -800,7 +800,7 @@ export class App {
         <div class="pips">${pips}</div>
         ${p.goldNextTurn ? `<div class="hint" style="padding:0">+${p.goldNextTurn} gold next turn</div>` : ''}
       </div>
-      <button class="gear" data-act="options" style="left:${L.gear.x}px;top:${L.gear.y}px;width:${L.gear.size}px;height:${L.gear.size}px;font-size:${Math.round(L.gear.size * 0.5)}px" title="Options">⚙</button>
+      <button class="gear" data-act="options" style="left:${L.gear.x}px;top:${L.gear.y}px;width:${L.gear.size}px;height:${L.gear.size}px;font-size:${Math.round(L.gear.size * 0.5)}px" title="Options" aria-label="Options"></button>
       ${this.tribesHtml()}
       <button class="btn cards-btn" data-act="cards" style="left:${L.cardsBtn.x}px;top:${L.cardsBtn.y}px${ph ? `;width:${ph.cardsW - 104}px` : ''}">Cards</button>
       <button class="btn undo-btn" data-act="undo" ${this.canUndo() ? '' : 'disabled'} title="Undo (Ctrl+Z). Anything that showed you something new, like a Refresh or a random effect, can't be undone." aria-label="Undo"
@@ -1715,6 +1715,8 @@ export class App {
   }
 
   endTurn() {
+    // once per turn: a second click (or key press) while the end of the turn plays out must not run it again
+    if (!this.g || this.g.phase !== 'shop' || this.screen !== 'shop' || this.busy) return;
     const p = this.me;
     if (p.discovers.length) return this.toast('Choose a card first');
     if (p.trinketOffer) return this.render();

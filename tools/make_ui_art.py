@@ -131,4 +131,71 @@ for name, (rows, col) in KW.items():
 GEM = ['...kkkkkkkk...', '..khhhlhhhhk..', '.khhlllhhhhhk.', 'kkkkkkkkkkkkkk', 'kllmmmmmmmmssk', '.klmmmmmmmssk.', '..klmmmmmssk..', '...klmmmssk...', '....klmssk....', '.....klsk.....', '......kk......']
 save(grid(GEM, {'k': INK, 'h': hx('d8f6fb'), 'l': hx('b8eef6'), 'm': hx('5fc4d6'), 's': hx('2e8296')}), 'gem_lesser')
 save(grid(GEM, {'k': INK, 'h': hx('ffc9c4'), 'l': hx('f27a7a'), 'm': hx('c42a3b'), 's': hx('74121d')}), 'gem_greater')
+# ---- round 2 (Keith's notes) ----
+def dilate(im, n, col):
+    """add an n-pixel outline (8-neighbour) around the opaque pixels"""
+    w, h = im.size; out = Image.new('RGBA', (w + 2 * n, h + 2 * n), CLEAR); out.alpha_composite(im, (n, n))
+    for _ in range(n):
+        src = out.copy(); sp = src.load(); op = out.load()
+        for y in range(out.height):
+            for x in range(out.width):
+                if sp[x, y][3]: continue
+                if any(0 <= x + dx < out.width and 0 <= y + dy < out.height and sp[x + dx, y + dy][3] for dx in (-1, 0, 1) for dy in (-1, 0, 1)):
+                    op[x, y] = col
+    return out
+STAR7 = ['...y...', '..yyy..', 'yyyyyyy', '.yyyyy.', '..yyy..', '.yy.yy.', '.y...y.']
+save(dilate(grid(STAR7, {'y': FRAME}), 2, INK), 'star')          # 11 x 11
+save(dilate(grid(STAR7, {'y': hx('f2c94c')}), 2, INK), 'star_gold')
+# a tiny flame (win streak)
+save(grid(['..r..', '.rr..', '.ryr.', 'ryyr.', 'ryyyr', '.ryr.'], {'r': hx('e0562a'), 'y': hx('f6c94a')}), 'flame')   # 5 x 6
+# gear and speaker icons for the corner buttons (tan)
+T = {'t': FRAME, 'k': INK}
+save(grid(['...t.t...', '.ttttttt.', '.tt...tt.', 'ttt...ttt', '.t.....t.', 'ttt...ttt', '.tt...tt.', '.ttttttt.', '...t.t...'], T), 'icon_gear')
+save(grid(['....t....', '...tt..t.', 'tttttt..t', 'tttttt.tt', 'tttttt..t', '...tt..t.', '....t....'], T), 'icon_sound')
+save(grid(['....t....', '...tt....', 'tttttt.t.t', 'tttttt..t.', 'tttttt.t.t', '...tt....', '....t....'], {'t': hx('8a7f6c')}), 'icon_muted')
+# gold: a plain gold circle at the size it's shown (one image pixel = one UI pixel)
+def gold(d):
+    im = Image.new('RGBA', (d, d), CLEAR); px = im.load(); c = (d - 1) / 2; r = d / 2
+    for y in range(d):
+        for x in range(d):
+            dist = ((x - c) ** 2 + (y - c) ** 2) ** 0.5
+            if dist > r - 0.25: continue
+            if dist > r - 1.25: px[x, y] = INK
+            elif (x - c) + (y - c) > r * 0.55: px[x, y] = hx('b8862e')
+            else: px[x, y] = hx('e3b84a')
+    hl = int(c - r * 0.35)
+    px[hl, hl] = hx('f8e7a6')
+    if d >= 10: px[hl + 1, hl] = hx('f8e7a6')
+    return im
+for d in (7, 8, 10, 12, 14, 20): save(gold(d), f'coin_{d}')
+save(orb(9), 'orb')          # 20 x 20 (shown at 20 UI px)
+def small_orb(d=8):
+    im = Image.new('RGBA', (d, d), CLEAR); px = im.load(); c = (d - 1) / 2; r = d / 2
+    for y in range(d):
+        for x in range(d):
+            dist = ((x - c) ** 2 + (y - c) ** 2) ** 0.5
+            if dist > r - 0.25: continue
+            px[x, y] = INK if dist > r - 1.25 else (hx('4a0b13') if (x - c) + (y - c) > r * 0.5 else hx('9c1d2b'))
+    px[int(c - 1), int(c - 1)] = hx('e65a6a')
+    return im
+save(small_orb(8), 'orb_small')
+# round portraits: a pixel circle mask and its ring (2 px off-white, 1 px dark inside)
+def circle(d, ring=None):
+    im = Image.new('RGBA', (d, d), CLEAR); px = im.load(); c = (d - 1) / 2; r = d / 2
+    for y in range(d):
+        for x in range(d):
+            dist = ((x - c) ** 2 + (y - c) ** 2) ** 0.5
+            if dist > r - 0.3: continue
+            if ring is None: px[x, y] = (255, 255, 255, 255)
+            else:
+                for (w, col) in ring:
+                    if dist > r - 0.3 - w: px[x, y] = col; break
+    return im
+OFFWHITE = hx('ede4d3')
+save(circle(56), 'round_mask')
+save(circle(56, [(2, OFFWHITE), (3, INK)]), 'round_ring')
+# the Tavern Tier: a dark red disc with a thin gold ring
+save(circle(46, [(1, INK), (2, hx('e3b84a')), (3, INK), (99, hx('3d1016'))]), 'tier_disc')
+# a selected filter in the Card Viewer: a white box
+save(framed(16, 16, hx('ede4d3'), edge=hx('ffffff'), shade=hx('c9c0b0')), 'btn_white')
 print('ok', sorted(os.listdir(OUT)))

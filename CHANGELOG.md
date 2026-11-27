@@ -2,6 +2,9 @@
 
 Newest first. The version shows on the title screen.
 
+## 0.16.1 — 2026-11-27
+- Base damage is now 1 (+1 per surviving unit). Begin Battle can't be pressed twice. UI: round heroes with an off-white ring, a Tier disc, outlined tier stars, taller stat tabs, pixel gear/sound/flame/coins, more room between Tavern cards, white selected filters
+
 ## 0.16.0 — 2026-11-27
 - New look: the pixel UI from Keith's mockup. TinyComfortable and Major Arcana fonts at one pixel density, square framed cards on the board/Tavern/hand, the mockup's large card when zoomed, pixel frames for buttons and panels, red Health orbs, coins and tier pips
 

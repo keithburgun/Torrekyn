@@ -755,7 +755,7 @@ export function endTurn(g: GameState): CombatResult[] {
 }
 
 /** damage to the loser: 2, plus 1 per surviving unit of the winner's (at most 2 + 7 = 9, plus any bonus) */
-export const BASE_DAMAGE = 2;
+export const BASE_DAMAGE = 1;
 export const DAMAGE_PER_UNIT = 1;
 /** `tier` no longer counts (it used to be the base); kept so callers needn't change */
 export function combatDamage(tier: number, survivors: number, bonus = 0) {

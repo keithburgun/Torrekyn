@@ -8,7 +8,7 @@ import type { Layout } from './layout';
 const muteBtn = document.createElement('button');
 muteBtn.id = 'mute-btn';
 const paint = (m: boolean) => {
-  muteBtn.textContent = m ? '🔇' : '🔊';
+  muteBtn.textContent = '';
   muteBtn.title = m ? 'Unmute' : 'Mute';
   muteBtn.setAttribute('aria-label', m ? 'Unmute sound' : 'Mute sound');
   muteBtn.classList.toggle('muted', m);

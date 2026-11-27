@@ -440,3 +440,20 @@ describe('Shotgun', () => {
     }
   });
 });
+
+describe('End of Turn runs once', () => {
+  it('Hack Factory transforms the unit on its left once per End of Turn', async () => {
+    const { EFFECTS } = await import('../src/engine/effects');
+    const { endTurn } = await import('../src/engine/game');
+    const { g, p } = setup(11);
+    for (const q of g.players) { q.board = []; q.hand = []; }
+    const rg = makeUnit(g, 'roll_guard');
+    p.board = [rg, makeUnit(g, 'hack_factory')];
+    let calls = 0;
+    const orig = EFFECTS.hack_factory.endTurn!;
+    EFFECTS.hack_factory.endTurn = (c) => { calls++; orig(c); };
+    try { endTurn(g); } finally { EFFECTS.hack_factory.endTurn = orig; }
+    expect(calls).toBe(1);
+    expect(def(rg.cardId).tier).toBeGreaterThan(def('roll_guard').tier);
+  });
+});

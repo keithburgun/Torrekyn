@@ -387,3 +387,60 @@ html, body { background: #202125; }
 #stage .trinketcard.greater .gem, #stage .trinket-orb.greater { background: url('../assets/ui/gem_greater.png') center / contain no-repeat; box-shadow: none; }
 #stage .trinketcard { color: var(--body); }
 #stage .trinketcard .tn { color: var(--frame); }
+
+/* =====================================================================================================
+   Round 2 (Keith's notes)
+   ===================================================================================================== */
+/* stat tabs one pixel taller, the number sitting one pixel below the top */
+#stage .card .stat, #stage .card.small .stat, #stage .card.large .stat, #stage.portrait .card.large .stat { height: calc(13 * var(--u)); padding-top: var(--u); line-height: calc(12 * var(--u)); }
+#stage.portrait .card.small .stat { height: calc(10 * var(--u)); padding-top: var(--u); line-height: calc(9 * var(--u)); }
+/* tier pips with a 2-px dark outline (the outlines overlap) */
+#stage .card .tier i, #stage .bigcard .tier i, #stage .pip { width: calc(11 * var(--u)); height: calc(11 * var(--u)); }
+#stage .card .tier i + i, #stage .bigcard .tier i + i, #stage .tk-tier .pip + .pip { margin-left: calc(-2 * var(--u)); }
+#stage .card .tier, #stage .bigcard .tier { top: calc(-5 * var(--u)); }
+#stage .leader .pip { width: calc(9 * var(--u)); height: calc(9 * var(--u)); }
+/* win streak: a tiny pixel flame */
+#stage .flame { display: inline-block; width: calc(5 * var(--u)); height: calc(6 * var(--u)); background: url('../assets/ui/flame.png') center / 100% 100% no-repeat; vertical-align: 0; }
+#stage .leader .streak { color: #f6c94a; gap: var(--u); }
+/* the corner buttons: square, pixel icons */
+#stage .gear, #stage #mute-btn { font-size: 0 !important; display: flex; align-items: center; justify-content: center; padding: 0; border-radius: 0; box-shadow: none; filter: none;
+  border: calc(2 * var(--u)) solid transparent; border-image: url('../assets/ui/btn.png') 5 fill / calc(5 * var(--u)) stretch; background: none; }
+#stage .gear::before, #stage #mute-btn::before { content: ''; width: calc(9 * var(--u)); height: calc(9 * var(--u)); background: url('../assets/ui/icon_gear.png') center / contain no-repeat; }
+#stage #mute-btn::before { width: calc(10 * var(--u)); height: calc(7 * var(--u)); background-image: url('../assets/ui/icon_sound.png'); }
+#stage #mute-btn.muted::before { background-image: url('../assets/ui/icon_muted.png'); }
+#stage .gear:hover, #stage #mute-btn:hover { border-image-source: url('../assets/ui/btn_hover.png'); filter: none; }
+/* gold coins drawn at the size they're shown */
+#stage .coin { width: calc(7 * var(--u)); height: calc(7 * var(--u)); background-image: url('../assets/ui/coin_7.png'); }
+#stage .gold-display .coin { width: calc(10 * var(--u)); height: calc(10 * var(--u)); background-image: url('../assets/ui/coin_10.png'); }
+#stage .tb-cost, #stage .tavern-btn .tb-cost, #stage .my-hero .tb-cost { background-image: url('../assets/ui/coin_12.png'); }
+#stage .spell-cost { background-image: url('../assets/ui/coin_14.png'); }
+#stage .bigcard .spell-cost { background-image: url('../assets/ui/coin_20.png'); }
+#stage .spell-cost.in-hp, #stage .bigcard .spell-cost.in-hp { background-image: url('../assets/ui/orb.png'); }
+/* big buttons: the label one pixel lower */
+#stage :is(.btn.big, .btn.primary, .end-turn) { padding-top: calc(4 * var(--u)); padding-bottom: calc(3 * var(--u)); }
+/* this match's tribes: no colour boxes, labels a little lower, the banned ones spaced out */
+#stage .tribe-badge .tb-face, #stage .an-row.small .tb-face { box-shadow: none; }
+#stage .tribe-badge { gap: calc(3 * var(--u)); }
+#stage .an-row.small { gap: calc(10 * var(--u)); }
+#stage .an-row.small .tribe-badge { width: 200px; }
+/* heroes: round pixel portraits with a thin off-white ring (art in ::before, ring in ::after, so Health stays outside the circle) */
+#stage .hero-portrait, #stage .enemy-keeper .tk-portrait { border: 0; border-image: none; background-size: 0 0; background-color: transparent; border-radius: 0; box-shadow: none; position: relative; }
+#stage .hero-portrait::before, #stage .enemy-keeper .tk-portrait::before { content: ''; position: absolute; inset: 0; background-image: inherit; background-size: cover; background-position: center;
+  -webkit-mask: url('../assets/ui/round_mask.png') center / 100% 100% no-repeat; mask: url('../assets/ui/round_mask.png') center / 100% 100% no-repeat; }
+#stage .hero-portrait::after, #stage .enemy-keeper .tk-portrait::after { content: ''; position: absolute; inset: 0; background: url('../assets/ui/round_ring.png') center / 100% 100% no-repeat; pointer-events: none; }
+#stage .hero-portrait .hp, #stage .enemy-keeper .tk-portrait .hp { z-index: 2; }
+#stage .my-hero.ready .hero-portrait { box-shadow: none; }
+#stage .my-hero.ready .hero-portrait::after { filter: drop-shadow(0 0 0 var(--good-c)) drop-shadow(var(--u) 0 0 var(--good-c)) drop-shadow(calc(-1 * var(--u)) 0 0 var(--good-c)) drop-shadow(0 var(--u) 0 var(--good-c)) drop-shadow(0 calc(-1 * var(--u)) 0 var(--good-c)); }
+/* the Tavern's Tier: a dark red disc with a thin gold ring (not a button) */
+#stage .tk-portrait:not(.battle-av) { border: 0; border-image: none; background: url('../assets/ui/tier_disc.png') center / 100% 100% no-repeat; }
+#stage .tk-num { justify-content: center; gap: 0; padding-top: calc(1 * var(--u)); }
+#stage .tk-num small { color: var(--body); line-height: calc(9 * var(--u)) !important; margin: 0; }
+#stage .tk-num span { color: var(--gold-c); line-height: calc(19 * var(--u)) !important; }
+#stage .tk-tier { margin-top: calc(-6 * var(--u)); }
+/* Card Viewer (and other chip filters): the selected one is a white box */
+#stage .chip.on, #stage button.chip.on { border-image-source: url('../assets/ui/btn_white.png'); color: var(--ink-dark); }
+#stage .tk-num small { display: block; margin-bottom: calc(1 * var(--u)); position: relative; top: calc(-2 * var(--u)); }
+#stage .tk-num span { display: block; position: relative; top: calc(1 * var(--u)); }
+#stage .tk-num small { top: calc(-3 * var(--u)); }
+#stage .tk-num span { top: calc(4 * var(--u)); line-height: calc(16 * var(--u)) !important; }
+#stage .tk-tier .pip, #stage .leader .pip { box-shadow: none; border-radius: 0; background-color: transparent; }
