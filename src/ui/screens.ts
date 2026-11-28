@@ -5,19 +5,18 @@ import type { CardDef, GameState, Tribe } from '../engine/types';
 import { ACHIEVEMENTS, allStats, isUnlocked, progress, statValue, unlockedCount } from './achievements';
 import { getRating } from './rating';
 import { historyBody, type MatchMeta } from './replays';
-import { abilityTags, bigCardHtml, cardArt, cardArtIllustrated, esc, heroArt } from './view';
+import { abilityTags, bigCardHtml, cardArt, esc, heroArt } from './view';
 import { HEROES, TRINKETS, heroHealth } from '../engine/heroes';
 
-/** a card that represents each tribe on the announcement screen */
-const TRIBE_FACE: Record<Tribe, string> = {
-  neverending: 'lich', azure: 'knight', kindred: 'hug', brambor: 'elder', cloister: 'orange_ninja', alcove: 'left_twinbot', demons: 'treasure', neutral: 'sword',
-};
+/** a sprite for each tribe on the announcement screen (no backdrop: the tribe's colour is on its name) */
+const TRIBE_FACE = import.meta.glob('../assets/tribes/*.png', { eager: true, import: 'default' }) as Record<string, string>;
+const tribeFace = (t: Tribe) => TRIBE_FACE[`../assets/tribes/${t}.png`] ?? '';
 
 export function tribesAnnounceHtml(g: GameState) {
   const banned = ALL_TRIBES.filter((t) => !g.tribes.includes(t));
   const badge = (t: Tribe, i: number, on: boolean) => `
     <div class="tribe-badge ${on ? 'in' : 'out'} t-${t}" style="animation-delay:${on ? 200 + i * 220 : 1000 + i * 260}ms">
-      <div class="tb-face" style="background-image:url('${cardArtIllustrated(TRIBE_FACE[t])}')"></div>
+      <div class="tb-face" style="background-image:url('${tribeFace(t)}')"></div>
       <div class="tb-name">${esc(TRIBE_NAMES[t])}</div>
       ${on ? '' : `<div class="tb-stamp" style="animation-delay:${1250 + i * 260}ms">BANNED</div>`}
     </div>`;
@@ -26,7 +25,7 @@ export function tribesAnnounceHtml(g: GameState) {
     <div class="an-label in">In play</div>
     <div class="an-row">${g.tribes.map((t, i) => badge(t, i, true)).join('')}</div>
     <div class="hint" style="margin-top:-6px">Neutral units are always in play.</div>
-    <div class="an-label out">Banned</div>
+    <div class="an-label out">~ Banned ~</div>
     <div class="an-row small">${banned.map((t, i) => badge(t, i, false)).join('')}</div>
     <button class="btn big primary an-go" data-act="to-hero">Choose Your Hero</button>
   </div>`;

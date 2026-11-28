@@ -254,7 +254,12 @@
     0.5,
     0.5,
     1.0
-   ]
+   ],
+   "retro": {
+    "K": 5,
+    "lift": 0.2,
+    "sat": 1.3
+   }
   },
   "lake": {
    "src": "N/introScene2.png",
@@ -318,7 +323,10 @@
     0.5,
     0.45,
     1.0
-   ]
+   ],
+   "retro": {
+    "K": 6
+   }
   },
   "gelf_lanz": {
    "src": "U/ui-ordergelf.png",
@@ -398,7 +406,10 @@
     0.5,
     0.5,
     1.0
-   ]
+   ],
+   "retro": {
+    "K": 5
+   }
   },
   "barton": {
    "src": "M/barton-frame1.png",
@@ -410,7 +421,10 @@
     0.5,
     0.5,
     1.0
-   ]
+   ],
+   "retro": {
+    "K": 5
+   }
   },
   "restore": {
    "src": "P/bunny.png",
@@ -498,7 +512,15 @@
     0.5,
     0.45,
     0.85
-   ]
+   ],
+   "retro": {
+    "crop": [
+     0.55,
+     0.45,
+     0.6
+    ],
+    "K": 6
+   }
   },
   "witch": {
    "src": "S/Potato/reaper.png",
@@ -570,7 +592,10 @@
     0.5,
     0.5,
     1.0
-   ]
+   ],
+   "retro": {
+    "K": 5
+   }
   },
   "secret": {
    "src": "R/omar 3 rgb version.png",
@@ -578,7 +603,17 @@
     0.45,
     0.45,
     0.8
-   ]
+   ],
+   "retro": {
+    "crop": [
+     0.5,
+     0.4,
+     0.5
+    ],
+    "K": 6,
+    "lift": 0.12,
+    "sat": 1.3
+   }
   },
   "white_ninja": {
    "src": "S/Order/icedemon-alt.png",
@@ -602,7 +637,10 @@
     0.5,
     0.5,
     1.0
-   ]
+   ],
+   "retro": {
+    "K": 6
+   }
   },
   "shadow_place": {
    "src": "R/may 1 rgb version.png",
@@ -610,7 +648,16 @@
     0.45,
     0.45,
     0.85
-   ]
+   ],
+   "retro": {
+    "crop": [
+     0.45,
+     0.4,
+     0.5
+    ],
+    "K": 5,
+    "lift": 0.08
+   }
   },
   "omar_evans": {
    "src": "C/omarevans-square.jpg",
@@ -747,7 +794,12 @@
   },
   "biker": {
    "src": "U/ui-demonbiker.png",
-   "px": true
+   "px": true,
+   "retro": {
+    "src": "S/Demons/biker.png",
+    "px": true,
+    "K": 5
+   }
   },
   "investor": {
    "src": "P/businessdemon.png",
@@ -815,7 +867,10 @@
     0,
     128,
     64
-   ]
+   ],
+   "retro": {
+    "K": 4
+   }
   },
   "shield_neutral": {
    "src": "UI/stats.png",
@@ -825,7 +880,10 @@
     0,
     64,
     64
-   ]
+   ],
+   "retro": {
+    "K": 4
+   }
   },
   "pickaxe": {
    "src": "X/cowboy.png",
@@ -843,7 +901,12 @@
   },
   "silver_banner": {
    "src": "S/flag-blue-animated.png",
-   "px": true
+   "px": true,
+   "retro": {
+    "K": 4,
+    "fw": 24,
+    "tint": "silver"
+   }
   },
   "gold_banner": {
    "src": "S/flag-brown-animated.png",
@@ -871,7 +934,15 @@
     0.5,
     0.5,
     0.8
-   ]
+   ],
+   "retro": {
+    "crop": [
+     0.5,
+     0.35,
+     0.6
+    ],
+    "K": 6
+   }
   },
   "sarinee": {
    "src": "M/sarinee-frame1.png",
@@ -939,7 +1010,10 @@
     0.47,
     0.42,
     0.85
-   ]
+   ],
+   "retro": {
+    "K": 6
+   }
   },
   "archnode": {
    "src": "X/goldengolem.png",
@@ -951,7 +1025,10 @@
   },
   "potato_lord": {
    "src": "X/potato.png",
-   "px": true
+   "px": true,
+   "retro": {
+    "K": 5
+   }
   },
   "blue_dragon": {
    "src": "X/dragon.png",
@@ -984,7 +1061,14 @@
   },
   "owl_summoner": {
    "src": "S/Skelly/fanatic.png",
-   "px": true
+   "px": true,
+   "retro": {
+    "src": "S/Order/icemage.png",
+    "px": true,
+    "K": 5,
+    "outline": true,
+    "lift": 0.12
+   }
   },
   "beast_vine": {
    "src": "S/Potato/spore1.png",
@@ -1045,13 +1129,19 @@
     0.5,
     0.5,
     1.0
-   ]
+   ],
+   "retro": {
+    "draw": "coin"
+   }
   },
   "growth_sprout": {
    "src": "M/Skills/wateringcan.png",
    "px": true,
    "center": true,
-   "tribe": "spell"
+   "tribe": "spell",
+   "retro": {
+    "K": 5
+   }
   },
   "scope": {
    "src": "I/Action Cards/refresh.psd",
@@ -1075,13 +1165,22 @@
     0.5,
     0.5,
     1.0
-   ]
+   ],
+   "retro": {
+    "K": 6
+   }
   },
   "red_banner": {
    "src": "M/Skills/solidarity.png",
    "px": true,
    "center": true,
-   "tribe": "spell"
+   "tribe": "spell",
+   "retro": {
+    "src": "S/flag-red-animated.png",
+    "fw": 24,
+    "px": true,
+    "K": 4
+   }
   },
   "strike_oil": {
    "src": "M/Skills/frack.png",
@@ -1095,7 +1194,10 @@
     0.5,
     0.5,
     1.0
-   ]
+   ],
+   "retro": {
+    "K": 5
+   }
   },
   "potential": {
    "src": "I/Action Cards/HACK.psd",
@@ -1163,7 +1265,10 @@
   },
   "faris": {
    "src": "M/PatC/placeholder-faris.png",
-   "px": true
+   "px": true,
+   "retro": {
+    "K": 5
+   }
   },
   "castleabra": {
    "src": "S/Generic/vampire.png",
@@ -1172,7 +1277,13 @@
   "shotgun": {
    "src": "L/shotgun.png",
    "px": true,
-   "_note": "drawn for Torrekin; a copy is kept in tools/art_custom/"
+   "_note": "drawn for Torrekin; a copy is kept in tools/art_custom/",
+   "retro": {
+    "src": "S/Potato/shotgun.png",
+    "fw": 32,
+    "px": true,
+    "K": 5
+   }
   }
  }
 }

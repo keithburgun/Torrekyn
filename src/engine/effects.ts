@@ -948,7 +948,7 @@ export const EFFECTS: Record<string, Effect> = {
   last_of_our_kind: {
     spell: (c) => {
       const t = mostCommonTribe(c);
-      discover(c, (id) => def(id).tier <= c.p.tier && (!t || isTribe(id, t)), `Last of Our Kind: Discover ${t ? `a unit from the ${TRIBE_NAMES[t]}` : 'a unit'}`, 1);
+      discover(c, (id) => def(id).tier <= c.p.tier && (!t || isTribe(id, t)), `Last Kind: Discover ${t ? `a unit from the ${TRIBE_NAMES[t]}` : 'a unit'}`, 1);
     },
   },
   potential: { spell: (c) => discover(c, (id) => def(id).tier === c.p.tier, `Potential: Discover a Tier ${c.p.tier} unit`, 1) },

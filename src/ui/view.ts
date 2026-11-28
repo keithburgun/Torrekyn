@@ -18,7 +18,8 @@ export type ArtStyle = 'retro' | 'illustrated' | 'classic';
 let artStyle: ArtStyle = 'retro';
 export const getArtStyle = () => artStyle;
 /** read the setting (startup, and after a cloud save) */
-export function reloadArtStyle() { const s = store.get('torrekin-art'); artStyle = s === 'classic' || s === 'illustrated' ? s : 'retro'; }
+// (the Card art option is gone: always the retro art)
+export function reloadArtStyle() { artStyle = 'retro'; }
 reloadArtStyle();
 export function setArtStyle(s: ArtStyle) {
   artStyle = s;

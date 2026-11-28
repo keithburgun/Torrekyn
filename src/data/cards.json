@@ -336,7 +336,7 @@
   },
   {
    "id": "gelf_lanz",
-   "name": "Gelf Lanz",
+   "name": "Lancer",
    "tribe": "azure",
    "tier": 5,
    "atk": 10,
@@ -814,13 +814,13 @@
    "tier": 3,
    "atk": 3,
    "hp": 3,
-   "text": "Start of Combat: When your last unit dies, summon a Forest Abomination.",
-   "goldenText": "Start of Combat: When your last unit dies, summon a Golden Forest Abomination.",
+   "text": "Start of Combat: When your last unit dies, summon a Beastoid.",
+   "goldenText": "Start of Combat: When your last unit dies, summon a Golden Beastoid.",
    "keywords": []
   },
   {
    "id": "white_ninja",
-   "name": "Forest Abomination",
+   "name": "Beastoid",
    "tribe": "cloister",
    "tier": 3,
    "atk": 1,
@@ -1061,7 +1061,7 @@
   },
   {
    "id": "may_danaris",
-   "name": "May Danaris",
+   "name": "Fake Death",
    "tribe": "alcove",
    "tier": 5,
    "atk": 25,
@@ -1217,7 +1217,7 @@
   },
   {
    "id": "bill_milton",
-   "name": "Bill Milton",
+   "name": "CEO",
    "tribe": "demons",
    "tier": 5,
    "atk": 40,
@@ -1931,7 +1931,7 @@
   },
   {
    "id": "last_of_our_kind",
-   "name": "Last of Our Kind",
+   "name": "Last Kind",
    "tribe": "neutral",
    "tier": 3,
    "atk": 0,
@@ -1983,7 +1983,7 @@
   },
   {
    "id": "devour",
-   "name": "Devour!",
+   "name": "Dragon Food",
    "tribe": "neutral",
    "tier": 5,
    "atk": 0,

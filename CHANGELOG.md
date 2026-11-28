@@ -2,6 +2,9 @@
 
 Newest first. The version shows on the title screen.
 
+## 0.16.7 — 2026-11-28
+- Seam-free frames; This Match shows tribe sprites with coloured names; ~ Banned ~; Card art option removed; wider hero cards; 24 cards' art redone; renames (Beastoid, Last Kind, Fake Death, Lancer, CEO, Dragon Food)
+
 ## 0.16.6 — 2026-11-28
 - Health orbs without the outline, the number centred
 

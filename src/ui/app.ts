@@ -835,7 +835,6 @@ export class App {
       <div class="hint" style="margin-top:-8px">Auto picks portrait when the window is taller than it is wide.</div>
       <div class="opt-row"><span>Sound</span>${seg('sound', [['on', 'On'], ['off', 'Off']], isMuted() ? 'off' : 'on')}</div>
       ${this.cloudRowHtml()}
-      <div class="opt-row"><span>Card art</span>${seg('art-style', [['retro', 'Retro'], ['illustrated', 'Illustrated'], ['classic', 'Classic']], getArtStyle())}</div>
       <div class="opt-row"><span>Battle speed</span>${seg('speed', SPEEDS.map((s) => [String(s.v), s.label]), String(speed), 'v')}</div>
       <div class="opt-row"><span>Debug mode (errors on screen)</span>${seg('debug', [['on', 'On'], ['off', 'Off']], debugOn() ? 'on' : 'off')}</div>
       <div class="opt-row"><span>Your rating (debug)</span><div class="seg rating-adjust">
