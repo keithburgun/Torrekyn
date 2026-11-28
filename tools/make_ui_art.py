@@ -215,7 +215,7 @@ def clean_disc(d, fill, edge=INK):
             for xx in range(min(xs) + 1, max(xs)): px[xx, yy] = fill
     for p in ring: px[p] = edge
     return im
-for d in (7, 11, 13, 15, 21): save(clean_disc(d, hx('e3b84a')), f'coin_{d}')
+for d in (7, 11, 13, 15, 17, 21): save(clean_disc(d, hx('e3b84a')), f'coin_{d}')
 save(clean_disc(21, hx('8e1a26')), 'orb')
 save(clean_disc(9, hx('8e1a26')), 'orb_small')
 save(clean_disc(23, hx('8e1a26')), 'orb_big')

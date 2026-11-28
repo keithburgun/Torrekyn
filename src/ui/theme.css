@@ -561,3 +561,23 @@ html, body { background: #202125; }
 #stage.portrait .card .tribe-plate { font-size: calc(16 * 2.5px) !important; height: calc(12 * 2.5px + 4px); line-height: calc(12 * 2.5px + 4px) !important; }
 /* phones: Health sits at the portrait's top-left (the power's cost is top-right, its counter bottom-centre) */
 #stage.portrait .my-hero .hero-portrait .hp { right: auto !important; left: calc(-8 * var(--u)) !important; bottom: auto !important; top: calc(-6 * var(--u)) !important; }
+
+/* Round 6 (phone) */
+/* cost coins: bigger, so the number has room */
+#stage .tb-cost, #stage .tavern-btn .tb-cost, #stage .my-hero .tb-cost { width: calc(17 * var(--u)) !important; height: calc(17 * var(--u)) !important;
+  background-image: url('../assets/ui/coin_17.png'); display: flex !important; align-items: center; justify-content: center; line-height: 1 !important; padding: 0 0 0 var(--u) !important; }
+/* the tribes chip: square dots on the pixel grid, the chip sized to them */
+#stage .tribes-chip .tdots, #stage.portrait .tribes-chip .tdots { gap: calc(2 * var(--u)); }
+#stage .tribes-chip .tdot, #stage.portrait .tribes-chip .tdot { width: calc(5 * var(--u)); height: calc(5 * var(--u)); border-radius: 0; }
+#stage .tribes-chip { width: auto !important; }
+/* title screen: on a phone the rating sits above New Game instead of beside it */
+#stage.portrait .rating-badge { left: 50%; top: auto; bottom: calc(100% + 4 * var(--u)); transform: translateX(-50%); flex-direction: row; align-items: baseline; gap: calc(3 * var(--u)); white-space: nowrap; }
+/* the tribes of this match on a phone: names in the text font, badges spaced so they don't overlap */
+#stage.portrait .tribe-badge .tb-name { font-family: var(--text); font-size: var(--fs-text) !important; line-height: var(--lh-text) !important; }
+#stage.portrait .an-row { gap: calc(6 * var(--u)); }
+#stage.portrait .tribe-badge, #stage.portrait .an-row.small .tribe-badge { width: 250px; }
+#stage .fx.dust { transform: none; }
+/* "N damage!": centred on the hero, on one line, always on screen */
+#stage .float-num.hero-dmg { white-space: nowrap; }
+#stage.portrait .float-num.hero-dmg { font-size: var(--fs-head) !important; }
+#stage.portrait .combat-name { font-family: var(--text); font-size: var(--fs-text) !important; }

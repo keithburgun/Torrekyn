@@ -26,6 +26,8 @@ export function setArtStyle(s: ArtStyle) {
 }
 const V2 = artV2 as Record<string, string>;
 const RETRO = artRetro as Record<string, string>;
+/** the full-colour art whatever the setting (the tribe icons use it) */
+export const cardArtIllustrated = (id: string) => art(V2[`card:${id}`] ?? `art/cards/${id}.svg`);
 export const cardArt = (id: string) => art((artStyle === 'retro' && RETRO[`card:${id}`]) || (artStyle !== 'classic' && V2[`card:${id}`]) || ((artManifest as Record<string, string>)[id] ?? `art/cards/${id}.svg`));
 // (hero portraits stay illustrated for now: the retro ones are in tools/art_retro/heroes for Keith to rework)
 export const heroArt = (id: string | undefined) => art((artStyle !== 'classic' && id && V2[`hero:${id}`]) || `art/heroes/${id ?? 'unknown'}.svg`);

@@ -5,7 +5,7 @@ import type { CardDef, GameState, Tribe } from '../engine/types';
 import { ACHIEVEMENTS, allStats, isUnlocked, progress, statValue, unlockedCount } from './achievements';
 import { getRating } from './rating';
 import { historyBody, type MatchMeta } from './replays';
-import { abilityTags, bigCardHtml, cardArt, esc, heroArt } from './view';
+import { abilityTags, bigCardHtml, cardArt, cardArtIllustrated, esc, heroArt } from './view';
 import { HEROES, TRINKETS, heroHealth } from '../engine/heroes';
 
 /** a card that represents each tribe on the announcement screen */
@@ -17,7 +17,7 @@ export function tribesAnnounceHtml(g: GameState) {
   const banned = ALL_TRIBES.filter((t) => !g.tribes.includes(t));
   const badge = (t: Tribe, i: number, on: boolean) => `
     <div class="tribe-badge ${on ? 'in' : 'out'} t-${t}" style="animation-delay:${on ? 200 + i * 220 : 1000 + i * 260}ms">
-      <div class="tb-face" style="background-image:url('${cardArt(TRIBE_FACE[t])}')"></div>
+      <div class="tb-face" style="background-image:url('${cardArtIllustrated(TRIBE_FACE[t])}')"></div>
       <div class="tb-name">${esc(TRIBE_NAMES[t])}</div>
       ${on ? '' : `<div class="tb-stamp" style="animation-delay:${1250 + i * 260}ms">BANNED</div>`}
     </div>`;

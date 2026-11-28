@@ -2,6 +2,9 @@
 
 Newest first. The version shows on the title screen.
 
+## 0.16.5 — 2026-11-28
+- Phone: roomier cost coins, tribes dots on the grid, rating above New Game, tidy This Match names, tribe icons back to the original art. Dust puff at the bottom centre of the card; the damage text centred on the hero
+
 ## 0.16.4 — 2026-11-28
 - Phone fixes: readable faction banners, equal stat boxes, Health orb clear of the power counter, Tier star spacing
 

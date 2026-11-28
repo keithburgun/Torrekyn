@@ -334,8 +334,8 @@ export class CombatPlayer {
     const fl = document.createElement('div');
     fl.className = 'float-num dmg hero-dmg';
     fl.textContent = `${r.damage} damage!`;
-    // beside the portrait, toward the middle of the screen (the enemy sits at the top, you at the bottom)
-    fl.style.left = `${target.x - 170}px`;
+    // above/below the portrait, toward the middle of the screen (the enemy sits at the top, you at the bottom), centred on it
+    fl.style.left = `${target.x}px`;
     fl.style.top = `${target.y + (loserIsMe ? -150 : 40)}px`;
     this.fxLayer.appendChild(fl);
     setTimeout(() => fl.remove(), ms(1600));
