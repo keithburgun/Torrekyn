@@ -2,6 +2,9 @@
 
 Newest first. The version shows on the title screen.
 
+## 0.16.4 — 2026-11-28
+- Phone fixes: readable faction banners, equal stat boxes, Health orb clear of the power counter, Tier star spacing
+
 ## 0.16.3 — 2026-11-27
 - Retro art: every card in 2-3 colours (Options > Card art). Faction banners under cards, keyword marks between the numbers, fixed big-card layout, Keith's dust puff when a unit lands, a bigger Health orb, octagon portraits closer to square, a black title screen. Orbo shows All Types
 

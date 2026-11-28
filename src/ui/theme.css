@@ -544,3 +544,20 @@ html, body { background: #202125; }
 #stage .bigcard .tribe span { white-space: nowrap; }
 /* phones: the army's small cards get a colour strip instead of a named banner (no room for the name) */
 #stage.portrait .card.small .tribe-plate { height: calc(3 * var(--u)); font-size: 0 !important; padding: 0; margin-top: calc(-1 * var(--u)); }
+
+/* Round 5 (phone fixes) */
+#stage .card .stat.atk { right: auto !important; }
+#stage .card .stat.hp { left: auto !important; }
+/* banners: tall enough for the name, the name centred */
+#stage .card .tribe-plate, #stage .card.small .tribe-plate, #stage .card.large .tribe-plate { height: calc(12 * var(--u)); line-height: calc(12 * var(--u)) !important; padding: 0; margin-top: calc(-2 * var(--u)); text-overflow: clip; }
+/* phones: the army's small cards show the name too, one density step smaller so it fits */
+#stage.portrait .card.small .tribe-plate { height: calc(12 * 2.5px); line-height: calc(12 * 2.5px) !important; font-size: calc(16 * 2.5px) !important; padding: 0; margin-top: calc(-2 * var(--u)); left: 0; right: 0; }
+#stage.portrait .tk-tier { margin-top: calc(-2 * var(--u)); }
+#stage .card .stat { width: auto !important; }
+#stage .card .stat.atk { left: calc(1 * var(--u)) !important; }
+#stage .card .stat.hp { right: calc(1 * var(--u)) !important; }
+#stage .card .stat, #stage .card.small .stat, #stage .card.large .stat { bottom: calc(1 * var(--u)) !important; }
+/* phones: every banner one density step smaller, so the names fit */
+#stage.portrait .card .tribe-plate { font-size: calc(16 * 2.5px) !important; height: calc(12 * 2.5px + 4px); line-height: calc(12 * 2.5px + 4px) !important; }
+/* phones: Health sits at the portrait's top-left (the power's cost is top-right, its counter bottom-centre) */
+#stage.portrait .my-hero .hero-portrait .hp { right: auto !important; left: calc(-8 * var(--u)) !important; bottom: auto !important; top: calc(-6 * var(--u)) !important; }
