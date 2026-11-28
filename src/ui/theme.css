@@ -624,21 +624,9 @@ html, body { background: #202125; }
 @keyframes aim-blink { 50% { opacity: 0.55; } }
 #stage .card.targetable.aimed { transform: none; }
 
-/* ---- CRT filter candidates (Options: Screen filter). One dark scanline per UI pixel row, so it scales with the game. ---- */
-#stage[class*="crt-"]::after { content: ''; position: absolute; inset: 0; z-index: 100000; pointer-events: none; }
-/* 1: scanlines only */
-#stage.crt-1::after { background: repeating-linear-gradient(to bottom, transparent 0 calc(0.55 * var(--u)), rgba(0, 0, 0, 0.16) calc(0.55 * var(--u)) var(--u)); }
-/* 2: scanlines and a soft vignette */
-#stage.crt-2::after { background:
-  radial-gradient(ellipse at center, transparent 58%, rgba(0, 0, 0, 0.32) 100%),
-  repeating-linear-gradient(to bottom, transparent 0 calc(0.55 * var(--u)), rgba(0, 0, 0, 0.13) calc(0.55 * var(--u)) var(--u)); }
-/* 3: aperture grille: faint red/green/blue columns within each UI pixel, light scanlines, light vignette */
-#stage.crt-3::after { background:
-  radial-gradient(ellipse at center, transparent 62%, rgba(0, 0, 0, 0.24) 100%),
-  repeating-linear-gradient(to bottom, transparent 0 calc(0.6 * var(--u)), rgba(0, 0, 0, 0.10) calc(0.6 * var(--u)) var(--u)),
-  repeating-linear-gradient(to right, rgba(255, 40, 40, 0.05) 0 calc(var(--u) / 3), rgba(40, 255, 40, 0.05) calc(var(--u) / 3) calc(2 * var(--u) / 3), rgba(40, 80, 255, 0.05) calc(2 * var(--u) / 3) var(--u)); }
-/* 4: warm glow: scanlines, vignette with darkened screen corners, and slightly richer colour */
-#stage.crt-4 { filter: saturate(1.12) contrast(1.05) brightness(1.03); }
-#stage.crt-4::after { border-radius: calc(10 * var(--u)); box-shadow: inset 0 0 calc(18 * var(--u)) rgba(0, 0, 0, 0.55), 0 0 0 calc(20 * var(--u)) #000; background:
-  radial-gradient(ellipse at center, rgba(255, 240, 220, 0.03) 0 40%, transparent 70%),
-  repeating-linear-gradient(to bottom, transparent 0 calc(0.5 * var(--u)), rgba(0, 0, 0, 0.12) calc(0.5 * var(--u)) var(--u)); }
+/* ---- CRT filter (Options, on by default): faint red/green/blue columns within each UI pixel, light scanlines
+   (one per UI pixel row, so it scales with the game) and a light vignette ---- */
+#stage.crt::after { content: ''; position: absolute; inset: 0; z-index: 100000; pointer-events: none; background:
+  radial-gradient(ellipse at center, transparent 62%, rgba(0, 0, 0, 0.12) 100%),
+  repeating-linear-gradient(to bottom, transparent 0 calc(0.6 * var(--u)), rgba(0, 0, 0, 0.05) calc(0.6 * var(--u)) var(--u)),
+  repeating-linear-gradient(to right, rgba(255, 40, 40, 0.025) 0 calc(var(--u) / 3), rgba(40, 255, 40, 0.025) calc(var(--u) / 3) calc(2 * var(--u) / 3), rgba(40, 80, 255, 0.025) calc(2 * var(--u) / 3) var(--u)); }

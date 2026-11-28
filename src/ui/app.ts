@@ -171,6 +171,8 @@ export class App {
     this.stage.classList.toggle('tall', !!L.tall);
     this.stage.classList.toggle('menu-bg', this.screen === 'title' || this.screen === 'rules' || this.screen === 'hero' || this.screen === 'tribes');
     this.stage.classList.toggle('title-bg', this.screen === 'title');
+    // the CRT screen filter (Options; on unless turned off)
+    this.stage.classList.toggle('crt', store.get('torrekin-crt') !== 'off');
     // one night-sky backdrop for every screen, drawn once, very large and blurred (styles.css #stage::before)
     // made absolute: a url() inside a CSS variable is read relative to the stylesheet that uses it (assets/), not the page
     this.stage.style.setProperty('--bg', `url('${new URL(art('art/bg.png'), document.baseURI).href}')`);
@@ -882,6 +884,7 @@ export class App {
       <div class="opt-row"><span>Screen layout</span>${seg('layout', [['auto', 'Auto'], ['landscape', 'Landscape'], ['portrait', 'Portrait']], mode)}</div>
       <div class="hint" style="margin-top:-8px">Auto picks portrait when the window is taller than it is wide.</div>
       <div class="opt-row"><span>Sound</span>${seg('sound', [['on', 'On'], ['off', 'Off']], isMuted() ? 'off' : 'on')}</div>
+      <div class="opt-row"><span>CRT filter</span>${seg('crt', [['on', 'On'], ['off', 'Off']], store.get('torrekin-crt') === 'off' ? 'off' : 'on')}</div>
       ${this.cloudRowHtml()}
       <div class="opt-row"><span>Battle speed</span>${seg('speed', SPEEDS.map((s) => [String(s.v), s.label]), String(speed), 'v')}</div>
       <div class="opt-row"><span>Debug mode (errors on screen)</span>${seg('debug', [['on', 'On'], ['off', 'Off']], debugOn() ? 'on' : 'off')}</div>
@@ -1901,6 +1904,7 @@ export class App {
       case 'sign-out': void sync.signOut().then(() => { this.toast('Signed out. Your progress stays on this device.'); this.render(); }); break;
       case 'layout': setMode(el.dataset.mode as LayoutMode); break;
       case 'sound': setMuted(el.dataset.mode === 'off'); this.render(); break;
+      case 'crt': store.set('torrekin-crt', el.dataset.mode === 'off' ? 'off' : 'on'); this.render(); break;
       case 'debug': setDebug(el.dataset.mode === 'on'); this.render(); break;
       case 'rating-adj': setRatingDebug(getRating().rating + Number(el.dataset.d)); this.render(); break;
       case 'art-style': setArtStyle(el.dataset.mode as ArtStyle); this.render(); break;

@@ -2,6 +2,9 @@
 
 Newest first. The version shows on the title screen.
 
+## 0.16.9 — 2026-11-28
+- CRT filter (option 3 at half strength), on by default; can be turned off in Options
+
 ## 0.16.8 — 2026-11-28
 - New Tavern icons; smooth (sharp-bilinear) scaling so no pixel comes out doubled; Neutral is no longer a faction (no banner, not listed, Blessin' can't target it); pixel-art aiming arrow; dragging a targeted Spell up starts aiming; damage total readable; Bubble outline blue; no stat floats in combat; Tier number without outline
 
