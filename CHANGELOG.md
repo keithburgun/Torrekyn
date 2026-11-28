@@ -2,6 +2,9 @@
 
 Newest first. The version shows on the title screen.
 
+## 0.16.6 — 2026-11-28
+- Health orbs without the outline, the number centred
+
 ## 0.16.5 — 2026-11-28
 - Phone: roomier cost coins, tribes dots on the grid, rating above New Game, tidy This Match names, tribe icons back to the original art. Dust puff at the bottom centre of the card; the damage text centred on the hero
 

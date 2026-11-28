@@ -216,10 +216,10 @@ def clean_disc(d, fill, edge=INK):
     for p in ring: px[p] = edge
     return im
 for d in (7, 11, 13, 15, 17, 21): save(clean_disc(d, hx('e3b84a')), f'coin_{d}')
-save(clean_disc(21, hx('8e1a26')), 'orb')
-save(clean_disc(9, hx('8e1a26')), 'orb_small')
-save(clean_disc(23, hx('8e1a26')), 'orb_big')
-save(clean_disc(27, hx('8e1a26')), 'orb_hero')
+save(clean_disc(21, hx('8e1a26'), hx('8e1a26')), 'orb')
+save(clean_disc(9, hx('8e1a26'), hx('8e1a26')), 'orb_small')
+save(clean_disc(23, hx('8e1a26'), hx('8e1a26')), 'orb_big')
+save(clean_disc(27, hx('8e1a26'), hx('8e1a26')), 'orb_hero')
 # octagon portrait: mask, and a 2-px off-white rim
 def octa(n, cut, inset=0):
     a, b = inset, n - 1 - inset; k = cut + inset * 1.0

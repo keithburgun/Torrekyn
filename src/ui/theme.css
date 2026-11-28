@@ -581,3 +581,6 @@ html, body { background: #202125; }
 #stage .float-num.hero-dmg { white-space: nowrap; }
 #stage.portrait .float-num.hero-dmg { font-size: var(--fs-head) !important; }
 #stage.portrait .combat-name { font-family: var(--text); font-size: var(--fs-text) !important; }
+/* Health orbs: no outline; the number nudged one pixel down and right so it sits dead centre */
+#stage .hero-portrait .hp, #stage .enemy-keeper .tk-portrait .hp, #stage .combat-name .hpb, #stage .rb-heart, .scene-tx.battle .tx-hp {
+  padding: var(--u) 0 0 var(--u) !important; }
