@@ -2,6 +2,9 @@
 
 Newest first. The version shows on the title screen.
 
+## 0.16.8 — 2026-11-28
+- New Tavern icons; smooth (sharp-bilinear) scaling so no pixel comes out doubled; Neutral is no longer a faction (no banner, not listed, Blessin' can't target it); pixel-art aiming arrow; dragging a targeted Spell up starts aiming; damage total readable; Bubble outline blue; no stat floats in combat; Tier number without outline
+
 ## 0.16.7 — 2026-11-28
 - Seam-free frames; This Match shows tribe sprites with coloured names; ~ Banned ~; Card art option removed; wider hero cards; 24 cards' art redone; renames (Beastoid, Last Kind, Fake Death, Lancer, CEO, Dragon Food)
 

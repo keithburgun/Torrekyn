@@ -24,7 +24,6 @@ export function tribesAnnounceHtml(g: GameState) {
     <h2 class="an-title">This Match</h2>
     <div class="an-label in">In play</div>
     <div class="an-row">${g.tribes.map((t, i) => badge(t, i, true)).join('')}</div>
-    <div class="hint" style="margin-top:-6px">Neutral units are always in play.</div>
     <div class="an-label out">~ Banned ~</div>
     <div class="an-row small">${banned.map((t, i) => badge(t, i, false)).join('')}</div>
     <button class="btn big primary an-go" data-act="to-hero">Choose Your Hero</button>
@@ -130,7 +129,7 @@ export function cardGridHtml(v: ViewerState, g: GameState | null) {
 
 export function cardViewerHtml(v: ViewerState, g: GameState | null) {
   const chip = (act: string, val: string, label: string, on: boolean, cls = '') => `<button class="chip ${on ? 'on' : ''} ${cls}" data-act="${act}" data-v="${val}">${label}</button>`;
-  const tribes = [...ALL_TRIBES, 'neutral'] as Tribe[];
+  const tribes = [...ALL_TRIBES] as Tribe[]; // (Neutral isn't a faction)
   const tab = v.tab ?? 'cards';
   const filters = tab === 'cards' ? `
     <div class="cv-filters">

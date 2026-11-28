@@ -302,6 +302,8 @@ def install():
     for f in sorted(os.listdir(src)):
         if not f.endswith('.png'): continue
         g = for_game(Image.open(os.path.join(src, f))); g.save(os.path.join(dst, f))
+        # 4x with hard edges: the browser scales that smoothly, so no pixel comes out doubled (see tools/upscale_ui.py)
+        g = g.resize((g.width * 4, g.height * 4), Image.NEAREST)
         # bundled into the game as data URIs (tiny files; the artifact host limits how many files a page may have)
         import io, base64
         b = io.BytesIO(); g.save(b, 'PNG', optimize=True)

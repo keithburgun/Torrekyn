@@ -1,14 +1,14 @@
 """
 UI art for the pixel look (see tools/ui_src/battlegrounds_art.psd). Everything is drawn at UI-pixel size
 (1 UI pixel = 2.5 stage pixels; the CSS scales it up with image-rendering: pixelated).
-Run: python3 tools/make_ui_art.py   (writes src/assets/ui/*.png)
+Run: python3 tools/make_ui_art.py && python3 tools/upscale_ui.py   (native size in tools/ui_src/native/ui, 4x in src/assets/ui)
 """
 import os
 from PIL import Image
 from psd_tools import PSDImage
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-OUT = os.path.join(ROOT, 'src/assets/ui')
+OUT = os.path.join(ROOT, 'tools/ui_src/native/ui')  # then tools/upscale_ui.py copies them 4x to src/assets/ui
 os.makedirs(OUT, exist_ok=True)
 
 def hx(h, a=255):

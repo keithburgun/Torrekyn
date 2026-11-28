@@ -170,7 +170,7 @@ export function cardHtml(u: { cardId: string; golden: boolean; atk: number; hp: 
   <div class="kws">${icons}</div>
   <div class="abil">${tags}</div>
   <div class="name">${esc(d.name)}</div>
-  <div class="tribe-plate ${(TRIBE_SHORT[d.tribe] ?? d.tribe).length > 8 && !d.allTribes && !d.spell ? 'long' : ''}">${d.spell ? 'Spell' : d.allTribes ? 'All Types' : TRIBE_SHORT[d.tribe] ?? d.tribe}</div>${o.badge ?? ''}
+  ${d.tribe === 'neutral' && !d.allTribes && !d.spell ? '' /* Neutral isn't a faction: no banner */ : `<div class="tribe-plate ${(TRIBE_SHORT[d.tribe] ?? d.tribe).length > 8 && !d.allTribes && !d.spell ? 'long' : ''}">${d.spell ? 'Spell' : d.allTribes ? 'All Types' : TRIBE_SHORT[d.tribe] ?? d.tribe}</div>`}${o.badge ?? ''}
   ${(u as { avenge?: string }).avenge ? `<div class="avenge-count" title="Avenge: friendly units died / needed"><i>⚔</i>${(u as { avenge?: string }).avenge}</div>` : ''}
   ${(() => { const c = (u as { note?: string }).note ?? (u.mem && (o.zone === "board" || o.zone === "combat" || o.zone === "hand") ? unitCounter(u as Unit) : null); return c ? `<div class="counter">${c}</div>` : ''; })()}
   ${d.spell ? spellCost(d) : `<div class="stat atk ${atk !== baseAtk ? 'buffed' : ''}" data-base="${baseAtk}" data-v="${atk}" ${statInner(atk)}</div>
@@ -279,7 +279,7 @@ export function bigCardHtml(u: { cardId: string; golden: boolean; atk: number; h
   <div class="text ${(text?.length ?? 0) + kwExtra.join(', ').length > 112 ? 'dense' : ''}"><div>${text ? formatText(text) : kwExtra.length ? '' : '<i>No ability.</i>'}${kwExtra.length ? `${text ? '<br>' : ''}<i class="kw-extra">${kwExtra.join(', ')}</i>` : ''}</div></div>
   <div class="foot">
   ${d.spell ? spellCost(d) : `<div class="stat atk ${u.atk !== bA ? 'buffed' : ''}" ${statInner(u.atk)}</div>`}
-  <div class="tribe"><span>${d.spell ? 'Spell' : d.allTribes ? 'All Types' : esc(TRIBE_SHORT[d.tribe] ?? d.tribe)}${d.token && !d.allTribes ? ' Token' : ''}</span></div>
+  <div class="tribe">${d.tribe === 'neutral' && !d.allTribes && !d.spell ? (d.token ? '<span class="plain">Token</span>' : '') : `<span>${d.spell ? 'Spell' : d.allTribes ? 'All Types' : esc(TRIBE_SHORT[d.tribe] ?? d.tribe)}${d.token && !d.allTribes ? ' Token' : ''}</span>`}</div>
   ${d.spell ? '<div class="stat-gap"></div>' : `<div class="stat hp ${u.hp > bH ? 'buffed' : u.hp < bH ? 'hurt' : ''}" ${statInner(u.hp)}</div>`}
   </div>
 </div>`;

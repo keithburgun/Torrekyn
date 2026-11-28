@@ -32,7 +32,7 @@ declare const __NO_UPDATES__: boolean;
 
 type Zone = 'shop' | 'hand' | 'board' | 'placing'; // placing: the card being played, while you aim its Arrive
 interface Sel { zone: Zone; idx: number }
-interface Press { zone: Zone; idx: number; x: number; y: number; el: HTMLElement; pointerId: number }
+interface Press { zone: Zone; idx: number; x: number; y: number; el: HTMLElement; pointerId: number; aiming?: boolean }
 interface Targeting { kind: 'play'; handIdx: number; pos: number; spell?: boolean } // play a card that needs a target (a Spell: aimed from your hand)
 interface HeroTargeting { kind: 'hero'; id: string; shop?: boolean }
 
@@ -260,8 +260,7 @@ export class App {
       svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
       svg.classList.add('aim-arrow');
       svg.setAttribute('viewBox', `0 0 ${W} ${H}`);
-      svg.innerHTML = `<defs><filter id="aimGlow" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="5" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs>
-        <path class="aim-under"/><path class="aim-line"/><g class="aim-head"><path d="M -26 -24 L 18 0 L -26 24 L -14 0 Z"/></g><circle class="aim-ring" r="0"/>`;
+      svg.setAttribute('shape-rendering', 'crispEdges');
       this.stage.appendChild(svg);
     }
     svg.setAttribute('width', String(W));
@@ -273,19 +272,68 @@ export class App {
     const dist = Math.hypot(dx, dy);
     const lift = Math.min(260, 60 + dist * 0.35);
     const c = { x: src.x + dx * 0.5 - dx * 0.15, y: Math.min(src.y, to.y) - lift };
-    // stop the line short of the tip so the head sits on it
+    // Pixel art, whatever the angle: square dots along the curve (never rotated, snapped to the UI's pixel grid),
+    // an arrowhead picked from 8 pre-drawn directions, and square corner brackets round a target.
+    const u = parseFloat(getComputedStyle(this.stage).getPropertyValue('--u')) || 2.5;
+    const B = 2 * u; // one arrow pixel = two UI pixels (like the Tavern icons)
+    const snap = (v: number) => Math.round(v / u) * u;
+    const rects: string[] = [];
+    const rect = (x: number, y: number, w: number, h: number, cls: string) => rects.push(`<rect class="${cls}" x="${snap(x)}" y="${snap(y)}" width="${w}" height="${h}"/>`);
     const ang = Math.atan2(to.y - c.y, to.x - c.x);
-    const tip = { x: to.x - Math.cos(ang) * 6, y: to.y - Math.sin(ang) * 6 };
-    const back = L.portrait ? 30 : 20;
-    const end = { x: tip.x - Math.cos(ang) * back, y: tip.y - Math.sin(ang) * back };
-    const d = `M ${src.x} ${src.y} Q ${c.x} ${c.y} ${end.x} ${end.y}`;
-    svg.querySelector('.aim-under')!.setAttribute('d', d);
-    svg.querySelector('.aim-line')!.setAttribute('d', d);
-    svg.querySelector('.aim-head')!.setAttribute('transform', `translate(${tip.x} ${tip.y}) rotate(${(ang * 180) / Math.PI})${L.portrait ? ' scale(1.5)' : ''}`);
-    const ring = svg.querySelector('.aim-ring')!;
-    ring.setAttribute('cx', String(to.x));
-    ring.setAttribute('cy', String(to.y));
-    ring.setAttribute('r', hit ? String(Math.max(hit.offsetWidth, hit.offsetHeight) * 0.42) : '0');
+    const headR = 5.5 * B;
+    const end = { x: to.x - Math.cos(ang) * headR * 1.6, y: to.y - Math.sin(ang) * headR * 1.6 };
+    const at = (t: number) => ({ x: (1 - t) ** 2 * src.x + 2 * (1 - t) * t * c.x + t * t * end.x, y: (1 - t) ** 2 * src.y + 2 * (1 - t) * t * c.y + t * t * end.y });
+    // even spacing along the curve
+    const pts: { x: number; y: number }[] = [];
+    let prev = at(0), acc = 0;
+    const step = 4 * B;
+    for (let k = 1; k <= 200; k++) {
+      const q = at(k / 200);
+      acc += Math.hypot(q.x - prev.x, q.y - prev.y);
+      if (acc >= step) { pts.push(q); acc = 0; }
+      prev = q;
+    }
+    const D = 2 * B; // a dot: 2 x 2 arrow pixels
+    for (const q of pts) rect(q.x - D / 2 - u, q.y - D / 2 - u, D + 2 * u, D + 2 * u, 'ao');
+    for (const q of pts) rect(q.x - D / 2, q.y - D / 2, D, D, 'af');
+    // the head: 11 x 11, drawn pointing right or down-right, turned in exact quarter turns
+    const RIGHT = ['.....#.....', '.....##....', '.....###...', '.....####..', '##########.', '###########', '##########.', '.....####..', '.....###...', '.....##....', '.....#.....'];
+    // pointing down-right: a right-angled head with its corner at the tip, on a 3-pixel diagonal shaft
+    const DIAG_FULL = Array.from({ length: 11 }, (_, y) => Array.from({ length: 11 }, (_, x) =>
+      (x >= 4 && y >= 4 && x + y >= 14) || (Math.abs(x - y) <= 1 && x + y < 14) ? '#' : '.').join(''));
+    const oct = ((Math.round(ang / (Math.PI / 4)) % 8) + 8) % 8; // 0 = right, 2 = down, 4 = left, 6 = up
+    const base = oct % 2 === 0 ? RIGHT : DIAG_FULL;
+    const turns = Math.floor(oct / 2);
+    const cell = (x: number, y: number) => {
+      // turn (x, y) back by the quarter turns to read from the base sprite
+      let X = x, Y = y;
+      for (let k = 0; k < turns; k++) { const nx = Y, ny = 10 - X; X = nx; Y = ny; }
+      return base[Y]?.[X] === '#';
+    };
+    const hx = to.x - Math.cos(ang) * headR, hy = to.y - Math.sin(ang) * headR;
+    const ox = snap(hx - 5.5 * B), oy = snap(hy - 5.5 * B);
+    for (const cls of ['ao', 'af']) {
+      for (let y = 0; y < 11; y++) for (let x = 0; x < 11; x++) {
+        if (!cell(x, y)) continue;
+        if (cls === 'ao') rect(ox + x * B - u, oy + y * B - u, B + 2 * u, B + 2 * u, 'ao');
+        else rect(ox + x * B, oy + y * B, B, B, 'af');
+      }
+    }
+    // a target: square corner brackets round its card
+    if (hit) {
+      const r = hit.getBoundingClientRect(), sr = this.stage.getBoundingClientRect(), k = sr.width / (this.stage.offsetWidth || 1);
+      const x0 = (r.left - sr.left) / k - 2 * B, y0 = (r.top - sr.top) / k - 2 * B, x1 = (r.right - sr.left) / k + 2 * B, y1 = (r.bottom - sr.top) / k + 2 * B;
+      const len = 5 * B;
+      for (const cls of ['ao', 'af']) {
+        const o = cls === 'ao' ? u : 0, w = B + 2 * o;
+        for (const [cx, cy, sx, sy] of [[x0, y0, 1, 1], [x1, y0, -1, 1], [x0, y1, 1, -1], [x1, y1, -1, -1]] as const) {
+          const X = sx > 0 ? cx : cx - B, Y = sy > 0 ? cy : cy - B;
+          rect((sx > 0 ? X : X - len + B) - o, Y - o, len + 2 * o, w, `${cls} ring`);
+          rect(X - o, (sy > 0 ? Y : Y - len + B) - o, w, len + 2 * o, `${cls} ring`);
+        }
+      }
+    }
+    svg.innerHTML = rects.join('');
   }
 
   /** Where each unit's card is on screen (its centre in stage pixels), keyed by unit id. */
@@ -820,7 +868,7 @@ export class App {
     }).join('');
     return `<div class="tribes-chip ${this.showTribes ? 'open' : ''}" data-act="tribes" style="left:${b.x}px;top:${b.y}px;width:${b.w}px">
       <span class="tlabel">Tribes</span><span class="tdots">${dots}</span>
-      <div class="tribes-tip"><b>Tribes this game</b>${rows}<div class="trow on"><span class="tdot t-neutral"></span>Neutral<span class="tstate">Always</span></div></div>
+      <div class="tribes-tip"><b>Tribes this game</b>${rows}</div>
     </div>`;
   }
 
@@ -1997,6 +2045,17 @@ export class App {
     if (!this.dragging) {
       if (Math.hypot(pt.x - this.press.x, pt.y - this.press.y) < 10) return;
       if (this.targeting || this.me.discovers.length || this.me.trinketOffer) return;
+      // dragging a targeted Spell up out of your hand goes straight into aiming (as in Battlegrounds):
+      // the arrow follows the pointer, and letting go on a unit casts it
+      const sp = this.press.zone === 'hand' ? this.me.hand[this.press.idx] : undefined;
+      if (sp && isSpell(sp) && needsTarget(sp.cardId) && pt.y < this.press.y - 8) {
+        if (!validTargets(this.me, sp.cardId).length) { this.press = null; this.doCast(this.me.hand.indexOf(sp)); return; }
+        const press = { ...this.press, aiming: true };
+        this.doCast(this.press.idx);
+        this.press = press;
+        this.drawArrow(pt);
+        return;
+      }
       if (this.press.zone === 'board' && this.me.board[this.press.idx]?.mem.locked) return;
       this.dragging = true;
       // the enlarged card would cover the army while you drag
@@ -2165,6 +2224,17 @@ export class App {
     this.cancelDrag();
     const g = this.g!;
     const p = this.me;
+    if (press.aiming) {
+      // let go while aiming a Spell: on a unit it can take, cast it; anywhere else, keep aiming (tap a unit, or cancel)
+      const t = this.targeting;
+      const u = this.boardUnitAt(pt);
+      if (t?.kind === 'play' && u && validTargets(p, p.hand[t.handIdx]?.cardId ?? '').includes(u)) {
+        this.targeting = null;
+        this.result(play(g, p, t.handIdx, t.pos, u.uid), sfx.deploy, 'played');
+        this.commit();
+      }
+      return;
+    }
     if (!wasDrag) {
       // a tap: targeting or selection
       // a Hero Power aimed at the Tavern (Doom Bauble)

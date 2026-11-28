@@ -23,7 +23,7 @@ export default defineConfig({
     __ANDROID__: JSON.stringify(isAndroid),
     __BUILD__: JSON.stringify(Number(process.env.TORREKIN_BUILD ?? 0)),
   },
-  build: { target: 'es2021', chunkSizeWarningLimit: 1500, outDir: isArtifact ? 'dist-artifact' : isAndroid ? 'dist-android' : isItch ? 'dist-itch' : 'dist' },
+  build: { target: 'es2021', chunkSizeWarningLimit: 1500, assetsInlineLimit: 8192, outDir: isArtifact ? 'dist-artifact' : isAndroid ? 'dist-android' : isItch ? 'dist-itch' : 'dist' },
   server: { port: 5173, strictPort: true },
   plugins: [
     {

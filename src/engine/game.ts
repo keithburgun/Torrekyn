@@ -449,7 +449,9 @@ export function validTargets(p: Player, cardId: string, self?: Unit): Unit[] {
   if (!t) return [];
   // ('other': not the card being played, e.g. Paradox can't copy itself)
   // (a Spell isn't a unit: only your army)
-  return [...p.board, ...(self && t !== 'other' && !isSpell(cardId) ? [self] : [])].filter((u) => !(t === 'unlocked' && u.mem.locked) && !(t === 'alcove' && !isTribe(u, 'alcove')));
+  return [...p.board, ...(self && t !== 'other' && !isSpell(cardId) ? [self] : [])].filter((u) => !(t === 'unlocked' && u.mem.locked) && !(t === 'alcove' && !isTribe(u, 'alcove'))
+    // ('faction': "units that share its faction" needs one: Neutral units have none)
+    && !(t === 'faction' && !ALL_TRIBES.some((x) => isTribe(u, x))));
 }
 
 export function play(g: GameState, p: Player, handIdx: number, pos: number, targetUid?: number): ActionResult {

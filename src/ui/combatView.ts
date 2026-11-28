@@ -418,7 +418,7 @@ export class CombatPlayer {
     for (const st of stars) st.remove();
     const ball = document.createElement('div');
     ball.className = 'dmg-star big';
-    ball.innerHTML = `★<b>${r.damage}</b>`;
+    ball.innerHTML = `<i class="st"></i><b>${r.damage}</b>`; // the star beside the number, not behind it
     ball.style.left = `${mid.x}px`;
     ball.style.top = `${mid.y}px`;
     this.fxLayer.appendChild(ball);
@@ -702,7 +702,7 @@ export class CombatPlayer {
       if (before) {
         if (u.hp < before.hp) this.float(x, y, `-${before.hp - u.hp + (u.over ?? 0) - (before.over ?? 0)}`, 'dmg');
         else if (u.hp > before.hp || u.atk > before.atk) {
-          this.float(x, y, `+${Math.max(0, u.atk - before.atk)}/+${Math.max(0, u.hp - before.hp)}`, 'buff');
+          // (no +N/+N float in combat: the glow and the new numbers say it)
           this.spot('buff-glow', x + this.L.cardW / 2, y + this.L.cardH / 2, this.t(700));
         } else if (u.atk < before.atk) this.float(x, y, `${u.atk - before.atk} atk`, 'dmg');
         if (before.kw.includes('divineShield') && !u.kw.includes('divineShield')) this.shatter(x + this.L.cardW / 2, y + this.L.cardH / 2);

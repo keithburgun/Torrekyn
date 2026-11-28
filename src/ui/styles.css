@@ -64,7 +64,7 @@ b { font-weight: 800; }
    It sits a little past the edges so the blur doesn't fade them; z-index -1 keeps it under everything on the stage. */
 #stage::before { content: ''; position: absolute; inset: -40px; z-index: -1; pointer-events: none;
   background: var(--bg) center bottom / cover no-repeat; filter: blur(7px); }
-#stage .logo img { image-rendering: pixelated; }
+#stage .logo img { image-rendering: auto; }
 
 .abs { position: absolute; }
 .panel {
@@ -1579,7 +1579,7 @@ svg.aim-arrow.locked .aim-ring { opacity: 0.9; animation: aim-ring 0.9s ease-in-
 .rp-chips { display: flex; flex-wrap: wrap; gap: 6px; flex: 1; min-width: 0; }
 .rp-chip { display: flex; align-items: center; gap: 6px; padding: 3px 8px 3px 3px; border-radius: 20px; background: #2a2238; color: #fff; font-size: 14px; max-width: 220px; }
 .rp-chip.golden { background: linear-gradient(90deg, #7a5a12, #3a2c10); box-shadow: 0 0 0 1px #ffd34d; }
-.rp-art { width: 30px; height: 30px; border-radius: 50%; background: #444 center / cover no-repeat; flex: none; image-rendering: pixelated; }
+.rp-art { width: 30px; height: 30px; border-radius: 50%; background: #444 center / cover no-repeat; flex: none; }
 .rp-cn { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .rp-st { display: flex; gap: 4px; flex: none; }
 .rp-st b { min-width: 22px; padding: 0 5px; border-radius: 10px; text-align: center; color: #fff; font-size: 13px; }

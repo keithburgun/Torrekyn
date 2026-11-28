@@ -16,7 +16,7 @@ from PIL import Image
 
 ROOT = Path(__file__).resolve().parent.parent
 CSS = ROOT / 'src/ui/theme.css'
-UI = ROOT / 'src/assets/ui'
+UI = ROOT / 'tools/ui_src/native/ui'
 SLICE = {'btn': 5, 'panel': 3, 'card_small': 13}
 U = 'var(--u)'
 

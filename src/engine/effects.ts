@@ -36,7 +36,7 @@ export interface CCtx {
 
 export interface Effect {
   /** a targeted play: any friendly unit, an unlocked one, or (Merge-o) an Alcove unit to Merge with */
-  target?: 'friendly' | 'unlocked' | 'alcove' | 'other';
+  target?: 'friendly' | 'unlocked' | 'alcove' | 'other' | 'faction';
   battlecry?(c: Ctx): void;
   /** a Spell cast from hand (`self` is the Spell card, which is on no board). Gems use their `battlecry` instead,
    * since cards also "play a Gem on" units in battle */
@@ -953,7 +953,7 @@ export const EFFECTS: Record<string, Effect> = {
   },
   potential: { spell: (c) => discover(c, (id) => def(id).tier === c.p.tier, `Potential: Discover a Tier ${c.p.tier} unit`, 1) },
   blessin: {
-    target: 'friendly',
+    target: 'faction', // (not a Neutral unit: it has no faction to share)
     spell: (c) => {
       const t = gemTarget(c);
       if (!t) return;
@@ -1009,12 +1009,13 @@ export const EFFECTS: Record<string, Effect> = {
     },
   },
   archnode: {
-    // Rally: one random unit of each tribe in your army (Neutral counts) gets +3/+3 (Golden +6/+6) for good
+    // Rally: one random unit of each tribe in your army (not Neutral: it isn't a tribe) gets +3/+3 (Golden +6/+6) for good
     rally: (c) => {
       const byTribe = new Map<string, CUnit[]>();
       for (const u of c.side.units) {
         if (u.hp <= 0) continue;
         const t = tribeOf(u);
+        if (t === 'neutral') continue; // (Neutral isn't a tribe)
         byTribe.set(t, [...(byTribe.get(t) ?? []), u]);
       }
       for (const us of byTribe.values()) {
